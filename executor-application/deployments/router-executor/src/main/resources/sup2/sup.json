@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "parameters": [
+    {
+      "name": "ufsparams.module.logging.level",
+      "description": "Уровень логирования СУП-параметров",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "ERROR"
+          ]
+        }
+      ]
+    }
+  ]
+}

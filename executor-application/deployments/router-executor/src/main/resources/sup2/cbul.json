@@ -1,0 +1,90 @@
+{
+  "version": "1.0",
+  "parameters": [
+    {
+      "name": "cbul.consistency.mode",
+      "description": "Режим записи в CBUL",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "STRONG"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cbul.connections.per.route",
+      "description": "Максимальное количество tcp соединений на один эндпоинт",
+      "isList": false,
+      "type": "LONG",
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cbul.executor.pool.size",
+      "description": "Размер пула Executor для обращений в CBUL",
+      "isList": false,
+      "type": "LONG",
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "${@config-fp-name1@.server.tomcat.max-threads}"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cbul.batch.size",
+      "description": "Размер пачек для отправки в CBUL в рамках одного батча",
+      "isList": false,
+      "type": "LONG",
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "1000"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cbul.buffer.size",
+      "description": "Размер буфера для чтения их CBUL",
+      "isList": false,
+      "type": "LONG",
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "1000"
+          ]
+        }
+      ]
+    }
+  ]
+}

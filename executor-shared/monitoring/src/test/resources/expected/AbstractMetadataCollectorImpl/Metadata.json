@@ -1,0 +1,15 @@
+{
+  "name" : "ROOT_NAME",
+  "title" : "ROOT_NAME",
+  "description" : null,
+  "metric" : false,
+  "children" : [ {
+    "name" : "NAME",
+    "title" : null,
+    "description" : null,
+    "metric" : true,
+    "children" : null,
+    "dynamicAllowed" : false
+  } ],
+  "dynamicAllowed" : false
+}

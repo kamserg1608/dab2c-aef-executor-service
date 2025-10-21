@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <parent>
+        <groupId>ru.sbrf.ufs.dab2c.core.executor</groupId>
+        <artifactId>executor</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>executor-application</artifactId>
+    <name>executor-application</name>
+    <modelVersion>4.0.0</modelVersion>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>configs</module>
+        <module>deployments</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>configs</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>deployments</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+</project>

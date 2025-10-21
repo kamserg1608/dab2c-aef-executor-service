@@ -1,0 +1,66 @@
+server:
+  servlet:
+    context-path: /@server.context.path1@
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+    quartz:
+      enabled: false
+  health:
+    jms:
+      enabled: false
+
+logging:
+  level:
+    root: INFO
+
+ufs:
+  platform:
+    # Платформенное Ядро
+    environment:
+      session:
+        cookie-name: NO-COOOKIE-NO-PROBLEM
+      product:
+        subsystem: @subsystemCode@
+        channel: @ufs.channel@
+        deploymentUnit: @deploymentUnit1@
+        distrib_version: @FP_VERSION@
+        release: @ufs.release@
+    # СУП. См. также класс SupAdditionalConfiguration — в нём создаётся бин для СУП Data.
+    config:
+      deploymentUnit: @deploymentUnit1@
+
+  # Мониторинг
+  monitoring:
+    client:
+      enable: true
+      channel: @ufs.channel@
+      distributiveVersion: @FP_VERSION@
+      version: @project.version@
+      subsystem: @subsystemCode@
+      title: @app.support.description@
+      thread-name-prefix: "ufs-monitoring-@subsystemCode@-thread"
+      unit: @deploymentUnit1@
+
+  # Healthcheck
+  healthcheck:
+    stub-agent-enabled: true
+    groups:
+      readiness: "ru.sbrf.ufs.dab2c.core.executor.shared.healthcheck.ApplicationHealthCheck"
+
+  # Журналирование
+  logger:
+    client:
+      filter-url-patterns:
+        - "/*"
+
+web:
+  server:
+    executor:
+      type: fixed_thread
+application:
+  executor:
+    type: fixed_thread

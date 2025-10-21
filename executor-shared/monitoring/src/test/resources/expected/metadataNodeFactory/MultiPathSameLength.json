@@ -1,0 +1,127 @@
+{
+  "name": "FOO",
+  "title": "BAR",
+  "description": null,
+  "metric": false,
+  "children": [
+    {
+      "name": "get",
+      "title": null,
+      "description": null,
+      "metric": false,
+      "children": [
+        {
+          "name": "all",
+          "title": null,
+          "description": null,
+          "metric": false,
+          "children": [
+            {
+              "name": "success",
+              "title": null,
+              "description": null,
+              "metric": true,
+              "children": null,
+              "dynamicAllowed": false
+            },
+            {
+              "name": "error",
+              "title": null,
+              "description": null,
+              "metric": true,
+              "children": null,
+              "dynamicAllowed": false
+            }
+          ],
+          "dynamicAllowed": false
+        },
+        {
+          "name": "caller",
+          "title": null,
+          "description": null,
+          "metric": false,
+          "children": [
+            {
+              "name": "success",
+              "title": null,
+              "description": null,
+              "metric": true,
+              "children": null,
+              "dynamicAllowed": false
+            },
+            {
+              "name": "error",
+              "title": null,
+              "description": null,
+              "metric": true,
+              "children": null,
+              "dynamicAllowed": false
+            }
+          ],
+          "dynamicAllowed": false
+        }
+      ],
+      "dynamicAllowed": false
+    },
+    {
+      "name": "post",
+      "title": null,
+      "description": null,
+      "metric": false,
+      "children": [
+        {
+          "name": "all",
+          "title": null,
+          "description": null,
+          "metric": false,
+          "children": [
+            {
+              "name": "success",
+              "title": null,
+              "description": null,
+              "metric": true,
+              "children": null,
+              "dynamicAllowed": false
+            },
+            {
+              "name": "error",
+              "title": null,
+              "description": null,
+              "metric": true,
+              "children": null,
+              "dynamicAllowed": false
+            }
+          ],
+          "dynamicAllowed": false
+        },
+        {
+          "name": "caller",
+          "title": null,
+          "description": null,
+          "metric": false,
+          "children": [
+            {
+              "name": "success",
+              "title": null,
+              "description": null,
+              "metric": true,
+              "children": null,
+              "dynamicAllowed": false
+            },
+            {
+              "name": "error",
+              "title": null,
+              "description": null,
+              "metric": true,
+              "children": null,
+              "dynamicAllowed": false
+            }
+          ],
+          "dynamicAllowed": false
+        }
+      ],
+      "dynamicAllowed": false
+    }
+  ],
+  "dynamicAllowed": false
+}

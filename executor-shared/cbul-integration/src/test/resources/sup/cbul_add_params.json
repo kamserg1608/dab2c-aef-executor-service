@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "parameters": [
+    {
+      "name": "cbul.batch.size",
+      "description": "Размер пачек для отправки в CBUL в рамках одного батча",
+      "isList": false,
+      "type": "LONG",
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "103"
+          ]
+        }
+      ]
+    }
+  ]
+}

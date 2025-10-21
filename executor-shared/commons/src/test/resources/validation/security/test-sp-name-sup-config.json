@@ -1,0 +1,47 @@
+{
+  "version": "1.0",
+  "parameters": [
+    {
+      "name": "test.prefix.test",
+      "isList": false,
+      "roles": [],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "test"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "test.prefix.test2",
+      "isList": false,
+      "roles": [],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "test3"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "test.prefix.test3",
+      "isList": false,
+      "roles": [],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "test4", "test5"
+          ]
+        }
+      ]
+    }
+  ]
+}

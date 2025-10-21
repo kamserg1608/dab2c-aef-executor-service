@@ -1,0 +1,106 @@
+### Общая информация о приложении ###
+app:
+  # конфигурационный элемент КЭ приложения / модуля ПО в Service Manager
+  sm_id: "CI12008538"
+  # название КЭ приложения / модуля ПО в Service Manager
+  sm_name: "ЕФС ФЛ Платформа. Router executor ЦА B2C"
+  cup_version: "D-01.000.00"
+
+### Общая информация о команде ###
+team:
+  - {
+    mus_code: "00IX0031",
+    mus_name: "ЕФС. ФЛ Developers",
+    mus_po_mail: "DAlekZhuravlev@sberbank.ru",
+  }
+
+### Настройки сборки ФП ###
+fp:
+  # КЭ ИТ-услуги, к которой приписан КЭ приложения
+  groupId: "CI07909419"
+  # КЭ приложения
+  artifactId: "CI12008538"
+  # Maven version для артефакта инсталляционного пакета. К нему будет добавляться номер сборки, т.о. что для билда с номером 123 в Nexus артефакт будет выгружен с версией D-01.000.00-123
+  version: "D-01.000.00"
+
+### Настройки Maven ###
+maven:
+  settings_id: "dab2c_core_java_integration_service"
+  home: "Maven 3.9"
+  jdk: "openjdk-21"
+
+### Настройки SonarQube ###
+sonar:
+  installationName: SonarQubeSigma
+  # Идентификатор креда типа Secret text с токеном SonarQube
+  credentialsId: "ru.sbrf.ufs.dab2c.core:dab2c-core-integration-service:develop"
+
+### Настройки Quality Gate Manager ###
+qgm:
+  # Репозиторий Quality Gate Manager
+  repository: "maven-distr"
+  # Идентификатор креда логин/пароль в Jenkins для аутентификации в QGM
+  creds: "CAB-SA-DVO40723"
+
+### Репозитории, куда следует загрузить дистрибутив ###
+distribution:
+  - {
+    url: "https://nexus-ci.delta.sbrf.ru/repository/maven-distr-dev",
+    serverId: "for-publish-distrib"
+  }
+
+### Настройки SAST Checkmarx ###
+sast_cx:
+  # сredentials id в Jenkins для учетной записи Checkmarx, под которой будет проводиться сканирование
+  creds_id: "Sast_Cred"
+  # проектная область в JIRA для заведения и синхронизации дефектов
+  jira_area: "CORA"
+  # маски файлов и директорий для включения (**/*) в скан и исключения (!**/*) из скана
+  masks: "!**stubs/**/*, !**stubs-war/**/*, !**stubs-ear/**/*, !**sm-uko-doc/**/*, **/*.java, **/*.groovy, **/*.py, **/*.html, **/*.css, **/*.less, **/*.js, **/*.jsx, **/*.ts, **/*.jsp, **/*.sql, !**/js/base-libs/**/*, !**/js/libs/**/*, !**/styles/_vendor/**/*, !**/stub/**/*, !**/generated/**/*, !**/node_modules/**/*, !**/build/**/*, !**/target/**/*, !**/src/test/**/*, !**/tests/**/*, !**/.pipeline/**/*, !**/_cvs/**/*, !**/.svn/**/*, !**/.hg/**/*, !**/.git/**/*, !**/.bzr/**/*, !**/bin/**/*, !**/obj/**/*, !**/backup/**/*, !**/.idea/**/*, !**/pom.xml, !**/*.DS_Store, !**/*.gradle, !**/*.ipr, !**/*.iws, !**/*.bak, !**/*.tmp, !**/*.aac, !**/*.aif, !**/*.iff, !**/*.m3u, !**/*.mid, !**/*.mp3, !**/*.mpa, !**/*.ra, !**/*.wav, !**/*.wma, !**/*.3g2, !**/*.3gp, !**/*.asf, !**/*.asx, !**/*.avi, !**/*.flv, !**/*.mov, !**/*.mp4, !**/*.mpg, !**/*.rm, !**/*.swf, !**/*.vob, !**/*.wmv, !**/*.bmp, !**/*.gif, !**/*.jpg, !**/*.png, !**/*.psd, !**/*.tif, !**/*.swf, !**/*.jar, !**/*.zip, !**/*.rar, !**/*.exe, !**/*.dll, !**/*.pdb, !**/*.7z, !**/*.gz, !**/*.tar.gz, !**/*.tar, !**/*.gz, !**/*.ahtm, !**/*.ahtml, !**/*.fhtml, !**/*.hdm, !**/*.hdml, !**/*.hsql, !**/*.ht, !**/*.hta, !**/*.htc, !**/*.htd, !**/*.war, !**/*.ear, !**/*.htmls, !**/*.ihtml, !**/*.mht, !**/*.mhtm, !**/*.mhtml, !**/*.ssi, !**/*.stm, !**/*.stml, !**/*.ttml, !**/*.txn, !**/*.xhtm, !**/*.xhtml, !**/*.class, !**/*.iml, !**/*.sh, !**/*.bat, !Checkmarx/Reports/*.*"
+  #id профиля сканирования, по умолчанию 36. 14 - для мобильного приложения
+  preset_id: "36"
+  # макс время ожидания статуса QG в минутах
+  wait_qg: "30"
+
+### Сборка BH, конфигураций и DB — см. build_distribution.groovy ###
+jenkinsfiles:
+  - {
+    # id приложения. используется при сборке как названия папки, куда клонируется репозиторий.
+    name: "executor-src",
+    # путь к репозиторию в BitBucket, где лежат исходники ФП
+    repo: "digital_assisitant_b2c/dab2c-aef-executor-service.git",
+    # ветка, которую нужно собирать. Делаем всегда подстановку текущей ветки (по которой ведётся сборка).
+    # стоит помнить, что эта фича активируется благодаря тому, что в пайплайновой джобе мы добавили параметр PARAMETERIZATION_YML и установили его в true.
+    branch: "${CONFIG_BRANCH}",
+    # Путь к файлу для сборки
+    jenkinsfile_name: "jenkins/build_distribution.groovy",
+    # ветка, в которой лежит последний опубликованный релиз, или начальная ветка
+    prod_branch: "master"
+  }
+
+downloads:
+  - {
+    source: "git",
+    type: "conf",
+    repo: "dot_ci/version.conf.git",
+    branch: "release/fh",
+    prod_branch: "master",
+    files: "version.conf"
+  }
+
+docker:
+  registry_address: "docker-dev.registry-ci.delta.sbrf.ru"
+  additional_registries:
+    - "registry-ci.delta.sbrf.ru"
+  nexus_url: "ci07909419/ci12008538"
+  builder_token: "cab-sa-dvo08817_AD"
+
+extensions:
+  - name: "checkDistrib"
+    repo: "digital_assisitant_b2c/dab2c-aef-executor-service.git"
+    branch: "${CONFIG_BRANCH}"
+    jenkinsfile_name: "jenkins/check_distrib.groovy"
+  - name: "report results to sber-chat"
+    repo: "digital_assisitant_b2c/dab2c-aef-executor-service.git"
+    branch: "${CONFIG_BRANCH}"
+    jenkinsfile_name: "jenkins/sberchat_notification.groovy"

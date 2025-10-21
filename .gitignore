@@ -1,0 +1,29 @@
+# MacOS
+.DS_Store
+
+# Linux – Exclude Dolphin files (KDE File manager)
+.directory
+
+# IDEA
+.idea/**
+.gigaide/**
+*.iml
+*.ipr
+
+# GigaIDE
+.sberstack/**
+
+# Maven
+target
+
+# Логи
+*.log
+
+tmpp
+
+# Архивы
+*.zip
+
+# Version backup
+*.versionsBackup
+.flattened-pom.xml

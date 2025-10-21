@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: egressgateway-mtls-@fpi-name@-monm-unver
+spec:
+  selector:
+    istio: egressgateway-@fpi-name@-unver
+  servers:
+    - hosts:
+        - ${global.monitoring.store.host}
+      port:
+        name: http-monitoring
+        number: ${global.monitoring.store.port}
+        protocol: HTTP

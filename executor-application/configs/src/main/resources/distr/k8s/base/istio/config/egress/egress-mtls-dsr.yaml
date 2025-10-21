@@ -1,0 +1,24 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: egressgateway-mtls-@fpi-name@-unver
+spec:
+  exportTo:
+    - .
+  host: ${@fpi-name@.ose.istio.egress.common.nlb_mm-host}  # Внешний хост Nginx;
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+    portLevelSettings:
+      - port:
+          number: ${@fpi-name@.ose.istio.egress.common.nlb_mm-port}
+        tls:
+          caCertificates: /etc/istio/egressgateway-ca-certs/root.crt
+          clientCertificate: /etc/istio/egressgateway-certs/tls.crt
+          mode: MUTUAL
+          privateKey: /etc/istio/egressgateway-certs/tls.key
+          sni: ${@fpi-name@.ose.istio.egress.common.nlb_mm-host}
+  workloadSelector:
+    matchLabels:
+      app: istio-egressgateway-@fpi-name@-unver
+      istio: egressgateway-@fpi-name@-unver

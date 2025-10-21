@@ -1,0 +1,46 @@
+{%- macro getOSE(datacenters, secroutevar, secport, replicas) -%}
+"dataCenters": [
+    {%- for tsodkey,tsodval in datacenters.items() %}
+
+                {
+                  "name": "{{tsodkey}}",
+                  "https": {
+                    "nodes": [
+        {%- for routerIp in tsodval.openshiftRoutersFQDN %}
+                      {
+                        "node": "{{routerIp}}:{{secport}}",
+                        "headerHost": "{{tsodval[secroutevar]}}",
+                        "containerized": true,
+                        "replicas": {{tsodval[replicas]}}
+                      }
+            {{- "," if not loop.last else "" }}
+        {%- endfor %}
+                    ]
+                  }
+                }
+        {{- "," if not loop.last else "" }}
+    {% endfor %}
+              ]
+{%- endmacro -%}
+{
+  "schema_version": "4.1",
+  "services": [
+    {
+      "subsystem": "ROUTER_EXECUTOR_JAVA_DAB2C",
+      "deploymentUnit": "@deploymentUnit1@",
+      "description": "ROUTER_EXECUTOR_JAVA_DAB2C Router-executor",
+      "usedGateways": ["IAG_MM"],
+      "apiVersions": [
+        {
+          "version": "v1",
+          "nodeGroups": [
+           {
+              "groupName": "R4.2",
+              {{ getOSE(datacenters, '@fpi-name@.ose.istio.ingress.route.spec.host.@config-fp-name1@.appFQDN', '443', '@config-fp-name1@.ose.deployment.spec.replicas') }}
+           }
+          ]
+        }
+      ]
+    }
+  ]
+}

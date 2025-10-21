@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: 'true'
+    nginx.ingress.kubernetes.io/ssl-passthrough: 'true'
+    nginx.ingress.kubernetes.io/load-balance: 'round_robin'
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '180'
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    ufs.sberbank.ru/context-path: /@server.context.path1@
+    ufs.sberbank.ru/healthcheckHandler: /@server.context.path1@/healthcheck
+    ufs.sberbank.ru/service-id: @subsystemCode@:@deploymentUnit1@:@server.context.version@:${jenkins_env.fp_artifact_version}
+    ufs.sberbank.ru/weight: "100"
+    ufs.sberbank.ru/quota: "3200"
+  name: ingressgateway-mtls-@config-fp-name1@-unver
+  labels:
+    app: istio-ingressgateway-@fpi-name@-unver
+    blockId: "{{ NODE_PATH | default('') }}"
+    chart: gateways
+    heritage: Tiller
+    istio: ingressgateway-@fpi-name@-unver
+    release: istio
+    sectorId: {{ TENANT_CODE }}
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: ${@fpi-name@.ose.istio.ingress.route.spec.host.@config-fp-name1@.appFQDN}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ingressgateway-@fpi-name@-unver
+                port:
+                  name: https-11443

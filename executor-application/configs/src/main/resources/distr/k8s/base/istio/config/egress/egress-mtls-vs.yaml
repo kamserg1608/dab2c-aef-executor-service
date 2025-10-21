@@ -1,0 +1,33 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: egressgateway-mtls-@fpi-name@-unver
+spec:
+  exportTo:
+    - .
+  gateways:
+    - egressgateway-mtls-@fpi-name@-unver                # указание Gateway, созданного на предыдущем шаге;
+    - mesh                                                                  # обработка трафика системными политиками istio;
+  hosts:
+    - ${@fpi-name@.ose.istio.egress.common.nlb_mm-host}          # внешний nginx, на который хотим обратиться;
+  http:
+    - match:
+        - gateways:
+            - mesh
+          port: ${@fpi-name@.ose.istio.egress.common.internal-port}      # говорим, что принимаем трафик с этого порта и матчим внутри Istio;
+      route:
+        - destination:
+            host: egressgateway-@fpi-name@-unver     # Обрабатываем Egress'ом из нашего проекта;
+            port:
+              number: ${@fpi-name@.ose.istio.egress.common.internal-port}    # Перенаправляем этот трафик на порт из Egress service'a;
+          weight: 100
+    - match:
+        - gateways:
+            - egressgateway-mtls-@fpi-name@-unver         # Матчим с gateway из предыдущего шага;
+          port: ${@fpi-name@.ose.istio.egress.common.internal-port}
+      route:
+        - destination:
+            host: ${@fpi-name@.ose.istio.egress.common.nlb_mm-host} # Говорим, что правило справедливо для этого хоста;
+            port:
+              number: ${@fpi-name@.ose.istio.egress.common.nlb_mm-port} # Говорим, что правило справедливо для этого порта (порт, который слушает внешний Nginx).
+          weight: 100

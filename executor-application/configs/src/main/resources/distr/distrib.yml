@@ -1,0 +1,28 @@
+applications:
+  "@config-fp-name1@":
+    config_fp_name: "@config-fp-name1@"
+    deploymentUnit: "@deploymentUnit1@"
+    sup2configFile: "@deploymentUnit1@.json"
+    deploy_group: "dmgr_1"
+
+release:
+  version: "unver"
+
+schemasVersion: "@schemas.version@"
+
+pipeline-extras:
+  deploy-common-secrets: false
+
+secrets_vars: [
+    "ssl.ose.istio.keyStore.egress.password",
+    "ssl.ose.istio.keyStore.ingress.password",
+    "ssl.ose.keyStore.mq.password"
+  ]
+
+playbooks_default:
+  "default": [
+    "MIGRATION_FP_CONF", "DRY_RUN",
+    "IMPORT_ALL_PARAMS",
+    "KUBERNETES_DEPLOY", "KUBERNETES_INGRESS_EGRESS_DEPLOY",
+    "API_MANAGER_UPLOAD"
+  ]

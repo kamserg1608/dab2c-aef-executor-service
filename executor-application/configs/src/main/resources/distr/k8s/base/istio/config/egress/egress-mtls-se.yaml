@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: egressgateway-mtls-@fpi-name@-unver
+spec:
+  exportTo:
+    - .
+  hosts:
+    - ${@fpi-name@.ose.istio.egress.common.nlb_mm-host}
+    # Место для хостов Интеграционных адаптеров
+    # Если вы используете интеграционные адаптеры, добавьте в массив hosts каждый уникальный хост интеграционного адаптера
+  location: MESH_EXTERNAL
+  ports:
+    - name: http                               # Внутренний порт, ипользуется для связи между POD -> Egress;
+      number: ${@fpi-name@.ose.istio.egress.common.internal-port}
+      protocol: HTTP
+    - name: https                              # Внешний https порт IAG'a. Используется для связи между Egress -> IAG;
+      number: ${@fpi-name@.ose.istio.egress.common.nlb_mm-port}
+      protocol: HTTPS
+    # Место для портов Интеграционных адаптеров
+    # Если вы используете интеграционные адаптеры, добавьте в массив ports их порты (все должны быть на протоколе HTTPS)
+  resolution: DNS

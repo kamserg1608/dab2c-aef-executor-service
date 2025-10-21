@@ -1,0 +1,198 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: @config-fp-name1@
+    platformVersion: @ufs.release@
+    platformv.sber.ru/releaseVersion: @ufs.release@
+    platformv.sber.ru/config-fp-name: @config-fp-name1@
+    platformv.sber.ru/fullReleaseVersion: @schemas.version@
+  name: @config-fp-name1@-${distrib.release.version}
+spec:
+  replicas: ${@config-fp-name1@.ose.deployment.spec.replicas}
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      platformv.sber.ru/config-fp-name: @config-fp-name1@
+  strategy:
+    activeDeadlineSeconds: 21600
+    resources: {}
+    rollingUpdate:
+      maxSurge: ${@config-fp-name1@.ose.deployment.spec.strategy.rollingParams.maxSurge}
+      maxUnavailable: ${@config-fp-name1@.ose.deployment.spec.strategy.rollingParams.maxUnavailable}
+    type: RollingUpdate
+  triggers:
+    - type: ConfigChange
+  template:
+    metadata:
+      labels:
+        distrib-version: ${jenkins_env.fp_artifact_version}
+        jenkinsDeployId: ${jenkinsDeployId}
+        deploymentconfig: @config-fp-name1@-${distrib.release.version}
+        platformVersion: @ufs.release@
+        platformv.sber.ru/releaseVersion: @ufs.release@
+        platformv.sber.ru/config-fp-name: @config-fp-name1@
+        platformv.sber.ru/fullReleaseVersion: @schemas.version@
+      annotations:
+        proxy.istio.io/config: |
+          drainDuration: 45s
+          holdApplicationUntilProxyStarts: true
+          terminationDrainDuration: 45s
+        sidecar.istio.io/inject: "true"
+        sidecar.istio.io/proxyCPU: ${@config-fp-name1@.ose.deployment.metadata.annotations.sidecar.istio.io.proxyCPU}
+        sidecar.istio.io/proxyMemory: ${@config-fp-name1@.ose.deployment.metadata.annotations.sidecar.istio.io.proxyMemory}
+        sidecar.istio.io/proxyCPULimit: ${@config-fp-name1@.ose.deployment.metadata.annotations.sidecar.istio.io.proxyCPULimit}
+        sidecar.istio.io/proxyMemoryLimit: ${@config-fp-name1@.ose.deployment.metadata.annotations.sidecar.istio.io.proxyMemoryLimit}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: platformv.sber.ru/config-fp-name
+                      operator: In
+                      values:
+                        - @config-fp-name1@
+                topologyKey: "kubernetes.io/hostname"
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: ${global.ufs.secrets.imagePullSecrets}
+      restartPolicy: Always
+      securityContext:
+        fsGroup: 1001040001
+        runAsUser: 1001040001
+        runAsGroup: 1001040001
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccount: default
+      terminationGracePeriodSeconds: ${@config-fp-name1@.ose.deployment.spec.template.spec.terminationGracePeriodSeconds}
+      volumes:
+        - name: @config-fp-name1@-config-cm
+          configMap:
+            name: @config-fp-name1@-config-cm.${distrib.release.version}
+            defaultMode: 256
+        - name: client-certs-sberca-secret
+          secret:
+            secretName: client-certs-sberca.unver
+            defaultMode: 256
+        - name: tmpdir
+          emptyDir: {}
+        - name: trust-ca-certs-kv-secret
+          secret:
+            secretName: trust-ca-certs-kv.unver
+            defaultMode: 256
+        - name: ufsparams-config-volume
+          emptyDir: {}
+        - name: secrets-kv-volume
+          secret:
+            secretName: secret-kv.unver
+            defaultMode: 256
+      containers:
+        - name: @config-fp-name1@-${distrib.release.version}
+          image: ${registry}/@as-conf-item.lowercase@/@app-conf-item.lowercase@/@config-fp-name1@@${jenkins_env.fp_image_hash}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: CONF_ITEM_AS
+              value: {{ fpConfig.groupId }}
+            - name: CONF_ITEM_FP
+              value: {{ fpConfig.artifactId }}
+            - name: AUDIT_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: AUDIT_POD
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: ose.namespace
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: block.id
+              value: "{{ NODE_PATH | default('') }}"
+            - name: NODE_PATH
+              value: "{{ NODE_PATH | default('') }}"
+            - name: PLATFORM_RUNTIME_ENVIRONMENT
+              value: OPENSHIFT
+            - name: ufs-logger.masked.field.enabled
+              value: "true"
+            - name: ufs-logger.shouldReadKeystorePasswordFromFile
+              value: "true"
+            - name: ufs-logger.shouldReadTruststorePasswordFromFile
+              value: "true"
+            - name: ufs.sds.client.currentReplica
+              value: "{{ SHARD_ID + '.' + KONTUR_ID if SHARD_ID is defined and KONTUR_ID is defined else '' }}"
+            - name: ufs.tenant.code
+              value: "{{ TENANT_CODE }}"
+            - name: CBUL_SECRET_DIRECTORY
+              value: /etc/config/secrets/kv/
+            - name: CBUL_SECRET_TOKEN_FILE_NAME
+              value: cbul.dab2c.token
+            - name: CBUL_SECRET_CN_FILE_NAME
+              value: cbul.dab2c.cn
+            - name: CBUL_INSTALLATION_NAME
+              value: "{{ NODE_PATH | default('') }}"
+          envFrom:
+            - configMapRef:
+                name: @fpi-name@.all.conf.${distrib.release.version}
+            - configMapRef:
+                name: @config-fp-name1@.conf.${distrib.release.version}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.livenessProbe.failureThreshold}
+            httpGet:
+              path: /@server.context.path1@/environment/product
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.livenessProbe.initialDelaySeconds}
+            periodSeconds: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.livenessProbe.periodSeconds}
+            successThreshold: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.livenessProbe.successThreshold}
+            timeoutSeconds: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.livenessProbe.timeoutSeconds}
+          readinessProbe:
+            failureThreshold: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.readinessProbe.failureThreshold}
+            httpGet:
+              path: /@server.context.path1@/actuator/health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.readinessProbe.initialDelaySeconds}
+            periodSeconds: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.readinessProbe.periodSeconds}
+            successThreshold: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.readinessProbe.successThreshold}
+            timeoutSeconds: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.readinessProbe.timeoutSeconds}
+          resources:
+            limits:
+              cpu: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.resources.limits.cpu}
+              memory: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.resources.limits.memory}
+            requests:
+              cpu: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.resources.requests.cpu}
+              memory: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.resources.requests.memory}
+          securityContext:
+            readOnlyRootFilesystem: true
+            privileged: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+            allowPrivilegeEscalation: false
+            runAsUser: 1001040001
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+            - name: @config-fp-name1@-config-cm
+              mountPath: /tmp/ufsparams/config/
+            - name: client-certs-sberca-secret
+              mountPath: /etc/config/ssl/crt/
+            - name: tmpdir
+              mountPath: /tmp/
+            - name: trust-ca-certs-kv-secret
+              mountPath: /etc/config/ssl/ca/
+            - name: secrets-kv-volume
+              readOnly: true
+              mountPath: /etc/config/secrets/kv/

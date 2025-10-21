@@ -1,0 +1,48 @@
+server:
+  address: @server.host@
+  port: @server.port@
+  tomcat:
+    threads:
+      min-spare: 5
+      max: 20
+  kafka:
+    bootstrap-servers: "tcp://@kafka.host@:@kafka.port@"
+
+stand:
+  type: TEST
+
+cbul:
+  egress:
+    terminating: false
+
+spring:
+  autoconfigure.exclude: ru.sbrf.cbul.starter.CbulClientConfiguration
+
+CBUL_SECRET_USE_SUP: true
+
+ufs:
+  platform:
+    # СУП
+    config:
+      directory: "classpath:/mock/sup"
+      agent:
+        disabled: true
+
+  # Журналирование
+  logger:
+    client:
+      mode: FRONTEND_LOCAL
+      providerFileName: "/mock/logger/logger.properties"
+
+  # HotReload
+  hotreload:
+    enable: false
+
+  # Мониторинг
+  # См. также pom.xml с включением stubMode
+  monitoring:
+    client:
+      period: 20s
+    kafka:
+      enabled: false
+      ssl: false

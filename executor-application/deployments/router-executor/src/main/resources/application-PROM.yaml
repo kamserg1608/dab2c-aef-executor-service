@@ -1,0 +1,24 @@
+server:
+  # Максимальный размер заголовка HTTP (если не переопределять, то будет 8000)
+  max-http-header-size: 40000
+  port: 8080
+  tomcat:
+    threads:
+      min-spare: ${@config-fp-name1@.server.tomcat.min-spare-threads}
+      max: ${@config-fp-name1@.server.tomcat.max-threads}
+
+ufs:
+  platform:
+    config:
+      directory: /tmp/ufsparams-runtime/config
+      startupConfigDirectory: /tmp/ufsparams/config
+
+  # Журналирование
+  logger:
+    client:
+      mode: FRONTEND
+
+  # Мониторинг
+  monitoring:
+    kafka:
+      enabled: false

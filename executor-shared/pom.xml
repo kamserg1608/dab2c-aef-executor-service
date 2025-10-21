@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <parent>
+        <groupId>ru.sbrf.ufs.dab2c.core.executor</groupId>
+        <artifactId>executor</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>executor-shared</artifactId>
+    <name>executor-shared</name>
+    <modelVersion>4.0.0</modelVersion>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>test-utils</module>
+        <module>annotations</module>
+        <module>rest-object-mapper</module>
+        <module>system-env</module>
+        <module>cbul-integration</module>
+        <module>circuit-breaker</module>
+        <module>health-check</module>
+        <module>monitoring</module>
+        <module>logging</module>
+        <module>concurrent</module>
+        <module>commons</module>
+    </modules>
+
+</project>

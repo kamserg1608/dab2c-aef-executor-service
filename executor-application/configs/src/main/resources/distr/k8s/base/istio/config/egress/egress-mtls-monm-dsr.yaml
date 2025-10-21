@@ -1,0 +1,24 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: egressgateway-mtls-@fpi-name@-monm-unver
+spec:
+  exportTo:
+    - .
+  host: ${global.monitoring.store.host}
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+    portLevelSettings:
+      - port:
+          number: ${global.monitoring.store.port}
+        tls:
+          caCertificates: /etc/istio/egressgateway-ca-certs/root.crt
+          clientCertificate: /etc/istio/egressgateway-certs/tls.crt
+          mode: MUTUAL
+          privateKey: /etc/istio/egressgateway-certs/tls.key
+          sni: ${global.monitoring.store.host}
+  workloadSelector:
+    matchLabels:
+      app: istio-egressgateway-@fpi-name@-unver
+      istio: egressgateway-@fpi-name@-unver

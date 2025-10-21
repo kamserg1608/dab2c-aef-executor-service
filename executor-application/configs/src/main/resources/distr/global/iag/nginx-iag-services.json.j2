@@ -1,0 +1,32 @@
+{
+  "schema_version": "4.1",
+  "services": [
+    {
+      "subsystem": "ROUTER_EXECUTOR_JAVA_DAB2C",
+      "deploymentUnit": "@deploymentUnit1@",
+      "description": "ROUTER_EXECUTOR_JAVA_DAB2C Router executor",
+      "usedGateways": [
+        "IAG_MM"
+      ],
+      "healthcheck": {
+        "handler": "/healthcheck/service-healthcheck/",
+        "interval": 1000,
+        "rise": 1,
+        "fall": 3,
+        "timeout": 2000,
+        "enabled": false
+      },
+      "apiVersions": [
+        {
+          "version": "v1",
+          "locations": [
+            {
+              "url": "~^/(.*)$",
+              "proxyPass": "/$1"
+			}
+          ]
+        }
+      ]
+    }
+  ]
+}

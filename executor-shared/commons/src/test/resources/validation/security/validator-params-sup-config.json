@@ -1,0 +1,31 @@
+{
+  "version": "1.0",
+  "parameters": [
+    {
+      "name": "test.prefix.test3.allowed_subsystems.list",
+      "isList": false,
+      "roles": [],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "test4", "test5"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "test.prefix.test4.allowed_subsystems.list",
+      "isList": false,
+      "roles": [],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: egressgateway-mtls-@fpi-name@-unver
+spec:
+  selector:
+    istio: egressgateway-@fpi-name@-unver    # Селектор, который определяет каким gateway'ем будет обрабатываться этот конфиг;
+  servers:
+    - hosts:
+        - '*'
+      port:
+        name: http
+        number: ${@fpi-name@.ose.istio.egress.common.internal-port}
+        protocol: HTTP

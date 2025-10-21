@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>ru.sbrf.ufs.dab2c.core.executor</groupId>
+        <artifactId>executor-shared</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>circuit-breaker</artifactId>
+    <packaging>jar</packaging>
+    <version>${revision}</version>
+
+    <dependencies>
+        <!-- Spring context -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Платформенное Ядро: Окружение -->
+        <dependency>
+            <groupId>ru.sbrf.ufs.platform</groupId>
+            <artifactId>environment-spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- Журналирование -->
+        <dependency>
+            <groupId>ru.sbrf.ufs.platform</groupId>
+            <artifactId>logger-springboot-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>ru.sbrf.ufs.dab2c.core.executor</groupId>
+            <artifactId>test-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>ru.sbrf.ufs.dab2c.core.executor</groupId>
+            <artifactId>commons</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-circuitbreaker</artifactId>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>${project.basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+                <excludes>
+                    <exclude>**/*.zip</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>${project.basedir}/src/main/resources</directory>
+                <includes>
+                    <include>**/*.zip</include>
+                </includes>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+                <excludes>
+                    <exclude>**/*.zip</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <includes>
+                    <include>**/*.zip</include>
+                </includes>
+            </testResource>
+        </testResources>
+    </build>
+
+</project>
