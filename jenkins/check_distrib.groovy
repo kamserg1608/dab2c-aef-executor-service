@@ -33,7 +33,7 @@ void launchCheckDistrib(version) {
 
     triggerRemoteJob(
             abortTriggeredJob: true,
-            auth: CredentialsAuth(credentials: "cab-sa-dvo08125-just"),
+            auth: CredentialsAuth(credentials: "aef_dab2c_ift_cab-sa-dvo08817_ad_domain"),
             job: 'https://api.sbt-jenkins.sigma.sbrf.ru/marsh/job/dosug/job/lib-check/job/check_disrib',
             parameters: params.join("\n"),
             pollInterval: 30)

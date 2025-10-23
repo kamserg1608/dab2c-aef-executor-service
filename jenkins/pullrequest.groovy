@@ -60,7 +60,7 @@ void mavenw(String goal, String options, String jdk) {
  */
 void withPreparedEnv(String jdk, Closure closure) {
     withCredentials([usernamePassword(
-        credentialsId: 'cab-sa-dvo08125',
+        credentialsId: 'aef_dab2c_ift_cab-sa-dvo08817_ad_domain',
         usernameVariable: 'wrappedUser', passwordVariable: 'wrappedPassword'
     )]) {
         withEnv([
