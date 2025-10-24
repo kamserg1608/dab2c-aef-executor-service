@@ -37,10 +37,8 @@ sonar:
 
 ### Настройки Quality Gate Manager ###
 qgm:
-  # Репозиторий Quality Gate Manager
-  repository: "maven-distr"
-  # Идентификатор креда логин/пароль в Jenkins для аутентификации в QGM
-  creds: "CAB-SA-DVO40723"
+  repository: "maven-distr-dev"
+  creds: "aef_dab2c_ift_cab-sa-dvo08817_ad_domain"
 
 ### Репозитории, куда следует загрузить дистрибутив ###
 distribution:
@@ -92,7 +90,9 @@ docker:
   registry_address: "docker-dev.registry-ci.delta.sbrf.ru"
   additional_registries:
     - "registry-ci.delta.sbrf.ru"
-  nexus_url: "ci07909419/ci12008538"
+    - "redhat.registry-ci.delta.sbrf.ru"
+    - "docker-internal.registry-ci.delta.sbrf.ru"
+  nexus_url: "ci07909419/ci08689281"
   builder_token: "cab-sa-dvo08817_AD"
 
 extensions:
