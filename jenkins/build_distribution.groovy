@@ -31,7 +31,7 @@ def onDistrib(app, distr) {
 void mavenw(String goal, String options, String jdk) {
     withPreparedEnv(jdk) {
         configFileProvider([configFile(
-            fileId: 'dab2c_core_java_integration_service',
+            fileId: 'dab2c_core_java_executor_service',
             variable: 'MAVEN_SETTINGS_XML')]) {
             sh "./mvnw ${goal} -s $MAVEN_SETTINGS_XML $options"
         }
@@ -44,30 +44,17 @@ void mavenw(String goal, String options, String jdk) {
  * @param jdk Идентификатор JDK-инструмента в Jenkins
  */
 void withPreparedEnv(String jdk, Closure closure) {
-    def configuration = [
-        vaultUrl: 'https://t.secrets.delta.sbrf.ru',
-        vaultCredentialId: 'cab-sa-dvo09182_CI07909419_CI07684805',
-        vaultNamespace: 'CI07909419_CI07684805',
-        engineVersion: 1
-    ]
-    def vaultSecrets = [
-        [
-            path: 'CI07909419_CI07684805/AD/delta.sbrf.ru/creds/cab-sa-dvo09182',
-            secretValues: [
-                [envVar: 'wrappedUser', vaultKey: 'username'],
-                [envVar: 'wrappedPassword', vaultKey: 'current_password']
-            ]
-        ]
-    ]
-    withVault([configuration: configuration, vaultSecrets: vaultSecrets]) {
-        actualWrappedUser = "${wrappedUser}"
-        if (!actualWrappedUser.contains("@")) actualWrappedUser = "${actualWrappedUser}@delta.sbrf.ru"
+    withCredentials([usernamePassword(
+//       credentialsId: 'cab-sa-dvo08816_AD_Path',
+            credentialsId: 'aef_dab2c_ift_cab-sa-dvo08817_ad_domain',
+            usernameVariable: 'wrappedUser', passwordVariable: 'wrappedPassword'
+    )]) {
         withEnv([
-            // Указываем версию Java
-            "JAVA_HOME=${tool name: jdk, type: 'jdk'}",
-            // Проставляем параметры для аутентификации Maven Wrapper в Nexus 3
-            "MVNW_USERNAME=${actualWrappedUser}",
-            "MVNW_PASSWORD=${wrappedPassword}"
+                // Указываем версию Java
+                "JAVA_HOME=${tool name: jdk, type: 'jdk'}",
+                // Проставляем параметры для аутентификации Maven Wrapper в Nexus 3
+                "MVNW_USERNAME=${wrappedUser}",
+                "MVNW_PASSWORD=${wrappedPassword}"
         ]) {
             closure.call()
         }
