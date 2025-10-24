@@ -30,7 +30,7 @@ void reportBuildResult(version, purpose, status) {
     def ticketsInBuild = sh(script: '(cd ./tmp/config ; bash ./jenkins/tickets_list.sh)', returnStdout: true).trim()
 
     def data = [
-            'peer': '3f63725abb8e11ef',
+            'peer': '8eed4d76b0b811f0',
             'status': status,
             'text':
 """
