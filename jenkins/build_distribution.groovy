@@ -31,7 +31,7 @@ def onDistrib(app, distr) {
 void mavenw(String goal, String options, String jdk) {
     withPreparedEnv(jdk) {
         configFileProvider([configFile(
-            fileId: 'dab2c_core_java_executor_service',
+            fileId: 'dab2c_core_java_integration_service',
             variable: 'MAVEN_SETTINGS_XML')]) {
             sh "./mvnw ${goal} -s $MAVEN_SETTINGS_XML $options"
         }
@@ -65,7 +65,7 @@ String mavenwEvaluate(String projectProperty, String jdk) {
     String result = null;
     withPreparedEnv(jdk) {
         configFileProvider([configFile(
-            fileId: 'c609f550-1582-42d4-833b-5bfc3efcf535',
+            fileId: 'dab2c_core_java_integration_service',
             variable: 'MAVEN_SETTINGS_XML')]) {
             result = sh(returnStdout: true, script: "./mvnw help:evaluate -Dexpression=$projectProperty -q -DforceStdout -s $MAVEN_SETTINGS_XML")
         }
