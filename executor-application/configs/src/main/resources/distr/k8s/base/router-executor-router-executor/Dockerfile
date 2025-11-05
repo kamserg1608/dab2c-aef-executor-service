@@ -7,11 +7,11 @@ RUN dnf install -y openssl
 
 #region Копирование файлов из дистрибутива >>>
 RUN mkdir -p /var
-COPY conf/k8s/base/@config-fp-name1@/importCertificates.sh /var/
-COPY conf/k8s/base/@config-fp-name1@/waitingSecrets.sh /var/
-COPY conf/k8s/base/@config-fp-name1@/docker-entrypoint.sh /var/
-COPY bh/@deploymentUnit1@-main/*.jar /var/app/
-COPY bh/@deploymentUnit1@-dependencies/*.jar /var/app/dependencies/
+COPY conf/k8s/base/router-executor-router-executor/importCertificates.sh /var/
+COPY conf/k8s/base/router-executor-router-executor/waitingSecrets.sh /var/
+COPY conf/k8s/base/router-executor-router-executor/docker-entrypoint.sh /var/
+COPY bh/router_executor_java_dab2c_router_executor-main/*.jar /var/app/
+COPY bh/router_executor_java_dab2c_router_executor-dependencies/*.jar /var/app/dependencies/
 #endregion
 
 RUN chown -R spring:spring /var

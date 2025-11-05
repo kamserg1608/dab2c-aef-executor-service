@@ -1,7 +1,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
-  name: egressgateway-tcp-@fpi-name@-unver
+  name: egressgateway-tcp-router-executor-unver
 spec:
   exportTo:
     - .
@@ -11,6 +11,6 @@ spec:
   ports:
     # Порт, нужный всему набору Журналирование-Мониторинг-Аудит
     - name: tcp-kafka
-      number: ${@fpi-name@.ose.istio.egress.se.tcp.kafkaPort.number}
+      number: ${router-executor.ose.istio.egress.se.tcp.kafkaPort.number}
       protocol: TCP
   resolution: NONE

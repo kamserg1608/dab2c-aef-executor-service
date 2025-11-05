@@ -1,35 +1,35 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: egressgateway-@fpi-name@-unver
+  name: egressgateway-router-executor-unver
   labels:
-    app: istio-egressgateway-@fpi-name@-unver
-    istio: egressgateway-@fpi-name@-unver
-    maistra.io/owner: ${@fpi-name@.ose.istio.control-plane-project}
+    app: istio-egressgateway-router-executor-unver
+    istio: egressgateway-router-executor-unver
+    maistra.io/owner: ${router-executor.ose.istio.control-plane-project}
     release: istio
 spec:
   progressDeadlineSeconds: 600
-  replicas: ${@fpi-name@.ose.istio.egress.deployment.spec.replicas}
+  replicas: ${router-executor.ose.istio.egress.deployment.spec.replicas}
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: istio-egressgateway-@fpi-name@-unver
-      istio: egressgateway-@fpi-name@-unver
+      app: istio-egressgateway-router-executor-unver
+      istio: egressgateway-router-executor-unver
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: ${@fpi-name@.ose.istio.egress.deployment.spec.strategy.rollingUpdate.maxUnavailable}
-      maxSurge: ${@fpi-name@.ose.istio.egress.deployment.spec.strategy.rollingUpdate.maxSurge}
+      maxUnavailable: ${router-executor.ose.istio.egress.deployment.spec.strategy.rollingUpdate.maxUnavailable}
+      maxSurge: ${router-executor.ose.istio.egress.deployment.spec.strategy.rollingUpdate.maxSurge}
   template:
     metadata:
       annotations:
         sidecar.istio.io/inject: 'true'
         inject.istio.io/templates: gateway
       labels:
-        app: istio-egressgateway-@fpi-name@-unver
+        app: istio-egressgateway-router-executor-unver
         chart: gateways
         heritage: Tiller
-        istio: egressgateway-@fpi-name@-unver
+        istio: egressgateway-router-executor-unver
         release: istio
     spec:
       dnsPolicy: ClusterFirst
@@ -44,7 +44,7 @@ spec:
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
-      terminationGracePeriodSeconds: ${@fpi-name@.ose.istio.egress.deployment.spec.template.spec.terminationGracePeriodSeconds}
+      terminationGracePeriodSeconds: ${router-executor.ose.istio.egress.deployment.spec.template.spec.terminationGracePeriodSeconds}
       volumes:
         - name: config-volume
           configMap:
@@ -102,12 +102,12 @@ spec:
             - '--domain'
             - $(POD_NAMESPACE).svc.cluster.local
             - '--serviceCluster'
-            - istio-egressgateway-@fpi-name@-unver
+            - istio-egressgateway-router-executor-unver
             - '--drain-strategy=immediate'
           env:
             - name: CA_ADDR
               value: >-
-                ${@fpi-name@.ose.istio.control-plane-istiod-service}.${@fpi-name@.ose.istio.control-plane-project}.svc:15012
+                ${router-executor.ose.istio.control-plane-istiod-service}.${router-executor.ose.istio.control-plane-project}.svc:15012
             - name: HOST_IP
               valueFrom:
                 fieldRef:
@@ -124,11 +124,11 @@ spec:
               value: cluster.local
             - name: ISTIO_META_OWNER
               value: >-
-                kubernetes://apis/apps/v1/namespaces/${@fpi-name@.ose.istio.control-plane-project}/deployments/egressgateway-@fpi-name@-unver
+                kubernetes://apis/apps/v1/namespaces/${router-executor.ose.istio.control-plane-project}/deployments/egressgateway-router-executor-unver
             - name: ISTIO_META_UNPRIVILEGED_POD
               value: 'true'
             - name: ISTIO_META_WORKLOAD_NAME
-              value: egressgateway-@fpi-name@-unver
+              value: egressgateway-router-executor-unver
             - name: JWT_POLICY
               value: third-party-jwt
             - name: NODE_NAME
@@ -160,7 +160,7 @@ spec:
               containerPort: 15021
               protocol: TCP
             - name: http
-              containerPort: ${@fpi-name@.ose.istio.egress.common.internal-port}
+              containerPort: ${router-executor.ose.istio.egress.common.internal-port}
               protocol: TCP
             - name: http-monitoring
               containerPort: ${global.monitoring.store.port}
@@ -177,11 +177,11 @@ spec:
             failureThreshold: 30
           resources:
             limits:
-              cpu: ${@fpi-name@.ose.istio.egress.deployment.spec.template.spec.containers.resources.limits.cpu}
-              memory: ${@fpi-name@.ose.istio.egress.deployment.spec.template.spec.containers.resources.limits.memory}
+              cpu: ${router-executor.ose.istio.egress.deployment.spec.template.spec.containers.resources.limits.cpu}
+              memory: ${router-executor.ose.istio.egress.deployment.spec.template.spec.containers.resources.limits.memory}
             requests:
-              cpu: ${@fpi-name@.ose.istio.egress.deployment.spec.template.spec.containers.resources.requests.cpu}
-              memory: ${@fpi-name@.ose.istio.egress.deployment.spec.template.spec.containers.resources.requests.memory}
+              cpu: ${router-executor.ose.istio.egress.deployment.spec.template.spec.containers.resources.requests.cpu}
+              memory: ${router-executor.ose.istio.egress.deployment.spec.template.spec.containers.resources.requests.memory}
           securityContext:
             capabilities:
               drop:
@@ -228,5 +228,5 @@ spec:
                       - key: app
                         operator: In
                         values:
-                          - istio-egressgateway-@fpi-name@-unver
+                          - istio-egressgateway-router-executor-unver
                 topologyKey: "kubernetes.io/hostname"

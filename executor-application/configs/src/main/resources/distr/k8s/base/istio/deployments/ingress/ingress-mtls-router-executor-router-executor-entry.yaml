@@ -7,30 +7,30 @@ metadata:
     nginx.ingress.kubernetes.io/load-balance: 'round_robin'
     nginx.ingress.kubernetes.io/proxy-read-timeout: '180'
     nginx.ingress.kubernetes.io/rewrite-target: /
-    ufs.sberbank.ru/context-path: /@server.context.path1@
-    ufs.sberbank.ru/healthcheckHandler: /@server.context.path1@/healthcheck
-    ufs.sberbank.ru/service-id: @subsystemCode@:@deploymentUnit1@:@server.context.version@:${jenkins_env.fp_artifact_version}
+    ufs.sberbank.ru/context-path: /dab2c-router-executor/v1
+    ufs.sberbank.ru/healthcheckHandler: /dab2c-router-executor/v1/healthcheck
+    ufs.sberbank.ru/service-id: ROUTER_EXECUTOR_JAVA_DAB2C:router_executor_java_dab2c_router_executor:v1:${jenkins_env.fp_artifact_version}
     ufs.sberbank.ru/weight: "100"
     ufs.sberbank.ru/quota: "3200"
-  name: ingressgateway-mtls-@config-fp-name1@-unver
+  name: ingressgateway-mtls-router-executor-router-executor-unver
   labels:
-    app: istio-ingressgateway-@fpi-name@-unver
+    app: istio-ingressgateway-router-executor-unver
     blockId: "{{ NODE_PATH | default('') }}"
     chart: gateways
     heritage: Tiller
-    istio: ingressgateway-@fpi-name@-unver
+    istio: ingressgateway-router-executor-unver
     release: istio
     sectorId: {{ TENANT_CODE }}
 spec:
   ingressClassName: nginx
   rules:
-    - host: ${@fpi-name@.ose.istio.ingress.route.spec.host.@config-fp-name1@.appFQDN}
+    - host: ${router-executor.ose.istio.ingress.route.spec.host.router-executor-router-executor.appFQDN}
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: ingressgateway-@fpi-name@-unver
+                name: ingressgateway-router-executor-unver
                 port:
                   name: https-11443

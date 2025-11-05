@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: istio-basic-unver
   labels:
-    maistra.io/owner: ${@fpi-name@.ose.istio.control-plane-project}
+    maistra.io/owner: ${router-executor.ose.istio.control-plane-project}
     release: istio
 data:
   mesh: |-
@@ -14,7 +14,7 @@ data:
       concurrency: 2
       connectTimeout: 10s
       configPath: ./etc/istio/proxy
-      discoveryAddress: ${@fpi-name@.ose.istio.control-plane-istiod-service}.${@fpi-name@.ose.istio.control-plane-project}.svc:15012
+      discoveryAddress: ${router-executor.ose.istio.control-plane-istiod-service}.${router-executor.ose.istio.control-plane-project}.svc:15012
       drainDuration: 45s
       parentShutdownDuration: 1m0s
       proxyAdminPort: 15000
@@ -30,7 +30,7 @@ data:
           sni: null
           subjectAltNames: []
         zipkin:
-          address: jaeger-collector.${@fpi-name@.ose.istio.control-plane-project}.svc:9411
+          address: jaeger-collector.${router-executor.ose.istio.control-plane-project}.svc:9411
     disableMixerHttpReports: true
     disablePolicyChecks: true
     enableAutoMtls: true
@@ -46,7 +46,7 @@ data:
     protocolDetectionTimeout: 5000ms
     reportBatchMaxEntries: 100
     reportBatchMaxTime: 1s
-    rootNamespace: ${@fpi-name@.ose.istio.control-plane-project}
+    rootNamespace: ${router-executor.ose.istio.control-plane-project}
     sdsUdsPath: unix:/etc/istio/proxy/SDS
     trustDomain: cluster.local
     trustDomainAliases: null

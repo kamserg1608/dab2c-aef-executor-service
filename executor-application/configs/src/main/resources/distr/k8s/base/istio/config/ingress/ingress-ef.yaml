@@ -1,11 +1,11 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: ingressgateway-@fpi-name@-unver
+  name: ingressgateway-router-executor-unver
 spec:
   workloadSelector:
     labels:
-      app: istio-ingressgateway-@fpi-name@-unver
+      app: istio-ingressgateway-router-executor-unver
   configPatches:
     - applyTo: HTTP_FILTER
       match:
@@ -30,7 +30,7 @@ spec:
                         rules:
                           - header:
                               name: ':path'
-                              prefix_match: /@server.context.path1@/
+                              prefix_match: /dab2c-router-executor/v1/
                           - header:
                               name: ':path'
                               prefix_match: /@server.context.path2@/
@@ -48,4 +48,4 @@ spec:
                               safe_regex_match:
                                 google_re2:
                                   max_program_size: 200
-                                regex: ${@fpi-name@.ose.istio.ingress.envoy_filter.regex_match.client.cn}
+                                regex: ${router-executor.ose.istio.ingress.envoy_filter.regex_match.client.cn}

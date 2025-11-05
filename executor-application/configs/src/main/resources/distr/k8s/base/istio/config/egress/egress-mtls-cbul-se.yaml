@@ -1,7 +1,7 @@
 kind: ServiceEntry
 apiVersion: networking.istio.io/v1alpha3
 metadata:
-  name: egressgateway-mtls-cbul-@fpi-name@-unver
+  name: egressgateway-mtls-cbul-router-executor-unver
 spec:
   exportTo:
     - .

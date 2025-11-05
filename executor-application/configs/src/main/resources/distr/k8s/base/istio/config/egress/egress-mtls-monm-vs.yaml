@@ -1,12 +1,12 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: egressgateway-mtls-@fpi-name@-monm-unver
+  name: egressgateway-mtls-router-executor-monm-unver
 spec:
   exportTo:
     - .
   gateways:
-    - egressgateway-mtls-@fpi-name@-monm-unver
+    - egressgateway-mtls-router-executor-monm-unver
     - mesh
   hosts:
     - ${global.monitoring.store.host}
@@ -17,7 +17,7 @@ spec:
           port: ${global.monitoring.store.port}
       route:
         - destination:
-            host: egressgateway-@fpi-name@-unver
+            host: egressgateway-router-executor-unver
             port:
               number: ${global.monitoring.store.port}
           weight: 100
@@ -25,7 +25,7 @@ spec:
         attempts: 0
     - match:
         - gateways:
-            - egressgateway-mtls-@fpi-name@-monm-unver
+            - egressgateway-mtls-router-executor-monm-unver
           port: ${global.monitoring.store.port}
       route:
         - destination:

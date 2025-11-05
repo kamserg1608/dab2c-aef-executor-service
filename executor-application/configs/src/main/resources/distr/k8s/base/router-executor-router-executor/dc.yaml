@@ -2,24 +2,24 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: @config-fp-name1@
-    platformVersion: @ufs.release@
-    platformv.sber.ru/releaseVersion: @ufs.release@
-    platformv.sber.ru/config-fp-name: @config-fp-name1@
-    platformv.sber.ru/fullReleaseVersion: @schemas.version@
-  name: @config-fp-name1@-${distrib.release.version}
+    app: router-executor-router-executor
+    platformVersion: R4.2
+    platformv.sber.ru/releaseVersion: R4.2
+    platformv.sber.ru/config-fp-name: router-executor-router-executor
+    platformv.sber.ru/fullReleaseVersion: R4.2.4
+  name: router-executor-router-executor-${distrib.release.version}
 spec:
-  replicas: ${@config-fp-name1@.ose.deployment.spec.replicas}
+  replicas: ${router-executor-router-executor.ose.deployment.spec.replicas}
   revisionHistoryLimit: 2
   selector:
     matchLabels:
-      platformv.sber.ru/config-fp-name: @config-fp-name1@
+      platformv.sber.ru/config-fp-name: router-executor-router-executor
   strategy:
     activeDeadlineSeconds: 21600
     resources: {}
     rollingUpdate:
-      maxSurge: ${@config-fp-name1@.ose.deployment.spec.strategy.rollingParams.maxSurge}
-      maxUnavailable: ${@config-fp-name1@.ose.deployment.spec.strategy.rollingParams.maxUnavailable}
+      maxSurge: ${router-executor-router-executor.ose.deployment.spec.strategy.rollingParams.maxSurge}
+      maxUnavailable: ${router-executor-router-executor.ose.deployment.spec.strategy.rollingParams.maxUnavailable}
     type: RollingUpdate
   triggers:
     - type: ConfigChange
@@ -28,21 +28,21 @@ spec:
       labels:
         distrib-version: ${jenkins_env.fp_artifact_version}
         jenkinsDeployId: ${jenkinsDeployId}
-        deploymentconfig: @config-fp-name1@-${distrib.release.version}
-        platformVersion: @ufs.release@
-        platformv.sber.ru/releaseVersion: @ufs.release@
-        platformv.sber.ru/config-fp-name: @config-fp-name1@
-        platformv.sber.ru/fullReleaseVersion: @schemas.version@
+        deploymentconfig: router-executor-router-executor-${distrib.release.version}
+        platformVersion: R4.2
+        platformv.sber.ru/releaseVersion: R4.2
+        platformv.sber.ru/config-fp-name: router-executor-router-executor
+        platformv.sber.ru/fullReleaseVersion: R4.2.4
       annotations:
         proxy.istio.io/config: |
           drainDuration: 45s
           holdApplicationUntilProxyStarts: true
           terminationDrainDuration: 45s
         sidecar.istio.io/inject: "true"
-        sidecar.istio.io/proxyCPU: ${@config-fp-name1@.ose.deployment.metadata.annotations.sidecar.istio.io.proxyCPU}
-        sidecar.istio.io/proxyMemory: ${@config-fp-name1@.ose.deployment.metadata.annotations.sidecar.istio.io.proxyMemory}
-        sidecar.istio.io/proxyCPULimit: ${@config-fp-name1@.ose.deployment.metadata.annotations.sidecar.istio.io.proxyCPULimit}
-        sidecar.istio.io/proxyMemoryLimit: ${@config-fp-name1@.ose.deployment.metadata.annotations.sidecar.istio.io.proxyMemoryLimit}
+        sidecar.istio.io/proxyCPU: ${router-executor-router-executor.ose.deployment.metadata.annotations.sidecar.istio.io.proxyCPU}
+        sidecar.istio.io/proxyMemory: ${router-executor-router-executor.ose.deployment.metadata.annotations.sidecar.istio.io.proxyMemory}
+        sidecar.istio.io/proxyCPULimit: ${router-executor-router-executor.ose.deployment.metadata.annotations.sidecar.istio.io.proxyCPULimit}
+        sidecar.istio.io/proxyMemoryLimit: ${router-executor-router-executor.ose.deployment.metadata.annotations.sidecar.istio.io.proxyMemoryLimit}
     spec:
       affinity:
         podAntiAffinity:
@@ -54,7 +54,7 @@ spec:
                     - key: platformv.sber.ru/config-fp-name
                       operator: In
                       values:
-                        - @config-fp-name1@
+                        - router-executor-router-executor
                 topologyKey: "kubernetes.io/hostname"
       dnsPolicy: ClusterFirst
       imagePullSecrets:
@@ -68,11 +68,11 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       serviceAccount: default
-      terminationGracePeriodSeconds: ${@config-fp-name1@.ose.deployment.spec.template.spec.terminationGracePeriodSeconds}
+      terminationGracePeriodSeconds: ${router-executor-router-executor.ose.deployment.spec.template.spec.terminationGracePeriodSeconds}
       volumes:
-        - name: @config-fp-name1@-config-cm
+        - name: router-executor-router-executor-config-cm
           configMap:
-            name: @config-fp-name1@-config-cm.${distrib.release.version}
+            name: router-executor-router-executor-config-cm.${distrib.release.version}
             defaultMode: 256
         - name: client-certs-sberca-secret
           secret:
@@ -91,8 +91,8 @@ spec:
             secretName: secret-kv.unver
             defaultMode: 256
       containers:
-        - name: @config-fp-name1@-${distrib.release.version}
-          image: ${registry}/@as-conf-item.lowercase@/@app-conf-item.lowercase@/@config-fp-name1@@${jenkins_env.fp_image_hash}
+        - name: router-executor-router-executor-${distrib.release.version}
+          image: ${registry}/ci07909419/ci12008538/router-executor-router-executor@${jenkins_env.fp_image_hash}
           imagePullPolicy: IfNotPresent
           env:
             - name: CONF_ITEM_AS
@@ -139,39 +139,39 @@ spec:
               value: "{{ NODE_PATH | default('') }}"
           envFrom:
             - configMapRef:
-                name: @fpi-name@.all.conf.${distrib.release.version}
+                name: router-executor.all.conf.${distrib.release.version}
             - configMapRef:
-                name: @config-fp-name1@.conf.${distrib.release.version}
+                name: router-executor-router-executor.conf.${distrib.release.version}
           ports:
             - containerPort: 8080
               protocol: TCP
           livenessProbe:
-            failureThreshold: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.livenessProbe.failureThreshold}
+            failureThreshold: ${router-executor-router-executor.ose.deployment.spec.template.spec.containers.router-executor-router-executor.livenessProbe.failureThreshold}
             httpGet:
-              path: /@server.context.path1@/environment/product
+              path: /dab2c-router-executor/v1/environment/product
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.livenessProbe.initialDelaySeconds}
-            periodSeconds: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.livenessProbe.periodSeconds}
-            successThreshold: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.livenessProbe.successThreshold}
-            timeoutSeconds: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.livenessProbe.timeoutSeconds}
+            initialDelaySeconds: ${router-executor-router-executor.ose.deployment.spec.template.spec.containers.router-executor-router-executor.livenessProbe.initialDelaySeconds}
+            periodSeconds: ${router-executor-router-executor.ose.deployment.spec.template.spec.containers.router-executor-router-executor.livenessProbe.periodSeconds}
+            successThreshold: ${router-executor-router-executor.ose.deployment.spec.template.spec.containers.router-executor-router-executor.livenessProbe.successThreshold}
+            timeoutSeconds: ${router-executor-router-executor.ose.deployment.spec.template.spec.containers.router-executor-router-executor.livenessProbe.timeoutSeconds}
           readinessProbe:
-            failureThreshold: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.readinessProbe.failureThreshold}
+            failureThreshold: ${router-executor-router-executor.ose.deployment.spec.template.spec.containers.router-executor-router-executor.readinessProbe.failureThreshold}
             httpGet:
-              path: /@server.context.path1@/actuator/health
+              path: /dab2c-router-executor/v1/actuator/health
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.readinessProbe.initialDelaySeconds}
-            periodSeconds: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.readinessProbe.periodSeconds}
-            successThreshold: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.readinessProbe.successThreshold}
-            timeoutSeconds: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.readinessProbe.timeoutSeconds}
+            initialDelaySeconds: ${router-executor-router-executor.ose.deployment.spec.template.spec.containers.router-executor-router-executor.readinessProbe.initialDelaySeconds}
+            periodSeconds: ${router-executor-router-executor.ose.deployment.spec.template.spec.containers.router-executor-router-executor.readinessProbe.periodSeconds}
+            successThreshold: ${router-executor-router-executor.ose.deployment.spec.template.spec.containers.router-executor-router-executor.readinessProbe.successThreshold}
+            timeoutSeconds: ${router-executor-router-executor.ose.deployment.spec.template.spec.containers.router-executor-router-executor.readinessProbe.timeoutSeconds}
           resources:
             limits:
-              cpu: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.resources.limits.cpu}
-              memory: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.resources.limits.memory}
+              cpu: ${router-executor-router-executor.ose.deployment.spec.template.spec.containers.router-executor-router-executor.resources.limits.cpu}
+              memory: ${router-executor-router-executor.ose.deployment.spec.template.spec.containers.router-executor-router-executor.resources.limits.memory}
             requests:
-              cpu: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.resources.requests.cpu}
-              memory: ${@config-fp-name1@.ose.deployment.spec.template.spec.containers.@config-fp-name1@.resources.requests.memory}
+              cpu: ${router-executor-router-executor.ose.deployment.spec.template.spec.containers.router-executor-router-executor.resources.requests.cpu}
+              memory: ${router-executor-router-executor.ose.deployment.spec.template.spec.containers.router-executor-router-executor.resources.requests.memory}
           securityContext:
             readOnlyRootFilesystem: true
             privileged: false
@@ -185,7 +185,7 @@ spec:
             runAsUser: 1001040001
           terminationMessagePath: /dev/termination-log
           volumeMounts:
-            - name: @config-fp-name1@-config-cm
+            - name: router-executor-router-executor-config-cm
               mountPath: /tmp/ufsparams/config/
             - name: client-certs-sberca-secret
               mountPath: /etc/config/ssl/crt/

@@ -49,7 +49,7 @@ TRUSTSTORE_OPTS="-Djavax.net.ssl.trustStore=$TRUST_STORE_PATH -Dpv.javax.net.ssl
 #region Запуск приложения
 export JAVA_OPTS="$JAVA_OPTS -Djava.net.preferIPv4Addresses=true -Djava.net.preferIPv4Stack=true -Dfile.encoding=UTF-8 -Xverify:none"
 
-ENHANCED_JAVA_OPTS=`env | grep '^@config-fp-name1@.ose.configmap.javaArguments=' | cut -d '=' -f1 --complement`
+ENHANCED_JAVA_OPTS=`env | grep '^router-executor-router-executor.ose.configmap.javaArguments=' | cut -d '=' -f1 --complement`
 export JAVA_OPTS="$JAVA_OPTS ${ENHANCED_JAVA_OPTS}"
 
 

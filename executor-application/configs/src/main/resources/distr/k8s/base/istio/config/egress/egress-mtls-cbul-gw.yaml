@@ -1,10 +1,10 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: egressgateway-mtls-cbul-@fpi-name@-unver
+  name: egressgateway-mtls-cbul-router-executor-unver
 spec:
   selector:
-    istio: egressgateway-@fpi-name@-unver
+    istio: egressgateway-router-executor-unver
   servers:
     - hosts:
         - '${global.platform.ufs.cbul.hosts.mask}'

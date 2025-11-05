@@ -1,7 +1,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
-  name: egressgateway-mtls-@fpi-name@-monm-unver
+  name: egressgateway-mtls-router-executor-monm-unver
 spec:
   exportTo:
     - .

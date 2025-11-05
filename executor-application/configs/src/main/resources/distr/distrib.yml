@@ -1,14 +1,14 @@
 applications:
-  "@config-fp-name1@":
-    config_fp_name: "@config-fp-name1@"
-    deploymentUnit: "@deploymentUnit1@"
-    sup2configFile: "@deploymentUnit1@.json"
+  "router-executor-router-executor":
+    config_fp_name: "router-executor-router-executor"
+    deploymentUnit: "router_executor_java_dab2c_router_executor"
+    sup2configFile: "router_executor_java_dab2c_router_executor.json"
     deploy_group: "dmgr_1"
 
 release:
   version: "unver"
 
-schemasVersion: "@schemas.version@"
+schemasVersion: "R4.2.4"
 
 pipeline-extras:
   deploy-common-secrets: false

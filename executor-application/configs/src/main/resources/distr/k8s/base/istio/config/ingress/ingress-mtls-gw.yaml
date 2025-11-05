@@ -1,13 +1,13 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: ingressgateway-mtls-@fpi-name@-unver
+  name: ingressgateway-mtls-router-executor-unver
 spec:
   selector:
-    istio: ingressgateway-@fpi-name@-unver
+    istio: ingressgateway-router-executor-unver
   servers:
     - hosts:
-        - ${@fpi-name@.ose.istio.ingress.route.spec.host.@config-fp-name1@.appFQDN}
+        - ${router-executor.ose.istio.ingress.route.spec.host.router-executor-router-executor.appFQDN}
       port:
         name: https
         number: 11443

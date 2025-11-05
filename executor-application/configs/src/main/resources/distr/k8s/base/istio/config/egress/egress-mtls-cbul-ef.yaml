@@ -1,7 +1,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: egressgateway-mtls-cbul-@fpi-name@-unver
+  name: egressgateway-mtls-cbul-router-executor-unver
 spec:
   configPatches:
     - applyTo: CLUSTER
@@ -98,4 +98,4 @@ spec:
           name: dynamic_http_listener
   workloadSelector:
     labels:
-      app: istio-egressgateway-@fpi-name@-unver
+      app: istio-egressgateway-router-executor-unver

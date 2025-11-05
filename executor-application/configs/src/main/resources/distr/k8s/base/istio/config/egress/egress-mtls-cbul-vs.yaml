@@ -1,13 +1,13 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: egressgateway-http-cbul-vs-@fpi-name@-unver
+  name: egressgateway-http-cbul-vs-router-executor-unver
 spec:
   hosts:
     - '${global.platform.ufs.cbul.hosts.mask}'
   gateways:
     - mesh
-    - egressgateway-mtls-cbul-@fpi-name@-unver
+    - egressgateway-mtls-cbul-router-executor-unver
   http:
     - match:
         - gateways:
@@ -15,7 +15,7 @@ spec:
           port: 8280
       route:
         - destination:
-            host: egressgateway-@fpi-name@-unver
+            host: egressgateway-router-executor-unver
             port:
               number: 8380
       retries:

@@ -27,7 +27,7 @@
   "services": [
     {
       "subsystem": "ROUTER_EXECUTOR_JAVA_DAB2C",
-      "deploymentUnit": "@deploymentUnit1@",
+      "deploymentUnit": "router_executor_java_dab2c_router_executor",
       "description": "ROUTER_EXECUTOR_JAVA_DAB2C Router-executor",
       "usedGateways": ["IAG_MM"],
       "apiVersions": [
@@ -36,7 +36,7 @@
           "nodeGroups": [
            {
               "groupName": "R4.2",
-              {{ getOSE(datacenters, '@fpi-name@.ose.istio.ingress.route.spec.host.@config-fp-name1@.appFQDN', '443', '@config-fp-name1@.ose.deployment.spec.replicas') }}
+              {{ getOSE(datacenters, 'router-executor.ose.istio.ingress.route.spec.host.router-executor-router-executor.appFQDN', '443', 'router-executor-router-executor.ose.deployment.spec.replicas') }}
            }
           ]
         }
