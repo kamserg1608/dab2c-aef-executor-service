@@ -8,7 +8,6 @@ spec:
   servers:
     - hosts:
         - ${router-executor.ose.istio.ingress.route.spec.host.router-executor-router-executor.appFQDN}
-        - ${router-executor.ose.istio.ingress.route.spec.host.@config-fp-name2@.appFQDN}
       port:
         name: https
         number: 11443

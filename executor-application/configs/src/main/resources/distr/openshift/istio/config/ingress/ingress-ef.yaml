@@ -31,9 +31,6 @@ spec:
                           - header:
                               name: ':path'
                               prefix_match: /dab2c-router-executor/v1
-                          - header:
-                              name: ':path'
-                              prefix_match: /@server.context.path2@
                   principals:
                     - or_ids:
                         ids:
