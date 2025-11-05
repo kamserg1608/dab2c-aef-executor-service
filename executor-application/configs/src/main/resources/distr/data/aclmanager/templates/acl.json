@@ -4,11 +4,6 @@
   "acl": [
     {
       "bootstrap.servers": "${global.platform.inner.kafka.bootstrap.servers}",
-      "topics": "${techbreak.notification.kafkaTopicName}",
-      "operations": ["CONSUME"]
-    },
-    {
-      "bootstrap.servers": "${global.platform.inner.kafka.bootstrap.servers}",
       "topics": "lnse-reset-dictionary-cache.001.{{ INNER_ZONE }}",
       "operations": ["CONSUME"]
     },
