@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: ingressgateway-mtls-router-executor-unver
+spec:
+  selector:
+    istio: ingressgateway-router-executor-unver
+  servers:
+    - hosts:
+        - ${router-executor.ose.istio.ingress.route.spec.host.router-executor-router-executor.appFQDN}
+        - ${router-executor.ose.istio.ingress.route.spec.host.@config-fp-name2@.appFQDN}
+      port:
+        name: https
+        number: 11443
+        protocol: HTTPS
+      tls:
+        caCertificates: /etc/istio/ingressgateway-ca-certs/root.crt
+        mode: MUTUAL
+        privateKey: /etc/istio/ingressgateway-certs/tls.key
+        serverCertificate: /etc/istio/ingressgateway-certs/tls.crt

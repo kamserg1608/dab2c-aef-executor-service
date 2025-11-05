@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: ingressgateway-mtls-router-executor-router-executor-unver
+spec:
+  exportTo:
+    - .
+  gateways:
+    - ingressgateway-mtls-router-executor-unver
+  hosts:
+    - ${router-executor.ose.istio.ingress.route.spec.host.router-executor-router-executor.appFQDN}
+  http:
+    - match:
+        - uri:
+            prefix: /dab2c-router-executor/v1
+      route:
+        - destination:
+            host: router-executor-router-executor-${distrib.release.version}
+            port:
+              number: 8080

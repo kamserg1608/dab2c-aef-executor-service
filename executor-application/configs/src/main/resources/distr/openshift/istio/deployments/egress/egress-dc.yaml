@@ -1,0 +1,221 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: egressgateway-router-executor-unver
+  labels:
+    app: istio-egressgateway-router-executor-unver
+    istio: egressgateway-router-executor-unver
+    maistra.io/owner: ${router-executor.ose.istio.control-plane-project}
+    release: istio
+spec:
+  progressDeadlineSeconds: 600
+  replicas: ${router-executor.ose.istio.egress.deployment.spec.replicas}
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: istio-egressgateway-router-executor-unver
+      istio: egressgateway-router-executor-unver
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: ${router-executor.ose.istio.egress.deployment.spec.strategy.rollingUpdate.maxUnavailable}
+      maxSurge: ${router-executor.ose.istio.egress.deployment.spec.strategy.rollingUpdate.maxSurge}
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: 'true'
+        inject.istio.io/templates: gateway
+      creationTimestamp: null
+      labels:
+        app: istio-egressgateway-router-executor-unver
+        chart: gateways
+        heritage: Tiller
+        istio: egressgateway-router-executor-unver
+        release: istio
+    spec:
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: ${global.ufs.secrets.imagePullSecrets}
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        runAsNonRoot: true
+      terminationGracePeriodSeconds: ${router-executor.ose.istio.egress.deployment.spec.template.spec.terminationGracePeriodSeconds}
+      volumes:
+        - name: egressgateway-certs
+          secret:
+            secretName: client-certs-sberca.unver
+            defaultMode: 256
+        - name: egressgateway-ca-certs
+          secret:
+            secretName: trust-ca-certs-kv.unver
+            defaultMode: 256
+        - name: istio-data
+          emptyDir: {}
+        - name: istio-envoy
+          emptyDir: {}
+        - name: istio-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  audience: istio-ca
+                  expirationSeconds: 3600
+                  path: istio-token
+            defaultMode: 256
+        - name: istiod-ca-cert
+          configMap:
+            name: istio-ca-root-cert
+            defaultMode: 256
+        - name: logsshare
+          emptyDir: {}
+        - name: podinfo
+          downwardAPI:
+            items:
+              - path: labels
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.labels
+              - path: annotations
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations
+            defaultMode: 256
+        - name: workload-socket
+          emptyDir: {}
+      containers:
+        - name: istio-proxy
+          image: auto
+          imagePullPolicy: IfNotPresent
+          args:
+            - proxy
+            - router
+            - '--proxyLogFormat={"level":"%l","time":"%Y-%m-%dT%T.%fZ","scope":"envoy%n","msg":"%j"}'
+            - '--log_target=stdout'
+            - '--domain'
+            - $(POD_NAMESPACE).svc.cluster.local
+            - '--serviceCluster'
+            - istio-egressgateway-router-executor-unver
+            - '--drain-strategy=immediate'
+          env:
+            - name: CA_ADDR
+              value: >-
+                ${router-executor.ose.istio.control-plane-istiod-service}.${router-executor.ose.istio.control-plane-project}.svc:15012
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
+            - name: INSTANCE_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: ISTIO_META_CLUSTER_ID
+              value: Kubernetes
+            - name: ISTIO_META_MESH_ID
+              value: cluster.local
+            - name: ISTIO_META_OWNER
+              value: >-
+                kubernetes://apis/apps/v1/namespaces/${router-executor.ose.istio.control-plane-project}/deployments/egressgateway-router-executor-unver
+            - name: ISTIO_META_UNPRIVILEGED_POD
+              value: 'true'
+            - name: ISTIO_META_WORKLOAD_NAME
+              value: egressgateway-router-executor-unver
+            - name: JWT_POLICY
+              value: third-party-jwt
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: PILOT_CERT_PROVIDER
+              value: istiod
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.serviceAccountName
+            - name: TRUST_DOMAIN
+              value: cluster.local
+          ports:
+            - name: status-port
+              containerPort: 15021
+              protocol: TCP
+            - name: http
+              containerPort: ${router-executor.ose.istio.egress.common.internal-port}
+              protocol: TCP
+            - name: http-monitoring
+              containerPort: ${global.monitoring.store.port}
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /healthz/ready
+              port: 15021
+              scheme: HTTP
+            initialDelaySeconds: 3
+            timeoutSeconds: 1
+            periodSeconds: 2
+            successThreshold: 1
+            failureThreshold: 30
+          resources:
+            limits:
+              cpu: ${router-executor.ose.istio.egress.deployment.spec.template.spec.containers.resources.limits.cpu}
+              memory: ${router-executor.ose.istio.egress.deployment.spec.template.spec.containers.resources.limits.memory}
+            requests:
+              cpu: ${router-executor.ose.istio.egress.deployment.spec.template.spec.containers.resources.requests.cpu}
+              memory: ${router-executor.ose.istio.egress.deployment.spec.template.spec.containers.resources.requests.memory}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - name: egressgateway-certs
+              readOnly: true
+              mountPath: /etc/istio/egressgateway-certs
+            - name: egressgateway-ca-certs
+              readOnly: true
+              mountPath: /etc/istio/egressgateway-ca-certs
+            - name: istio-data
+              mountPath: /var/lib/istio/data
+            - name: istio-envoy
+              mountPath: /etc/istio/proxy
+            - name: istio-token
+              readOnly: true
+              mountPath: /var/run/secrets/tokens
+            - name: istiod-ca-cert
+              readOnly: true
+              mountPath: /var/run/secrets/istio
+            - name: podinfo
+              readOnly: true
+              mountPath: /etc/istio/pod
+            - name: workload-socket
+              mountPath: /var/run/secrets/workload-spiffe-uds
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - istio-egressgateway-router-executor-unver
+                topologyKey: 'kubernetes.io/hostname'
+      automountServiceAccountToken: false

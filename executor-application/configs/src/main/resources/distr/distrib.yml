@@ -3,26 +3,23 @@ applications:
     config_fp_name: "router-executor-router-executor"
     deploymentUnit: "router_executor_java_dab2c_router_executor"
     sup2configFile: "router_executor_java_dab2c_router_executor.json"
-    deploy_group: "dmgr_1"
 
 release:
   version: "unver"
 
-schemasVersion: "R4.2.4"
+apiVersion: 1.0.0
+
+schemasVersion: "R4.3.5"
 
 pipeline-extras:
+  deploy-common-configmaps: false
   deploy-common-secrets: false
-
-secrets_vars: [
-    "ssl.ose.istio.keyStore.egress.password",
-    "ssl.ose.istio.keyStore.ingress.password",
-    "ssl.ose.keyStore.mq.password"
-  ]
+  filter-istio-se: false
+  filter-istio-vs: false
 
 playbooks_default:
   "default": [
     "MIGRATION_FP_CONF", "DRY_RUN",
     "IMPORT_ALL_PARAMS",
-    "KUBERNETES_DEPLOY", "KUBERNETES_INGRESS_EGRESS_DEPLOY",
-    "API_MANAGER_UPLOAD"
+    "OPENSHIFT_DEPLOY", "OPENSHIFT_INGRESS_EGRESS_DEPLOY"
   ]

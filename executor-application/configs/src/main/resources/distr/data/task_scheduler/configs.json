@@ -1,0 +1,19 @@
+{
+  "version":"2.0",
+  "configs": [
+    {
+      "taskType": "bonjour-efs.healthCheckProcessor",
+      "taskVersion": "v42",
+      "description": "Асинхронная проверка Healthcheck",
+      "taskProvider": "ROUTER_EXECUTOR_JAVA_DAB2C",
+      "taskConsumer": "ROUTER_EXECUTOR_JAVA_DAB2C",
+      "maxIntensity": 20,
+      "maxIntensityPeriod": "MINUTE",
+      "exponentialRetryEnabled": false,
+      "ratiosOfExponentialRetry": "1;2;3",
+      "timeLimitRetry": 1200000,
+      "task_scheduler.single_task.cancelable": true,
+      "task_scheduler.single_task.shift_ignore": false
+    }
+  ]
+}

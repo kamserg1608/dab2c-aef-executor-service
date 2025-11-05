@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: egressgateway-mtls-router-executor-unver
+spec:
+  selector:
+    istio: egressgateway-router-executor-unver
+  servers:
+    - hosts:
+        # Здесь нужно перечислять все хосты HTTP-интеграций
+        - ${router-executor.ose.istio.egress.common.nlb_mm-host}
+      port:
+        name: http
+        number: ${router-executor.ose.istio.egress.common.internal-port}
+        protocol: HTTP

@@ -1,0 +1,40 @@
+{
+  "version": "1",
+  "subsystem": {
+    "name": "ROUTER_EXECUTOR_JAVA_DAB2C",
+    "code": "ROUTER_EXECUTOR_JAVA_DAB2C",
+    "masterMode": "AUTHORIZATION",
+    "modules": [
+      {
+        "key": "ROUTER_EXECUTOR_JAVA_DAB2C.SOME_SERVICE",
+        "name": "ROUTER_EXECUTOR_JAVA_DAB2C - Тестовый сервис",
+        "features": [
+          {
+            "key": "ROUTER_EXECUTOR_JAVA_DAB2C.SOME_SERVICE.ANNOTATION_SECURED",
+            "name": "Провека доступа с помощью аннотации",
+            "autzMigrated": true,
+            "channelPlatforms": [
+              {
+                "channel": "INTERNET_BANK"
+              },
+              {
+                "channel": "MOB_BANK"
+              }
+            ]
+          },
+          {
+            "key": "ROUTER_EXECUTOR_JAVA_DAB2C.SOME_SERVICE.API_SECURED",
+            "name": "Проверка доступа с помощью api-метода",
+            "autzMigrated": true,
+            "channelPlatforms": [
+              {
+                "channel": "INTERNET_BANK"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "distribVersion": "{{ env.DISTRIB_VERSION }}"
+}

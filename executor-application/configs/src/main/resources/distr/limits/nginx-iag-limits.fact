@@ -1,7 +1,0 @@
-[GlobalVariables]
-schema_version:4.1
-subsystem: multi
-[[ROUTER_EXECUTOR_JAVA_DAB2C]]
-[router_executor_java_dab2c_router_executor]
-rpsdefault:5
-rps_summary:10
