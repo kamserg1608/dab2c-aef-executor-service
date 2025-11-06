@@ -1,4 +1,4 @@
-
+description = "cbul-integration"
 
 dependencies {
     api(libs.ru.sbrf.cbul.cbul.client.spring.boot.starter)
@@ -9,5 +9,3 @@ dependencies {
     testImplementation(libs.org.springframework.boot.spring.boot.starter.test)
     testImplementation(project(":executor-shared:test-utils"))
 }
-
-description = "cbul-integration"

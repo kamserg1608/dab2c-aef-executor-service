@@ -1,4 +1,4 @@
-
+description = "concurrent"
 
 dependencies {
     api(libs.ru.sbrf.ufs.platform.environment.spring.boot.starter)
@@ -8,5 +8,3 @@ dependencies {
     testImplementation(project(":executor-shared:test-utils"))
     testImplementation(libs.org.mockito.mockito.core)
 }
-
-description = "concurrent"

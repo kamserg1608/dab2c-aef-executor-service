@@ -4,12 +4,9 @@
 
 rootProject.name = "executor"
 include(":executor-application:configs")
-include(":executor-application:deployments")
 include(":executor-application:deployments:router-executor")
 include(":executor-shared:health-check")
 include(":executor-shared:monitoring")
-include(":executor-shared:executor-application")
-include(":executor-shared:executor-shared")
 include(":executor-shared:concurrent")
 include(":executor-shared:test-utils")
 include(":executor-shared:cbul-integration")
@@ -38,8 +35,5 @@ pluginManagement {
             }
             url = uri("https://nexus-ci.delta.sbrf.ru/repository/maven-lib-int/")
         }
-    }
-    plugins {
-        id("ru.sbrf.ufs.confirmation.sup") version "1.0.7"
     }
 }

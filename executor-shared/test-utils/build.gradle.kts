@@ -1,4 +1,4 @@
-
+description = "test-utils"
 
 dependencies {
     api(libs.com.fasterxml.jackson.module.jackson.module.kotlin)
@@ -8,6 +8,5 @@ dependencies {
     api(libs.ru.sbrf.ufs.platform.environment.spring.boot.starter)
     api(libs.org.apache.httpcomponents.httpclient)
     api(libs.ru.sbrf.ufs.platform.httpclient.spring.boot.starter)
+    implementation(libs.bundles.test)
 }
-
-description = "test-utils"

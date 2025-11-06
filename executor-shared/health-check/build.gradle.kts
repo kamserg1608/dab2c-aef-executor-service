@@ -1,8 +1,6 @@
-
+description = "health-check"
 
 dependencies {
-    compileOnly(libs.ru.sbrf.ufs.platform.logger.api)
-    compileOnly(libs.ru.sbrf.ufs.platform.ufs.platform.healthcheck.api)
+    implementation(libs.ru.sbrf.ufs.platform.logger.api)
+    implementation(libs.ru.sbrf.ufs.platform.ufs.platform.healthcheck.api)
 }
-
-description = "health-check"

@@ -1,4 +1,4 @@
-
+description = "monitoring"
 
 dependencies {
     api(libs.com.jayway.jsonpath.json.path)
@@ -8,5 +8,3 @@ dependencies {
     api(project(":executor-shared:commons"))
     testImplementation(project(":executor-shared:test-utils"))
 }
-
-description = "monitoring"

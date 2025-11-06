@@ -1,4 +1,4 @@
-
+description = "rest-object-mapper"
 
 dependencies {
     api(libs.com.fasterxml.jackson.module.jackson.module.kotlin)
@@ -9,5 +9,3 @@ dependencies {
     api(libs.org.apache.httpcomponents.httpclient)
     api(libs.ru.sbrf.ufs.platform.httpclient.spring.boot.starter)
 }
-
-description = "rest-object-mapper"

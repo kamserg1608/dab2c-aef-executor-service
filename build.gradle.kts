@@ -1,4 +1,3 @@
-import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -10,9 +9,9 @@ plugins {
     alias(libs.plugins.kotlin.noarg)
     alias(libs.plugins.spring.dependency.management)
     alias(libs.plugins.spotbugs)
-    alias(libs.plugins.detekt)
     alias(libs.plugins.sonarqube)
     alias(libs.plugins.versions)
+    `java-library`
     jacoco
 }
 
@@ -20,97 +19,88 @@ allprojects {
     group = "ru.sbrf.ufs.dab2c.core.executor"
     version = "1.0.0"
 
-    apply(plugin = "buildlogic.java-conventions")
-
     repositories {
-        mavenCentral()
+        val nexusUsername = System.getProperty("gradle.wrapperUser")
+        val nexusPassword = System.getProperty("gradle.wrapperPassword")
+        val protectedRepo = { repoUrl: String ->
+            maven {
+                credentials {
+                    username = nexusUsername
+                    password = nexusPassword
+                }
+                url = uri(repoUrl)
+            }
+        }
+
         mavenLocal()
+        protectedRepo("https://nexus-ci.delta.sbrf.ru/repository/public/")
+        protectedRepo("https://nexus-ci.delta.sbrf.ru/repository/maven-lib-int/")
+        protectedRepo("https://nexus-ci.delta.sbrf.ru/repository/maven-lib-release/")
     }
 }
 
-val javaVersion = JavaVersion.VERSION_21
+subprojects {
 
-sourceSets {
-    main {
-        java {
-            srcDirs("src/main/kotlin", "src/main/java")
-        }
+    apply(plugin = "org.jetbrains.kotlin.jvm")
+    apply(plugin = "org.jetbrains.kotlin.kapt")
+    apply(plugin = "org.jetbrains.kotlin.plugin.allopen")
+    apply(plugin = "org.jetbrains.kotlin.plugin.spring")
+    apply(plugin = "org.jetbrains.kotlin.plugin.noarg")
+    apply(plugin = "org.jetbrains.kotlin.plugin.jpa")
+    apply(plugin = "io.spring.dependency-management")
+//    apply(plugin = "com.github.spotbugs")
+    apply(plugin = "java-library")
+//    apply(plugin = "io.gitlab.arturbosch.detekt")
+    apply(plugin = "jacoco")
+
+    dependencies {
+        implementation(platform(rootProject.libs.ufs.platform.bom))
+        implementation(platform(rootProject.libs.junit.bom))
+
+        kapt(rootProject.libs.mapstruct.processor)
+
+        implementation(rootProject.libs.javax.annotation.api)
+        implementation(rootProject.libs.spotbugs.annotations)
+        implementation(rootProject.libs.slf4j.log4j12)
+
+        implementation(rootProject.libs.bundles.kotlin)
+        implementation(rootProject.libs.bundles.spring.core)
+
+        implementation(rootProject.libs.ufs.platform.config.api)
+        implementation(rootProject.libs.ufs.platform.config.core)
+        implementation(rootProject.libs.ufs.platform.api)
+        implementation(rootProject.libs.ufs.platform.json.mapper)
+        implementation(rootProject.libs.spring.boot.autoconfigure)
+        implementation(rootProject.libs.mapstruct)
+
+        testImplementation(rootProject.libs.bundles.test)
+        testImplementation(rootProject.libs.bundles.junit)
+        testImplementation(rootProject.libs.wiremock)
+        testImplementation(rootProject.libs.mockk.jvm)
     }
-    test {
-        java {
-            srcDirs("src/test/kotlin", "src/test/java")
-        }
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
-}
 
-dependencies {
-    implementation(rootProject.libs.javax.annotation.api)
-    implementation(rootProject.libs.spotbugs.annotations)
-    implementation(rootProject.libs.slf4j.log4j12)
+    tasks.withType<JavaCompile>() {
+        options.encoding = "UTF-8"
+    }
 
-    implementation(rootProject.libs.bundles.kotlin)
-    implementation(rootProject.libs.bundles.spring.core)
+    tasks.withType<Javadoc>() {
+        options.encoding = "UTF-8"
+    }
 
-    implementation(rootProject.libs.ufs.platform.config.api)
-    implementation(rootProject.libs.ufs.platform.config.core)
-    implementation(rootProject.libs.ufs.platform.api)
-    implementation(rootProject.libs.ufs.platform.json.mapper)
-    implementation(rootProject.libs.spring.boot.autoconfigure)
-
-    implementation(platform(rootProject.libs.ufs.platform.bom))
-    implementation(platform(rootProject.libs.junit.bom))
-
-    kapt(rootProject.libs.mapstruct.processor)
-    implementation(rootProject.libs.mapstruct)
-
-    testImplementation(rootProject.libs.bundles.test)
-    testImplementation(rootProject.libs.wiremock)
-    testImplementation(rootProject.libs.mockk.jvm)
-}
+    tasks.test {
+        useJUnitPlatform()
+    }
 
     tasks.withType<KotlinCompile> {
         compilerOptions {
             freeCompilerArgs = listOf("-Xjsr305=strict", "-Xjvm-default=all-compatibility")
         }
     }
-//
-//    configurations {
-//        all {
-//            exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
-//        }
-//    }
-//
-//
-    detekt {
-        buildUponDefaultConfig = true
-        allRules = false
-        config.setFrom("$rootDir/config/detekt/detekt_config.yml")
-        autoCorrect = true
-    }
-
-    tasks.withType<Detekt>().configureEach {
-        reports {
-            xml.required.set(true)
-            xml.outputLocation.set(file("$buildDir/detekt/detekt.xml"))
-            html.required.set(true)
-            txt.required.set(false)
-        }
-        exclude("**/resources/**")
-    }
-
-//    spotbugs {
-//        effort.set(com.github.spotbugs.snom.Effort.MAX)
-//        reportLevel.set(com.github.spotbugs.snom.Confidence.LOW)
-//        excludeFilter.set(file("$rootDir/config/spotbugs/excludeFilters.xml"))
-//        includeFilter.set(null)
-//    }
-//
-//    tasks.withType<com.github.spotbugs.snom.SpotBugsTask> {
-//        reports.create("xml") {
-//            required.set(true)
-//            outputLocation.set(file("$buildDir/spotbugsXml.xml"))
-//        }
-//    }
 
     jacoco {
         toolVersion = "0.8.12"
@@ -159,54 +149,4 @@ dependencies {
             arg("mapstruct.unmappedTargetPolicy", "IGNORE")
         }
     }
-
-sonarqube {
-    properties {
-        property("sonar.host.url", "https://sbt-sonarqube.sigma.sbrf.ru")
-        property("sonar.login", "sqp_85bd535d881cea6171d59e505ab60c506cd4a505")
-        property("sonar.ws.timeout", "300")
-        property("sonar.coverage.exclusions", """
-            **/dto/**,
-            **/factory/**,
-            **/pojo/**,
-            **/*Exception.*,
-            **/config/**,
-            **/*Configuration.*,
-            **/model/**,
-            **/DefaultAutoConfigurationExcludeProvider.kt,
-            **/SpykBeanConfig.kt,
-            **/HttpResponseExt.kt,
-            **/testutils/**,
-            **/*Stub.kt,
-            **/*EntryPoint.kt,
-            **/*Exception*.kt,
-            **/*ServiceHostProvider.kt
-        """.trimIndent())
-        property("sonar.coverage.jacoco.xmlReportPaths", "**/build/site/jacoco/jacoco.xml")
-        property("sonar.java.checkstyle.reportPaths", "**/build/checkstyle-result.xml")
-        property("sonar.kotlin.detekt.reportPaths", "**/build/detekt/detekt.xml")
-        property("sonar.java.spotbugs.reportPaths", "**/build/spotbugsXml.xml")
-        property("sonar.surefire.reportsPath", "**/build/test-results/test")
-        property("sonar.java.source", "21")
-        property("sonar.java.target", "21")
-        property("sonar.sources", "src/main")
-    }
-}
-
-tasks.register("buildAll") {
-    dependsOn(subprojects.map { it.tasks.build })
-}
-
-val skipAllChecks: String by project
-
-tasks.withType<Detekt>().configureEach {
-    enabled = skipAllChecks != "true"
-}
-
-//tasks.withType<com.github.spotbugs.snom.SpotBugsTask>().configureEach {
-//    enabled = skipAllChecks != "true"
-//}
-
-tasks.withType<JacocoReport>().configureEach {
-    enabled = skipAllChecks != "true"
 }

@@ -1,4 +1,4 @@
-
+description = "commons"
 
 dependencies {
     api(libs.com.jayway.jsonpath.json.path)
@@ -16,5 +16,3 @@ dependencies {
     compileOnly(libs.ru.sbrf.ufs.platform.ufs.platform.core)
     compileOnly(libs.ru.sbrf.ufs.platform.logger.api)
 }
-
-description = "commons"
