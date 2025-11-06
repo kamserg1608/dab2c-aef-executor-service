@@ -4,12 +4,17 @@
 
 plugins {
     id("buildlogic.java-conventions")
+    alias(libs.plugins.spring.boot)
+}
+
+springBoot {
+    mainClass.set("ru.sbrf.ufs.dab2c.core.executor.deployments.router.executor.app.RouterExecutorApplicationEntryPointKt")
 }
 
 dependencies {
-    api(project(":health-check"))
-    api(project(":commons"))
-    api(project(":cbul-integration"))
+    api(project(":executor-shared:health-check"))
+    api(project(":executor-shared:commons"))
+    api(project(":executor-shared:cbul-integration"))
     api(libs.ru.sbrf.ufs.platform.environment.spring.boot.starter)
     api(libs.ru.sbrf.ufs.platform.ufs.platform.cache.impl)
     api(libs.ru.sbrf.ufs.platform.httpclient.spring.boot.starter)
@@ -21,12 +26,12 @@ dependencies {
     api(libs.ru.sbrf.ufs.healthcheck.ufs.healthcheck.spring.boot.starter)
     api(libs.ru.sbrf.ufs.platform.rest.app.jersey.spring.boot.starter)
     api(libs.com.networknt.json.schema.validator)
-    api(project(":monitoring"))
-    api(project(":circuit-breaker"))
-    api(project(":logging"))
-    api(project(":concurrent"))
-    api(project(":rest-object-mapper"))
-    testImplementation(project(":test-utils"))
+    api(project(":executor-shared:monitoring"))
+    api(project(":executor-shared:circuit-breaker"))
+    api(project(":executor-shared:logging"))
+    api(project(":executor-shared:concurrent"))
+    api(project(":executor-shared:rest-object-mapper"))
+    testImplementation(project(":executor-shared:test-utils"))
 }
 
 description = "router-executor"
