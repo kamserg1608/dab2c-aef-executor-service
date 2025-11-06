@@ -1,0 +1,59 @@
+[versions]
+com-fasterxml-jackson-datatype-jackson-datatype-jsr310 = "2.15.4"
+com-fasterxml-jackson-module-jackson-module-kotlin = "2.15.4"
+com-jayway-jsonpath-json-path = "2.9.0"
+com-networknt-json-schema-validator = "1.4.0"
+io-github-resilience4j-resilience4j-circuitbreaker = "1.7.0"
+org-apache-httpcomponents-httpclient = "4.5.14"
+org-apache-httpcomponents-httpcore = "4.4.16"
+org-apache-kafka-kafka-clients = "3.1.2"
+org-mockito-mockito-core = "4.5.1"
+org-slf4j-slf4j-api = "1.7.36"
+org-springframework-boot-spring-boot = "2.7.18"
+org-springframework-boot-spring-boot-starter-test = "2.7.18"
+org-springframework-spring-webmvc = "5.3.39"
+ru-sbrf-cbul-cbul-client-spring-boot-starter = "1.13.2.dev"
+ru-sbrf-ufs-app-hotreload-hotreload-spring-boot-starter = "1.1.12"
+ru-sbrf-ufs-cbreaker-circuit-breaker-api = "7.0.7"
+ru-sbrf-ufs-healthcheck-ufs-healthcheck-spring-boot-starter = "7.0.3.14"
+ru-sbrf-ufs-monitoring-spring-boot-monitoring-spring-boot-starter = "7.1.3.1-01"
+ru-sbrf-ufs-platform-config-agent-spring-boot-starter = "7.0.25.5"
+ru-sbrf-ufs-platform-environment-spring-boot-starter = "7.4.5.55"
+ru-sbrf-ufs-platform-httpclient-spring-boot-starter = "7.22.13"
+ru-sbrf-ufs-platform-logger-api = "7.4.6"
+ru-sbrf-ufs-platform-logger-springboot-starter = "7.4.6.0"
+ru-sbrf-ufs-platform-rest-app-jersey-spring-boot-starter = "7.22.1"
+ru-sbrf-ufs-platform-ufs-platform-cache-impl = "7.4.6.0"
+ru-sbrf-ufs-platform-ufs-platform-config-spring-boot-starter = "7.0.25.5-fix-fh"
+ru-sbrf-ufs-platform-ufs-platform-core = "7.4.5.55"
+ru-sbrf-ufs-platform-ufs-platform-healthcheck-api = "7.0.3.1"
+
+[libraries]
+com-fasterxml-jackson-datatype-jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "com-fasterxml-jackson-datatype-jackson-datatype-jsr310" }
+com-fasterxml-jackson-module-jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "com-fasterxml-jackson-module-jackson-module-kotlin" }
+com-jayway-jsonpath-json-path = { module = "com.jayway.jsonpath:json-path", version.ref = "com-jayway-jsonpath-json-path" }
+com-networknt-json-schema-validator = { module = "com.networknt:json-schema-validator", version.ref = "com-networknt-json-schema-validator" }
+io-github-resilience4j-resilience4j-circuitbreaker = { module = "io.github.resilience4j:resilience4j-circuitbreaker", version.ref = "io-github-resilience4j-resilience4j-circuitbreaker" }
+org-apache-httpcomponents-httpclient = { module = "org.apache.httpcomponents:httpclient", version.ref = "org-apache-httpcomponents-httpclient" }
+org-apache-httpcomponents-httpcore = { module = "org.apache.httpcomponents:httpcore", version.ref = "org-apache-httpcomponents-httpcore" }
+org-apache-kafka-kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "org-apache-kafka-kafka-clients" }
+org-mockito-mockito-core = { module = "org.mockito:mockito-core", version.ref = "org-mockito-mockito-core" }
+org-slf4j-slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "org-slf4j-slf4j-api" }
+org-springframework-boot-spring-boot = { module = "org.springframework.boot:spring-boot", version.ref = "org-springframework-boot-spring-boot" }
+org-springframework-boot-spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "org-springframework-boot-spring-boot-starter-test" }
+org-springframework-spring-webmvc = { module = "org.springframework:spring-webmvc", version.ref = "org-springframework-spring-webmvc" }
+ru-sbrf-cbul-cbul-client-spring-boot-starter = { module = "ru.sbrf.cbul:cbul-client-spring-boot-starter", version.ref = "ru-sbrf-cbul-cbul-client-spring-boot-starter" }
+ru-sbrf-ufs-app-hotreload-hotreload-spring-boot-starter = { module = "ru.sbrf.ufs.app.hotreload:hotreload-spring-boot-starter", version.ref = "ru-sbrf-ufs-app-hotreload-hotreload-spring-boot-starter" }
+ru-sbrf-ufs-cbreaker-circuit-breaker-api = { module = "ru.sbrf.ufs.cbreaker:circuit-breaker-api", version.ref = "ru-sbrf-ufs-cbreaker-circuit-breaker-api" }
+ru-sbrf-ufs-healthcheck-ufs-healthcheck-spring-boot-starter = { module = "ru.sbrf.ufs.healthcheck:ufs-healthcheck-spring-boot-starter", version.ref = "ru-sbrf-ufs-healthcheck-ufs-healthcheck-spring-boot-starter" }
+ru-sbrf-ufs-monitoring-spring-boot-monitoring-spring-boot-starter = { module = "ru.sbrf.ufs.monitoring.spring-boot:monitoring-spring-boot-starter", version.ref = "ru-sbrf-ufs-monitoring-spring-boot-monitoring-spring-boot-starter" }
+ru-sbrf-ufs-platform-config-agent-spring-boot-starter = { module = "ru.sbrf.ufs.platform:config-agent-spring-boot-starter", version.ref = "ru-sbrf-ufs-platform-config-agent-spring-boot-starter" }
+ru-sbrf-ufs-platform-environment-spring-boot-starter = { module = "ru.sbrf.ufs.platform:environment-spring-boot-starter", version.ref = "ru-sbrf-ufs-platform-environment-spring-boot-starter" }
+ru-sbrf-ufs-platform-httpclient-spring-boot-starter = { module = "ru.sbrf.ufs.platform:httpclient-spring-boot-starter", version.ref = "ru-sbrf-ufs-platform-httpclient-spring-boot-starter" }
+ru-sbrf-ufs-platform-logger-api = { module = "ru.sbrf.ufs.platform:logger-api", version.ref = "ru-sbrf-ufs-platform-logger-api" }
+ru-sbrf-ufs-platform-logger-springboot-starter = { module = "ru.sbrf.ufs.platform:logger-springboot-starter", version.ref = "ru-sbrf-ufs-platform-logger-springboot-starter" }
+ru-sbrf-ufs-platform-rest-app-jersey-spring-boot-starter = { module = "ru.sbrf.ufs.platform:rest-app-jersey-spring-boot-starter", version.ref = "ru-sbrf-ufs-platform-rest-app-jersey-spring-boot-starter" }
+ru-sbrf-ufs-platform-ufs-platform-cache-impl = { module = "ru.sbrf.ufs.platform:ufs-platform-cache-impl", version.ref = "ru-sbrf-ufs-platform-ufs-platform-cache-impl" }
+ru-sbrf-ufs-platform-ufs-platform-config-spring-boot-starter = { module = "ru.sbrf.ufs.platform:ufs-platform-config-spring-boot-starter", version.ref = "ru-sbrf-ufs-platform-ufs-platform-config-spring-boot-starter" }
+ru-sbrf-ufs-platform-ufs-platform-core = { module = "ru.sbrf.ufs.platform:ufs-platform-core", version.ref = "ru-sbrf-ufs-platform-ufs-platform-core" }
+ru-sbrf-ufs-platform-ufs-platform-healthcheck-api = { module = "ru.sbrf.ufs.platform:ufs-platform-healthcheck-api", version.ref = "ru-sbrf-ufs-platform-ufs-platform-healthcheck-api" }

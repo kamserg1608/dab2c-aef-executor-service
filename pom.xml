@@ -5,7 +5,7 @@
 
     <groupId>ru.sbrf.ufs.dab2c.core.executor</groupId>
     <artifactId>executor</artifactId>
-    <version>${revision}</version>
+    <version>1.0.0</version>
     <name>executor</name>
     <packaging>pom</packaging>
 
@@ -621,13 +621,13 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>executor-application</artifactId>
-                <version>${revision}</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>executor-shared</artifactId>
-                <version>${revision}</version>
+                <version>1.0.0</version>
             </dependency>
 
             <!-- Exported modules -->
@@ -635,13 +635,13 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>router-executor</artifactId>
-                <version>${revision}</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>cbul-integration</artifactId>
-                <version>${revision}</version>
+                <version>1.0.0</version>
             </dependency>
 
             <!-- FIXME: Remove after CBUL 13 release appear in platform BOM -->
@@ -675,61 +675,61 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>circuit-breaker</artifactId>
-                <version>${revision}</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>health-check</artifactId>
-                <version>${revision}</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>monitoring</artifactId>
-                <version>${revision}</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>commons</artifactId>
-                <version>${revision}</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>test-utils</artifactId>
-                <version>${revision}</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>logging</artifactId>
-                <version>${revision}</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>rest-object-mapper</artifactId>
-                <version>${revision}</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>annotations</artifactId>
-                <version>${revision}</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>concurrent</artifactId>
-                <version>${revision}</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>system-env</artifactId>
-                <version>${revision}</version>
+                <version>1.0.0</version>
             </dependency>
 
         </dependencies>

@@ -6,13 +6,13 @@
     <parent>
         <groupId>ru.sbrf.ufs.dab2c.core.executor</groupId>
         <artifactId>executor-application</artifactId>
-        <version>${revision}</version>
+        <version>1.0.0</version>
     </parent>
 
     <artifactId>deployments</artifactId>
     <name>deployments</name>
     <modelVersion>4.0.0</modelVersion>
-    <version>${revision}</version>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
 
     <modules>

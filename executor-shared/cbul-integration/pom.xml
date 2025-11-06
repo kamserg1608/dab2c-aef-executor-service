@@ -4,13 +4,13 @@
     <parent>
         <groupId>ru.sbrf.ufs.dab2c.core.executor</groupId>
         <artifactId>executor-shared</artifactId>
-        <version>${revision}</version>
+        <version>1.0.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>cbul-integration</artifactId>
     <packaging>jar</packaging>
-    <version>${revision}</version>
+    <version>1.0.0</version>
 
     <build>
         <resources>

@@ -20,6 +20,20 @@ target
 *.log
 
 tmpp
+#gradle
+**/.gradle
+**/build
+**/out
+.DS_Store
+
+**/output.log
+output.log
+*.hprof
+**/*.hrpof
+**/logs/*
+**/*.zip
+*.tmp
+amplicode.xml
 
 # Архивы
 *.zip
