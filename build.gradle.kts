@@ -29,6 +29,15 @@ allprojects {
         protectedRepo("https://nexus-ci.delta.sbrf.ru/repository/maven-lib-int/")
         protectedRepo("https://nexus-ci.delta.sbrf.ru/repository/maven-lib-release/")
     }
+
+    configurations.all {
+        exclude(group = "org.slf4j", module = "slf4j-log4j12")
+        resolutionStrategy {
+            force("ch.qos.logback:logback-classic:1.2.12")
+            force("ch.qos.logback:logback-core:1.2.12")
+            force("org.slf4j:slf4j-api:1.7.36")
+        }
+    }
 }
 
 subprojects {
@@ -39,7 +48,6 @@ subprojects {
 
         // Core dependencies
         implementation(rootProject.libs.javax.annotation.api)
-        implementation(rootProject.libs.slf4j.log4j12)
         implementation(rootProject.libs.kotlin.reflect)
 
         // Spring Core bundle
@@ -49,6 +57,7 @@ subprojects {
 
         // UFS Platform
         implementation(rootProject.libs.bundles.ufs.core)
+        implementation(rootProject.libs.bundles.ufs.sup)
 
         //Other
         implementation(rootProject.libs.bundles.jackson)
@@ -57,4 +66,5 @@ subprojects {
         // Testing bundles
         testImplementation(rootProject.libs.bundles.testing)
     }
+
 }

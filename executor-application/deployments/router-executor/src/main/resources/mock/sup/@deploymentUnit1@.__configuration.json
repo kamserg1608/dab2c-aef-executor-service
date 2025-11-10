@@ -73,7 +73,7 @@
         {
           "path": [],
           "values": [
-            "@subsystemCode@"
+            "ROUTER_EXECUTOR_JAVA_DAB2C"
           ]
         }
       ]

@@ -2,8 +2,6 @@ package ru.sbrf.ufs.dab2c.core.executor.deployments.router.executor.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Import
-import ru.sbrf.ufs.dab2c.core.executor.shared.cbul.config.CbulConfiguration
 import ru.sbrf.ufs.dab2c.core.executor.shared.commons.time.DefaultLocalTimeProvider
 import ru.sbrf.ufs.dab2c.core.executor.shared.commons.time.LocalTimeProvider
 
@@ -11,11 +9,6 @@ import ru.sbrf.ufs.dab2c.core.executor.shared.commons.time.LocalTimeProvider
  * Service configuration.
  */
 @Configuration
-@Import(
-    value = [
-        CbulConfiguration::class,
-    ]
-)
 class ServiceConfiguration {
 
     @Bean

@@ -1,6 +1,10 @@
 server:
   servlet:
-    context-path: /@server.context.path1@
+    context-path: /dab2c-router-executor/v1
+
+spring:
+  main:
+    web-application-type: reactive
 
 management:
   endpoint:
@@ -21,46 +25,75 @@ ufs:
   platform:
     # Платформенное Ядро
     environment:
-      session:
-        cookie-name: NO-COOOKIE-NO-PROBLEM
       product:
-        subsystem: @subsystemCode@
-        channel: @ufs.channel@
-        deploymentUnit: @deploymentUnit1@
-        distrib_version: @FP_VERSION@
-        release: @ufs.release@
+        subsystem: ROUTER_EXECUTOR_JAVA_DAB2C
+        channel: ALL
+        deploymentUnit: router_executor_java_dab2c_router_executor
+        distrib_version: D-01.000.00
+        release: R4.3
     # СУП. См. также класс SupAdditionalConfiguration — в нём создаётся бин для СУП Data.
     config:
-      deploymentUnit: @deploymentUnit1@
+      deploymentUnit: router_executor_java_dab2c_router_executor
+    # Content Broker
+    cbro:
+      errors:
+        useSberCmsErrorService: true
+      hints:
+        useSberCmsHintsService: true
 
   # Мониторинг
   monitoring:
     client:
       enable: true
-      channel: @ufs.channel@
-      distributiveVersion: @FP_VERSION@
-      version: @project.version@
-      subsystem: @subsystemCode@
-      title: @app.support.description@
-      thread-name-prefix: "ufs-monitoring-@subsystemCode@-thread"
-      unit: @deploymentUnit1@
+      channel: ALL
+      distributiveVersion: D-01.000.00
+      version: D-01.000.00
+      subsystem: ROUTER_EXECUTOR_JAVA_DAB2C
+      title: ROUTER_EXECUTOR_JAVA_DAB2C
+      thread-name-prefix: "ufs-monitoring-ROUTER_EXECUTOR_JAVA_DAB2C-thread"
+      unit: router_executor_java_dab2c_router_executor
 
   # Healthcheck
   healthcheck:
     stub-agent-enabled: true
     groups:
-      readiness: "ru.sbrf.ufs.dab2c.core.executor.shared.healthcheck.ApplicationHealthCheck"
+      readiness: "ru.sbrf.ufs.dab2c.core.healthcheck.ApplicationHealthCheck"
 
-  # Журналирование
-  logger:
+  # История операций
+  operation-history:
+    request-services:
+      kangarooHistoryService:
+        entity-class: "ru.sbrf.ufs.dab2c.core.history.dto.HistoryKangarooProperties"
+
+  # САЗ
+  task-scheduler:
+    installation:
+      type: BLOCK
+
+  # Интеграционный модуль
+  integration:
+    module:
+      autostart: true
+    adapter:
+      channel: ALL
+      subsystem-code: ROUTER_EXECUTOR_JAVA_DAB2C
+
+  # Справочники
+  dictionary:
     client:
-      filter-url-patterns:
-        - "/*"
+      channel: ALL
+      subsystem: ROUTER_EXECUTOR_JAVA_DAB2C
 
-web:
-  server:
-    executor:
-      type: fixed_thread
-application:
-  executor:
-    type: fixed_thread
+  # Техперерывы
+  tech-break:
+    client:
+      enable-adapter: true
+
+sds:
+  platformv:
+    monitoring:
+      targets: "pvm"
+
+seans:
+  enable: true
+  optional-data-enable: true

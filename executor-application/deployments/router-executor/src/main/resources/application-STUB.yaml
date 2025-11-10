@@ -1,32 +1,41 @@
 server:
-  address: @server.host@
-  port: @server.port@
+  address: localhost
+  port: 8080
   tomcat:
     threads:
-      min-spare: 5
       max: 20
+      min-spare: 5
   kafka:
-    bootstrap-servers: "tcp://@kafka.host@:@kafka.port@"
+    bootstrap-servers: "tcp://localhost:29092"
 
 stand:
   type: TEST
 
-cbul:
-  egress:
-    terminating: false
-
-spring:
-  autoconfigure.exclude: ru.sbrf.cbul.starter.CbulClientConfiguration
-
-CBUL_SECRET_USE_SUP: true
-
 ufs:
   platform:
+    cbro:
+      mode: STUB
+      cacheTTL: 300000
+      deadCacheTTL: 10800000
+      registryFile: mock/cbro/stubRegistry.json
+      templatesRootPath: /Users/20052410/PROJECTS/executor-D-01.000.00 2/executor-application-du1/target/templates
+      uploadTemplatesTTL: 300000
     # СУП
     config:
       directory: "classpath:/mock/sup"
       agent:
         disabled: true
+    # Launcher
+    launcherstub:
+      enabled: true
+      enable-rest: true
+
+  # ССД
+  sds:
+    client:
+      mode: LOCAL
+      http:
+        integration-enabled: true
 
   # Журналирование
   logger:
@@ -46,3 +55,87 @@ ufs:
     kafka:
       enabled: false
       ssl: false
+
+  # Аудит
+  audit:
+    client:
+      stub: true
+      useQuota: false
+
+  # Blockrouter
+  blockrouter:
+    source: local
+    mocksPath: 'mock/standin/standin-mock-stub.json'
+
+  # Launcher
+  launcher:
+    client:
+      mode: REMOTE
+
+  # История операция
+  operation-history:
+    request-services:
+      kangarooHistoryService:
+        stub-helper-id: "requestStub"
+        ref-to-initializer-id: "kangarooEntityStubInitializer"
+
+  # Compliance (БИПО)
+  bioc:
+    client:
+      mode: local
+      stubFile: "mock/compliance/mock-response.json"
+
+  # Компонента Фродмониторинга
+  fraudmon:
+    client:
+      mode: local
+
+  # Профиль ФЛ
+  idpersonremote:
+    client:
+      mode: local
+
+  # САЗ
+  task-scheduler:
+    registrator:
+      client:
+        mode: LOCAL
+        enabled: true
+    executor:
+      client:
+        mode: LOCAL
+        enabled: true
+
+  # Интеграционный модуль
+  integration:
+    module:
+      executorService:
+        poolSize: 5
+      kafka:
+        consumerFactories:
+          - name: kafka/factory/CONSUMER_FACTORY_COMMON
+            properties:
+              "[bootstrap.servers]": "tcp://localhost:29092"
+
+  # Техперерывы
+  tech-break:
+    client:
+      mode: local
+      local-source: "classpath:/mock/cbreaker/client-answers.json"
+
+  # Toggler
+  feature-toggle:
+    client:
+      mode: LOCAL
+      mock-features-path: mock/toggler/toggler-privileges-mock.json
+      mock-authorization-data:
+        # Путь до файла-заглушки привилегий авторизации (ранее использовавшийся ufs.security.client.local-file-privileges-path)
+        local-file-privileges-path: mock/toggler/authorization-privileges-mock.json
+
+  # Справочники
+  dictionary:
+    client:
+      local-source: true
+      source-files:
+        - "mock/dictionary/dictionary1.json"
+        - "mock/dictionary/dictionary2.json"

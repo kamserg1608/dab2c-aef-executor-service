@@ -1,4 +1,2 @@
 org.springframework.boot.env.EnvironmentPostProcessor=\
     ru.sbrf.ufs.dab2c.core.executor.shared.commons.time.spring.DefaultAutoConfigurationExcludeProvider
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-    ru.sbrf.ufs.dab2c.core.executor.shared.commons.node.NodeTypeProviderAutoConfiguration

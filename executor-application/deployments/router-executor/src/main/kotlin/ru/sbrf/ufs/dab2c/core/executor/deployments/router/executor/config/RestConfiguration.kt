@@ -10,7 +10,6 @@ import ru.sbrf.ufs.dab2c.core.executor.shared.commons.rest.handling.annotation.E
  * REST-service configuration.
  */
 @Configuration
-@EnableWebMvc
 @EnableErrorHandling
 class RestConfiguration {
 

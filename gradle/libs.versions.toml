@@ -61,6 +61,8 @@ resilience4j-circuitbreaker = { module = "io.github.resilience4j:resilience4j-ci
 
 # Logging
 kotlin-logging-jvm = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
+logback-classic = { module = "ch.qos.logback:logback-classic" }
+logback-core = { module = "ch.qos.logback:logback-core" }
 
 # Validation
 jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api" }
@@ -73,7 +75,6 @@ apache-httpcore = { module = "org.apache.httpcomponents:httpcore" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 spring-boot-gradle-plugin = { module = "org.springframework.boot:spring-boot-gradle-plugin", version.ref = "spring-boot" }
 
-slf4j-log4j12 = { module = "org.slf4j:slf4j-log4j12", version.ref = "slf4j" }
 hamcrest-core = { module = "org.hamcrest:hamcrest-core" }
 assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 
@@ -86,8 +87,6 @@ spring-boot-autoconfigure = { module = "org.springframework.boot:spring-boot-aut
 spring-boot-test = { module = "org.springframework.boot:spring-boot-test" }
 spring-boot-test-autoconfigure = { module = "org.springframework.boot:spring-boot-test-autoconfigure" }
 
-ufs-platform-config-api = { module = "ru.sbrf.ufs.platform:ufs-platform-config-api" }
-ufs-platform-config-core = { module = "ru.sbrf.ufs.platform:ufs-platform-config-core" }
 ufs-platform-api = { module = "ru.sbrf.ufs.platform:ufs-platform-api" }
 ufs-platform-json-mapper = { module = "ru.sbrf.ufs.platform:ufs-platform-json-mapper" }
 
@@ -127,19 +126,27 @@ cbul-client-impl = { module = "ru.sbrf.cbul:cbul-client-impl", version.ref = "cb
 cbul-core = { module = "ru.sbrf.cbul:cbul-core", version.ref = "cbul" }
 cbul-client-spring-boot-starter = { module = "ru.sbrf.cbul:cbul-client-spring-boot-starter", version.ref = "cbul" }
 
+#СУП
+ufs-platform-config-api = { module = "ru.sbrf.ufs.platform:ufs-platform-config-api" }
+config-agent-api = { module = "ru.sbrf.ufs.platform:config-agent-api" }
+ufs-platform-config-data = { module = "ru.sbrf.ufs.platform:ufs-platform-config-data" }
+ufs-platform-config-spring-boot-starter = { module = "ru.sbrf.ufs.platform:ufs-platform-config-spring-boot-starter" }
+config-agent-spring-boot-starter = { module = "ru.sbrf.ufs.platform:config-agent-spring-boot-starter" }
+
 [bundles]
 # Spring Boot Web and Core
 
 ufs-core = [
-    "ufs-platform-config-api",
-    "ufs-platform-config-core",
     "ufs-platform-api",
     "ufs-platform-json-mapper"
 ]
 
 ufs-logging = [
     "ufs-logger-springboot-starter",
-    "ufs-logger-api"
+    "ufs-logger-api",
+    "kotlin-logging-jvm",
+    "logback-classic",
+    "logback-core"
 ]
 
 ufs-monitoring = [
@@ -167,6 +174,14 @@ ufs-cbul = [
     "cbul-client-spring-boot-starter"
 ]
 
+ufs-sup = [
+    "ufs-platform-config-api",
+    "ufs-platform-config-api",
+    "config-agent-api",
+    "ufs-platform-config-spring-boot-starter",
+    "config-agent-spring-boot-starter"
+]
+
 spring-boot-web = [
     "spring-boot-starter-webflux",
     "spring-boot-starter-aop"
@@ -191,7 +206,7 @@ kotlinx = [
 testing = [
     "mockk",
     "spring-boot-starter-test",
-    "kotlin-test-junit5",
+#    "kotlin-test-junit5",
     "junit-bom",
     "junit-platform-launcher",
     "junit-jupiter",
