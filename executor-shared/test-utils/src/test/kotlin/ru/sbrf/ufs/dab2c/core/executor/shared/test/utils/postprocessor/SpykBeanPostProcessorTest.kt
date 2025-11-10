@@ -1,6 +1,5 @@
 package ru.sbrf.ufs.dab2c.core.executor.shared.test.utils.postprocessor
 
-
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk

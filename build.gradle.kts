@@ -35,6 +35,29 @@ subprojects {
     apply(plugin = "java-library")
 
     dependencies {
-        implementation(enforcedPlatform(rootProject.libs.ufs.platform.bom))
+        implementation(platform(rootProject.libs.ufs.platform.bom))
+
+        // Core dependencies
+        implementation(rootProject.libs.javax.annotation.api)
+        implementation(rootProject.libs.slf4j.log4j12)
+        implementation(rootProject.libs.kotlin.reflect)
+
+        // Spring Core bundle
+        implementation(rootProject.libs.bundles.spring.boot.web)
+        implementation(rootProject.libs.bundles.spring.core)
+        implementation(rootProject.libs.spring.boot.autoconfigure)
+
+        // UFS Platform
+        implementation(rootProject.libs.ufs.platform.config.api)
+        implementation(rootProject.libs.ufs.platform.config.core)
+        implementation(rootProject.libs.ufs.platform.api)
+        implementation(rootProject.libs.ufs.platform.json.mapper)
+
+        //Other
+        implementation(rootProject.libs.bundles.jackson)
+        implementation(rootProject.libs.bundles.kotlinx)
+
+        // Testing bundles
+        testImplementation(rootProject.libs.bundles.testing)
     }
 }

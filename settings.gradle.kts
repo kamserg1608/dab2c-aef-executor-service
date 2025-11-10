@@ -8,7 +8,7 @@ rootProject.name = "executor"
 //include(":executor-shared:health-check")
 //include(":executor-shared:monitoring")
 //include(":executor-shared:concurrent")
-//include(":executor-shared:test-utils")
+include(":executor-shared:test-utils")
 //include(":executor-shared:cbul-integration")
 //include(":executor-shared:system-env")
 //include(":executor-shared:circuit-breaker")
