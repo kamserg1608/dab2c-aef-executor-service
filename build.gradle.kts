@@ -48,10 +48,7 @@ subprojects {
         implementation(rootProject.libs.spring.boot.autoconfigure)
 
         // UFS Platform
-        implementation(rootProject.libs.ufs.platform.config.api)
-        implementation(rootProject.libs.ufs.platform.config.core)
-        implementation(rootProject.libs.ufs.platform.api)
-        implementation(rootProject.libs.ufs.platform.json.mapper)
+        implementation(rootProject.libs.bundles.ufs.core)
 
         //Other
         implementation(rootProject.libs.bundles.jackson)

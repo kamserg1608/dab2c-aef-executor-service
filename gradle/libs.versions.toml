@@ -96,8 +96,22 @@ junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine" }
 junit-platform-commons = { module = "org.junit.platform:junit-platform-commons" }
 junit-platform-engine = { module = "org.junit.platform:junit-platform-engine" }
 
+#Logging
+ufs-logger-springboot-starter = { module = "ru.sbrf.ufs.platform:logger-springboot-starter" }
+ufs-logger-api = { module = "ru.sbrf.ufs.platform:logger-api" }
+
 [bundles]
 # Spring Boot Web and Core
+
+ufs-core = [
+    "ufs-platform-config-api",
+    "ufs-platform-config-core",
+    "ufs-platform-api",
+    "ufs-platform-json-mapper",
+    "ufs-logger-springboot-starter",
+    "ufs-logger-api"
+]
+
 spring-boot-web = [
     "spring-boot-starter-webflux",
     "spring-boot-starter-aop",
