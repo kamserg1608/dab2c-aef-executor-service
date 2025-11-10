@@ -3,19 +3,19 @@
  */
 
 rootProject.name = "executor"
-include(":executor-application:configs")
-include(":executor-application:deployments:router-executor")
-include(":executor-shared:health-check")
-include(":executor-shared:monitoring")
-include(":executor-shared:concurrent")
-include(":executor-shared:test-utils")
-include(":executor-shared:cbul-integration")
-include(":executor-shared:system-env")
-include(":executor-shared:circuit-breaker")
-include(":executor-shared:annotations")
-include(":executor-shared:rest-object-mapper")
-include(":executor-shared:commons")
-include(":executor-shared:logging")
+//include(":executor-application:configs")
+//include(":executor-application:deployments:router-executor")
+//include(":executor-shared:health-check")
+//include(":executor-shared:monitoring")
+//include(":executor-shared:concurrent")
+//include(":executor-shared:test-utils")
+//include(":executor-shared:cbul-integration")
+//include(":executor-shared:system-env")
+//include(":executor-shared:circuit-breaker")
+//include(":executor-shared:annotations")
+//include(":executor-shared:rest-object-mapper")
+//include(":executor-shared:commons")
+//include(":executor-shared:logging")
 
 pluginManagement {
     repositories {

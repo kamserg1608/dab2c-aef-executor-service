@@ -1,190 +1,366 @@
 [versions]
-java = "21"
+# Kotlin and Java
 kotlin = "2.1.0"
-spring-boot = "2.7.18"
-ufs-platform-bom = "10.4.2.50"
-mapstruct = "1.5.5.Final"
-resilience4j = "1.7.0"
-jackson = "2.17.1"
-jaxb = "3.0.2"
-junit = "5.10.0"
-mockk = "1.13.1"
-wiremock = "3.3.1"
-assertj = "3.21.0"
-bytebuddy = "1.14.18"
-spotbugs = "4.8.5"
-detekt = "1.23.6"
-jacoco = "0.8.12"
-sonarqube = "3.7.0.1746"
-apache-common-text = "1.10.0"
+java = "21"
+
+# Spring Boot and related
+spring-boot = "3.5.5"
+spring-dependency-management = "1.1.7"
+
+# Ktor
+ktor = "3.0.3"
+
+# Kotlinx
+kotlinx-serialization = "1.7.3"
+kotlinx-coroutines = "1.9.0"
+kotlinx-datetime = "0.6.1"
+
+# OpenAPI and Documentation
+openapi-generator = "7.10.0"
+springdoc-openapi = "2.3.0"
+
+# Logging
+kotlin-logging = "5.1.0"
+
+# Other libraries
 javax-annotation-api = "1.3.2"
-snakeyaml = "2.2"
-json-path = "2.9.0"
-cbul-client = "1.13.2.dev"
-cbul-core = "13.0.2.dev"
-com-fasterxml-jackson-datatype-jackson-datatype-jsr310 = "2.15.4"
-com-fasterxml-jackson-module-jackson-module-kotlin = "2.15.4"
-com-jayway-jsonpath-json-path = "2.9.0"
-com-networknt-json-schema-validator = "1.4.0"
-io-github-resilience4j-resilience4j-circuitbreaker = "1.7.0"
-org-apache-httpcomponents-httpclient = "4.5.14"
-org-apache-httpcomponents-httpcore = "4.4.16"
-org-apache-kafka-kafka-clients = "3.1.2"
-org-mockito-mockito-core = "4.5.1"
-org-slf4j-slf4j-api = "1.7.36"
-org-springframework-boot-spring-boot = "2.7.18"
-org-springframework-boot-spring-boot-starter-test = "2.7.18"
-org-springframework-spring-webmvc = "5.3.39"
-ru-sbrf-cbul-cbul-client-spring-boot-starter = "1.13.2.dev"
-ru-sbrf-ufs-app-hotreload-hotreload-spring-boot-starter = "1.1.12"
-ru-sbrf-ufs-cbreaker-circuit-breaker-api = "7.0.7"
-ru-sbrf-ufs-healthcheck-ufs-healthcheck-spring-boot-starter = "7.0.3.14"
-ru-sbrf-ufs-monitoring-spring-boot-monitoring-spring-boot-starter = "7.1.3.1-01"
-ru-sbrf-ufs-platform-config-agent-spring-boot-starter = "7.0.25.5"
-ru-sbrf-ufs-platform-environment-spring-boot-starter = "7.4.5.55"
-ru-sbrf-ufs-platform-httpclient-spring-boot-starter = "7.22.13"
-ru-sbrf-ufs-platform-logger-api = "7.4.6"
-ru-sbrf-ufs-platform-logger-springboot-starter = "7.4.6.0"
-ru-sbrf-ufs-platform-rest-app-jersey-spring-boot-starter = "7.22.1"
-ru-sbrf-ufs-platform-ufs-platform-cache-impl = "7.4.6.0"
-ru-sbrf-ufs-platform-ufs-platform-config-spring-boot-starter = "7.0.25.5-fix-fh"
-ru-sbrf-ufs-platform-ufs-platform-core = "7.4.5.55"
-ru-sbrf-ufs-platform-ufs-platform-healthcheck-api = "7.0.3.1"
-
-# Plugin versions
-kotlin-plugin = "2.1.0"
-spring-boot-plugin = "2.7.18"
-spotbugs-plugin = "6.4.4"
-detekt-plugin = "1.23.7"
-sonarqube-plugin = "5.1.0.4882"
-versions-plugin = "0.51.0"
-dependency-check-plugin = "10.0.4"
-
-[libraries]
-# Kotlin
-kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
-kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
-kotlin-stdlib-jdk8 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
-kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }
-kotlin-noarg = { module = "org.jetbrains.kotlin:kotlin-noarg", version.ref = "kotlin" }
-
-# Spring Boot
-spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
-spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
-spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
-spring-boot-autoconfigure = { module = "org.springframework.boot:spring-boot-autoconfigure" }
-spring-boot-test = { module = "org.springframework.boot:spring-boot-test" }
-spring-boot-test-autoconfigure = { module = "org.springframework.boot:spring-boot-test-autoconfigure" }
-
-# Spring Core
-spring-core = { module = "org.springframework:spring-core" }
-spring-context = { module = "org.springframework:spring-context" }
-spring-beans = { module = "org.springframework:spring-beans" }
-spring-test = { module = "org.springframework:spring-test" }
-
-# Jackson
-jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
-snakeyaml = { module = "org.yaml:snakeyaml", version.ref = "snakeyaml" }
-
-# JAXB
-jaxb-impl = { module = "com.sun.xml.bind:jaxb-impl", version.ref = "jaxb" }
-jaxb-core = { module = "com.sun.xml.bind:jaxb-core", version.ref = "jaxb" }
-
-# MapStruct
-mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
-mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
-
-# Resilience4j
-resilience4j-circuitbreaker = { module = "io.github.resilience4j:resilience4j-circuitbreaker", version.ref = "resilience4j" }
-resilience4j-retry = { module = "io.github.resilience4j:resilience4j-retry", version.ref = "resilience4j" }
-resilience4j-bulkhead = { module = "io.github.resilience4j:resilience4j-bulkhead", version.ref = "resilience4j" }
-resilience4j-ratelimiter = { module = "io.github.resilience4j:resilience4j-ratelimiter", version.ref = "resilience4j" }
-resilience4j-spring-boot2 = { module = "io.github.resilience4j:resilience4j-spring-boot2", version.ref = "resilience4j" }
+netty-resolver-dns = "4.2.6.Final"
+icu4j = "77.1"
 
 # Testing
-junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
-junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
-junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api" }
-junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params" }
-junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine" }
-junit-platform-commons = { module = "org.junit.platform:junit-platform-commons" }
-junit-platform-engine = { module = "org.junit.platform:junit-platform-engine" }
-mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
-mockk-jvm = { module = "io.mockk:mockk-jvm", version.ref = "mockk" }
-assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
-wiremock = { module = "org.wiremock:wiremock-standalone", version.ref = "wiremock" }
-hamcrest-core = { module = "org.hamcrest:hamcrest-core" }
+mockk = "1.14.5"
 
-# UFS Platform
-ufs-platform-bom = { module = "ru.sbrf.ufs.platform:ufs-platform-bom", version.ref = "ufs-platform-bom" }
-ufs-platform-config-api = { module = "ru.sbrf.ufs.platform:ufs-platform-config-api" }
-ufs-platform-config-core = { module = "ru.sbrf.ufs.platform:ufs-platform-config-core" }
-ufs-platform-api = { module = "ru.sbrf.ufs.platform:ufs-platform-api" }
-ufs-platform-json-mapper = { module = "ru.sbrf.ufs.platform:ufs-platform-json-mapper" }
+[libraries]
+# Spring Boot
+spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }
+spring-boot-starter-aop = { module = "org.springframework.boot:spring-boot-starter-aop" }
+spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
+spring-boot-starter-oauth2-resource-server = { module = "org.springframework.boot:spring-boot-starter-oauth2-resource-server" }
+spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-starter-data-r2dbc = { module = "org.springframework.boot:spring-boot-starter-data-r2dbc" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 
-# CBUL
-cbul-client-spring-boot-starter = { module = "ru.sbrf.cbul:cbul-client-spring-boot-starter", version.ref = "cbul-client" }
-cbul-client-impl = { module = "ru.sbrf.cbul:cbul-client-impl", version.ref = "cbul-core" }
-cbul-client-api = { module = "ru.sbrf.cbul:cbul-client-api", version.ref = "cbul-core" }
-cbul-client-api-dto = { module = "ru.sbrf.cbul:cbul-client-api-dto", version.ref = "cbul-core" }
-cbul-core = { module = "ru.sbrf.cbul:cbul-core", version.ref = "cbul-core" }
+# Spring Security
+spring-security-oauth2-jose = { module = "org.springframework.security:spring-security-oauth2-jose" }
+spring-security-test = { module = "org.springframework.security:spring-security-test" }
 
-# Other
+# Jackson
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310" }
+
+# Kotlin
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect" }
+kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test" }
+
+# Ktor BOM and Client
+ktor-bom = { module = "io.ktor:ktor-bom", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation" }
+ktor-client-auth = { module = "io.ktor:ktor-client-auth" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json" }
+ktor-serialization-jackson = { module = "io.ktor:ktor-serialization-jackson", version.ref = "ktor" }
+
+# Kotlinx
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+
+# SpringDoc OpenAPI
+springdoc-openapi-starter-webflux-ui = { module = "org.springdoc:springdoc-openapi-starter-webflux-ui", version.ref = "springdoc-openapi" }
+springdoc-openapi-starter-common = { module = "org.springdoc:springdoc-openapi-starter-common", version.ref = "springdoc-openapi" }
+
+# Logging
+kotlin-logging-jvm = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
+
+# Database
+r2dbc-postgresql = { module = "org.postgresql:r2dbc-postgresql" }
+r2dbc-h2 = { module = "io.r2dbc:r2dbc-h2" }
+
+# Validation
+jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api" }
 javax-annotation-api = { module = "javax.annotation:javax.annotation-api", version.ref = "javax-annotation-api" }
-spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version.ref = "spotbugs" }
-slf4j-log4j12 = { module = "org.slf4j:slf4j-log4j12" }
-apache-commons-text = { module = "org.apache.commons:commons-text", version.ref = "apache-common-text" }
-bytebuddy = { module = "net.bytebuddy:byte-buddy", version.ref = "bytebuddy" }
-json-path = { module = "com.jayway.jsonpath:json-path", version.ref = "json-path" }
 
-com-fasterxml-jackson-datatype-jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "com-fasterxml-jackson-datatype-jackson-datatype-jsr310" }
-com-fasterxml-jackson-module-jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "com-fasterxml-jackson-module-jackson-module-kotlin" }
-com-jayway-jsonpath-json-path = { module = "com.jayway.jsonpath:json-path", version.ref = "com-jayway-jsonpath-json-path" }
-com-networknt-json-schema-validator = { module = "com.networknt:json-schema-validator", version.ref = "com-networknt-json-schema-validator" }
-io-github-resilience4j-resilience4j-circuitbreaker = { module = "io.github.resilience4j:resilience4j-circuitbreaker", version.ref = "io-github-resilience4j-resilience4j-circuitbreaker" }
-org-apache-httpcomponents-httpclient = { module = "org.apache.httpcomponents:httpclient", version.ref = "org-apache-httpcomponents-httpclient" }
-org-apache-httpcomponents-httpcore = { module = "org.apache.httpcomponents:httpcore", version.ref = "org-apache-httpcomponents-httpcore" }
-org-apache-kafka-kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "org-apache-kafka-kafka-clients" }
-org-mockito-mockito-core = { module = "org.mockito:mockito-core", version.ref = "org-mockito-mockito-core" }
-org-slf4j-slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "org-slf4j-slf4j-api" }
-org-springframework-boot-spring-boot = { module = "org.springframework.boot:spring-boot", version.ref = "org-springframework-boot-spring-boot" }
-org-springframework-boot-spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "org-springframework-boot-spring-boot-starter-test" }
-org-springframework-spring-webmvc = { module = "org.springframework:spring-webmvc", version.ref = "org-springframework-spring-webmvc" }
-ru-sbrf-cbul-cbul-client-spring-boot-starter = { module = "ru.sbrf.cbul:cbul-client-spring-boot-starter", version.ref = "ru-sbrf-cbul-cbul-client-spring-boot-starter" }
-ru-sbrf-ufs-app-hotreload-hotreload-spring-boot-starter = { module = "ru.sbrf.ufs.app.hotreload:hotreload-spring-boot-starter", version.ref = "ru-sbrf-ufs-app-hotreload-hotreload-spring-boot-starter" }
-ru-sbrf-ufs-cbreaker-circuit-breaker-api = { module = "ru.sbrf.ufs.cbreaker:circuit-breaker-api", version.ref = "ru-sbrf-ufs-cbreaker-circuit-breaker-api" }
-ru-sbrf-ufs-healthcheck-ufs-healthcheck-spring-boot-starter = { module = "ru.sbrf.ufs.healthcheck:ufs-healthcheck-spring-boot-starter", version.ref = "ru-sbrf-ufs-healthcheck-ufs-healthcheck-spring-boot-starter" }
-ru-sbrf-ufs-monitoring-spring-boot-monitoring-spring-boot-starter = { module = "ru.sbrf.ufs.monitoring.spring-boot:monitoring-spring-boot-starter", version.ref = "ru-sbrf-ufs-monitoring-spring-boot-monitoring-spring-boot-starter" }
-ru-sbrf-ufs-platform-config-agent-spring-boot-starter = { module = "ru.sbrf.ufs.platform:config-agent-spring-boot-starter", version.ref = "ru-sbrf-ufs-platform-config-agent-spring-boot-starter" }
-ru-sbrf-ufs-platform-environment-spring-boot-starter = { module = "ru.sbrf.ufs.platform:environment-spring-boot-starter", version.ref = "ru-sbrf-ufs-platform-environment-spring-boot-starter" }
-ru-sbrf-ufs-platform-httpclient-spring-boot-starter = { module = "ru.sbrf.ufs.platform:httpclient-spring-boot-starter", version.ref = "ru-sbrf-ufs-platform-httpclient-spring-boot-starter" }
-ru-sbrf-ufs-platform-logger-api = { module = "ru.sbrf.ufs.platform:logger-api", version.ref = "ru-sbrf-ufs-platform-logger-api" }
-ru-sbrf-ufs-platform-logger-springboot-starter = { module = "ru.sbrf.ufs.platform:logger-springboot-starter", version.ref = "ru-sbrf-ufs-platform-logger-springboot-starter" }
-ru-sbrf-ufs-platform-rest-app-jersey-spring-boot-starter = { module = "ru.sbrf.ufs.platform:rest-app-jersey-spring-boot-starter", version.ref = "ru-sbrf-ufs-platform-rest-app-jersey-spring-boot-starter" }
-ru-sbrf-ufs-platform-ufs-platform-cache-impl = { module = "ru.sbrf.ufs.platform:ufs-platform-cache-impl", version.ref = "ru-sbrf-ufs-platform-ufs-platform-cache-impl" }
-ru-sbrf-ufs-platform-ufs-platform-config-spring-boot-starter = { module = "ru.sbrf.ufs.platform:ufs-platform-config-spring-boot-starter", version.ref = "ru-sbrf-ufs-platform-ufs-platform-config-spring-boot-starter" }
-ru-sbrf-ufs-platform-ufs-platform-core = { module = "ru.sbrf.ufs.platform:ufs-platform-core", version.ref = "ru-sbrf-ufs-platform-ufs-platform-core" }
-ru-sbrf-ufs-platform-ufs-platform-healthcheck-api = { module = "ru.sbrf.ufs.platform:ufs-platform-healthcheck-api", version.ref = "ru-sbrf-ufs-platform-ufs-platform-healthcheck-api" }
+# Netty
+netty-resolver-dns-native-macos = { module = "io.netty:netty-resolver-dns-native-macos", version.ref = "netty-resolver-dns" }
 
+# ICU
+icu4j = { module = "com.ibm.icu:icu4j", version.ref = "icu4j" }
 
-[plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-plugin" }
-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin-plugin" }
-kotlin-allopen = { id = "org.jetbrains.kotlin.plugin.allopen", version.ref = "kotlin-plugin" }
-kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin-plugin" }
-kotlin-jpa = { id = "org.jetbrains.kotlin.plugin.jpa", version.ref = "kotlin-plugin" }
-kotlin-noarg = { id = "org.jetbrains.kotlin.plugin.noarg", version.ref = "kotlin-plugin" }
-spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot-plugin" }
-spring-dependency-management = { id = "io.spring.dependency-management", version = "1.1.7" }
-spotbugs = { id = "com.github.spotbugs", version.ref = "spotbugs-plugin" }
-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt-plugin" }
-sonarqube = { id = "org.sonarqube", version.ref = "sonarqube-plugin" }
-versions = { id = "com.github.ben-manes.versions", version.ref = "versions-plugin" }
+# Testing
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+
+# Gradle plugins (for buildSrc)
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+spring-boot-gradle-plugin = { module = "org.springframework.boot:spring-boot-gradle-plugin", version.ref = "spring-boot" }
+spring-dependency-management-gradle-plugin = { module = "io.spring.gradle:dependency-management-plugin", version.ref = "spring-dependency-management" }
 
 [bundles]
-kotlin = ["kotlin-stdlib", "kotlin-reflect", "kotlin-stdlib-jdk8"]
-spring-core = ["spring-core", "spring-context", "spring-beans"]
-resilience4j = ["resilience4j-circuitbreaker", "resilience4j-retry", "resilience4j-bulkhead", "resilience4j-ratelimiter", "resilience4j-spring-boot2"]
-junit = ["junit-jupiter", "junit-jupiter-api", "junit-jupiter-params", "junit-jupiter-engine", "junit-platform-commons", "junit-platform-engine"]
-test = ["junit-jupiter", "mockk", "assertj-core", "hamcrest-core", "spring-test", "spring-boot-test", "spring-boot-test-autoconfigure"]
-cbul = ["cbul-client-spring-boot-starter", "cbul-client-impl", "cbul-client-api", "cbul-client-api-dto", "cbul-core"]
+# Spring Boot Web and Core
+spring-boot-web = [
+    "spring-boot-starter-webflux",
+    "spring-boot-starter-aop",
+    "spring-boot-starter-actuator"
+]
+
+# Spring Security
+spring-security = [
+    "spring-boot-starter-security",
+    "spring-boot-starter-oauth2-resource-server",
+    "spring-security-oauth2-jose"
+]
+
+# Spring Data R2DBC
+spring-data-r2dbc = [
+    "spring-boot-starter-data-r2dbc",
+    "r2dbc-postgresql"
+]
+
+# Jackson
+jackson = [
+    "jackson-module-kotlin",
+    "jackson-annotations",
+    "jackson-datatype-jsr310"
+]
+
+# Ktor Client
+ktor-client = [
+    "ktor-client-cio",
+    "ktor-client-content-negotiation",
+    "ktor-client-auth",
+    "ktor-client-logging",
+    "ktor-serialization-kotlinx-json",
+    "ktor-serialization-jackson"
+]
+
+# Kotlinx
+kotlinx = [
+    "kotlinx-serialization-json",
+    "kotlinx-coroutines-core",
+    "kotlinx-coroutines-reactor",
+    "kotlinx-datetime"
+]
+
+# SpringDoc OpenAPI
+springdoc = [
+    "springdoc-openapi-starter-webflux-ui",
+    "springdoc-openapi-starter-common"
+]
+
+# Testing
+testing = [
+    "spring-boot-starter-test",
+    "kotlin-test-junit5",
+    "spring-security-test",
+    "mockk",
+    "kotlin-test"
+]
+
+[plugins]
+# Kotlin plugins
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+
+# Spring Boot plugins
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
+
+# OpenAPI Generator
+openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
+
+
+#[versions]
+#java = "21"
+#kotlin = "2.1.0"
+#spring-boot = "2.7.18"
+#ufs-platform-bom = "10.4.2.50"
+#mapstruct = "1.5.5.Final"
+#resilience4j = "1.7.0"
+#jackson = "2.17.1"
+#jaxb = "3.0.2"
+#junit = "5.10.0"
+#mockk = "1.13.1"
+#wiremock = "3.3.1"
+#assertj = "3.21.0"
+#bytebuddy = "1.14.18"
+#spotbugs = "4.8.5"
+#detekt = "1.23.6"
+#jacoco = "0.8.12"
+#sonarqube = "3.7.0.1746"
+#apache-common-text = "1.10.0"
+#javax-annotation-api = "1.3.2"
+#snakeyaml = "2.2"
+#json-path = "2.9.0"
+#cbul-client = "1.13.2.dev"
+#cbul-core = "13.0.2.dev"
+#com-fasterxml-jackson-datatype-jackson-datatype-jsr310 = "2.15.4"
+#com-fasterxml-jackson-module-jackson-module-kotlin = "2.15.4"
+#com-jayway-jsonpath-json-path = "2.9.0"
+#com-networknt-json-schema-validator = "1.4.0"
+#io-github-resilience4j-resilience4j-circuitbreaker = "1.7.0"
+#org-apache-httpcomponents-httpclient = "4.5.14"
+#org-apache-httpcomponents-httpcore = "4.4.16"
+#org-apache-kafka-kafka-clients = "3.1.2"
+#org-mockito-mockito-core = "4.5.1"
+#org-slf4j-slf4j-api = "1.7.36"
+#org-springframework-boot-spring-boot = "2.7.18"
+#org-springframework-boot-spring-boot-starter-test = "2.7.18"
+#org-springframework-spring-webmvc = "5.3.39"
+#ru-sbrf-cbul-cbul-client-spring-boot-starter = "1.13.2.dev"
+#ru-sbrf-ufs-app-hotreload-hotreload-spring-boot-starter = "1.1.12"
+#ru-sbrf-ufs-cbreaker-circuit-breaker-api = "7.0.7"
+#ru-sbrf-ufs-healthcheck-ufs-healthcheck-spring-boot-starter = "7.0.3.14"
+#ru-sbrf-ufs-monitoring-spring-boot-monitoring-spring-boot-starter = "7.1.3.1-01"
+#ru-sbrf-ufs-platform-config-agent-spring-boot-starter = "7.0.25.5"
+#ru-sbrf-ufs-platform-environment-spring-boot-starter = "7.4.5.55"
+#ru-sbrf-ufs-platform-httpclient-spring-boot-starter = "7.22.13"
+#ru-sbrf-ufs-platform-logger-api = "7.4.6"
+#ru-sbrf-ufs-platform-logger-springboot-starter = "7.4.6.0"
+#ru-sbrf-ufs-platform-rest-app-jersey-spring-boot-starter = "7.22.1"
+#ru-sbrf-ufs-platform-ufs-platform-cache-impl = "7.4.6.0"
+#ru-sbrf-ufs-platform-ufs-platform-config-spring-boot-starter = "7.0.25.5-fix-fh"
+#ru-sbrf-ufs-platform-ufs-platform-core = "7.4.5.55"
+#ru-sbrf-ufs-platform-ufs-platform-healthcheck-api = "7.0.3.1"
+#
+## Plugin versions
+#kotlin-plugin = "2.1.0"
+#spring-boot-plugin = "2.7.18"
+#spotbugs-plugin = "6.4.4"
+#detekt-plugin = "1.23.7"
+#sonarqube-plugin = "5.1.0.4882"
+#versions-plugin = "0.51.0"
+#dependency-check-plugin = "10.0.4"
+#
+#[libraries]
+## Kotlin
+#kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+#kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+#kotlin-stdlib-jdk8 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+#kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }
+#kotlin-noarg = { module = "org.jetbrains.kotlin:kotlin-noarg", version.ref = "kotlin" }
+#
+## Spring Boot
+#spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
+#spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
+#spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+#spring-boot-autoconfigure = { module = "org.springframework.boot:spring-boot-autoconfigure" }
+#spring-boot-test = { module = "org.springframework.boot:spring-boot-test" }
+#spring-boot-test-autoconfigure = { module = "org.springframework.boot:spring-boot-test-autoconfigure" }
+#
+## Spring Core
+#spring-core = { module = "org.springframework:spring-core" }
+#spring-context = { module = "org.springframework:spring-context" }
+#spring-beans = { module = "org.springframework:spring-beans" }
+#spring-test = { module = "org.springframework:spring-test" }
+#
+## Jackson
+#jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
+#snakeyaml = { module = "org.yaml:snakeyaml", version.ref = "snakeyaml" }
+#
+## JAXB
+#jaxb-impl = { module = "com.sun.xml.bind:jaxb-impl", version.ref = "jaxb" }
+#jaxb-core = { module = "com.sun.xml.bind:jaxb-core", version.ref = "jaxb" }
+#
+## MapStruct
+#mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
+#mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
+#
+## Resilience4j
+#resilience4j-circuitbreaker = { module = "io.github.resilience4j:resilience4j-circuitbreaker", version.ref = "resilience4j" }
+#resilience4j-retry = { module = "io.github.resilience4j:resilience4j-retry", version.ref = "resilience4j" }
+#resilience4j-bulkhead = { module = "io.github.resilience4j:resilience4j-bulkhead", version.ref = "resilience4j" }
+#resilience4j-ratelimiter = { module = "io.github.resilience4j:resilience4j-ratelimiter", version.ref = "resilience4j" }
+#resilience4j-spring-boot2 = { module = "io.github.resilience4j:resilience4j-spring-boot2", version.ref = "resilience4j" }
+#
+## Testing
+#junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+#junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+#junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api" }
+#junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params" }
+#junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine" }
+#junit-platform-commons = { module = "org.junit.platform:junit-platform-commons" }
+#junit-platform-engine = { module = "org.junit.platform:junit-platform-engine" }
+#mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+#mockk-jvm = { module = "io.mockk:mockk-jvm", version.ref = "mockk" }
+#assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+#wiremock = { module = "org.wiremock:wiremock-standalone", version.ref = "wiremock" }
+#hamcrest-core = { module = "org.hamcrest:hamcrest-core" }
+#
+## UFS Platform
+#ufs-platform-bom = { module = "ru.sbrf.ufs.platform:ufs-platform-bom", version.ref = "ufs-platform-bom" }
+#ufs-platform-config-api = { module = "ru.sbrf.ufs.platform:ufs-platform-config-api" }
+#ufs-platform-config-core = { module = "ru.sbrf.ufs.platform:ufs-platform-config-core" }
+#ufs-platform-api = { module = "ru.sbrf.ufs.platform:ufs-platform-api" }
+#ufs-platform-json-mapper = { module = "ru.sbrf.ufs.platform:ufs-platform-json-mapper" }
+#
+## CBUL
+#cbul-client-spring-boot-starter = { module = "ru.sbrf.cbul:cbul-client-spring-boot-starter", version.ref = "cbul-client" }
+#cbul-client-impl = { module = "ru.sbrf.cbul:cbul-client-impl", version.ref = "cbul-core" }
+#cbul-client-api = { module = "ru.sbrf.cbul:cbul-client-api", version.ref = "cbul-core" }
+#cbul-client-api-dto = { module = "ru.sbrf.cbul:cbul-client-api-dto", version.ref = "cbul-core" }
+#cbul-core = { module = "ru.sbrf.cbul:cbul-core", version.ref = "cbul-core" }
+#
+## Other
+#javax-annotation-api = { module = "javax.annotation:javax.annotation-api", version.ref = "javax-annotation-api" }
+#spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version.ref = "spotbugs" }
+#slf4j-log4j12 = { module = "org.slf4j:slf4j-log4j12" }
+#apache-commons-text = { module = "org.apache.commons:commons-text", version.ref = "apache-common-text" }
+#bytebuddy = { module = "net.bytebuddy:byte-buddy", version.ref = "bytebuddy" }
+#json-path = { module = "com.jayway.jsonpath:json-path", version.ref = "json-path" }
+#
+#com-fasterxml-jackson-datatype-jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "com-fasterxml-jackson-datatype-jackson-datatype-jsr310" }
+#com-fasterxml-jackson-module-jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "com-fasterxml-jackson-module-jackson-module-kotlin" }
+#com-jayway-jsonpath-json-path = { module = "com.jayway.jsonpath:json-path", version.ref = "com-jayway-jsonpath-json-path" }
+#com-networknt-json-schema-validator = { module = "com.networknt:json-schema-validator", version.ref = "com-networknt-json-schema-validator" }
+#io-github-resilience4j-resilience4j-circuitbreaker = { module = "io.github.resilience4j:resilience4j-circuitbreaker", version.ref = "io-github-resilience4j-resilience4j-circuitbreaker" }
+#org-apache-httpcomponents-httpclient = { module = "org.apache.httpcomponents:httpclient", version.ref = "org-apache-httpcomponents-httpclient" }
+#org-apache-httpcomponents-httpcore = { module = "org.apache.httpcomponents:httpcore", version.ref = "org-apache-httpcomponents-httpcore" }
+#org-apache-kafka-kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "org-apache-kafka-kafka-clients" }
+#org-mockito-mockito-core = { module = "org.mockito:mockito-core", version.ref = "org-mockito-mockito-core" }
+#org-slf4j-slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "org-slf4j-slf4j-api" }
+#org-springframework-boot-spring-boot = { module = "org.springframework.boot:spring-boot", version.ref = "org-springframework-boot-spring-boot" }
+#org-springframework-boot-spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "org-springframework-boot-spring-boot-starter-test" }
+#org-springframework-spring-webmvc = { module = "org.springframework:spring-webmvc", version.ref = "org-springframework-spring-webmvc" }
+#ru-sbrf-cbul-cbul-client-spring-boot-starter = { module = "ru.sbrf.cbul:cbul-client-spring-boot-starter", version.ref = "ru-sbrf-cbul-cbul-client-spring-boot-starter" }
+#ru-sbrf-ufs-app-hotreload-hotreload-spring-boot-starter = { module = "ru.sbrf.ufs.app.hotreload:hotreload-spring-boot-starter", version.ref = "ru-sbrf-ufs-app-hotreload-hotreload-spring-boot-starter" }
+#ru-sbrf-ufs-cbreaker-circuit-breaker-api = { module = "ru.sbrf.ufs.cbreaker:circuit-breaker-api", version.ref = "ru-sbrf-ufs-cbreaker-circuit-breaker-api" }
+#ru-sbrf-ufs-healthcheck-ufs-healthcheck-spring-boot-starter = { module = "ru.sbrf.ufs.healthcheck:ufs-healthcheck-spring-boot-starter", version.ref = "ru-sbrf-ufs-healthcheck-ufs-healthcheck-spring-boot-starter" }
+#ru-sbrf-ufs-monitoring-spring-boot-monitoring-spring-boot-starter = { module = "ru.sbrf.ufs.monitoring.spring-boot:monitoring-spring-boot-starter", version.ref = "ru-sbrf-ufs-monitoring-spring-boot-monitoring-spring-boot-starter" }
+#ru-sbrf-ufs-platform-config-agent-spring-boot-starter = { module = "ru.sbrf.ufs.platform:config-agent-spring-boot-starter", version.ref = "ru-sbrf-ufs-platform-config-agent-spring-boot-starter" }
+#ru-sbrf-ufs-platform-environment-spring-boot-starter = { module = "ru.sbrf.ufs.platform:environment-spring-boot-starter", version.ref = "ru-sbrf-ufs-platform-environment-spring-boot-starter" }
+#ru-sbrf-ufs-platform-httpclient-spring-boot-starter = { module = "ru.sbrf.ufs.platform:httpclient-spring-boot-starter", version.ref = "ru-sbrf-ufs-platform-httpclient-spring-boot-starter" }
+#ru-sbrf-ufs-platform-logger-api = { module = "ru.sbrf.ufs.platform:logger-api", version.ref = "ru-sbrf-ufs-platform-logger-api" }
+#ru-sbrf-ufs-platform-logger-springboot-starter = { module = "ru.sbrf.ufs.platform:logger-springboot-starter", version.ref = "ru-sbrf-ufs-platform-logger-springboot-starter" }
+#ru-sbrf-ufs-platform-rest-app-jersey-spring-boot-starter = { module = "ru.sbrf.ufs.platform:rest-app-jersey-spring-boot-starter", version.ref = "ru-sbrf-ufs-platform-rest-app-jersey-spring-boot-starter" }
+#ru-sbrf-ufs-platform-ufs-platform-cache-impl = { module = "ru.sbrf.ufs.platform:ufs-platform-cache-impl", version.ref = "ru-sbrf-ufs-platform-ufs-platform-cache-impl" }
+#ru-sbrf-ufs-platform-ufs-platform-config-spring-boot-starter = { module = "ru.sbrf.ufs.platform:ufs-platform-config-spring-boot-starter", version.ref = "ru-sbrf-ufs-platform-ufs-platform-config-spring-boot-starter" }
+#ru-sbrf-ufs-platform-ufs-platform-core = { module = "ru.sbrf.ufs.platform:ufs-platform-core", version.ref = "ru-sbrf-ufs-platform-ufs-platform-core" }
+#ru-sbrf-ufs-platform-ufs-platform-healthcheck-api = { module = "ru.sbrf.ufs.platform:ufs-platform-healthcheck-api", version.ref = "ru-sbrf-ufs-platform-ufs-platform-healthcheck-api" }
+#
+#
+#[plugins]
+#kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-plugin" }
+#kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin-plugin" }
+#kotlin-allopen = { id = "org.jetbrains.kotlin.plugin.allopen", version.ref = "kotlin-plugin" }
+#kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin-plugin" }
+#kotlin-jpa = { id = "org.jetbrains.kotlin.plugin.jpa", version.ref = "kotlin-plugin" }
+#kotlin-noarg = { id = "org.jetbrains.kotlin.plugin.noarg", version.ref = "kotlin-plugin" }
+#spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot-plugin" }
+#spring-dependency-management = { id = "io.spring.dependency-management", version = "1.1.7" }
+#spotbugs = { id = "com.github.spotbugs", version.ref = "spotbugs-plugin" }
+#detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt-plugin" }
+#sonarqube = { id = "org.sonarqube", version.ref = "sonarqube-plugin" }
+#versions = { id = "com.github.ben-manes.versions", version.ref = "versions-plugin" }
+#
+#[bundles]
+#kotlin = ["kotlin-stdlib", "kotlin-reflect", "kotlin-stdlib-jdk8"]
+#spring-core = ["spring-core", "spring-context", "spring-beans"]
+#resilience4j = ["resilience4j-circuitbreaker", "resilience4j-retry", "resilience4j-bulkhead", "resilience4j-ratelimiter", "resilience4j-spring-boot2"]
+#junit = ["junit-jupiter", "junit-jupiter-api", "junit-jupiter-params", "junit-jupiter-engine", "junit-platform-commons", "junit-platform-engine"]
+#test = ["junit-jupiter", "mockk", "assertj-core", "hamcrest-core", "spring-test", "spring-boot-test", "spring-boot-test-autoconfigure"]
+#cbul = ["cbul-client-spring-boot-starter", "cbul-client-impl", "cbul-client-api", "cbul-client-api-dto", "cbul-core"]

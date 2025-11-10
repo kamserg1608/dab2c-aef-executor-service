@@ -1,0 +1,30 @@
+plugins {
+    `java-library`
+    id("ru.sbrf.ufs.dab2c.core.kotlin-conventions")
+    id("org.jetbrains.kotlin.plugin.spring")
+    id("io.spring.dependency-management")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+    }
+}
+
+dependencies {
+    // Spring Context for @Component, @Service annotations and bean management
+    api("org.springframework:spring-context")
+
+    // Testing
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+// Ensure libraries don't create executable jars
+tasks.findByName("bootJar")?.apply {
+    enabled = false
+}
+
+tasks.findByName("jar")?.apply {
+    enabled = true
+}
