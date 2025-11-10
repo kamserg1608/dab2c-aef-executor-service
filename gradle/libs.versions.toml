@@ -109,6 +109,10 @@ spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-
 ufs-logger-springboot-starter = { module = "ru.sbrf.ufs.platform:logger-springboot-starter" }
 ufs-logger-api = { module = "ru.sbrf.ufs.platform:logger-api" }
 
+#Healthcheck
+ufs-platform-healthcheck-api = { module = "ru.sbrf.ufs.platform:ufs-platform-healthcheck-api" }
+ufs-healthcheck-spring-boot-starter = { module = "ru.sbrf.ufs.healthcheck:ufs-healthcheck-spring-boot-starter" }
+
 [bundles]
 # Spring Boot Web and Core
 
@@ -134,6 +138,11 @@ ufs-monitoring = [
     "monitoring-spring-boot-autoconfigure",
     "monitoring-spring-boot-autoconfigure",
     "spring-boot-starter-actuator"
+]
+
+ufs-healthcheck = [
+    "ufs-platform-healthcheck-api",
+    "ufs-healthcheck-spring-boot-starter"
 ]
 
 spring-boot-web = [
