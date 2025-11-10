@@ -6,5 +6,4 @@ description = "test-utils"
 
 dependencies {
     implementation(rootProject.libs.bundles.testing)
-    implementation(rootProject.libs.bundles.httpcomponents)
 }
