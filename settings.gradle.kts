@@ -3,7 +3,7 @@
  */
 
 rootProject.name = "executor"
-//include(":executor-application:configs")
+include(":executor-application:configs")
 //include(":executor-application:deployments:router-executor")
 include(":executor-shared:health-check")
 include(":executor-shared:monitoring")
