@@ -35,7 +35,6 @@ ufs-platform-bom = { module = "ru.sbrf.ufs.platform:ufs-platform-bom", version.r
 # Spring Boot
 spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }
 spring-boot-starter-aop = { module = "org.springframework.boot:spring-boot-starter-aop" }
-spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 
 # Jackson
@@ -96,6 +95,16 @@ junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine" }
 junit-platform-commons = { module = "org.junit.platform:junit-platform-commons" }
 junit-platform-engine = { module = "org.junit.platform:junit-platform-engine" }
 
+#Monitoring
+monitoring-starter = { module = "ru.sbrf.ufs.monitoring.spring-boot:monitoring-spring-boot-starter" }
+monitoring-api = { module = "ru.sbrf.ufs.platform:ufs-platform-monitoring-api" }
+monitoring-core = { module = "ru.sbrf.ufs.monitoring:monitoring-core" }
+monitoring-models = { module = "ru.sbrf.ufs.monitoring:monitoring-models" }
+monitoring-module = { module = "ru.sbrf.ufs.monitoring:monitoring-module" }
+monitoring-session = { module = "ru.sbrf.ufs.monitoring:monitoring-session" }
+monitoring-spring-boot-autoconfigure = { module = "ru.sbrf.ufs.monitoring.spring-boot:monitoring-spring-boot-autoconfigure" }
+spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+
 #Logging
 ufs-logger-springboot-starter = { module = "ru.sbrf.ufs.platform:logger-springboot-starter" }
 ufs-logger-api = { module = "ru.sbrf.ufs.platform:logger-api" }
@@ -107,15 +116,29 @@ ufs-core = [
     "ufs-platform-config-api",
     "ufs-platform-config-core",
     "ufs-platform-api",
-    "ufs-platform-json-mapper",
+    "ufs-platform-json-mapper"
+]
+
+ufs-logging = [
     "ufs-logger-springboot-starter",
     "ufs-logger-api"
 ]
 
+ufs-monitoring = [
+    "monitoring-starter",
+    "monitoring-api",
+    "monitoring-core",
+    "monitoring-models",
+    "monitoring-module",
+    "monitoring-session",
+    "monitoring-spring-boot-autoconfigure",
+    "monitoring-spring-boot-autoconfigure",
+    "spring-boot-starter-actuator"
+]
+
 spring-boot-web = [
     "spring-boot-starter-webflux",
-    "spring-boot-starter-aop",
-    "spring-boot-starter-actuator"
+    "spring-boot-starter-aop"
 ]
 
 # Jackson

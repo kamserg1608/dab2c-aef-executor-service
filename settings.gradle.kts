@@ -6,7 +6,7 @@ rootProject.name = "executor"
 //include(":executor-application:configs")
 //include(":executor-application:deployments:router-executor")
 //include(":executor-shared:health-check")
-//include(":executor-shared:monitoring")
+include(":executor-shared:monitoring")
 include(":executor-shared:test-utils")
 //include(":executor-shared:cbul-integration")
 include(":executor-shared:system-env")
