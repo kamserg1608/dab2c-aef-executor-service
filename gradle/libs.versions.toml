@@ -29,6 +29,9 @@ slf4j = "2.0.16"
 resilience4j = "1.7.0"
 assertj = "3.24.2"
 
+#UFS
+cbul = "1.13.2.dev"
+
 [libraries]
 #platform BOM
 ufs-platform-bom = { module = "ru.sbrf.ufs.platform:ufs-platform-bom", version.ref = "ufs-platform-bom" }
@@ -117,6 +120,13 @@ ufs-logger-api = { module = "ru.sbrf.ufs.platform:logger-api" }
 ufs-platform-healthcheck-api = { module = "ru.sbrf.ufs.platform:ufs-platform-healthcheck-api" }
 ufs-healthcheck-spring-boot-starter = { module = "ru.sbrf.ufs.healthcheck:ufs-healthcheck-spring-boot-starter" }
 
+#Cbul
+cbul-client-api = { module = "ru.sbrf.cbul:cbul-client-api", version.ref = "cbul" }
+cbul-client-api-dto = { module = "ru.sbrf.cbul:cbul-client-api-dto", version.ref = "cbul" }
+cbul-client-impl = { module = "ru.sbrf.cbul:cbul-client-impl", version.ref = "cbul" }
+cbul-core = { module = "ru.sbrf.cbul:cbul-core", version.ref = "cbul" }
+cbul-client-spring-boot-starter = { module = "ru.sbrf.cbul:cbul-client-spring-boot-starter", version.ref = "cbul" }
+
 [bundles]
 # Spring Boot Web and Core
 
@@ -147,6 +157,14 @@ ufs-monitoring = [
 ufs-healthcheck = [
     "ufs-platform-healthcheck-api",
     "ufs-healthcheck-spring-boot-starter"
+]
+
+ufs-cbul = [
+    "cbul-client-api",
+    "cbul-client-api-dto",
+    "cbul-client-impl",
+    "cbul-core",
+    "cbul-client-spring-boot-starter"
 ]
 
 spring-boot-web = [
