@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.spring.boot)
+    id("ru.sbrf.ufs.dab2c.core.deployment-conventions")
 }
 
 description = "router-executor"
