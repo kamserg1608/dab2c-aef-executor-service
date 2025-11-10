@@ -14,7 +14,7 @@ include(":executor-shared:system-env")
 //include(":executor-shared:circuit-breaker")
 include(":executor-shared:annotations")
 include(":executor-shared:rest-object-mapper")
-//include(":executor-shared:commons")
+include(":executor-shared:commons")
 //include(":executor-shared:logging")
 
 pluginManagement {
