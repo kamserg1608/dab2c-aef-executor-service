@@ -1,6 +1,6 @@
 package ru.sbrf.ufs.dab2c.core.executor.deployments.router.executor.rest
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -19,7 +19,7 @@ import ru.sbrf.ufs.dab2c.core.executor.shared.monitoring.annotation.RestMonitore
     produces = [MediaType.APPLICATION_JSON_VALUE],
     path = [INVOKE_PATH]
 )
-@SuppressFBWarnings("SPRING_ENDPOINT", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION")
+//@SuppressFBWarnings("SPRING_ENDPOINT", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION")
 class InvokeRest {
 
     /**

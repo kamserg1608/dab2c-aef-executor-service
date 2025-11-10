@@ -1,6 +1,6 @@
 package ru.sbrf.ufs.dab2c.core.executor.shared.test.utils.http.impl
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+
 import org.apache.http.HttpHost
 import org.apache.http.HttpRequest
 import org.apache.http.HttpResponse
@@ -15,7 +15,7 @@ import ru.sbrf.ufs.dab2c.core.executor.shared.test.utils.http.api.PooledHttpClie
  * Pooled decorator of [HttpClient] that clear a pool of HTTP connections on demand.
  */
 @Suppress("MethodOverloading")
-@SuppressFBWarnings("HCP_HTTP_REQUEST_RESOURCES_NOT_FREED_LOCAL", "Resources are released in releaseConnections()")
+//@SuppressFBWarnings("HCP_HTTP_REQUEST_RESOURCES_NOT_FREED_LOCAL", "Resources are released in releaseConnections()")
 open class PooledHttpClientImpl(
     private val delegate: HttpClient
 ) : HttpClient by delegate, PooledHttpClient {

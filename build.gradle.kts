@@ -3,13 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.kapt)
-    alias(libs.plugins.kotlin.allopen)
-    alias(libs.plugins.kotlin.spring)
-    alias(libs.plugins.kotlin.jpa)
-    alias(libs.plugins.kotlin.noarg)
     alias(libs.plugins.spring.dependency.management)
-    alias(libs.plugins.spotbugs)
-    alias(libs.plugins.sonarqube)
     alias(libs.plugins.versions)
     `java-library`
     jacoco
@@ -43,40 +37,58 @@ subprojects {
 
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "org.jetbrains.kotlin.kapt")
-    apply(plugin = "org.jetbrains.kotlin.plugin.allopen")
-    apply(plugin = "org.jetbrains.kotlin.plugin.spring")
-    apply(plugin = "org.jetbrains.kotlin.plugin.noarg")
-    apply(plugin = "org.jetbrains.kotlin.plugin.jpa")
     apply(plugin = "io.spring.dependency-management")
-//    apply(plugin = "com.github.spotbugs")
     apply(plugin = "java-library")
-//    apply(plugin = "io.gitlab.arturbosch.detekt")
     apply(plugin = "jacoco")
 
     dependencies {
-        implementation(platform(rootProject.libs.ufs.platform.bom))
         implementation(platform(rootProject.libs.junit.bom))
-
-        kapt(rootProject.libs.mapstruct.processor)
-
-        implementation(rootProject.libs.javax.annotation.api)
-        implementation(rootProject.libs.spotbugs.annotations)
-        implementation(rootProject.libs.slf4j.log4j12)
-
+        implementation(platform(rootProject.libs.ufs.platform.bom))
         implementation(rootProject.libs.bundles.kotlin)
         implementation(rootProject.libs.bundles.spring.core)
-
+        implementation(rootProject.libs.bundles.test)
+        implementation(rootProject.libs.com.fasterxml.jackson.datatype.jackson.datatype.jsr310)
+        implementation(rootProject.libs.com.fasterxml.jackson.module.jackson.module.kotlin)
+        implementation(rootProject.libs.com.jayway.jsonpath.json.path)
+        implementation(rootProject.libs.com.networknt.json.schema.validator)
+        implementation(rootProject.libs.io.github.resilience4j.resilience4j.circuitbreaker)
+        implementation(rootProject.libs.javax.annotation.api)
+        implementation(rootProject.libs.mapstruct)
+        implementation(rootProject.libs.org.apache.httpcomponents.httpclient)
+        implementation(rootProject.libs.org.apache.httpcomponents.httpcore)
+        implementation(rootProject.libs.org.apache.kafka.kafka.clients)
+        implementation(rootProject.libs.org.slf4j.slf4j.api)
+        implementation(rootProject.libs.org.springframework.boot.spring.boot)
+        implementation(rootProject.libs.org.springframework.spring.webmvc)
+        implementation(rootProject.libs.ru.sbrf.cbul.cbul.client.spring.boot.starter)
+        implementation(rootProject.libs.ru.sbrf.ufs.app.hotreload.hotreload.spring.boot.starter)
+        implementation(rootProject.libs.ru.sbrf.ufs.cbreaker.circuit.breaker.api)
+        implementation(rootProject.libs.ru.sbrf.ufs.healthcheck.ufs.healthcheck.spring.boot.starter)
+        implementation(rootProject.libs.ru.sbrf.ufs.monitoring.spring.boot.monitoring.spring.boot.starter)
+        implementation(rootProject.libs.ru.sbrf.ufs.platform.config.agent.spring.boot.starter)
+        implementation(rootProject.libs.ru.sbrf.ufs.platform.environment.spring.boot.starter)
+        implementation(rootProject.libs.ru.sbrf.ufs.platform.httpclient.spring.boot.starter)
+        implementation(rootProject.libs.ru.sbrf.ufs.platform.logger.api)
+        implementation(rootProject.libs.ru.sbrf.ufs.platform.logger.springboot.starter)
+        implementation(rootProject.libs.ru.sbrf.ufs.platform.rest.app.jersey.spring.boot.starter)
+        implementation(rootProject.libs.ru.sbrf.ufs.platform.ufs.platform.cache.impl)
+        implementation(rootProject.libs.ru.sbrf.ufs.platform.ufs.platform.config.spring.boot.starter)
+        implementation(rootProject.libs.ru.sbrf.ufs.platform.ufs.platform.core)
+        implementation(rootProject.libs.ru.sbrf.ufs.platform.ufs.platform.healthcheck.api)
+        implementation(rootProject.libs.slf4j.log4j12)
+        implementation(rootProject.libs.spotbugs.annotations)
+        implementation(rootProject.libs.spring.boot.autoconfigure)
+        implementation(rootProject.libs.ufs.platform.api)
         implementation(rootProject.libs.ufs.platform.config.api)
         implementation(rootProject.libs.ufs.platform.config.core)
-        implementation(rootProject.libs.ufs.platform.api)
         implementation(rootProject.libs.ufs.platform.json.mapper)
-        implementation(rootProject.libs.spring.boot.autoconfigure)
-        implementation(rootProject.libs.mapstruct)
-
-        testImplementation(rootProject.libs.bundles.test)
+        kapt(rootProject.libs.mapstruct.processor)
         testImplementation(rootProject.libs.bundles.junit)
-        testImplementation(rootProject.libs.wiremock)
+        testImplementation(rootProject.libs.bundles.test)
         testImplementation(rootProject.libs.mockk.jvm)
+        testImplementation(rootProject.libs.org.mockito.mockito.core)
+        testImplementation(rootProject.libs.org.springframework.boot.spring.boot.starter.test)
+        testImplementation(rootProject.libs.wiremock)
     }
 
     java {
@@ -84,11 +96,11 @@ subprojects {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
-    tasks.withType<JavaCompile>() {
+    tasks.withType<JavaCompile> {
         options.encoding = "UTF-8"
     }
 
-    tasks.withType<Javadoc>() {
+    tasks.withType<Javadoc> {
         options.encoding = "UTF-8"
     }
 
@@ -99,54 +111,6 @@ subprojects {
     tasks.withType<KotlinCompile> {
         compilerOptions {
             freeCompilerArgs = listOf("-Xjsr305=strict", "-Xjvm-default=all-compatibility")
-        }
-    }
-
-    jacoco {
-        toolVersion = "0.8.12"
-    }
-
-    tasks.jacocoTestReport {
-        reports {
-            xml.required.set(true)
-            xml.outputLocation.set(file("$buildDir/site/jacoco/jacoco.xml"))
-            html.required.set(true)
-        }
-    }
-
-    tasks.test {
-        finalizedBy(tasks.jacocoTestReport)
-    }
-
-    allOpen {
-        annotations(
-            "org.springframework.stereotype.Component",
-            "org.springframework.stereotype.Service",
-            "org.springframework.stereotype.Repository",
-            "org.springframework.stereotype.Controller",
-            "org.springframework.stereotype.RestController",
-            "org.springframework.stereotype.Configuration",
-            "org.springframework.boot.context.properties.ConfigurationProperties",
-            "javax.persistence.Entity",
-            "javax.persistence.MappedSuperclass",
-            "javax.persistence.Embeddable"
-        )
-    }
-
-    noArg {
-        annotations(
-            "javax.persistence.Entity",
-            "javax.persistence.MappedSuperclass",
-            "javax.persistence.Embeddable",
-            "kotlinx.serialization.Serializable"
-        )
-    }
-
-    kapt {
-        correctErrorTypes = true
-        arguments {
-            arg("mapstruct.defaultComponentModel", "spring")
-            arg("mapstruct.unmappedTargetPolicy", "IGNORE")
         }
     }
 }

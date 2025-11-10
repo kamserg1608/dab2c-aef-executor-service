@@ -1,6 +1,6 @@
 package ru.sbrf.ufs.dab2c.core.executor.shared.concurrent.config.properties
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+
 import org.springframework.boot.context.properties.ConfigurationProperties
 import ru.sbrf.ufs.dab2c.core.executor.shared.concurrent.model.ExecutorType
 
@@ -8,7 +8,7 @@ import ru.sbrf.ufs.dab2c.core.executor.shared.concurrent.model.ExecutorType
  * Spring configuration properties reader for web-server ExecutorType property.
  */
 @ConfigurationProperties(prefix = "application.executor")
-@SuppressFBWarnings("AI_ANNOTATION_ISSUES_NEEDS_NULLABLE")
+//@SuppressFBWarnings("AI_ANNOTATION_ISSUES_NEEDS_NULLABLE")
 @Suppress("MagicNumber")
 class ExecutorTypeProperties {
 

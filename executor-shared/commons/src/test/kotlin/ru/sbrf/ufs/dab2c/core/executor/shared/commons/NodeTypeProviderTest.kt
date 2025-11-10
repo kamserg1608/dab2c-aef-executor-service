@@ -1,6 +1,6 @@
 package ru.sbrf.ufs.dab2c.core.executor.shared.commons
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -11,7 +11,7 @@ import ru.sbrf.ufs.dab2c.core.executor.shared.commons.node.NodeTypeProviderAutoC
 import ru.sbrf.ufs.platform.core.env.NodeType
 import ru.sbrf.ufs.platform.core.env.NodeTypeProvider
 
-@SuppressFBWarnings("NP_NULL_ON_SOME_PATH")
+//@SuppressFBWarnings("NP_NULL_ON_SOME_PATH")
 @ExtendWith(SpringExtension::class)
 @ContextConfiguration(classes = [NodeTypeProviderAutoConfiguration::class])
 class NodeTypeProviderTest {

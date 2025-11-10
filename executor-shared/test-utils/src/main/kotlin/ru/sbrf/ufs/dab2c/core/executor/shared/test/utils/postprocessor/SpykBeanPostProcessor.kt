@@ -1,6 +1,6 @@
 package ru.sbrf.ufs.dab2c.core.executor.shared.test.utils.postprocessor
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+
 import io.mockk.mockkObject
 import io.mockk.spyk
 import org.springframework.beans.factory.config.BeanPostProcessor
@@ -12,7 +12,7 @@ import ru.sbrf.ufs.dab2c.core.executor.shared.test.utils.postprocessor.api.SpykB
  *
  * @param config Configuration containing names and classes of beans to be spied or mocked.
  */
-@SuppressFBWarnings("IICU_INCORRECT_INTERNAL_CLASS_USE", "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS")
+//@SuppressFBWarnings("IICU_INCORRECT_INTERNAL_CLASS_USE", "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS")
 class SpykBeanPostProcessor(
     private val config: SpykBeanConfig
 ) : BeanPostProcessor {

@@ -1,18 +1,7 @@
 description = "commons"
 
 dependencies {
-    api(libs.com.jayway.jsonpath.json.path)
-    api(libs.com.fasterxml.jackson.module.jackson.module.kotlin)
-    api(libs.com.fasterxml.jackson.datatype.jackson.datatype.jsr310)
-    api(libs.ru.sbrf.ufs.platform.environment.spring.boot.starter)
-    api(libs.ru.sbrf.ufs.cbreaker.circuit.breaker.api)
-    api(project(":executor-shared:annotations"))
-    api(project(":executor-shared:rest-object-mapper"))
-    testImplementation(libs.org.springframework.boot.spring.boot.starter.test)
+    implementation(project(":executor-shared:annotations"))
+    implementation(project(":executor-shared:rest-object-mapper"))
     testImplementation(project(":executor-shared:test-utils"))
-    compileOnly(libs.org.slf4j.slf4j.api)
-    compileOnly(libs.org.springframework.spring.webmvc)
-    compileOnly(libs.org.springframework.boot.spring.boot)
-    compileOnly(libs.ru.sbrf.ufs.platform.ufs.platform.core)
-    compileOnly(libs.ru.sbrf.ufs.platform.logger.api)
 }
