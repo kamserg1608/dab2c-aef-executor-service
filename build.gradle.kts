@@ -1,4 +1,5 @@
 plugins {
+    java
     id("org.jetbrains.kotlin.jvm")
     id("org.jetbrains.kotlin.plugin.spring") apply false
     id("org.jetbrains.kotlin.plugin.serialization") apply false
@@ -27,5 +28,13 @@ allprojects {
         protectedRepo("https://nexus-ci.delta.sbrf.ru/repository/public/")
         protectedRepo("https://nexus-ci.delta.sbrf.ru/repository/maven-lib-int/")
         protectedRepo("https://nexus-ci.delta.sbrf.ru/repository/maven-lib-release/")
+    }
+}
+
+subprojects {
+    apply(plugin = "java-library")
+
+    dependencies {
+        implementation(enforcedPlatform(rootProject.libs.ufs.platform.bom))
     }
 }

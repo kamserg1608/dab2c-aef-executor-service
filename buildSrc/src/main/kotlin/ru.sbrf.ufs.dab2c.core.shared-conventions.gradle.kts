@@ -2,13 +2,6 @@ plugins {
     `java-library`
     id("ru.sbrf.ufs.dab2c.core.kotlin-conventions")
     id("org.jetbrains.kotlin.plugin.spring")
-    id("io.spring.dependency-management")
-}
-
-dependencyManagement {
-    imports {
-        mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
-    }
 }
 
 dependencies {

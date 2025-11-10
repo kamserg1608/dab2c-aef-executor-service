@@ -1,8 +1,11 @@
+import gradle.kotlin.dsl.accessors._285dcef16d8875fee0ec91e18e07daf9.implementation
+import gradle.kotlin.dsl.accessors._285dcef16d8875fee0ec91e18e07daf9.testImplementation
+import gradle.kotlin.dsl.accessors._285dcef16d8875fee0ec91e18e07daf9.testRuntimeOnly
+
 plugins {
     id("ru.sbrf.ufs.dab2c.core.kotlin-conventions")
     id("org.jetbrains.kotlin.plugin.spring")
     id("org.springframework.boot")
-    id("io.spring.dependency-management")
 }
 
 // Access version catalog

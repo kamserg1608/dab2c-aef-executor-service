@@ -24,7 +24,6 @@ repositories {
 dependencies {
     implementation(libs.kotlin.gradle.plugin)
     implementation(libs.spring.boot.gradle.plugin)
-    implementation(libs.spring.dependency.management.gradle.plugin)
 
     // Explicitly add Kotlin plugins for use in convention plugins
     implementation("org.jetbrains.kotlin:kotlin-allopen:2.1.0")
