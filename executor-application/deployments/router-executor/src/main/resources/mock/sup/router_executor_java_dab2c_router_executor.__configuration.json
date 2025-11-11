@@ -32,6 +32,21 @@
       ]
     },
     {
+      "name": "pv.node.type",
+      "description": "Pb Node Type",
+      "isList": false,
+      "roles": [],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "PRIMARY"
+          ]
+        }
+      ]
+    },
+    {
       "name": "healthcheck.cascadeprotection.isDisabled",
       "description": "Отключение Healthcheck для локальных прогонов",
       "isList": false,

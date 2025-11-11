@@ -13,13 +13,6 @@ stand:
 
 ufs:
   platform:
-    cbro:
-      mode: STUB
-      cacheTTL: 300000
-      deadCacheTTL: 10800000
-      registryFile: mock/cbro/stubRegistry.json
-      templatesRootPath: /Users/20052410/PROJECTS/executor-D-01.000.00 2/executor-application-du1/target/templates
-      uploadTemplatesTTL: 300000
     # СУП
     config:
       directory: "classpath:/mock/sup"
