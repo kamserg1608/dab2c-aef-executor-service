@@ -28,7 +28,7 @@ class InvokeRest {
     @PostMapping
     @RestMonitored(INVOKE)
     @PropagateLogParameters(INVOKE_PATH)
-    fun invoke(): ResponseEntity<Unit> = ResponseEntity.ok(Unit)
+    suspend fun invoke(): ResponseEntity<Unit> = ResponseEntity.ok(Unit)
 
     internal companion object {
         internal const val INVOKE = "INVOKE"

@@ -1,7 +1,3 @@
-server:
-  servlet:
-    context-path: /dab2c-router-executor/v1
-
 spring:
   main:
     web-application-type: reactive
@@ -57,7 +53,7 @@ ufs:
   healthcheck:
     stub-agent-enabled: true
     groups:
-      readiness: "ru.sbrf.ufs.dab2c.core.healthcheck.ApplicationHealthCheck"
+      readiness: "ru.sbrf.ufs.dab2c.core.executor.shared.healthcheck.ApplicationHealthCheck"
 
   # История операций
   operation-history:

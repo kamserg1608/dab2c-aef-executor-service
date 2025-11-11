@@ -10,14 +10,12 @@ import ru.sbrf.ufs.dab2c.core.executor.deployments.router.executor.app.RouterExe
 import ru.sbrf.ufs.dab2c.core.executor.deployments.router.executor.config.SpyBeanConfiguration
 import ru.sbrf.ufs.dab2c.core.executor.deployments.router.executor.integration.base.configuration.WrapConfiguration
 import ru.sbrf.ufs.dab2c.core.executor.deployments.router.executor.integration.base.initializer.TestApplicationContextInitializer
-import ru.sbrf.ufs.dab2c.core.executor.shared.rest.mapper.configuration.RestObjectMapperConfiguration
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
     classes = [
         RouterExecutorApplicationEntryPoint::class,
         WrapConfiguration::class,
-        RestObjectMapperConfiguration::class,
         SpyBeanConfiguration::class
     ]
 )
@@ -26,11 +24,8 @@ import ru.sbrf.ufs.dab2c.core.executor.shared.rest.mapper.configuration.RestObje
 @AutoConfigureMockMvc
 abstract class BaseIntegrationTest {
 
-    @LocalServerPort
-    private var port: Int = 0
-
     protected val client: WebClient = WebClient.builder()
-        .baseUrl("http://localhost:$port/dab2c-router-executor/v1")
+        .baseUrl("http://localhost:8080")
         .build()
 
 }
