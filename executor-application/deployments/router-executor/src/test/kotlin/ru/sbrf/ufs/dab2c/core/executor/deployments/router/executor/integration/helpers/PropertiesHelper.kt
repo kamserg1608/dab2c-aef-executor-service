@@ -14,6 +14,6 @@ object PropertiesHelper {
             val host = System.getProperty("server.host")
             val port = System.getProperty("server.port")
             val warContextPath = System.getProperty("server.contextPath")
-            return String.format(Locale.US, "http://%s:%s/%s", host, port, warContextPath)
+            return String.format(Locale.US, "http://localhost:%s/%s", host, port, warContextPath)
         }
 }

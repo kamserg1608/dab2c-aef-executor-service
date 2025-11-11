@@ -5,7 +5,6 @@ import org.springframework.http.MediaType
 import org.springframework.http.codec.ServerCodecConfigurer
 import org.springframework.http.codec.json.Jackson2JsonDecoder
 import org.springframework.http.codec.json.Jackson2JsonEncoder
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.web.reactive.config.WebFluxConfigurer
 
 /**
@@ -17,8 +16,6 @@ class RestObjectMapperCustomizer(private val objectMapper: ObjectMapper) : WebFl
      * Configures `objectMapper` converter to default one.
      */
     override fun configureHttpMessageCodecs(configurer: ServerCodecConfigurer) {
-        val jacksonConverter = MappingJackson2HttpMessageConverter()
-        jacksonConverter.objectMapper = objectMapper
         configurer.defaultCodecs().jackson2JsonEncoder(
             Jackson2JsonEncoder(objectMapper, MediaType.APPLICATION_JSON)
         )

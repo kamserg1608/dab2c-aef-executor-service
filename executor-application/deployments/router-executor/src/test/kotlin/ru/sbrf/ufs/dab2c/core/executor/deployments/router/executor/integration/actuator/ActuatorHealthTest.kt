@@ -12,14 +12,9 @@ class ActuatorHealthTest : BaseIntegrationTest() {
     @Test
     @Throws(IOException::class)
     fun actuatorHealth() {
-        val request = HttpGet("$baseUrl/actuator/health")
-        try {
-            val response = client.get()
-                .uri("$baseUrl/actuator/health")
-                .retrieve()
-            Assertions.assertEquals(response.bodyToMono(String::class.java), "200")
-        } finally {
-            request.releaseConnection()
-        }
+        val response = client.get()
+            .uri("/actuator/health")
+            .retrieve()
+        Assertions.assertEquals(response.bodyToMono(String::class.java), "200")
     }
 }

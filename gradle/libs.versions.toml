@@ -45,6 +45,7 @@ spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-star
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
 jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations" }
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
 
 # Kotlin
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect" }
@@ -191,7 +192,8 @@ spring-boot-web = [
 jackson = [
     "jackson-module-kotlin",
     "jackson-annotations",
-    "jackson-datatype-jsr310"
+    "jackson-datatype-jsr310",
+    "jackson-databind"
 ]
 
 # Kotlinx
