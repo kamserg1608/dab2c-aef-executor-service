@@ -11,10 +11,10 @@ springBoot {
 dependencies {
     implementation(project(":executor-shared:health-check"))
     implementation(project(":executor-shared:commons"))
-//    implementation(project(":executor-shared:cbul-integration"))
     implementation(project(":executor-shared:monitoring"))
     implementation(project(":executor-shared:circuit-breaker"))
     implementation(project(":executor-shared:logging"))
+    implementation(libs.sber.acl)
 
     testImplementation(project(":executor-shared:test-utils"))
 }

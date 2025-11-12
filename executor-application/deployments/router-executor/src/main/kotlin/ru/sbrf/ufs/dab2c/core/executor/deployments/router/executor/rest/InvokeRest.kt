@@ -4,11 +4,14 @@ package ru.sbrf.ufs.dab2c.core.executor.deployments.router.executor.rest
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import ru.sbrf.ufs.dab2c.acl.model.InvokeRequestSchema
+import ru.sbrf.ufs.dab2c.acl.model.InvokeResponseSchema
 import ru.sbrf.ufs.dab2c.core.executor.deployments.router.executor.rest.InvokeRest.Companion.INVOKE_PATH
+import ru.sbrf.ufs.dab2c.core.executor.deployments.router.executor.service.api.InvokeProxyService
 import ru.sbrf.ufs.dab2c.core.executor.shared.logging.annotation.PropagateLogParameters
-import ru.sbrf.ufs.dab2c.core.executor.shared.monitoring.annotation.RestMonitored
 
 /**
  * Invoke controller.
@@ -20,15 +23,18 @@ import ru.sbrf.ufs.dab2c.core.executor.shared.monitoring.annotation.RestMonitore
     path = [INVOKE_PATH]
 )
 //@SuppressFBWarnings("SPRING_ENDPOINT", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION")
-class InvokeRest {
+class InvokeRest(
+    private val invokeProxyService: InvokeProxyService
+) {
 
     /**
      * Invoke endpoint.
      */
     @PostMapping
-    @RestMonitored(INVOKE)
     @PropagateLogParameters(INVOKE_PATH)
-    suspend fun invoke(): ResponseEntity<Unit> = ResponseEntity.ok(Unit)
+    suspend fun invoke(
+        @RequestBody invokeRequestSchema : InvokeRequestSchema
+    ): ResponseEntity<InvokeResponseSchema> = ResponseEntity.ok(invokeProxyService.invoke(invokeRequestSchema))
 
     internal companion object {
         internal const val INVOKE = "INVOKE"

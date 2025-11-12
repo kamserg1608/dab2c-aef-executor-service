@@ -1,12 +1,6 @@
 server:
   address: localhost
   port: 8080
-  tomcat:
-    threads:
-      max: 20
-      min-spare: 5
-  kafka:
-    bootstrap-servers: "tcp://localhost:29092"
 
 stand:
   type: TEST
