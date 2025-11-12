@@ -1,4 +1,4 @@
-apiVersion: networking.istio.io/v1alpha3
+﻿apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
   name: egressgateway-tcp-router-executor-kafka-unver
@@ -10,7 +10,7 @@ spec:
   location: MESH_EXTERNAL
   ports:
 # при копировании нужно сохранять отступы как в образце
-{% set tcp_ports=lookup('custom_vars', 'router-executor.ose.istio.egress.se.tcp.kafkaPort.number') %}
+{% set tcp_ports=lookup('custom_vars', 'router-executor.ctr.istio.egress.se.tcp.kafka.port') %}
 {% for port in ((tcp_ports | string).split(',') | unique) %}
     - name: tcp-kafka-{{port}}
       number: {{port}}

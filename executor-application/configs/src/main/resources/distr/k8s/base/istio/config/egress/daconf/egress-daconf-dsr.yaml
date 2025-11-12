@@ -1,24 +1,21 @@
-﻿apiVersion: networking.istio.io/v1alpha3
+apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-  name: egressgateway-mtls-router-executor-iagmm-unver
+  name: egressgateway-daconf-router-executor-unver
 spec:
   exportTo:
     - .
-  host: ${router-executor.ctr.istio.egress.se.http.iag-mm.host}
+  host: '${router-executor.ctr.istio.egress.se.http.daconf.host}'
   trafficPolicy:
-    loadBalancer:
-      simple: ROUND_ROBIN
     portLevelSettings:
       - port:
-          number: ${router-executor.ctr.istio.egress.se.http.iag-mm.port}
+          number: ${router-executor.ctr.istio.egress.se.http.daconf.port}
         tls:
           caCertificates: /vault/secrets/ca-chain.pem
           clientCertificate: /vault/secrets/client-cert.pem
           privateKey: /vault/secrets/client-cert.key
           mode: MUTUAL
-          sni: ${router-executor.ctr.istio.egress.se.http.iag-mm.host}
+          sni: ${router-executor.ctr.istio.egress.se.http.daconf.host}
   workloadSelector:
     matchLabels:
       app: istio-egressgateway-router-executor-unver
-      istio: egressgateway-router-executor-unver

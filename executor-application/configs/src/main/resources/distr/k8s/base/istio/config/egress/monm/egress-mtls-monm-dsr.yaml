@@ -1,4 +1,4 @@
-apiVersion: networking.istio.io/v1alpha3
+﻿apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
   name: egressgateway-mtls-router-executor-monm-unver
@@ -13,10 +13,10 @@ spec:
       - port:
           number: ${global.monitoring.store.port}
         tls:
-          caCertificates: /etc/istio/egressgateway-ca-certs/root.crt
-          clientCertificate: /etc/istio/egressgateway-certs/tls.crt
+          caCertificates: /vault/secrets/ca-chain.pem
+          clientCertificate: /vault/secrets/client-cert.pem
+          privateKey: /vault/secrets/client-cert.key
           mode: MUTUAL
-          privateKey: /etc/istio/egressgateway-certs/tls.key
           sni: ${global.monitoring.store.host}
   workloadSelector:
     matchLabels:

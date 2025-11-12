@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: egressgateway-api-router-executor-unver
+  labels:
+    app: egressgateway-router-executor-unver
+  namespace: ${global.multiClusters.openshiftProjectName}
+spec:
+  ports:
+    - name: http-2002
+      protocol: TCP
+      port: 2002
+      targetPort: 2002
+  selector:
+    app: istio-egressgateway-router-executor-unver

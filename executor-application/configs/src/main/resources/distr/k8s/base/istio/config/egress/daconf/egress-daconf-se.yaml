@@ -1,0 +1,18 @@
+kind: ServiceEntry
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: egressgateway-daconf-router-executor-unver
+spec:
+  exportTo:
+    - .
+  hosts:
+    - '${router-executor.ctr.istio.egress.se.http.daconf.host}'
+  location: MESH_EXTERNAL
+  resolution: DNS
+  ports:
+    - name: https-daconf
+      number: ${router-executor.ctr.istio.egress.se.http.daconf.port}
+      protocol: https
+    - name: http-8080
+      number: 80
+      protocol: http

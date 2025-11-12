@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: egressgateway-api-router-executor-unver
+spec:
+  selector:
+    istio: egressgateway-router-executor-unver
+  servers:
+    - hosts:
+        - '{{ lookup("custom_vars", "global.multiClusters.openshiftCluster") | regex_replace("^https?://", "") | regex_replace(":[^/:]*", "") | regex_replace("/[^/]*$", "") }}'
+      port:
+        name: http-2002
+        number: 2002
+        protocol: HTTP

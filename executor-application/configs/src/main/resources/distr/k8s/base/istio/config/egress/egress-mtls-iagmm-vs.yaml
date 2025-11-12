@@ -1,4 +1,4 @@
-apiVersion: networking.istio.io/v1alpha3
+﻿apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: egressgateway-mtls-router-executor-iagmm-unver
@@ -9,37 +9,29 @@ spec:
     - egressgateway-mtls-router-executor-unver
     - mesh
   hosts:
-    - ${router-executor.ose.istio.egress.common.nlb_mm-host}
+    - ${router-executor.ctr.istio.egress.se.http.iag-mm.host}
   http:
     - match:
         - gateways:
             - mesh
-          port: ${router-executor.ose.istio.egress.common.internal-port}
+          port: ${router-executor.ctr.istio.egress.common.internal-port}
       route:
         - destination:
             host: egressgateway-router-executor-unver
             port:
-              number: ${router-executor.ose.istio.egress.common.internal-port}
-          headers:
-            request:
-              remove:
-                - x-envoy-peer-metadata
+              number: ${router-executor.ctr.istio.egress.common.internal-port}
           weight: 100
       retries:
         attempts: 0
     - match:
         - gateways:
             - egressgateway-mtls-router-executor-unver
-          port: ${router-executor.ose.istio.egress.common.internal-port}
+          port: ${router-executor.ctr.istio.egress.common.internal-port}
       route:
         - destination:
-            host: ${router-executor.ose.istio.egress.common.nlb_mm-host}
+            host: ${router-executor.ctr.istio.egress.se.http.iag-mm.host}
             port:
-              number: ${router-executor.ose.istio.egress.common.nlb_mm-port}
-          headers:
-            request:
-              remove:
-                - x-envoy-peer-metadata
+              number: ${router-executor.ctr.istio.egress.se.http.iag-mm.port}
           weight: 100
       retries:
         attempts: 0

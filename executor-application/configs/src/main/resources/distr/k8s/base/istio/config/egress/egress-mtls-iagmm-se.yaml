@@ -1,4 +1,4 @@
-apiVersion: networking.istio.io/v1alpha3
+﻿apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
   name: egressgateway-mtls-router-executor-iagmm-unver
@@ -6,14 +6,13 @@ spec:
   exportTo:
     - .
   hosts:
-    # Хост должен быть только 1 в списке
-    - ${router-executor.ose.istio.egress.common.nlb_mm-host}
+    - ${router-executor.ctr.istio.egress.se.http.iag-mm.host}
   location: MESH_EXTERNAL
   ports:
     - name: http
-      number: ${router-executor.ose.istio.egress.common.internal-port}
+      number: ${router-executor.ctr.istio.egress.common.internal-port}
       protocol: HTTP
     - name: https-iagmm
-      number: ${router-executor.ose.istio.egress.common.nlb_mm-port}
+      number: ${router-executor.ctr.istio.egress.se.http.iag-mm.port}
       protocol: HTTPS
   resolution: DNS
