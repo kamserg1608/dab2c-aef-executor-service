@@ -186,7 +186,7 @@ ufs-sup = [
 
 spring-boot-web = [
     "spring-boot-starter-webflux",
-    "spring-boot-starter-tomcat",
+#    "spring-boot-starter-tomcat",
     "spring-boot-starter-aop"
 ]
 
