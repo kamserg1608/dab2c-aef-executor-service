@@ -37,7 +37,6 @@ class InvokeRest(
     ): ResponseEntity<InvokeResponseSchema> = ResponseEntity.ok(invokeProxyService.invoke(invokeRequestSchema))
 
     internal companion object {
-        internal const val INVOKE = "INVOKE"
         internal const val INVOKE_PATH = "/invoke"
     }
 }

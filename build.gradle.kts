@@ -32,6 +32,7 @@ allprojects {
 
     configurations.all {
         exclude(group = "org.slf4j", module = "slf4j-log4j12")
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
         resolutionStrategy {
             force("ch.qos.logback:logback-classic:1.2.12")
             force("ch.qos.logback:logback-core:1.2.12")
