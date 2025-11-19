@@ -67,9 +67,6 @@ logback-core = { module = "ch.qos.logback:logback-core" }
 # Validation
 javax-annotation-api = { module = "javax.annotation:javax.annotation-api", version.ref = "javax-annotation-api" }
 
-apache-httpclient = { module = "org.apache.httpcomponents:httpclient" }
-apache-httpcore = { module = "org.apache.httpcomponents:httpcore" }
-
 # Gradle plugins (for buildSrc)
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 spring-boot-gradle-plugin = { module = "org.springframework.boot:spring-boot-gradle-plugin", version.ref = "spring-boot" }
@@ -128,7 +125,6 @@ cbul-client-spring-boot-starter = { module = "ru.sbrf.cbul:cbul-client-spring-bo
 #СУП
 ufs-platform-config-api = { module = "ru.sbrf.ufs.platform:ufs-platform-config-api" }
 config-agent-api = { module = "ru.sbrf.ufs.platform:config-agent-api" }
-ufs-platform-config-data = { module = "ru.sbrf.ufs.platform:ufs-platform-config-data" }
 ufs-platform-config-spring-boot-starter = { module = "ru.sbrf.ufs.platform:ufs-platform-config-spring-boot-starter" }
 config-agent-spring-boot-starter = { module = "ru.sbrf.ufs.platform:config-agent-spring-boot-starter" }
 

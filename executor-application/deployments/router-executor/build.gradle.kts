@@ -18,3 +18,49 @@ dependencies {
 
     testImplementation(project(":executor-shared:test-utils"))
 }
+
+if (project.property("build-distr")?.toString().toBoolean()) {
+
+//    configurations.all {
+//        exclude(group = "com.h2database", module = "h2")
+//        exclude(group = "org.junit.platform")
+//        exclude(group = "org.junit.jupiter")
+//        exclude(group = "junit")
+//    }
+
+    tasks.register<Copy>("copyToLib") {
+        from(configurations.runtimeClasspath) {
+            include("*.jar")
+        }
+        into(layout.buildDirectory.dir("libs/dependencies"))
+    }
+
+    tasks.register<Exec>("recompressMain") {
+        group = "build"
+        commandLine("sh", "jar_compressor.sh")
+        args(
+            layout.buildDirectory.dir("libs").get(),
+            layout.buildDirectory.dir("zero-compressed-main-jar").get()
+        )
+    }
+
+    tasks.register<Exec>("recompressDeps") {
+        group = "build"
+        commandLine("sh", "jar_compressor.sh")
+        args(
+            layout.buildDirectory.dir("libs/dependencies").get(),
+            layout.buildDirectory.dir("zero-compressed-dependencies-jars").get()
+        )
+    }
+
+    tasks.named("recompressMain") {
+        dependsOn(tasks.named("jar"))
+    }
+    tasks.named("recompressDeps") {
+        dependsOn(tasks.named("copyToLib"))
+    }
+    tasks.named("build") {
+        dependsOn(tasks.named("recompressMain"))
+        dependsOn(tasks.named("recompressDeps"))
+    }
+}
