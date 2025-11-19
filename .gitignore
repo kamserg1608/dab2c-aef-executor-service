@@ -9,6 +9,7 @@
 .gigaide/**
 *.iml
 *.ipr
+lib
 
 # GigaIDE
 .sberstack/**
