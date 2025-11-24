@@ -20,21 +20,10 @@ kotlin {
     }
 }
 
-tasks.withType<KotlinCompile>().configureEach {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_21)
-        freeCompilerArgs.addAll("-Xjsr305=strict")
-    }
-}
-
-tasks.withType<Test> {
+tasks.test {
     useJUnitPlatform()
-//    testLogging {
-//        events("passed", "failed", "skipped")
-//        showStandardStreams = true
-//    }
-}
-
-dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    testLogging {
+        events("failed", "skipped")
+        showStandardStreams = false
+    }
 }
