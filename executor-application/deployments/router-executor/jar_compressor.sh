@@ -33,7 +33,7 @@ cd $1
 rm -rf tmp/
 
 for f in ./*.jar; do
-  echo "Processing $f file with zero compression ..."
+
   mkdir $1/tmp/
 
   {
