@@ -58,8 +58,8 @@ subprojects {
     apply(plugin = "java-library")
 
     dependencies {
-        implementation(platform(rootProject.libs.ufs.platform.bom))
         testImplementation(platform("org.junit:junit-bom:5.8.2"))
+        implementation(platform(rootProject.libs.ufs.platform.bom))
 
         // Core dependencies
         implementation(rootProject.libs.javax.annotation.api)
