@@ -1,7 +1,5 @@
 [versions]
-# Kotlin and Java
 kotlin = "2.1.0"
-java = "21"
 
 #BOMs
 ufs-platform-bom = "10.4.2.50"
@@ -44,11 +42,7 @@ jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
 
-# Kotlin
-kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect" }
-
 # Kotlinx
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
@@ -68,29 +62,21 @@ javax-annotation-api = { module = "javax.annotation:javax.annotation-api", versi
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 spring-boot-gradle-plugin = { module = "org.springframework.boot:spring-boot-gradle-plugin", version.ref = "spring-boot" }
 
-hamcrest-core = { module = "org.hamcrest:hamcrest-core" }
-assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
-
-# Spring Core libraries (if not already defined)
+# Spring Core libraries
 spring-core = { module = "org.springframework:spring-core" }
 spring-context = { module = "org.springframework:spring-context" }
 spring-beans = { module = "org.springframework:spring-beans" }
-spring-test = { module = "org.springframework:spring-test" }
-spring-boot-autoconfigure = { module = "org.springframework.boot:spring-boot-autoconfigure" }
-spring-boot-test = { module = "org.springframework.boot:spring-boot-test" }
-spring-boot-test-autoconfigure = { module = "org.springframework.boot:spring-boot-test-autoconfigure" }
 
 ufs-platform-api = { module = "ru.sbrf.ufs.platform:ufs-platform-api" }
 ufs-platform-json-mapper = { module = "ru.sbrf.ufs.platform:ufs-platform-json-mapper" }
 
 # Testing
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 
 # JUnit Platform
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 junit-platform-engine = { module = "org.junit.platform:junit-platform-engine" }
-
-# JUnit Jupiter
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine" }
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params" }
@@ -112,13 +98,6 @@ ufs-logger-api = { module = "ru.sbrf.ufs.platform:logger-api" }
 #Healthcheck
 ufs-platform-healthcheck-api = { module = "ru.sbrf.ufs.platform:ufs-platform-healthcheck-api" }
 ufs-healthcheck-spring-boot-starter = { module = "ru.sbrf.ufs.healthcheck:ufs-healthcheck-spring-boot-starter" }
-
-#Cbul
-cbul-client-api = { module = "ru.sbrf.cbul:cbul-client-api" }
-cbul-client-api-dto = { module = "ru.sbrf.cbul:cbul-client-api-dto" }
-cbul-client-impl = { module = "ru.sbrf.cbul:cbul-client-impl" }
-cbul-core = { module = "ru.sbrf.cbul:cbul-core" }
-cbul-client-spring-boot-starter = { module = "ru.sbrf.cbul:cbul-client-spring-boot-starter" }
 
 #СУП
 ufs-platform-config-api = { module = "ru.sbrf.ufs.platform:ufs-platform-config-api" }
@@ -162,14 +141,6 @@ ufs-healthcheck = [
     "ufs-healthcheck-spring-boot-starter"
 ]
 
-ufs-cbul = [
-    "cbul-client-api",
-    "cbul-client-api-dto",
-    "cbul-client-impl",
-    "cbul-core",
-    "cbul-client-spring-boot-starter"
-]
-
 ufs-sup = [
     "ufs-platform-config-api",
     "ufs-platform-config-api",
@@ -180,7 +151,6 @@ ufs-sup = [
 
 spring-boot-web = [
     "spring-boot-starter-webflux",
-#    "spring-boot-starter-tomcat",
     "spring-boot-starter-aop"
 ]
 
@@ -194,7 +164,6 @@ jackson = [
 
 # Kotlinx
 kotlinx = [
-    "kotlinx-serialization-json",
     "kotlinx-coroutines-core",
     "kotlinx-coroutines-reactor",
     "kotlinx-datetime"
@@ -202,18 +171,14 @@ kotlinx = [
 
 # Testing
 testing = [
-    "mockk",
     "spring-boot-starter-test",
     "junit-jupiter-api",
     "junit-jupiter-engine",
     "junit-jupiter-params",
     "junit-platform-launcher",
     "junit-platform-engine",
-    "spring-test",
-    "spring-boot-test",
-    "spring-boot-test-autoconfigure",
-    "hamcrest-core",
-    "assertj-core"
+    "assertj-core",
+    "mockk",
 ]
 
 spring-core = [

@@ -9,6 +9,8 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
+    withSourcesJar()
+    withJavadocJar()
 }
 
 kotlin {
@@ -27,6 +29,10 @@ tasks.withType<KotlinCompile>().configureEach {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+//    testLogging {
+//        events("passed", "failed", "skipped")
+//        showStandardStreams = true
+//    }
 }
 
 dependencies {
