@@ -38,3 +38,5 @@ String getWrapperOptions(String wrappedUser, String wrappedPassword) {
             "-Dgradle.wrappedPassword='${wrappedPassword}'",
     ].join(" ")
 }
+
+return wrapJenkinsfile(this)
