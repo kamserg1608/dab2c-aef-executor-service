@@ -37,6 +37,8 @@ allprojects {
             force("ch.qos.logback:logback-classic:1.2.12")
             force("ch.qos.logback:logback-core:1.2.12")
             force("org.slf4j:slf4j-api:1.7.36")
+            force("net.bytebuddy:byte-buddy:1.15.11")
+            force("net.bytebuddy:byte-buddy-agent:1.15.11")
         }
     }
 }
