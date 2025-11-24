@@ -5,8 +5,8 @@
 .directory
 
 # IDEA
-.idea/**
-.gigaide/**
+.idea
+.gigaide
 *.iml
 *.ipr
 lib
