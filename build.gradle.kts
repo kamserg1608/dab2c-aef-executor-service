@@ -32,13 +32,24 @@ allprojects {
 
     configurations.all {
         exclude(group = "junit", module = "junit")
-        exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
         exclude(group = "org.slf4j", module = "slf4j-log4j12")
+        exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-test-junit")
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
         resolutionStrategy {
             force("ch.qos.logback:logback-classic:1.2.12")
             force("ch.qos.logback:logback-core:1.2.12")
             force("org.slf4j:slf4j-api:1.7.36")
+            force(
+                "org.junit.platform:junit-platform-launcher:1.8.2",
+                "org.junit.platform:junit-platform-engine:1.8.2",
+                "org.junit.platform:junit-platform-commons:1.8.2",
+                "org.junit.platform:junit-platform-suite-api:1.8.2",
+                "org.junit.jupiter:junit-jupiter-api:5.8.2",
+                "org.junit.jupiter:junit-jupiter-engine:5.8.2",
+                "org.junit.jupiter:junit-jupiter-params:5.8.2",
+                "org.opentest4j:opentest4j:1.2.0"
+            )
         }
     }
 }
@@ -48,6 +59,7 @@ subprojects {
 
     dependencies {
         implementation(platform(rootProject.libs.ufs.platform.bom))
+        testImplementation(platform("org.junit:junit-bom:5.8.2"))
 
         // Core dependencies
         implementation(rootProject.libs.javax.annotation.api)
