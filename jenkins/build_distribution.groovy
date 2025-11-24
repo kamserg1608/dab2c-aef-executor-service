@@ -2,7 +2,8 @@ def onDistrib(app, distr) {
 
     def skipTests = env.SKIP_TEST?.toBoolean() ? " -x test " : ""
     def skipStaticChecks =  env.SKIP_STATIC_CHECKS?.toBoolean()?:false
-    gradlew("clean build", skipTests)
+    gradlew("clean :executor-application:deployments:router-executor:dependencies", skipTests)
+    gradlew("clean build", skipTests + " --info --stacktrace ")
 
     String deploymentUnit1 = "router-executor"
     distr.addConf("./executor-application/configs/build/resources/main/*")
