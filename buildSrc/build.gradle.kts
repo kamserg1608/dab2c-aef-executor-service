@@ -29,4 +29,6 @@ dependencies {
     // Explicitly add Kotlin plugins for use in convention plugins
     implementation("org.jetbrains.kotlin:kotlin-allopen:2.1.0")
     implementation("org.jetbrains.kotlin:kotlin-serialization:2.1.0")
-}
+
+    // Add Detekt plugin
+    implementation(libs.detekt.gradle.plugin)}

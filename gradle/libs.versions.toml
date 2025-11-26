@@ -1,8 +1,9 @@
 [versions]
 kotlin = "2.1.0"
+detekt = "1.23.7"
 
 #BOMs
-ufs-platform-bom = "10.4.2.50"
+ufs-platform-bom = "10.4.2.58"
 
 # Spring Boot and related
 spring-boot = "2.7.18"
@@ -33,6 +34,7 @@ ufs-platform-bom = { module = "ru.sbrf.ufs.platform:ufs-platform-bom", version.r
 # Spring Boot
 spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }
 spring-boot-starter-aop = { module = "org.springframework.boot:spring-boot-starter-aop" }
+spring-boot-starter-tomcat = { module = "org.springframework.boot:spring-boot-starter-tomcat" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 
 # Jackson
@@ -102,6 +104,10 @@ config-agent-spring-boot-starter = { module = "ru.sbrf.ufs.platform:config-agent
 #Sber-acl
 sber-acl = { module = "ru.sbrf.ufs.dab2c.acl:sber-acl-java", version.ref = "acl" }
 
+detekt-gradle-plugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
+detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
+
+
 [bundles]
 # Spring Boot Web and Core
 
@@ -145,7 +151,8 @@ ufs-sup = [
 
 spring-boot-web = [
     "spring-boot-starter-webflux",
-    "spring-boot-starter-aop"
+    "spring-boot-starter-aop",
+    "spring-boot-starter-tomcat"
 ]
 
 # Jackson

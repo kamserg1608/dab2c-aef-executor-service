@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm")
+    id("io.gitlab.arturbosch.detekt")
 }
 
 java {
@@ -24,4 +25,23 @@ tasks.test {
         events("failed", "skipped")
         showStandardStreams = false
     }
+}
+
+detekt {
+    toolVersion = "1.23.7"
+    config.setFrom("${project.rootDir}/config/detekt/detekt_config.yml")
+    buildUponDefaultConfig = true
+    allRules = false
+
+    source.setFrom(
+        files(
+            "src/main/kotlin",
+            "src/test/kotlin"
+        )
+    )
+}
+
+
+dependencies {
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.7")
 }
