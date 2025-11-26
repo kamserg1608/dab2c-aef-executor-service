@@ -11,7 +11,6 @@ object ReportableThrowableUtils {
     /**
      * Extracts reportable throwable out of given [throwable].
      */
-    // @SuppressFBWarnings("PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS")
     fun getReportableThrowable(@Nonnull throwable: Throwable): Throwable {
         if (throwable is UndeclaredThrowableException && throwable.cause != null) {
             return throwable.cause!!

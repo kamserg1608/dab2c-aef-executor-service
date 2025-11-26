@@ -48,7 +48,6 @@ class LogParametersServiceImpl(extractors: List<LogParameterExtractor<Any>>) : L
         addTraceIdToContext()
     }
 
-    // @SuppressFBWarnings("PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS")
     override fun restoreContext() {
         context.clear()
         context.put(contextBackup)

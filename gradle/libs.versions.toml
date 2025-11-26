@@ -1,6 +1,7 @@
 [versions]
 kotlin = "2.1.0"
 detekt = "1.23.7"
+spotbugs = "6.2.0"
 
 #BOMs
 ufs-platform-bom = "10.4.2.58"
@@ -106,6 +107,7 @@ sber-acl = { module = "ru.sbrf.ufs.dab2c.acl:sber-acl-java", version.ref = "acl"
 
 detekt-gradle-plugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
+spotbugs-gradle-plugin = { module = "com.github.spotbugs:com.github.spotbugs.gradle.plugin", version.ref = "spotbugs" }
 
 
 [bundles]

@@ -31,4 +31,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-serialization:2.1.0")
 
     // Add Detekt plugin
-    implementation(libs.detekt.gradle.plugin)}
+    implementation(libs.detekt.gradle.plugin)
+    implementation(libs.spotbugs.gradle.plugin)
+}

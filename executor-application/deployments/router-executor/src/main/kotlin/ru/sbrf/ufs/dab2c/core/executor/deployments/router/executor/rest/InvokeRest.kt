@@ -15,7 +15,6 @@ import ru.sbrf.ufs.dab2c.core.executor.shared.logging.annotation.PropagateLogPar
 /**
  * Invoke controller.
  */
-// @SuppressFBWarnings("SPRING_ENDPOINT", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION")
 @RestController
 @RequestMapping(
     consumes = [MediaType.APPLICATION_JSON_VALUE],

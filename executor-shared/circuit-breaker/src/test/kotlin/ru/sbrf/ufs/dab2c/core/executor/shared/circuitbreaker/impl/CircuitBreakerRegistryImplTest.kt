@@ -14,7 +14,6 @@ import ru.sbrf.ufs.dab2c.core.executor.shared.circuitbreaker.service.impl.NoOpCi
 import java.time.Duration
 import java.util.Collections.emptySet
 
-// @SuppressFBWarnings("PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS")
 @Suppress("FunctionMaxLength")
 class CircuitBreakerRegistryImplTest {
 

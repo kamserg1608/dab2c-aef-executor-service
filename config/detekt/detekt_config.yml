@@ -54,22 +54,6 @@ complexity:
     threshold: 11
     includeStaticDeclarations: false
     includePrivateDeclarations: false
-  ComplexMethod:
-    active: true
-    threshold: 15
-    ignoreSingleWhenExpression: false
-    ignoreSimpleWhenEntries: false
-    ignoreNestingFunctions: false
-    nestingFunctions:
-      - 'run'
-      - 'let'
-      - 'apply'
-      - 'with'
-      - 'also'
-      - 'use'
-      - 'forEach'
-      - 'isNotNull'
-      - 'ifNull'
   LabeledExpression:
     active: true
     ignoredLabels: []
@@ -262,11 +246,6 @@ formatting:
     active: true
     autoCorrect: true
     layout: '*,javax.**,java.**,kotlin.**,^'
-  Indentation:
-    active: true
-    autoCorrect: true
-    indentSize: 4
-    continuationIndentSize: 4
   MaximumLineLength:
     active: true
     maxLineLength: 120
@@ -424,12 +403,6 @@ naming:
   VariableMinLength:
     active: true
     minimumVariableNameLength: 2
-  VariableNaming:
-    active: true
-    variablePattern: '[a-z][A-Za-z0-9]*'
-    privateVariablePattern: '(_)?[a-z][A-Za-z0-9]*'
-    excludeClassPattern: '$^'
-    ignoreOverridden: false
 
 performance:
   active: true
@@ -453,8 +426,6 @@ potential-bugs:
     active: true
   DoubleMutabilityForCollection:
     active: true
-  DuplicateCaseInWhenExpression:
-    active: true
   EqualsAlwaysReturnsTrueOrFalse:
     active: true
   EqualsWithHashCodeExist:
@@ -465,12 +436,6 @@ potential-bugs:
     active: true
   HasPlatformType:
     active: true
-  IgnoredReturnValue:
-    active: true
-    restrictToAnnotatedMethods: true
-    returnValueAnnotations:
-      - '*.CheckReturnValue'
-      - '*.CheckResult'
   ImplicitDefaultLocale:
     active: true
   ImplicitUnitReturnType:
@@ -482,18 +447,9 @@ potential-bugs:
     active: true
   IteratorNotThrowingNoSuchElementException:
     active: true
-  LateinitUsage:
-    active: true
-    excludeAnnotatedProperties: []
-    excludes: [ "**/test/**" ]
   MapGetWithNotNullAssertionOperator:
     active: true
-  MissingWhenCase:
-    active: true
-    allowElseExpression: true
   NullableToStringCall:
-    active: true
-  RedundantElseInWhen:
     active: true
   UnconditionalJumpStatementInLoop:
     active: true
@@ -522,9 +478,6 @@ style:
     active: true
   CollapsibleIfStatements:
     active: true
-  DataClassContainsFunctions:
-    active: true
-    conversionFunctionPrefix: 'to'
   DataClassShouldBeImmutable:
     active: false
   DestructuringDeclarationWithTooManyEntries:
@@ -540,13 +493,6 @@ style:
   ExpressionBodySyntax:
     active: true
     includeLineWrapping: true
-  ForbiddenComment:
-    active: true
-    values:
-      - 'TODO:'
-      - 'FIXME:'
-      - 'STOPSHIP:'
-    allowedPatterns: ''
   ForbiddenImport:
     active: false
     imports: []
@@ -556,22 +502,10 @@ style:
     methods:
       - 'kotlin.io.println'
       - 'kotlin.io.print'
-  ForbiddenPublicDataClass: # for non-library code only
-    active: false
   ForbiddenVoid:
     active: true
     ignoreOverridden: false
     ignoreUsageInGenerics: false
-  FunctionOnlyReturningConstant:
-    active: true
-    ignoreOverridableFunction: true
-    ignoreActualFunction: true
-    excludedFunctions: ''
-    excludeAnnotatedFunction: []
-  LibraryCodeMustSpecifyReturnType:
-    active: true
-  LibraryEntitiesShouldNotBePublic:
-    active: false
   LoopWithTooManyJumpStatements:
     active: true
     maxJumpCount: 1
@@ -594,8 +528,6 @@ style:
     ignoreRanges: false
     ignoreExtensionFunctions: true
     excludes: ['**/test/**']
-  MandatoryBracesIfStatements:
-    active: true
   MandatoryBracesLoops:
     active: true
   MaxLineLength:
@@ -622,8 +554,6 @@ style:
     active: true
   OptionalUnit:
     active: true
-  OptionalWhenBraces:
-    active: true
   PreferToOverPairSyntax:
     active: true
   ProtectedMemberInFinalClass:
@@ -634,13 +564,6 @@ style:
     active: true
   RedundantVisibilityModifierRule:
     active: true
-  ReturnCount:
-    active: true
-    max: 2
-    excludedFunctions: 'equals'
-    excludeLabeled: false
-    excludeReturnFromLambda: true
-    excludeGuardClauses: false
   SafeCast:
     active: true
   SerialVersionUIDInSerializableClass:
@@ -654,9 +577,6 @@ style:
     active: true
   UnderscoresInNumericLiterals:
     active: false
-  UnnecessaryAbstractClass:
-    active: true
-    excludeAnnotatedClasses: []
   UnnecessaryAnnotationUseSiteTarget:
     active: true
   UnnecessaryApply:
@@ -685,10 +605,6 @@ style:
     active: true
   UseCheckOrError:
     active: true
-  UseDataClass:
-    active: true
-    excludeAnnotatedClasses: []
-    allowVars: false
   UseEmptyCounterpart:
     active: true
   UseIfEmptyOrIfBlank:

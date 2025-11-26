@@ -16,7 +16,6 @@ import java.net.URL
  * [EnvironmentPostProcessor] self-registering itself as [PropertySource]
  * providing customization for 'spring.autoconfigure.exclude' property via file 'autoconfiguration.excludes'.
  */
-// @SuppressFBWarnings("URLCONNECTION_SSRF_FD")
 class DefaultAutoConfigurationExcludeProvider :
     PropertySource<Array<String?>>(
         PROPERTY_NAME_AUTOCONFIGURE_EXCLUDE,
