@@ -23,9 +23,11 @@ class WrapConfiguration {
     internal fun spyAndMockBeanPostProcessor(): SpykBeanPostProcessor {
 
         val wrapperConfig = SpykBeanConfig(
-            spyClasses = listOf(ObjectMapper::class, CircuitBreakerParameters::class,
+            spyClasses = listOf(
+                ObjectMapper::class, CircuitBreakerParameters::class,
                 InvokeRest::class,
-                MonitoringServiceAdapter::class, LogParametersPropagatorAspect::class),
+                MonitoringServiceAdapter::class, LogParametersPropagatorAspect::class
+            ),
             spyBeanNames = listOf()
         )
 

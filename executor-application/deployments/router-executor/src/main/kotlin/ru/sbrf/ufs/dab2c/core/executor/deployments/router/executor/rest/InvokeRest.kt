@@ -1,6 +1,5 @@
 package ru.sbrf.ufs.dab2c.core.executor.deployments.router.executor.rest
 
-
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -16,13 +15,13 @@ import ru.sbrf.ufs.dab2c.core.executor.shared.logging.annotation.PropagateLogPar
 /**
  * Invoke controller.
  */
+// @SuppressFBWarnings("SPRING_ENDPOINT", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION")
 @RestController
 @RequestMapping(
     consumes = [MediaType.APPLICATION_JSON_VALUE],
     produces = [MediaType.APPLICATION_JSON_VALUE],
     path = [INVOKE_PATH]
 )
-//@SuppressFBWarnings("SPRING_ENDPOINT", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION")
 class InvokeRest(
     private val invokeProxyService: InvokeProxyService
 ) {
@@ -33,7 +32,7 @@ class InvokeRest(
     @PostMapping
     @PropagateLogParameters(INVOKE_PATH)
     suspend fun invoke(
-        @RequestBody invokeRequestSchema : InvokeRequestSchema
+        @RequestBody invokeRequestSchema: InvokeRequestSchema
     ): ResponseEntity<InvokeResponseSchema> = ResponseEntity.ok(invokeProxyService.invoke(invokeRequestSchema))
 
     internal companion object {

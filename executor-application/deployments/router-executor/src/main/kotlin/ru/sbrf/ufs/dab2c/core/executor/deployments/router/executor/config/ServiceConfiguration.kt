@@ -18,5 +18,4 @@ class ServiceConfiguration {
 
     @Bean
     internal fun invokeProxyService(): InvokeProxyService = InvokeProxyServiceImpl()
-
 }

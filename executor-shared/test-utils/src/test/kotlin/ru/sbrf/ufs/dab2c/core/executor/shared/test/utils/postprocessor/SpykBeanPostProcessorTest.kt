@@ -11,7 +11,7 @@ import org.junit.jupiter.api.assertThrows
 import ru.sbrf.ufs.dab2c.core.executor.shared.test.utils.extensions.isMock
 import ru.sbrf.ufs.dab2c.core.executor.shared.test.utils.postprocessor.api.SpykBeanConfig
 
-//@SuppressFBWarnings("IICU_INCORRECT_INTERNAL_CLASS_USE", "NP_NULL_ON_SOME_PATH", "NP_NULL_PARAM_DEREF")
+// @SuppressFBWarnings("IICU_INCORRECT_INTERNAL_CLASS_USE", "NP_NULL_ON_SOME_PATH", "NP_NULL_PARAM_DEREF")
 class SpykBeanPostProcessorTest {
 
     private lateinit var config: SpykBeanConfig

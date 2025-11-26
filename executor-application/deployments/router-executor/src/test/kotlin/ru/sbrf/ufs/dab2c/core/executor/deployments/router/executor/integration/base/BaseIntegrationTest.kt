@@ -2,7 +2,6 @@ package ru.sbrf.ufs.dab2c.core.executor.deployments.router.executor.integration.
 
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.web.reactive.function.client.WebClient
@@ -27,5 +26,4 @@ abstract class BaseIntegrationTest {
     protected val client: WebClient = WebClient.builder()
         .baseUrl("http://localhost:8080")
         .build()
-
 }

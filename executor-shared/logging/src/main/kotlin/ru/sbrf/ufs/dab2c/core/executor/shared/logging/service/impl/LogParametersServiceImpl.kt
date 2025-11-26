@@ -1,6 +1,5 @@
 package ru.sbrf.ufs.dab2c.core.executor.shared.logging.service.impl
 
-
 import org.slf4j.MDC
 import ru.sbrf.ufs.dab2c.core.executor.shared.logging.annotation.PropagateLogParameters
 import ru.sbrf.ufs.dab2c.core.executor.shared.logging.extractor.api.LogParameterExtractor
@@ -49,7 +48,7 @@ class LogParametersServiceImpl(extractors: List<LogParameterExtractor<Any>>) : L
         addTraceIdToContext()
     }
 
-    //@SuppressFBWarnings("PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS")
+    // @SuppressFBWarnings("PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS")
     override fun restoreContext() {
         context.clear()
         context.put(contextBackup)
