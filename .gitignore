@@ -5,10 +5,11 @@
 .directory
 
 # IDEA
-.idea/**
-.gigaide/**
+.idea
+.gigaide
 *.iml
 *.ipr
+lib
 
 # GigaIDE
 .sberstack/**
@@ -20,6 +21,20 @@ target
 *.log
 
 tmpp
+#gradle
+**/.gradle
+**/build
+**/out
+.DS_Store
+
+**/output.log
+output.log
+*.hprof
+**/*.hrpof
+**/logs/*
+**/*.zip
+*.tmp
+amplicode.xml
 
 # Архивы
 *.zip

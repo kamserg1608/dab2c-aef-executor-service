@@ -1,0 +1,19 @@
+﻿apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: ingressgateway-mtls-router-executor-unver
+spec:
+  exportTo:
+    - .
+  host: router-executor-${distrib.release.version}
+  trafficPolicy:
+    loadBalancer:
+      consistentHash:
+        httpCookie:
+          name: UFS-SESSION
+          ttl: 0s
+    outlierDetection:
+      consecutive5xxErrors: ${router-executor.ctr.istio.ingress.dsr.spec.trafficPolicy.outlierDetection.consecutive5xxErrors}
+      baseEjectionTime: ${router-executor.ctr.istio.ingress.dsr.spec.trafficPolicy.outlierDetection.baseEjectionTime}
+      interval: ${router-executor.ctr.istio.ingress.dsr.spec.trafficPolicy.outlierDetection.interval}
+      maxEjectionPercent: ${router-executor.ctr.istio.ingress.dsr.spec.trafficPolicy.outlierDetection.maxEjectionPercent}

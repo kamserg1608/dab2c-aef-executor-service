@@ -64,7 +64,7 @@ sast_cx:
 jenkinsfiles:
   - {
     # id приложения. используется при сборке как названия папки, куда клонируется репозиторий.
-    name: "executor-src",
+    name: "router-executor-distr-1.0",
     # путь к репозиторию в BitBucket, где лежат исходники ФП
     repo: "digital_assisitant_b2c/dab2c-aef-executor-service.git",
     # ветка, которую нужно собирать. Делаем всегда подстановку текущей ветки (по которой ведётся сборка).
@@ -95,12 +95,12 @@ docker:
   nexus_url: "ci07909419/ci08689281"
   builder_token: "cab-sa-dvo08817_AD"
 
-extensions:
-  - name: "checkDistrib"
-    repo: "digital_assisitant_b2c/dab2c-aef-executor-service.git"
-    branch: "${CONFIG_BRANCH}"
-    jenkinsfile_name: "jenkins/check_distrib.groovy"
-  - name: "report results to sber-chat"
-    repo: "digital_assisitant_b2c/dab2c-aef-executor-service.git"
-    branch: "${CONFIG_BRANCH}"
-    jenkinsfile_name: "jenkins/sberchat_notification.groovy"
+#extensions:
+#  - name: "checkDistrib"
+#    repo: "digital_assisitant_b2c/dab2c-aef-executor-service.git"
+#    branch: "${CONFIG_BRANCH}"
+#    jenkinsfile_name: "jenkins/check_distrib.groovy"
+#  - name: "report results to sber-chat"
+#    repo: "digital_assisitant_b2c/dab2c-aef-executor-service.git"
+#    branch: "${CONFIG_BRANCH}"
+#    jenkinsfile_name: "jenkins/sberchat_notification.groovy"

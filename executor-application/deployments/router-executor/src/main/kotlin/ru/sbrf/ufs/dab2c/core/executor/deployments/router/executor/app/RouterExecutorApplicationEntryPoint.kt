@@ -2,14 +2,17 @@ package ru.sbrf.ufs.dab2c.core.executor.deployments.router.executor.app
 
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.web.reactive.WebFluxAutoConfiguration
 import org.springframework.context.annotation.Import
+import org.springframework.web.reactive.config.EnableWebFlux
 import ru.sbrf.ufs.dab2c.core.executor.deployments.router.executor.config.RootConfiguration
 
 /**
  * Spring-Boot application entrypoint.
  */
+@EnableWebFlux
 @SpringBootApplication
-@Import(RootConfiguration::class)
+@Import(value = [RootConfiguration::class, WebFluxAutoConfiguration::class])
 class RouterExecutorApplicationEntryPoint
 
 /**

@@ -32,11 +32,13 @@ class RestMonitoringAspect(
             CALLER_ALL,
             joinPoint.args.firstNotNullOfOrNull { callerNameExtractorChain.extract(it) } ?: CALLER_UNKNOWN
         )
-            .map { MetricPath(
-                origin = MetricOrigin.INBOUND,
-                service = config.service,
-                caller = it
-            ) }
+            .map {
+                MetricPath(
+                    origin = MetricOrigin.INBOUND,
+                    service = config.service,
+                    caller = it
+                )
+            }
         return executionWrapper(joinPoint, metricPath)
     }
 

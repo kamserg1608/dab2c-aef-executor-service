@@ -1,0 +1,23 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: ${name}-destination-rule
+  namespace: default
+spec:
+  host: ${name}.default.svc.cluster.local
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        http1MaxPendingRequests: 50
+        http2MaxRequests: 100
+  subsets:
+    - name: ${from}
+      labels:
+        version: ${from}
+    - name: ${to}
+      labels:
+        version: ${to}

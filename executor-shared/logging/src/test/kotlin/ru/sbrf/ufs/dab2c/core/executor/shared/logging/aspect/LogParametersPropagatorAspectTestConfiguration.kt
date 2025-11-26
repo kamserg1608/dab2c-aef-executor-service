@@ -27,7 +27,8 @@ class LogParametersPropagatorAspectTestConfiguration {
     internal fun spyBeanPostProcessor() = SpykBeanPostProcessor(
         SpykBeanConfig(
             spyClasses = listOf(
-                LogParametersService::class)
+                LogParametersService::class
+            )
         )
     )
 }

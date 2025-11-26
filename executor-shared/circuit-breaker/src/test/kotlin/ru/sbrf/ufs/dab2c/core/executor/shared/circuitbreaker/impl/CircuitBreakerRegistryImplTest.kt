@@ -1,6 +1,5 @@
 package ru.sbrf.ufs.dab2c.core.executor.shared.circuitbreaker.impl
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -13,9 +12,9 @@ import ru.sbrf.ufs.dab2c.core.executor.shared.circuitbreaker.parameters.model.Pm
 import ru.sbrf.ufs.dab2c.core.executor.shared.circuitbreaker.service.impl.CircuitBreakerRegistryImpl
 import ru.sbrf.ufs.dab2c.core.executor.shared.circuitbreaker.service.impl.NoOpCircuitBreaker
 import java.time.Duration
+import java.util.Collections.emptySet
 
 @Suppress("FunctionMaxLength")
-@SuppressFBWarnings("PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS")
 class CircuitBreakerRegistryImplTest {
 
     private val circuitBreakerParameters: CircuitBreakerParameters = mockk(relaxed = true)

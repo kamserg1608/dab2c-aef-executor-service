@@ -1,0 +1,29 @@
+﻿apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingressgateway-mtls-router-executor-unver
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: 'true'
+    nginx.ingress.kubernetes.io/ssl-passthrough: 'true'
+    nginx.ingress.kubernetes.io/load-balance: 'round_robin'
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '180'
+  labels:
+    app: istio-ingressgateway-router-executor-unver
+    chart: gateways
+    heritage: Tiller
+    istio: ingressgateway-router-executor-unver
+    release: istio
+    sectorId: '{{ TENANT_CODE }}'
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: ${router-executor.ctr.istio.ingress.route.spec.host.router-executor.appFQDN}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ingressgateway-router-executor-unver
+                port:
+                  name: https-11443

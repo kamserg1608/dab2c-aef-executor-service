@@ -1,0 +1,23 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: ${name}-virtual-service
+  namespace: default
+spec:
+  hosts:
+    - ${name}.default.svc.cluster.local
+  http:
+    - match:
+        - headers:
+            x-version:
+              exact: ${from}
+      route:
+        - destination:
+            host: ${name}.default.svc.cluster.local
+            subset: ${from}
+          weight: 100
+    - route:
+        - destination:
+            host: ${name}.default.svc.cluster.local
+            subset: ${to}
+          weight: 100

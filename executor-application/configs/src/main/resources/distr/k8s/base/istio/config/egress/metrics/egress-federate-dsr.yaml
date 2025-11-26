@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: egressgateway-federate-router-executor-unver
+spec:
+  exportTo:
+    - .
+  host: 'metrics.{{ lookup("custom_vars", "global.multiClusters.openshiftCluster") | regex_replace("^https?://", "") | regex_replace("^api\\.", "") | regex_replace(":[^/:]*", "") | regex_replace("/[^/]*$", "") }}'
+  trafficPolicy:
+    portLevelSettings:
+      - port:
+          number: 8481
+        tls:
+          caCertificates: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          clientCertificate: /vault/secrets/client-cert.pem
+          privateKey: /vault/secrets/client-cert.key
+          mode: MUTUAL
+          sni: 'metrics.{{ lookup("custom_vars", "global.multiClusters.openshiftCluster") | regex_replace("^https?://", "") | regex_replace("^api\\.", "") | regex_replace(":[^/:]*", "") | regex_replace("/[^/]*$", "") }}'
+  workloadSelector:
+    matchLabels:
+      app: istio-egressgateway-router-executor-unver

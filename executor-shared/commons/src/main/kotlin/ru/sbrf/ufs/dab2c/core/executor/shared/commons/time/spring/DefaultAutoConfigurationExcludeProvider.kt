@@ -1,6 +1,5 @@
 package ru.sbrf.ufs.dab2c.core.executor.shared.commons.time.spring
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import org.slf4j.LoggerFactory
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.env.EnvironmentPostProcessor
@@ -17,11 +16,13 @@ import java.net.URL
  * [EnvironmentPostProcessor] self-registering itself as [PropertySource]
  * providing customization for 'spring.autoconfigure.exclude' property via file 'autoconfiguration.excludes'.
  */
-@SuppressFBWarnings("URLCONNECTION_SSRF_FD")
-class DefaultAutoConfigurationExcludeProvider : PropertySource<Array<String?>>(
-    PROPERTY_NAME_AUTOCONFIGURE_EXCLUDE,
-    exclusions
-), EnvironmentPostProcessor, Ordered {
+class DefaultAutoConfigurationExcludeProvider :
+    PropertySource<Array<String?>>(
+        PROPERTY_NAME_AUTOCONFIGURE_EXCLUDE,
+        exclusions
+    ),
+    EnvironmentPostProcessor,
+    Ordered {
 
     override fun getOrder(): Int = Ordered.HIGHEST_PRECEDENCE
 

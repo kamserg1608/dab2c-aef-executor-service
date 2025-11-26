@@ -1,17 +1,33 @@
 server:
-  # Максимальный размер заголовка HTTP (если не переопределять, то будет 8000)
-  max-http-header-size: 40000
+  # Максимальный размер заголовка HTTP
+  max-http-header-size: ${SERVER_MAX_HTTP_HEADER_SIZE}
   port: 8080
   tomcat:
     threads:
-      min-spare: ${@config-fp-name1@.server.tomcat.min-spare-threads}
-      max: ${@config-fp-name1@.server.tomcat.max-threads}
+      max: ${router-executor-router-executor.server.tomcat.max-threads}
+      min-spare: ${router-executor-router-executor.server.tomcat.min-spare-threads}
 
 ufs:
   platform:
+    cbro:
+      mode: PROM
+      cacheTTL: 300000
+      deadCacheTTL: 10800000
+      templatesRootPath: /tmp
+      uploadTemplatesTTL: 300000
+      useTimeGap: true
     config:
       directory: /tmp/ufsparams-runtime/config
       startupConfigDirectory: /tmp/ufsparams/config
+
+  # ССД
+  sds:
+    client:
+      mode: ${ufs.sds.client.mode}
+      currentReplica: ${ufs.sds.client.currentReplica}
+      clusterHealthcheckDisabled: ${ufs.sds.client.clusterHealthcheckDisabled}
+      http:
+        integration-enabled: true
 
   # Журналирование
   logger:
@@ -22,3 +38,111 @@ ufs:
   monitoring:
     kafka:
       enabled: false
+
+  # Аудит
+  audit:
+    client:
+      context:
+        audit:
+          CImodule: ${CONF_ITEM_FP}_ROUTER_EXECUTOR_JAVA_DAB2C
+          namespace: ${AUDIT_NAMESPACE}
+          pod: ${AUDIT_POD}
+          sourceSystem: ${CONF_ITEM_AS}
+          ufs.client_module.context.pool.parallelism: 20
+        Async.SendUncritical.Max.Tasks: 1500
+      useQuota: false
+
+  # Blockrouter
+  blockrouter:
+    subscription: false
+
+  # Авторизация
+  security:
+    client:
+      mode: PROM
+
+  # Launcher
+  launcher:
+    client:
+      mode: REMOTE
+
+  # Compliance (БИПО)
+  bioc:
+    client:
+      mode: remote
+
+  # Компонента Фродмониторинга
+  fraudmon:
+    client:
+      mode: remote
+
+  # Профиль ФЛ
+  idpersonremote:
+    client:
+      mode: remote
+
+  # САЗ
+  task-scheduler:
+    registrator:
+      client:
+        mode: REMOTE
+        enabled: true
+    executor:
+      client:
+        mode: REMOTE
+        enabled: true
+
+  # Интеграционный модуль
+  integration:
+    module:
+      executorService:
+        poolSize: 200
+      kafka:
+        consumerFactories:
+          - name: kafka/factory/CONSUMER_FACTORY_COMMON
+            properties:
+              "[bootstrap.servers]": ${router-executor.kafka.techbreak.bootstrap.servers}
+              "[fetch.max.bytes]": ${router-executor.kafka.techbreak.consumer_factory.fetch.max.bytes}
+              "[fetch.max.wait.ms]": ${router-executor.kafka.techbreak.consumer_factory.fetch.max.wait.ms}
+              "[fetch.min.bytes]": ${router-executor.kafka.techbreak.consumer_factory.fetch.min.bytes}
+              "[heartbeat.interval.ms]": ${router-executor.kafka.techbreak.consumer_factory.heartbeat.interval.ms}
+              "[max.poll.interval.ms]": ${router-executor.kafka.techbreak.consumer_factory.max.poll.interval.ms}
+              "[max.partition.fetch.bytes]": ${router-executor.kafka.techbreak.consumer_factory.max.partition.fetch.bytes}
+              "[receive.buffer.bytes]": ${router-executor.kafka.techbreak.consumer_factory.receive.buffer.bytes}
+              "[request.timeout.ms]": ${router-executor.kafka.techbreak.consumer_factory.request.timeout.ms}
+              "[session.timeout.ms]": ${router-executor.kafka.techbreak.consumer_factory.session.timeout.ms}
+              "[security.protocol]": ${router-executor.kafka.techbreak.security.protocol}
+              "[send.buffer.bytes]": ${router-executor.kafka.techbreak.consumer_factory.send.buffer.bytes}
+              "[ssl.cipher.suites]": ${router-executor.kafka.techbreak.ssl.cipher.suites}
+              "[ssl.endpoint.identification.algorithm]": ${router-executor.kafka.techbreak.ssl.endpoint.identification.algorithm}
+
+  # Техперерывы
+  tech-break:
+    client:
+      mode: remote
+
+  # Toggler
+  feature-toggle:
+    client:
+      mode: REMOTE
+      # URL, при вызове которых будут загружены секции ССД, с которыми работает Feature Toggle (@SdsSectionsIntendedToUse) - опционально, значение указано для примера
+      urlForLoadSdsSections: /guest/toggler/*
+
+  # Справочники
+  dictionary:
+    kafka:
+      enabled: true
+      bootstrapServers: ${router-executor.kafka.dictionary.bootstrap.servers}
+      sslEndpointIdentificationAlgorithm: ${router-executor.kafka.dictionary.ssl.endpoint.identification.algorithm}
+      securityProtocol: ${router-executor.kafka.dictionary.security.protocol}
+      consumer:
+        fetchMaxBytes: ${router-executor.kafka.dictionary.consumer_factory.fetch.max.bytes}
+        fetchMaxWaitMs: ${router-executor.kafka.dictionary.consumer_factory.fetch.max.wait.ms}
+        fetchMinBytes: ${router-executor.kafka.dictionary.consumer_factory.fetch.min.bytes}
+        heartbeatIntervalMs: ${router-executor.kafka.dictionary.consumer_factory.heartbeat.interval.ms}
+        maxPartitionFetchBytes: ${router-executor.kafka.dictionary.consumer_factory.max.partition.fetch.bytes}
+        maxPollIntervalMs: ${router-executor.kafka.dictionary.consumer_factory.max.poll.interval.ms}
+        receiveBufferBytes: ${router-executor.kafka.dictionary.consumer_factory.receive.buffer.bytes}
+        requestTimeoutMs: ${router-executor.kafka.dictionary.consumer_factory.request.timeout.ms}
+        sendBufferBytes: ${router-executor.kafka.dictionary.consumer_factory.send.buffer.bytes}
+        sessionTimeoutMs: ${router-executor.kafka.dictionary.consumer_factory.session.timeout.ms}

@@ -1,0 +1,24 @@
+﻿apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: egressgateway-mtls-router-executor-monm-unver
+spec:
+  exportTo:
+    - .
+  host: ${global.monitoring.store.host}
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+    portLevelSettings:
+      - port:
+          number: ${global.monitoring.store.port}
+        tls:
+          caCertificates: /vault/secrets/ca-chain.pem
+          clientCertificate: /vault/secrets/client-cert.pem
+          privateKey: /vault/secrets/client-cert.key
+          mode: MUTUAL
+          sni: ${global.monitoring.store.host}
+  workloadSelector:
+    matchLabels:
+      app: istio-egressgateway-router-executor-unver
+      istio: egressgateway-router-executor-unver
