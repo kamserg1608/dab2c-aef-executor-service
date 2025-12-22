@@ -1,7 +1,7 @@
 rootProject.name = "dab2c-core"
-include("dab2c-executor-distribution")
-include("dab2c-executor-application")
-include("dab2c-executor-e2e-tests")
+include("executor-distribution")
+include("executor-application")
+include("executor-e2e-tests")
 
 pluginManagement {
     repositories {
