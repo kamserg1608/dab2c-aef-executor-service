@@ -1,0 +1,107 @@
+server:
+  # Максимальный размер заголовка HTTP
+  max-http-header-size: ${SERVER_MAX_HTTP_HEADER_SIZE}
+  port: 8080
+  tomcat:
+    threads:
+      max: ${@fpi-name@.server.tomcat.max-threads}
+      min-spare: ${@fpi-name@.server.tomcat.min-spare-threads}
+
+dab2c:
+  integration-service:
+    session:
+      ufs-host-mapper:
+        location: "file:/tmp/app-params/ufs_blocks_mapping.yaml"
+
+ufs:
+  platform:
+    config:
+      directory: /tmp/ufsparams-runtime/config
+      startupConfigDirectory: /tmp/ufsparams/config
+
+  # ССД
+  sds:
+    client:
+      mode: ${ufs.sds.client.mode}
+      clusterHealthcheckDisabled: ${ufs.sds.client.clusterHealthcheckDisabled}
+      currentReplica: ${ufs.sds.client.currentReplica}
+      http:
+        integration-enabled: true
+
+  # Журналирование
+  logger:
+    client:
+      mode: FRONTEND
+
+  # Мониторинг
+  monitoring:
+    kafka:
+      enabled: false
+
+  # Аудит
+  audit:
+    client:
+      context:
+        audit:
+          CImodule: @audit-ci-name@
+          namespace: ${AUDIT_NAMESPACE}
+          pod: ${AUDIT_POD}
+          sourceSystem: @as-conf-item.uppercase@
+          ufs.client_module.context.pool.parallelism: 20
+        Async.SendUncritical.Max.Tasks: 1500
+      useQuota: false
+
+  # Blockrouter
+  blockrouter:
+    subscription: false
+
+  # Авторизация
+  security:
+    client:
+      mode: PROM
+
+  # Launcher
+  launcher:
+    client:
+      mode: REMOTE
+
+  # Профиль ФЛ
+  idpersonremote:
+    client:
+      mode: remote
+
+  # Интеграционный модуль
+  integration:
+    module:
+      executorService:
+        poolSize: 200
+      kafka:
+        consumerFactories:
+          - name: kafka/factory/CONSUMER_FACTORY_COMMON
+            properties:
+              "[bootstrap.servers]": ${@fpi-name@.kafka.techbreak.bootstrap.servers}
+              "[fetch.max.bytes]": ${@fpi-name@.kafka.techbreak.consumer_factory.fetch.max.bytes}
+              "[fetch.max.wait.ms]": ${@fpi-name@.kafka.techbreak.consumer_factory.fetch.max.wait.ms}
+              "[fetch.min.bytes]": ${@fpi-name@.kafka.techbreak.consumer_factory.fetch.min.bytes}
+              "[heartbeat.interval.ms]": ${@fpi-name@.kafka.techbreak.consumer_factory.heartbeat.interval.ms}
+              "[max.poll.interval.ms]": ${@fpi-name@.kafka.techbreak.consumer_factory.max.poll.interval.ms}
+              "[max.partition.fetch.bytes]": ${@fpi-name@.kafka.techbreak.consumer_factory.max.partition.fetch.bytes}
+              "[receive.buffer.bytes]": ${@fpi-name@.kafka.techbreak.consumer_factory.receive.buffer.bytes}
+              "[request.timeout.ms]": ${@fpi-name@.kafka.techbreak.consumer_factory.request.timeout.ms}
+              "[session.timeout.ms]": ${@fpi-name@.kafka.techbreak.consumer_factory.session.timeout.ms}
+              "[security.protocol]": ${@fpi-name@.kafka.techbreak.security.protocol}
+              "[send.buffer.bytes]": ${@fpi-name@.kafka.techbreak.consumer_factory.send.buffer.bytes}
+              "[ssl.cipher.suites]": ${@fpi-name@.kafka.techbreak.ssl.cipher.suites}
+              "[ssl.endpoint.identification.algorithm]": ${@fpi-name@.kafka.techbreak.ssl.endpoint.identification.algorithm}
+
+  # Техперерывы
+  tech-break:
+    client:
+      mode: remote
+
+  # Toggler
+  feature-toggle:
+    client:
+      mode: REMOTE
+      # URL, при вызове которых будут загружены секции ССД, с которыми работает Feature Toggle (@SdsSectionsIntendedToUse) - опционально, значение указано для примера
+      urlForLoadSdsSections: /guest/toggler/*

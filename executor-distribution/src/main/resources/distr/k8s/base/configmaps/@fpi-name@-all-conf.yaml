@@ -1,0 +1,10 @@
+apiVersion: "v1"
+kind: "ConfigMap"
+metadata:
+  name: @fpi-name@-all-conf-${distrib.release.version}
+data:
+  # при копировании нужно сохранять отступы как в образце
+  {% set conf_keys = query('keys_from_conf', configFp.currentName + '/conf/config/parameters/@fpi-name@.all.conf') -%}
+  {% for key in conf_keys -%}
+  {{ key }}: '{% if lookup('vars', key) in [true,false,"true","false"] %}{{ lookup('vars', key) | string | lower }}{% else %}{{ lookup('vars', key) }}{% endif %}'
+  {% endfor -%}

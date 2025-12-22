@@ -1,0 +1,31 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: egressgateway-api-@fpi-name@-unver
+spec:
+  exportTo:
+    - .
+  hosts:
+    - '{{ lookup("custom_vars", "global.multiClusters.openshiftCluster") | regex_replace("^https?://", "") | regex_replace(":[^/:]*", "") | regex_replace("/[^/]*$", "") }}'
+  gateways:
+    - mesh
+    - egressgateway-api-@fpi-name@-unver
+  http:
+    - match:
+        - gateways:
+            - mesh
+          port: 80
+      route:
+        - destination:
+            host: egressgateway-api-@fpi-name@-unver
+            port:
+              number: 2002
+    - match:
+        - gateways:
+            - egressgateway-api-@fpi-name@-unver
+          port: 2002
+      route:
+        - destination:
+            host: '{{ lookup("custom_vars", "global.multiClusters.openshiftCluster") | regex_replace("^https?://", "") | regex_replace(":[^/:]*", "") | regex_replace("/[^/]*$", "") }}'
+            port:
+              number: 6443

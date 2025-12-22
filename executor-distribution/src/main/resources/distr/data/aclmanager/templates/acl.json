@@ -1,0 +1,16 @@
+{
+  "apiVersion": "v1",
+  "common_name": "{{ fpConfig.groupId }}-{{ fpConfig.artifactId }}-CLIENT",
+  "acl": [
+    {
+      "bootstrap.servers": "${global.platform.inner.kafka.bootstrap.servers}",
+      "topics": "${techbreak.notification.kafkaTopicName}",
+      "operations": ["CONSUME"]
+    },
+    {
+      "bootstrap.servers": "${global.platform.inner.kafka.bootstrap.servers}",
+      "topics": "blrouter.ufs.topology,blrouter.ufs.component.groups,blrouter.ufs.client.groups",
+      "operations": ["CONSUME"]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: egressgateway-federate-@fpi-name@-unver
+spec:
+  selector:
+    istio: egressgateway-@fpi-name@-unver
+  servers:
+    - hosts:
+        - 'metrics.{{ lookup("custom_vars", "global.multiClusters.openshiftCluster") | regex_replace("^https?://", "") | regex_replace("^api\\.", "") | regex_replace(":[^/:]*", "") | regex_replace("/[^/]*$", "") }}'
+      port:
+        name: http-2001
+        number: 2001
+        protocol: HTTP

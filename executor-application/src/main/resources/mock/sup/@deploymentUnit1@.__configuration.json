@@ -1,0 +1,716 @@
+{
+  "version": "1.0",
+  "parameters": [
+    {
+      "name": "ufs.tenant.code",
+      "description": "TENANT code",
+      "isList": false,
+      "roles": [],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "@tenantCode@"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ufs.standin.node.path",
+      "description": "Stand-In node path",
+      "isList": false,
+      "roles": [],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "EXAMPLE"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "healthcheck.cascadeprotection.isDisabled",
+      "description": "Отключение Healthcheck для локальных прогонов",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "BOOLEAN",
+      "bundle": [
+        {
+          "path": [
+            {
+              "code": "SUBSYSTEM",
+              "value": null
+            },
+            {
+              "code": "DEPLOYMENT_UNIT",
+              "value": null
+            },
+            {
+              "code": "CHANNEL",
+              "value": null
+            }
+          ],
+          "values": [
+            "true"
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "integration.module.bwc194",
+      "description": "Поддержка совместимости с ЕФС 19.4",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "BOOLEAN",
+      "bundle": [
+        {
+          "path": [
+            {
+              "code": "VERSION",
+              "value": "false"
+            },
+            {
+              "code": "CHANNEL",
+              "value": "@ufs.channel@"
+            },
+            {
+              "code": "SUBSYSTEM",
+              "value": "@subsystemCode@"
+            },
+            {
+              "code": "TERBANK",
+              "value": ""
+            },
+            {
+              "code": "OSB",
+              "value": ""
+            },
+            {
+              "code": "VSP",
+              "value": ""
+            }
+          ],
+          "values": [
+            "false"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integration.module.isExternalListenersManagementEnabled",
+      "description": "Включение внешнего управления лисенерами",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "BOOLEAN",
+      "bundle": [
+        {
+          "path": [
+            {
+              "code": "VERSION",
+              "value": "false"
+            },
+            {
+              "code": "CHANNEL",
+              "value": "@ufs.channel@"
+            },
+            {
+              "code": "SUBSYSTEM",
+              "value": "@subsystemCode@"
+            },
+            {
+              "code": "TERBANK",
+              "value": ""
+            },
+            {
+              "code": "OSB",
+              "value": ""
+            },
+            {
+              "code": "VSP",
+              "value": ""
+            }
+          ],
+          "values": [
+            "false"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integration.module.zone",
+      "description": "ZoneCode единицы топологии",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [
+            {
+              "code": "VERSION",
+              "value": "false"
+            },
+            {
+              "code": "CHANNEL",
+              "value": "@ufs.channel@"
+            },
+            {
+              "code": "SUBSYSTEM",
+              "value": "@subsystemCode@"
+            },
+            {
+              "code": "TERBANK",
+              "value": ""
+            },
+            {
+              "code": "OSB",
+              "value": ""
+            },
+            {
+              "code": "VSP",
+              "value": ""
+            }
+          ],
+          "values": [
+            "SBOL.p5"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integration.module.zone194",
+      "description": "ZoneCode единицы топологии 19.4",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [
+            {
+              "code": "VERSION",
+              "value": "false"
+            },
+            {
+              "code": "CHANNEL",
+              "value": "@ufs.channel@"
+            },
+            {
+              "code": "SUBSYSTEM",
+              "value": "@subsystemCode@"
+            },
+            {
+              "code": "TERBANK",
+              "value": ""
+            },
+            {
+              "code": "OSB",
+              "value": ""
+            },
+            {
+              "code": "VSP",
+              "value": ""
+            }
+          ],
+          "values": [
+            "p5"
+          ]
+        }
+      ]
+    },
+
+
+    {
+      "name": "integration.module.UFS_INNER.SrvTechBreakNotification.001.CUSTOM.transportType",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [
+            {
+              "code": "VERSION",
+              "value": "false"
+            },
+            {
+              "code": "CHANNEL",
+              "value": "@ufs.channel@"
+            },
+            {
+              "code": "SUBSYSTEM",
+              "value": "@subsystemCode@"
+            },
+            {
+              "code": "TERBANK",
+              "value": ""
+            },
+            {
+              "code": "OSB",
+              "value": ""
+            },
+            {
+              "code": "VSP",
+              "value": ""
+            }
+          ],
+          "values": [
+            "KAFKA"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integration.module.UFS_INNER.SrvTechBreakNotification.001.CUSTOM.kafkaTopicName",
+      "description": "",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "p5.UFS_TechBreak.SRVBLOCKMODECHANGEASYNC"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integration.module.UFS_INNER.SrvTechBreakNotification.001.CUSTOM.kafkaConsumerFactory",
+      "description": "Фабрика потребитель для ИМ",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "kafka/factory/CONSUMER_FACTORY_COMMON"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integration.module.UFS_INNER.SrvTechBreakNotification.001.CUSTOM.kafkaProducerFactory",
+      "description": "Фабрика отправки сообщений для ИМ",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "kafka/factory/PRODUCER_FACTORY_COMMON"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integration.adapter.PLTFRMV.SrvBlockModeChangeConsumer.001.checkResponseSchema",
+      "description": "Включение валидации ответа",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "BOOLEAN",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "true"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integration.adapter.PLTFRMV.SrvBlockModeChangeConsumer.001.checkRequestSchema",
+      "description": "Включение валидации запроса",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "BOOLEAN",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "true"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integration.module.PLTFRMV.SrvBlockModeChangeConsumer.001.kafkaTopicName",
+      "description": "Название топика",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "UFS_STANDIN.EXTERNAL.SRVBLOCKMODECHANGEASYNC"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integration.module.PLTFRMV.SrvBlockModeChangeConsumer.001.transportType",
+      "description": "Тип транспорта ИМ",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "kafka"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integration.module.PLTFRMV.SrvBlockModeChangeConsumer.001.kafkaConsumerFactory",
+      "description": "Фабрика потребитель для ИМ",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "kafka/external_factory/consumer_factory_1"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integration.module.UFS_INNER.SrvBlockModeChangeAsync.001.CLIENT.topicConnectionFactory",
+      "description": "Connection Factory Round-Robin для Topic",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "jms/factory/INNER_TOPIC_ROUND_ROBIN"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integration.adapter.UFS_INNER.SrvBlockModeChangeAsync.001.CLIENT.checkRequestSchema",
+      "description": "Включение валидации запроса",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "BOOLEAN",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "true"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integration.adapter.UFS_INNER.SrvBlockModeChangeAsync.001.CLIENT.checkResponseSchema",
+      "description": "Включение валидации ответа",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "BOOLEAN",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "true"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integration.module.UFS_INNER.SrvBlockModeChangeAsync.001.CLIENT.topicName",
+      "description": "Название топика",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "PRIVATE/%s/%s/%s"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integration.module.UFS_INNER.SrvBlockModeChangeAsync.001.CLIENT.transportType",
+      "description": "Тип транспорта ИМ для передачи сообщений MQ/KAFKA",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "kafka"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integration.module.UFS_INNER.SrvBlockModeChangeAsync.001.CLIENT.kafkaConsumerFactory",
+      "description": "Фабрика потребитель для ИМ",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "kafka/inner_factory/consumer_factory"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integration.module.UFS_INNER.SrvBlockModeChangeAsync.001.CLIENT.kafkaProducerFactory",
+      "description": "Фабрика отправки сообщений для ИМ",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "kafka/inner_factory/producer_factory"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integration.module.UFS_INNER.SrvBlockModeChangeAsync.001.CLIENT.kafkaTopicName",
+      "description": "",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "p5.UFS_STANDIN.INNER.SRVBLOCKMODECHANGEASYNC"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ufs.sds.monitoring.metrics.sending.periodicity",
+      "description": "Периодичность отправки в Мониторинг метрик ССД (мсек)",
+      "isList": false,
+      "roles": [ "ManageParameters.ParameterRole.System" ],
+      "type": "LONG",
+      "bundle": [
+        { "path": [],
+          "values": [
+            "10000"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ufs.baseUrl.SrvDaConfigurator",
+      "description": "Базовая часть url'а в формате PROTOCOL://HOST:PORT",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "http://${@fpi-name@.ctr.istio.egress.se.http.daconf.host}:${@fpi-name@.ctr.istio.egress.se.http.daconf.port}"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ufs.httpclient.propagate.session.enable.SrvDaConfigurator",
+      "description": "Признак включения механизма распространения сессии при вызовах.",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "BOOLEAN",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "true"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ufs.httpclient.redirect.enable.SrvDaConfigurator",
+      "description": "Разрешение перенаправления запроса.",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "BOOLEAN",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "true"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ufs.httpclient.time-out.request.milliseconds.SrvDaConfigurator",
+      "description": "Таймаут для запроса к Конфигуратору",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "LONG",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "6000"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "dab2c.core.debug.enabled",
+      "description": "Включение режима отладки",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "BOOLEAN",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "true"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "dab2c.configurator.api.v2.platformConfigMatch.endpoint",
+      "description": "Путь API версии V2 для вызова Конфигуратора для расчета конфигураций",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "/platform-config/match/v2"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "dab2c.session.api.dispatcher.force.v1",
+      "description": "Предпочитать использование API V1 при обращении к Конфигуратору.",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "BOOLEAN",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "true"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "intergration.crosshub.base.url",
+      "description": "Base-Url для проксирования при кроссхаб взаимодействии",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "http://localhost:8089"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "intergration.crosshub.path",
+      "description": "Base-Url для проксирования при кроссхаб взаимодействии",
+      "isList": false,
+      "roles": [
+        "ManageParameters.ParameterRole.System"
+      ],
+      "type": "STRING",
+      "bundle": [
+        {
+          "path": [],
+          "values": [
+            "/v1/2gis"
+          ]
+        }
+      ]
+    }
+  ]
+}

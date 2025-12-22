@@ -1,0 +1,231 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: @config-fp-name1@
+    platformv.sber.ru/releaseVersion: @ufs.release@
+    platformv.sber.ru/config-fp-name: @config-fp-name1@
+    platformv.sber.ru/fullReleaseVersion: @schemas.version@
+  name: @config-fp-name1@-${distrib.release.version}
+spec:
+  replicas: ${@config-fp-name1@.ctr.deployment.spec.replicas}
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      platformv.sber.ru/config-fp-name: @config-fp-name1@
+  strategy:
+    activeDeadlineSeconds: 21600
+    resources: {}
+    rollingUpdate:
+      maxSurge: ${@config-fp-name1@.ctr.deployment.spec.strategy.rollingUpdate.maxSurge}
+      maxUnavailable: ${@config-fp-name1@.ctr.deployment.spec.strategy.rollingUpdate.maxUnavailable}
+    type: RollingUpdate
+  triggers:
+    - type: ConfigChange
+  template:
+    metadata:
+      labels:
+        distrib-version: ${jenkins_env.fp_artifact_version}
+        jenkinsDeployId: ${jenkinsDeployId}
+        platformv.sber.ru/releaseVersion: @ufs.release@
+        platformv.sber.ru/config-fp-name: @config-fp-name1@
+        platformv.sber.ru/fullReleaseVersion: @schemas.version@
+        secman-injector: enabled
+      annotations:
+        proxy.istio.io/config: |
+          drainDuration: 45s
+          holdApplicationUntilProxyStarts: true
+          terminationDrainDuration: 45s
+        sidecar.istio.io/rewriteAppHTTPProbers: "false"
+        sidecar.istio.io/inject: "true"
+        sidecar.istio.io/proxyCPU: ${@config-fp-name1@.ctr.deployment.metadata.annotations.sidecar.istio.io.proxyCPU}
+        sidecar.istio.io/proxyMemory: ${@config-fp-name1@.ctr.deployment.metadata.annotations.sidecar.istio.io.proxyMemory}
+        sidecar.istio.io/proxyCPULimit: ${@config-fp-name1@.ctr.deployment.metadata.annotations.sidecar.istio.io.proxyCPULimit}
+        sidecar.istio.io/proxyMemoryLimit: ${@config-fp-name1@.ctr.deployment.metadata.annotations.sidecar.istio.io.proxyMemoryLimit}
+
+        vault.hashicorp.com/agent-init-first: "true"
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/agent-set-security-context: "true"
+        vault.hashicorp.com/agent-json-patch: '[{"op": "replace", "path": "/securityContext/privileged", "value":false}, {"op": "replace", "path": "/securityContext/runAsUser", "value": 1003600337}]'
+        vault.hashicorp.com/agent-init-json-patch: '[{"op": "replace", "path": "/securityContext/privileged", "value":false}, {"op": "replace", "path": "/securityContext/runAsUser", "value": 1003600337}]'
+        vault.hashicorp.com/agent-volumes-default-mode: '0400'
+        vault.hashicorp.com/agent-inject-default-template: "json"
+        vault.hashicorp.com/agent-pre-populate: "false"
+        vault.hashicorp.com/agent-limits-cpu: 150m
+        vault.hashicorp.com/agent-requests-cpu: 100m
+        vault.hashicorp.com/role: "${global.multiClusters.openshiftProjectName}"
+        vault.hashicorp.com/namespace: "{{ lookup('custom_vars', 'global.hashicorp.opsPathCommonPKI').split('/')[1] }}"
+        vault.hashicorp.com/tls-skip-verify: "false"
+
+        "vault.hashicorp.com/agent-inject-secret-tls.crt": "true"
+        "vault.hashicorp.com/secret-volume-path-tls.crt": /vault/secrets/ssl/crt/
+        "vault.hashicorp.com/agent-inject-template-tls.crt":  >-
+          {% raw -%} {{- with secret {%- endraw %} "{{ SBERCA_CLIENT_PATH | default(lookup('custom_vars', 'global.hashicorp.opsPathCommonPKI') + '/fetch/' + lookup('custom_vars', 'global.hashicorp.clientSberCARole')) }}" "common_name={{ SBERCA_CLIENT_CN | default(fpConfig.groupId + '-' + fpConfig.artifactId + '-CLIENT') }}" "format=pem" "exclude_cn_from_sans=true" }}
+          {%- raw -%} {{ ( index .Data "certificate" ) }} {%- endraw -%}
+          {%- raw -%} {{- end -}} {%- endraw %}
+
+        "vault.hashicorp.com/agent-inject-secret-tls.key": "true"
+        "vault.hashicorp.com/secret-volume-path-tls.key": /vault/secrets/ssl/crt/
+        "vault.hashicorp.com/agent-inject-template-tls.key":  >-
+          {% raw -%} {{- with secret {%- endraw %} "{{ SBERCA_CLIENT_PATH | default(lookup('custom_vars', 'global.hashicorp.opsPathCommonPKI') + '/fetch/' + lookup('custom_vars', 'global.hashicorp.clientSberCARole')) }}" "common_name={{ SBERCA_CLIENT_CN | default(fpConfig.groupId + '-' + fpConfig.artifactId + '-CLIENT') }}" "format=pem" "exclude_cn_from_sans=true" }}
+          {%- raw -%} {{ ( index .Data "private_key" ) }} {%- endraw -%}
+          {%- raw -%} {{- end -}} {%- endraw %}
+
+        "vault.hashicorp.com/agent-inject-secret-root.crt": "true"
+        "vault.hashicorp.com/secret-volume-path-root.crt": /vault/secrets/ssl/ca/
+        "vault.hashicorp.com/agent-inject-template-root.crt":  >-
+          {% raw -%} {{- with secret {%- endraw %} "{{ SBERCA_CLIENT_PATH | default(lookup('custom_vars', 'global.hashicorp.opsPathCommonPKI') + '/fetch/' + lookup('custom_vars', 'global.hashicorp.clientSberCARole')) }}" "common_name={{ SBERCA_CLIENT_CN | default(fpConfig.groupId + '-' + fpConfig.artifactId + '-CLIENT') }}" "format=pem" "exclude_cn_from_sans=true" }}
+          {%- raw -%} {{ ( index .Data "ca_chain" 0 ) }} {%- endraw -%}
+          {%- raw -%} {{ ( index .Data "ca_chain" 1 ) }} {%- endraw -%}
+          {%- raw -%} {{- end -}} {%- endraw %}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: 'platformv.sber.ru/config-fp-name'
+                      operator: In
+                      values:
+                        - @config-fp-name1@
+                topologyKey: 'kubernetes.io/hostname'
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1003600337
+        runAsGroup: 1003600337
+        fsGroup: 10337
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccount: default
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: ${global.ufs.secrets.imagePullSecrets}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: ${@config-fp-name1@.ctr.deployment.spec.template.spec.terminationGracePeriodSeconds}
+      volumes:
+        - name: @config-fp-name1@-config-cm
+          configMap:
+            name: @config-fp-name1@-config-cm-${distrib.release.version}
+            defaultMode: 256
+        - name: tmpdir
+          emptyDir: {}
+        - name: @fpi-name@-app-params-conf
+          configMap:
+            name: @fpi-name@-app-params-conf
+            defaultMode: 256
+      containers:
+        - name: @config-fp-name1@-${distrib.release.version}
+          # Внимание: у каждого проекта будет свой путь после ${registry}
+          image: ${registry}/@as-conf-item.lowercase@/@app-conf-item.lowercase@/@config-fp-name1@@${jenkins_env.fp_image_hash}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: AUDIT_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: AUDIT_POD
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: ose.namespace
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: CONF_ITEM_AS
+              value: "{{ fpConfig.groupId }}"
+            - name: CONF_ITEM_FP
+              value: "{{ fpConfig.artifactId }}"
+            - name: block.id
+              value: "{{ NODE_PATH | default('') }}"
+            - name: JAVA_OPTS
+              value: ${@config-fp-name1@.ctr.configmap.javaArguments}
+            - name: NODE_PATH
+              value: "{{ NODE_PATH | default('') }}"
+            - name: PLATFORM_RUNTIME_ENVIRONMENT
+              value: OPENSHIFT # пока такой парадокс
+            - name: ufs-logger.shouldReadKeystorePasswordFromFile
+              value: "true"
+            - name: ufs-logger.shouldReadTruststorePasswordFromFile
+              value: "true"
+            - name: ufs-logger.masked.field.enabled
+              value: "true"
+            - name: ufs.sds.client.currentReplica
+              value: "{{ SHARD_ID + '.' + KONTUR_ID if SHARD_ID is defined and KONTUR_ID is defined else '' }}"
+            - name: ufs.sds.client.mode
+              value: "{%- set node_type = NODE_TYPE | default('') | upper -%} {%- if node_type == 'SANDBOX' -%} REMOTE_DEV_WITH_NEAR_CACHE {%- else -%} REMOTE_WITH_NEAR_CACHE {%- endif -%}"
+            - name: ufs.sds.client.clusterHealthcheckDisabled
+              {% set node_type = NODE_TYPE | default('') | upper -%}
+              {% set tenant_code = TENANT_CODE | upper -%}
+              value: "{{ node_type == "SANDBOX" and tenant_code != "CORE" }}"
+            - name: ufs.tenant.code
+              value: "{{ TENANT_CODE }}"
+            - name: SERVER_MAX_HTTP_HEADER_SIZE
+              value: "256000"
+            - name: CONFIGURATOR_CLIENT_CACHEENABLED
+              value: "false"
+            - name: CONFIGURATOR_CLIENT_SUCCESSMATCHCACHEENABLED
+              value: "false"
+            - name: CONFIGURATOR_CLIENT_SESSIONCONFIGCACHEENABLED
+              value: "false"
+            - name: CONFIGURATOR_CLIENT_RESTSECTIONCACHEENABLED
+              value: "false"
+          envFrom:
+            - configMapRef:
+                name: @config-fp-name1@-conf-${distrib.release.version}
+            - configMapRef:
+                name: @fpi-name@-all-conf-${distrib.release.version}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: ${@config-fp-name1@.ctr.deployment.spec.template.spec.containers.@config-fp-name1@.livenessProbe.failureThreshold}
+            httpGet:
+              path: /@server.context.path@/environment/product
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: ${@config-fp-name1@.ctr.deployment.spec.template.spec.containers.@config-fp-name1@.livenessProbe.initialDelaySeconds}
+            periodSeconds: ${@config-fp-name1@.ctr.deployment.spec.template.spec.containers.@config-fp-name1@.livenessProbe.periodSeconds}
+            successThreshold: ${@config-fp-name1@.ctr.deployment.spec.template.spec.containers.@config-fp-name1@.livenessProbe.successThreshold}
+            timeoutSeconds: ${@config-fp-name1@.ctr.deployment.spec.template.spec.containers.@config-fp-name1@.livenessProbe.timeoutSeconds}
+          readinessProbe:
+            failureThreshold: ${@config-fp-name1@.ctr.deployment.spec.template.spec.containers.@config-fp-name1@.readinessProbe.failureThreshold}
+            httpGet:
+              path: /@server.context.path@/environment/product
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: ${@config-fp-name1@.ctr.deployment.spec.template.spec.containers.@config-fp-name1@.readinessProbe.initialDelaySeconds}
+            periodSeconds: ${@config-fp-name1@.ctr.deployment.spec.template.spec.containers.@config-fp-name1@.readinessProbe.periodSeconds}
+            successThreshold: ${@config-fp-name1@.ctr.deployment.spec.template.spec.containers.@config-fp-name1@.readinessProbe.successThreshold}
+            timeoutSeconds: ${@config-fp-name1@.ctr.deployment.spec.template.spec.containers.@config-fp-name1@.readinessProbe.timeoutSeconds}
+          resources:
+            limits:
+              cpu: ${@config-fp-name1@.ctr.deployment.spec.template.spec.containers.@config-fp-name1@.resources.limits.cpu}
+              memory: ${@config-fp-name1@.ctr.deployment.spec.template.spec.containers.@config-fp-name1@.resources.limits.memory}
+            requests:
+              cpu: ${@config-fp-name1@.ctr.deployment.spec.template.spec.containers.@config-fp-name1@.resources.requests.cpu}
+              memory: ${@config-fp-name1@.ctr.deployment.spec.template.spec.containers.@config-fp-name1@.resources.requests.memory}
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsUser: 1003600337
+            runAsGroup: 1003600337
+            fsGroup: 10337
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+            - name: @config-fp-name1@-config-cm
+              mountPath: /tmp/ufsparams/config/
+            - name: tmpdir
+              mountPath: /tmp/
+            - name: @fpi-name@-app-params-conf
+              mountPath: /tmp/app-params/
