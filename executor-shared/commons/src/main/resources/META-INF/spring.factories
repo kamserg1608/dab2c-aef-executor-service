@@ -1,2 +1,0 @@
-org.springframework.boot.env.EnvironmentPostProcessor=\
-    ru.sbrf.ufs.dab2c.core.executor.shared.commons.time.spring.DefaultAutoConfigurationExcludeProvider
