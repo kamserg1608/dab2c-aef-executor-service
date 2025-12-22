@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: istio-basic-unver
+  labels:
+    maistra.io/owner: ${@fpi-name@.ctr.istio.control-plane-project}
+    release: istio
+data:
+  mesh: |-
+    accessLogEncoding: TEXT
+    accessLogFile: /dev/stdout
+    accessLogFormat: ""
+    defaultConfig:
+      concurrency: 2
+      connectTimeout: 10s
+      configPath: ./etc/istio/proxy
+      discoveryAddress: ${@fpi-name@.ctr.istio.control-plane-istiod-service}.${@fpi-name@.ctr.istio.control-plane-project}.svc:15012
+      drainDuration: 45s
+      parentShutdownDuration: 1m0s
+      proxyAdminPort: 15000
+      proxyMetadata:
+        DNS_AGENT: ""
+      serviceCluster: istio-proxy
+      tracing:
+        tlsSettings:
+          caCertificates: null
+          clientCertificate: null
+          mode: DISABLE
+          privateKey: null
+          sni: null
+          subjectAltNames: []
+        zipkin:
+          address: jaeger-collector.${@fpi-name@.ctr.istio.control-plane-project}.svc:9411
+    disableMixerHttpReports: true
+    disablePolicyChecks: true
+    enableAutoMtls: true
+    enableEnvoyAccessLogService: false
+    enablePrometheusMerge: false
+    enableTracing: true
+    ingressClass: istio
+    ingressControllerMode: STRICT
+    localityLbSetting:
+      enabled: true
+    outboundTrafficPolicy:
+      mode: REGISTRY_ONLY
+    protocolDetectionTimeout: 5000ms
+    reportBatchMaxEntries: 100
+    reportBatchMaxTime: 1s
+    rootNamespace: ${@fpi-name@.ctr.istio.control-plane-project}
+    sdsUdsPath: unix:/etc/istio/proxy/SDS
+    trustDomain: cluster.local
+    trustDomainAliases: null
+  meshNetworks: 'networks: {}'

@@ -1,0 +1,23 @@
+# https://EditorConfig.org
+
+# Останавливает дальнейший поиск файлов .editorconfig в каталогах, находящихся в пути выше проекта
+root = true
+
+# Для каждого файла
+[*]
+# Юниксовый переход на другую строку
+end_of_line = lf
+# Отступ — пробелами. Наиболее популярный подход для Java и Kotlin
+indent_style = space
+# добавляем пустую строку в конец файла
+insert_final_newline = true
+# обрезаем лишние пробелы в конце строки
+trim_trailing_whitespace = true
+
+# Но не переформатируем json-файлы
+[*.json]
+insert_final_newline = false
+
+# Также сохраняем форматирование для markdown-файлов
+[*.md]
+trim_trailing_whitespace = false

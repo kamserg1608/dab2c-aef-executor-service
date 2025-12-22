@@ -1,0 +1,25 @@
+rootProject.name = "dab2c-core"
+include("dab2c-executor-distribution")
+include("dab2c-executor-application")
+include("dab2c-executor-e2e-tests")
+
+pluginManagement {
+    repositories {
+        val nexusUsername = System.getProperty("gradle.wrapperUser")
+        val nexusPassword = System.getProperty("gradle.wrapperPassword")
+        maven {
+            credentials {
+                username = nexusUsername
+                password = nexusPassword
+            }
+            url = uri("https://nexus-ci.delta.sbrf.ru/repository/public/")
+        }
+        maven {
+            credentials {
+                username = nexusUsername
+                password = nexusPassword
+            }
+            url = uri("https://nexus-ci.delta.sbrf.ru/repository/maven-lib-int/")
+        }
+    }
+}

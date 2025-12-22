@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: egressgateway-daconf-@fpi-name@-unver
+  labels:
+    app: egressgateway-@fpi-name@-unver
+  namespace: ${global.multiClusters.openshiftProjectName}
+spec:
+  ports:
+    - name: http-2000
+      protocol: TCP
+      port: 2000
+      targetPort: 2000
+  selector:
+    app: istio-egressgateway-@fpi-name@-unver

@@ -1,0 +1,30 @@
+# MacOS
+.DS_Store
+
+# Gradle
+.gradle
+build
+lib
+
+# Linux – Exclude Dolphin files (KDE File manager)
+.directory
+
+# IDEA
+.idea/**
+*.iml
+*.ipr
+
+# Maven
+target
+
+# Логи
+*.log
+**/logs
+
+tmp
+
+# GigaIDE
+.gigaide/**
+
+# mvn versions
+pom.xml.versionsBackup

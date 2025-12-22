@@ -1,0 +1,39 @@
+applications:
+  "@config-fp-name1@":
+    config_fp_name: "@config-fp-name1@"
+    deploymentUnit: "@deploymentUnit1@"
+    sup2configFile: "@deploymentUnit1@.json"
+  "@vm-agent@":
+    deploymentUnit: "@vm-agent-du@"
+    config_fp_name: "@vm-agent@"
+
+release:
+  version: "unver"
+
+apiVersion: 1.0.0
+
+schemasVersion: "@schemas.version@"
+
+pipeline-extras:
+  deploy-common-configmaps: false
+  deploy-common-secrets: false
+  filter-istio-se: false
+  filter-istio-vs: false
+
+playbooks_default:
+  "default": [
+    "MIGRATION_FP_CONF", "DRY_RUN", "IMPORT_SUP_PARAMS", "IMPORT_LOGGER_PARAMS", "IMPORT_SM_PARAMS",
+    "OPENSHIFT_DEPLOY", "OPENSHIFT_INGRESS_EGRESS_DEPLOY"
+  ]
+
+dbscripts:
+  - file: "package/db/db_archive.zip"
+    url: "{{ lookup('custom_vars', 'SYBSYSTEM_CODE_LOWER_CASE_PLACEHOLDER.ose.spring.datasource.hikari.jdbc-url') | default('url not found') }}"
+    schema: "{{ (storage_custom_schema | default(DB_SCHEMA_PREFIX + '_storage' + DB_SCHEMA_SUFFIX)) | lower }}"
+    username: "{{ lookup('vars', 'jdbc.postgres-liquibase.da.username', default='da') }}"
+    password: "{{ lookup('vars', 'jdbc.postgres-liquibase.da.password', default='') }}"
+    no_db_suffix: true
+    parallel_count: "64"
+    initial_extent: "64K"
+    definitions:
+      - "liquibase.index_parallel_count={{ EFS_PARALLEL_COUNT if EFS_PARALLEL_COUNT is defined else 64 }}"

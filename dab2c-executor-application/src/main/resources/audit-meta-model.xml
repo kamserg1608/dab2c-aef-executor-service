@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metamodel xmlns="http://audit.platform.ufs.sbrf.ru">
+    <groups>
+        <group code="DAB2C">
+            <localization>
+                <name lang="RUS" text="События dab2c-audit-srv"/>
+            </localization>
+            <events>
+                <event code="SDK_INTERACTION">
+                    <localization>
+                        <name lang="RUS" text="Обработка запроса от SDK"/>
+                    </localization>
+                    <params>
+                        <param code="RQ_MESSAGE">
+                            <localization>
+                                <name lang="RUS" text="хэдер и боди запроса"/>
+                            </localization>
+                        </param>
+                        <param code="RS_MESSAGE">
+                            <localization>
+                                <name lang="RUS" text="хэдер и боди ответа"/>
+                            </localization>
+                        </param>
+                        <param code="ANSWER_CODE">
+                            <localization>
+                                <name lang="RUS" text="статус код ответа"/>
+                            </localization>
+                        </param>
+                        <param code="SENDER">
+                            <localization>
+                                <name lang="RUS" text="url сервиса Цифрового ассистента, который сделал запись в аудите или идентификатор агента>"/>
+                            </localization>
+                        </param>
+                        <param code="EPK_ID">
+                            <localization>
+                                <name lang="RUS" text="идентификатор пользователя"/>
+                            </localization>
+                        </param>
+                    </params>
+                </event>
+                <event code="START_SESSION">
+                    <localization>
+                        <name lang="RUS" text="Старт сессии"/>
+                    </localization>
+                    <params>
+                        <param code="ANSWER_CODE">
+                            <localization>
+                                <name lang="RUS" text="статус код ответа"/>
+                            </localization>
+                        </param>
+                        <param code="SENDER">
+                            <localization>
+                                <name lang="RUS" text="url сервиса Цифрового ассистента, который сделал запись в аудите или идентификатор агента>"/>
+                            </localization>
+                        </param>
+                        <param code="RECEIVER">
+                            <localization>
+                                <name lang="RUS" text="url сервиса, в который обратился Цифровой ассистент или идентификатор агента"/>
+                            </localization>
+                        </param>
+                        <param code="CHANNEL">
+                            <localization>
+                                <name lang="RUS" text="канал"/>
+                            </localization>
+                        </param>
+                        <param code="EPK_ID">
+                            <localization>
+                                <name lang="RUS" text="идентификатор пользователя"/>
+                            </localization>
+                        </param>
+                    </params>
+                </event>
+                <event code="AGENT_INTERACTION">
+                    <localization>
+                        <name lang="RUS" text="Вызов агента"/>
+                    </localization>
+                    <params>
+                        <param code="RQ_MESSAGE">
+                            <localization>
+                                <name lang="RUS" text="хэдер и боди запроса"/>
+                            </localization>
+                        </param>
+                        <param code="RS_MESSAGE">
+                            <localization>
+                                <name lang="RUS" text="хэдер и боди ответа"/>
+                            </localization>
+                        </param>
+                        <param code="ANSWER_CODE">
+                            <localization>
+                                <name lang="RUS" text="статус код ответа"/>
+                            </localization>
+                        </param>
+                        <param code="SENDER">
+                            <localization>
+                                <name lang="RUS" text="url сервиса Цифрового ассистента, который сделал запись в аудите или идентификатор агента>"/>
+                            </localization>
+                        </param>
+                        <param code="RECEIVER">
+                            <localization>
+                                <name lang="RUS" text="url сервиса, в который обратился Цифровой ассистент или идентификатор агента"/>
+                            </localization>
+                        </param>
+                        <param code="EPK_ID">
+                            <localization>
+                                <name lang="RUS" text="идентификатор пользователя"/>
+                            </localization>
+                        </param>
+                    </params>
+                </event>
+                <event code="SDK_INTERACTION_FAILED">
+                    <localization>
+                        <name lang="RUS" text="Обработка запроса от SDK (неуспешно)"/>
+                    </localization>
+                    <params>
+                        <param code="RQ_MESSAGE">
+                            <localization>
+                                <name lang="RUS" text="хэдер и боди запроса"/>
+                            </localization>
+                        </param>
+                        <param code="RS_MESSAGE">
+                            <localization>
+                                <name lang="RUS" text="хэдер и боди ответа"/>
+                            </localization>
+                        </param>
+                        <param code="ANSWER_CODE">
+                            <localization>
+                                <name lang="RUS" text="статус код ответа"/>
+                            </localization>
+                        </param>
+                        <param code="ERROR_CODE">
+                            <localization>
+                                <name lang="RUS" text="код ошибки"/>
+                            </localization>
+                        </param>
+                        <param code="ERROR_TITLE">
+                            <localization>
+                                <name lang="RUS" text="описание ошибки"/>
+                            </localization>
+                        </param>
+                        <param code="SENDER">
+                            <localization>
+                                <name lang="RUS" text="url сервиса Цифрового ассистента, который сделал запись в аудите или идентификатор агента>"/>
+                            </localization>
+                        </param>
+                        <param code="EPK_ID">
+                            <localization>
+                                <name lang="RUS" text="идентификатор пользователя"/>
+                            </localization>
+                        </param>
+                    </params>
+                </event>
+                <event code="START_SESSION_FAILED">
+                    <localization>
+                        <name lang="RUS" text="Старт сессии (неуспешно)"/>
+                    </localization>
+                    <params>
+                        <param code="ANSWER_CODE">
+                            <localization>
+                                <name lang="RUS" text="статус код ответа"/>
+                            </localization>
+                        </param>
+                        <param code="ERROR_CODE">
+                            <localization>
+                                <name lang="RUS" text="код ошибки"/>
+                            </localization>
+                        </param>
+                        <param code="ERROR_TITLE">
+                            <localization>
+                                <name lang="RUS" text="описание ошибки"/>
+                            </localization>
+                        </param>
+                        <param code="SENDER">
+                            <localization>
+                                <name lang="RUS" text="url сервиса Цифрового ассистента, который сделал запись в аудите или идентификатор агента>"/>
+                            </localization>
+                        </param>
+                        <param code="RECEIVER">
+                            <localization>
+                                <name lang="RUS" text="url сервиса, в который обратился Цифровой ассистент или идентификатор агента"/>
+                            </localization>
+                        </param>
+                        <param code="CHANNEL">
+                            <localization>
+                                <name lang="RUS" text="канал"/>
+                            </localization>
+                        </param>
+                        <param code="EPK_ID">
+                            <localization>
+                                <name lang="RUS" text="идентификатор пользователя"/>
+                            </localization>
+                        </param>
+                    </params>
+                </event>
+                <event code="AGENT_INTERACTION_FAILED">
+                    <localization>
+                        <name lang="RUS" text="Вызов агента (неуспешно)"/>
+                    </localization>
+                    <params>
+                        <param code="RQ_MESSAGE">
+                            <localization>
+                                <name lang="RUS" text="хэдер и боди запроса"/>
+                            </localization>
+                        </param>
+                        <param code="RS_MESSAGE">
+                            <localization>
+                                <name lang="RUS" text="хэдер и боди ответа"/>
+                            </localization>
+                        </param>
+                        <param code="ANSWER_CODE">
+                            <localization>
+                                <name lang="RUS" text="статус код ответа"/>
+                            </localization>
+                        </param>
+                        <param code="ERROR_CODE">
+                            <localization>
+                                <name lang="RUS" text="код ошибки"/>
+                            </localization>
+                        </param>
+                        <param code="ERROR_TITLE">
+                            <localization>
+                                <name lang="RUS" text="описание ошибки"/>
+                            </localization>
+                        </param>
+                        <param code="SENDER">
+                            <localization>
+                                <name lang="RUS" text="url сервиса Цифрового ассистента, который сделал запись в аудите или идентификатор агента>"/>
+                            </localization>
+                        </param>
+                        <param code="RECEIVER">
+                            <localization>
+                                <name lang="RUS" text="url сервиса, в который обратился Цифровой ассистент или идентификатор агента"/>
+                            </localization>
+                        </param>
+                        <param code="EPK_ID">
+                            <localization>
+                                <name lang="RUS" text="идентификатор пользователя"/>
+                            </localization>
+                        </param>
+                    </params>
+                </event>
+                <event code="FILE_UPLOAD">
+                    <localization>
+                        <name lang="RUS" text="Загрузка файла во внешнюю систему"/>
+                    </localization>
+                    <params>
+                        <param code="ANSWER_CODE">
+                            <localization>
+                                <name lang="RUS" text="статус код ответа"/>
+                            </localization>
+                        </param>
+                        <param code="SENDER">
+                            <localization>
+                                <name lang="RUS" text="url сервиса Цифрового ассистента, который сделал запись в аудите или идентификатор агента>"/>
+                            </localization>
+                        </param>
+                        <param code="RECEIVER">
+                            <localization>
+                                <name lang="RUS" text="url сервиса, в который обратился Цифровой ассистент или идентификатор агента"/>
+                            </localization>
+                        </param>
+                        <param code="EPK_ID">
+                            <localization>
+                                <name lang="RUS" text="идентификатор пользователя"/>
+                            </localization>
+                        </param>
+                        <param code="FILE_ID">
+                            <localization>
+                                <name lang="RUS" text="идентификатор файла"/>
+                            </localization>
+                        </param>
+                    </params>
+                </event>
+                <event code="FILE_UPLOAD_FAILED">
+                    <localization>
+                        <name lang="RUS" text="Загрузка файла во внешнюю систему (неуспешно)"/>
+                    </localization>
+                    <params>
+                        <param code="ANSWER_CODE">
+                            <localization>
+                                <name lang="RUS" text="статус код ответа"/>
+                            </localization>
+                        </param>
+                        <param code="ERROR_CODE">
+                            <localization>
+                                <name lang="RUS" text="код ошибки"/>
+                            </localization>
+                        </param>
+                        <param code="ERROR_TITLE">
+                            <localization>
+                                <name lang="RUS" text="описание ошибки"/>
+                            </localization>
+                        </param>
+                        <param code="SENDER">
+                            <localization>
+                                <name lang="RUS" text="url сервиса Цифрового ассистента, который сделал запись в аудите или идентификатор агента>"/>
+                            </localization>
+                        </param>
+                        <param code="RECEIVER">
+                            <localization>
+                                <name lang="RUS" text="url сервиса, в который обратился Цифровой ассистент или идентификатор агента"/>
+                            </localization>
+                        </param>
+                        <param code="EPK_ID">
+                            <localization>
+                                <name lang="RUS" text="идентификатор пользователя"/>
+                            </localization>
+                        </param>
+                    </params>
+                </event>
+            </events>
+        </group>
+    </groups>
+</metamodel>

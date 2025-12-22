@@ -1,0 +1,271 @@
+[versions]
+kotlin = "2.1.0"
+detekt = "1.23.7"
+spotbugs = "6.2.0"
+lombok = "1.18.34"
+
+#BOMs
+ufs-platform-bom = "10.4.2.58"
+
+# Spring Boot and related
+spring-boot = "2.7.18"
+configurator-starter = "1.1.1"
+
+# Kotlinx
+kotlinx-coroutines = "1.9.0"
+kotlinx-datetime = "0.6.1"
+
+# Logging
+kotlin-logging = "5.1.0"
+
+# Other libraries
+javax-annotation-api = "1.3.2"
+javax-validation-api = "2.0.1.Final"
+
+# Testing
+mockk = "1.14.5"
+rest-assured = "4.5.1"
+
+resilience4j = "1.7.0"
+assertj = "3.24.2"
+
+#ACL
+acl = "1.0.8"
+
+#Migrations
+liquibase = "4.24.0"
+postgresql = "42.7.2"
+
+[libraries]
+#platform BOM
+ufs-platform-bom = { module = "ru.sbrf.ufs.platform:ufs-platform-bom", version.ref = "ufs-platform-bom" }
+
+#Thirdparty pom
+ufs-thirdparty-pom = { module = "ru.sbrf.ufs.platform:ufs-platform-thirdparty-pom" }
+
+# Spring Boot
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-boot-starter-aop = { module = "org.springframework.boot:spring-boot-starter-aop" }
+spring-boot-starter-tomcat = { module = "org.springframework.boot:spring-boot-starter-tomcat" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+
+# Jackson
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
+
+# Kotlinx
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+
+# Logging
+kotlin-logging-jvm = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
+logback-classic = { module = "ch.qos.logback:logback-classic" }
+logback-core = { module = "ch.qos.logback:logback-core" }
+
+#Lombok
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+lombok-mapstruct-binding = { module = "org.projectlombok:lombok-mapstruct-binding", version = "0.2.0" }
+
+# Validation
+javax-annotation-api = { module = "javax.annotation:javax.annotation-api", version.ref = "javax-annotation-api" }
+javax-validation-api = { module = "javax.validation:validation-api", version.ref = "javax-validation-api" }
+
+# Gradle plugins (for buildSrc)
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+spring-boot-gradle-plugin = { module = "org.springframework.boot:spring-boot-gradle-plugin", version.ref = "spring-boot" }
+
+ufs-platform-api = { module = "ru.sbrf.ufs.platform:ufs-platform-api" }
+ufs-platform-core = { module = "ru.sbrf.ufs.platform:ufs-platform-core" }
+ufs-platform-environment = { module = "ru.sbrf.ufs.platform:environment-spring-boot-starter" }
+ufs-platform-json-mapper = { module = "ru.sbrf.ufs.platform:ufs-platform-json-mapper" }
+
+# Testing
+rest-assured = { module = "io.rest-assured:rest-assured", version.ref = "rest-assured" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+
+# JUnit Platform
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+junit-platform-engine = { module = "org.junit.platform:junit-platform-engine" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine" }
+junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params" }
+
+#Configurator
+configurator-starter = { module = "ru.sbrf.da.configurator.client:configurator-client-spring-boot-starter", version.ref = "configurator-starter" }
+
+#Audit
+ufs-audit-starter = { module = "ru.sbrf.ufs.platform:ufs-platform-audit-starter" }
+
+#Launcher / UkoSession
+ufs-launcher-starter = { module = "ru.sbrf.ufs.platform:ufs-launcher-spring-boot-starter" }
+uko-session-stub-starter = { module = "ru.sbrf.ufs.platform:uko-session-stub-starter" }
+
+#Интеграционный модуль
+ufs-integration-module = { module = "ru.sbrf.ufs.integration:integration-module-spring-boot-starter" }
+
+#Tex. перерывы
+ufs-circuit-breaker = { module = "ru.sbrf.ufs.cbreaker:ufs-circuit-breaker-spring-boot-starter" }
+
+#SSD
+sds-api = { module = "ru.sbrf.ufs.sds:sds-api" }
+sds-spring-boot-starter = { module = "ru.sbrf.ufs.sds:sds-spring-boot-starter" }
+sds-platformv-adapter = { module = "sber.platform.sus:sds-platformv-adapter" }
+sds-near-cache = { module = "sber.platform.sus:sds-near-cache" }
+
+#Platform cache
+ufs-platform-cache-api = { module = "ru.sbrf.ufs.platform:ufs-platform-cache-api" }
+ufs-platform-cache-impl = { module = "ru.sbrf.ufs.platform:ufs-platform-cache-impl" }
+
+#Monitoring
+monitoring-starter = { module = "ru.sbrf.ufs.monitoring.spring-boot:monitoring-spring-boot-starter" }
+monitoring-api = { module = "ru.sbrf.ufs.platform:ufs-platform-monitoring-api" }
+monitoring-core = { module = "ru.sbrf.ufs.monitoring:monitoring-core" }
+monitoring-models = { module = "ru.sbrf.ufs.monitoring:monitoring-models" }
+monitoring-module = { module = "ru.sbrf.ufs.monitoring:monitoring-module" }
+monitoring-session = { module = "ru.sbrf.ufs.monitoring:monitoring-session" }
+monitoring-spring-boot-autoconfigure = { module = "ru.sbrf.ufs.monitoring.spring-boot:monitoring-spring-boot-autoconfigure" }
+spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+
+#Logging
+ufs-logger-springboot-starter = { module = "ru.sbrf.ufs.platform:logger-springboot-starter" }
+ufs-logger-api = { module = "ru.sbrf.ufs.platform:logger-api" }
+
+#Healthcheck
+ufs-platform-healthcheck-api = { module = "ru.sbrf.ufs.platform:ufs-platform-healthcheck-api" }
+ufs-healthcheck-spring-boot-starter = { module = "ru.sbrf.ufs.healthcheck:ufs-healthcheck-spring-boot-starter" }
+
+#СУП
+ufs-platform-config-api = { module = "ru.sbrf.ufs.platform:ufs-platform-config-api" }
+config-agent-api = { module = "ru.sbrf.ufs.platform:config-agent-api" }
+ufs-platform-config-spring-boot-starter = { module = "ru.sbrf.ufs.platform:ufs-platform-config-spring-boot-starter" }
+config-agent-spring-boot-starter = { module = "ru.sbrf.ufs.platform:config-agent-spring-boot-starter" }
+
+#UFS Rest-app
+ufs-rest-app-starter = { module = "ru.sbrf.ufs.platform:rest-app-jersey-spring-boot-starter" }
+
+#Platform http-client
+ufs-platform-httpclient-api = { module = "ru.sbrf.ufs.platform:ufs-platform-httpclient-api" }
+ufs-platform-httpclient-impl = { module = "ru.sbrf.ufs.platform:ufs-platform-httpclient-impl" }
+ufs-httpclient-bundle-fh = { module = "ru.sbrf.ufs.platform:httpclient-bundle-fh" }
+ufs-httpclient-spring-boot-starter = { module = "ru.sbrf.ufs.platform:httpclient-spring-boot-starter" }
+
+ufs-httpclient-configuration-processor = { module = "ru.sbrf.ufs.platform:httpclient-configuration-processor" }
+
+#Sber-acl
+sber-acl = { module = "ru.sbrf.ufs.dab2c.acl:sber-acl-java", version.ref = "acl" }
+
+detekt-gradle-plugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
+detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
+spotbugs-gradle-plugin = { module = "com.github.spotbugs:com.github.spotbugs.gradle.plugin", version.ref = "spotbugs" }
+
+#Migrations
+liquibase = {module = "org.liquibase:liquibase-core", version.ref = "liquibase" }
+postgresql = {module = "org.postgresql:postgresql", version.ref = "postgresql" }
+
+[bundles]
+# Spring Boot Web and Core
+
+ufs-core = [
+    "ufs-platform-api",
+    "ufs-platform-core",
+    "ufs-platform-environment",
+    "ufs-platform-json-mapper",
+    "ufs-platform-cache-api",
+    "ufs-platform-cache-impl",
+    "sds-api"
+]
+
+ufs-logging = [
+    "ufs-logger-springboot-starter",
+    "ufs-logger-api",
+    "kotlin-logging-jvm",
+    "logback-classic",
+    "logback-core"
+]
+
+ufs-monitoring = [
+    "monitoring-starter",
+    "monitoring-api",
+    "monitoring-core",
+    "monitoring-models",
+    "monitoring-module",
+    "monitoring-session",
+    "monitoring-spring-boot-autoconfigure",
+    "monitoring-spring-boot-autoconfigure",
+    "spring-boot-starter-actuator"
+]
+
+ufs-healthcheck = [
+    "ufs-platform-healthcheck-api",
+    "ufs-healthcheck-spring-boot-starter"
+]
+
+# Don`t forget to add annotationProcessor
+ufs-http-client = [
+    "ufs-platform-httpclient-api",
+    "ufs-platform-httpclient-impl",
+    "ufs-httpclient-bundle-fh",
+    "ufs-httpclient-spring-boot-starter"
+]
+
+ufs-ssd = [
+    "sds-api",
+    "sds-spring-boot-starter",
+    "sds-platformv-adapter",
+    "sds-near-cache"
+]
+
+ufs-sup = [
+    "ufs-platform-config-api",
+    "ufs-platform-config-api",
+    "config-agent-api",
+    "ufs-platform-config-spring-boot-starter",
+    "config-agent-spring-boot-starter"
+]
+
+spring-boot-web = [
+    "spring-boot-starter-web",
+    "spring-boot-starter-aop",
+    "spring-boot-starter-tomcat"
+]
+
+# Jackson
+jackson = [
+    "jackson-module-kotlin",
+    "jackson-annotations",
+    "jackson-datatype-jsr310",
+    "jackson-databind"
+]
+
+# Kotlinx
+kotlinx = [
+    "kotlinx-coroutines-core",
+    "kotlinx-coroutines-reactor",
+    "kotlinx-datetime"
+]
+
+# Testing
+testing = [
+    "spring-boot-starter-test",
+    "junit-jupiter-api",
+    "junit-jupiter-engine",
+    "junit-jupiter-params",
+    "junit-platform-launcher",
+    "junit-platform-engine",
+    "assertj-core",
+    "mockk",
+    "rest-assured"
+]
+
+[plugins]
+# Kotlin plugins
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+
+# Spring Boot plugins
+spring-boot = { id = "org.springframework.boot" }

@@ -1,0 +1,46 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+plugins {
+    id("ru.sbrf.ufs.dab2c.core.shared-conventions")
+    kotlin("jvm")
+    id("org.jetbrains.kotlin.plugin.spring")
+    id("io.gitlab.arturbosch.detekt")
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_21)
+        freeCompilerArgs.addAll("-Xjsr305=strict")
+    }
+}
+
+val libs = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
+
+dependencies {
+    implementation(libs.findBundle("kotlinx").get())
+}
+
+detekt {
+    toolVersion = "1.23.7"
+    config.setFrom("${project.rootDir}/config/detekt/detekt_config.yml")
+    buildUponDefaultConfig = true
+    allRules = false
+
+    source.setFrom(
+        files(
+            "src/main/kotlin",
+            "src/test/kotlin"
+        )
+    )
+}
+
+dependencies {
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.7")
+}
+
