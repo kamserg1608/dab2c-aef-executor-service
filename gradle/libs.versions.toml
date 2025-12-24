@@ -12,8 +12,9 @@ spring-boot = "2.7.18"
 configurator-starter = "1.1.1"
 
 # Kotlinx
-kotlinx-coroutines = "1.9.0"
+kotlinx-coroutines = "1.10.1"
 kotlinx-datetime = "0.6.1"
+kotlinx-serialization = "1.7.3"
 
 # Logging
 kotlin-logging = "5.1.0"
@@ -66,6 +67,7 @@ jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 
 # Logging
 kotlin-logging-jvm = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
