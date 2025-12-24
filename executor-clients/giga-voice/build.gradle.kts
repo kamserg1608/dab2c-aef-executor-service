@@ -2,4 +2,4 @@ plugins {
     id("ru.sbrf.ufs.dab2c.core.grpc-conventions")
 }
 
-group = "ru.sbrf.ufs.dab2c.core.clients"
+group = "ru.sbrf.ufs.dab2c.executor.clients"

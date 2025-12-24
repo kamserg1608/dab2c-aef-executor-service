@@ -80,7 +80,7 @@ ufs:
   healthcheck:
     stub-agent-enabled: true
     groups:
-      readiness: "ru.sbrf.ufs.dab2c.core.integration.healthcheck.ApplicationHealthCheck"
+      readiness: "ru.sbrf.dab2c.executor.application.healthcheck.ApplicationHealthCheck"
 
   # Интеграционный модуль
   integration:

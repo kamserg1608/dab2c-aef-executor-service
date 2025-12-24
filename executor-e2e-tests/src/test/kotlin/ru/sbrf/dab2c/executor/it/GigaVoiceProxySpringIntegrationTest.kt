@@ -1,15 +1,13 @@
-package ru.sbrf.ufs.dab2c.core.voice
+package ru.sbrf.dab2c.executor.it
 
 import GigaVoiceProtocol.GigaVoice.GigaVoiceRequest
 import GigaVoiceProtocol.GigaVoice.Settings
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class GigaVoiceProxySpringIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test

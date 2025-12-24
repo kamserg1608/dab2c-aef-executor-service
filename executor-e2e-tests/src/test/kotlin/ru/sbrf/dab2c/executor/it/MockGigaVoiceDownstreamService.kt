@@ -1,4 +1,4 @@
-package ru.sbrf.ufs.dab2c.core.voice
+package ru.sbrf.dab2c.executor.it
 
 import GigaVoiceProtocol.GigaVoice.GigaVoiceRequest
 import GigaVoiceProtocol.GigaVoice.GigaVoiceResponse
@@ -23,17 +23,15 @@ class MockGigaVoiceDownstreamService : GigaVoiceServiceCoroutineImplBase() {
         _responseCounter.set(0)
     }
 
-    override fun gigaVoice(requests: Flow<GigaVoiceRequest>): Flow<GigaVoiceResponse> {
-        return requests.map { request ->
-            _receivedRequests.add(request)
-            val index = _responseCounter.getAndIncrement()
-            GigaVoiceResponse.newBuilder()
-                .setOutputTranscription(
-                    OutputTranscription.newBuilder()
-                        .setText("response-$index")
-                        .build()
-                )
-                .build()
-        }
+    override fun gigaVoice(requests: Flow<GigaVoiceRequest>): Flow<GigaVoiceResponse> = requests.map { request ->
+        _receivedRequests.add(request)
+        val index = _responseCounter.getAndIncrement()
+        GigaVoiceResponse.newBuilder()
+            .setOutputTranscription(
+                OutputTranscription.newBuilder()
+                    .setText("response-$index")
+                    .build()
+            )
+            .build()
     }
 }

@@ -1,5 +1,4 @@
 plugins {
-    id("ru.sbrf.ufs.dab2c.core.java-conventions")
     id("ru.sbrf.ufs.dab2c.core.kotlin-conventions")
 }
 

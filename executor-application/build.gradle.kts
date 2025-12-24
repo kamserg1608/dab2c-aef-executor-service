@@ -1,6 +1,6 @@
 plugins {
     id("ru.sbrf.ufs.dab2c.core.deployment-conventions")
-    id("ru.sbrf.ufs.dab2c.core.java-conventions")
+    id("ru.sbrf.ufs.dab2c.core.kotlin-conventions")
 }
 
 description = "Integration-layer application"

@@ -5,3 +5,16 @@ dab2c:
         session-ttl-seconds: 3
         path: "/testpath"
         domain: "test-domain"
+
+grpc:
+  server:
+    port: 29090
+  client:
+    downstream:
+      address: static://localhost:29091
+      negotiation-type: plaintext
+
+logging:
+  level:
+    ru.sbrf.ufs.dab2c.core.voice: DEBUG
+    net.devh.boot.grpc: DEBUG

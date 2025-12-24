@@ -1,4 +1,4 @@
-package ru.sbrf.ufs.dab2c.core.voice
+package ru.sbrf.dab2c.executor.voice
 
 import GigaVoiceProtocol.GigaVoice.GigaVoiceRequest
 import GigaVoiceProtocol.GigaVoice.GigaVoiceResponse
@@ -10,6 +10,9 @@ import net.devh.boot.grpc.server.service.GrpcService
 
 private val logger = KotlinLogging.logger {}
 
+/**
+ * Service implementation for Giga-voice proto.
+ */
 @GrpcService
 class GigaVoiceProxyService(
     private val downstreamClient: GigaVoiceDownstreamClient

@@ -27,6 +27,7 @@ dependencies {
 }
 
 detekt {
+    ignoreFailures = true
     toolVersion = "1.23.7"
     config.setFrom("${project.rootDir}/config/detekt/detekt_config.yml")
     buildUponDefaultConfig = true

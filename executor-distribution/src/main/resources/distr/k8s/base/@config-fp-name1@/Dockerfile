@@ -15,6 +15,6 @@ RUN chmod +x /var/docker-entrypoint.sh /var/waitingSecrets.sh /var/importCertifi
 RUN chmod g+rwX /var/
 RUN dnf install -y openssl
 
-ENTRYPOINT [ "/var/docker-entrypoint.sh", "ru.sbrf.ufs.dab2c.core.ApplicationEntryPoint" ]
+ENTRYPOINT [ "/var/docker-entrypoint.sh", "ru.sbrf.dab2c.executor.application.ApplicationEntryPoint" ]
 
 EXPOSE 8080

@@ -1,4 +1,4 @@
-package ru.sbrf.ufs.dab2c.core.voice
+package ru.sbrf.dab2c.executor.voice
 
 import GigaVoiceProtocol.GigaVoice.GigaVoiceRequest
 import GigaVoiceProtocol.GigaVoice.GigaVoiceResponse
@@ -11,6 +11,9 @@ import org.springframework.stereotype.Component
 
 private val logger = KotlinLogging.logger {}
 
+/**
+ * Client for Giga-voice.
+ */
 @Component
 class GigaVoiceDownstreamClient {
 
@@ -21,6 +24,9 @@ class GigaVoiceDownstreamClient {
         GigaVoiceServiceCoroutineStub(channel)
     }
 
+    /**
+     * Forward request to Giga-voice.
+     */
     fun forward(requests: Flow<GigaVoiceRequest>): Flow<GigaVoiceResponse> {
         logger.debug { "Forwarding request stream to downstream service" }
         return stub.gigaVoice(requests)

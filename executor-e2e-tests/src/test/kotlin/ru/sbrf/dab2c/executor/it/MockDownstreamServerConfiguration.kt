@@ -1,16 +1,17 @@
-package ru.sbrf.ufs.dab2c.core.voice
+package ru.sbrf.dab2c.executor.it
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.grpc.Server
 import io.grpc.ServerBuilder
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.SmartLifecycle
 import org.springframework.context.annotation.Configuration
 import java.net.URI
 
 private val logger = KotlinLogging.logger {}
 
-@Configuration
+@TestConfiguration
 class MockDownstreamServerConfiguration(
     private val mockService: MockGigaVoiceDownstreamService,
     @Value("\${grpc.client.downstream.address}") private val downstreamAddress: String
