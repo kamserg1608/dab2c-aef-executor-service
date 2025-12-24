@@ -60,6 +60,7 @@ ufs:
         distrib_version: @distrib.version@
         release: @ufs.release@
         version: @project.version@
+        api-version: 1.0.0
     # СУП. См. также класс SupAdditionalConfiguration — в нём создаётся бин для СУП Data.
     config:
       deploymentUnit: @deploymentUnit1@

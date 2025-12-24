@@ -28,7 +28,7 @@ playbooks_default:
 
 dbscripts:
   - file: "package/db/db_archive.zip"
-    url: "{{ lookup('custom_vars', 'SYBSYSTEM_CODE_LOWER_CASE_PLACEHOLDER.ose.spring.datasource.hikari.jdbc-url') | default('url not found') }}"
+    url: "{{ lookup('custom_vars', 'executor.ose.spring.datasource.hikari.jdbc-url') | default('url not found') }}"
     schema: "{{ (storage_custom_schema | default(DB_SCHEMA_PREFIX + '_storage' + DB_SCHEMA_SUFFIX)) | lower }}"
     username: "{{ lookup('vars', 'jdbc.postgres-liquibase.da.username', default='da') }}"
     password: "{{ lookup('vars', 'jdbc.postgres-liquibase.da.password', default='') }}"

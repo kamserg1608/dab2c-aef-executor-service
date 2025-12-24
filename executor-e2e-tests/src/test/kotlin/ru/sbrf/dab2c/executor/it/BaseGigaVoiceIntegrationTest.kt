@@ -1,8 +1,20 @@
 package ru.sbrf.dab2c.executor.it
 
 import GigaVoiceProtocol.GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineStub
+import com.fasterxml.jackson.databind.DeserializationFeature
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.plugins.logging.DEFAULT
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.http.URLProtocol
+import io.ktor.http.encodedPath
+import io.ktor.serialization.jackson.jackson
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -37,6 +49,25 @@ abstract class BaseGigaVoiceIntegrationTest {
 
     private lateinit var clientChannel: ManagedChannel
     protected lateinit var clientStub: GigaVoiceServiceCoroutineStub
+
+    protected val httpClient: HttpClient by lazy {
+        HttpClient(CIO) {
+            install(ContentNegotiation) {
+                jackson {
+                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                }
+            }
+            install(Logging) {
+                logger = Logger.DEFAULT
+                level = LogLevel.HEADERS
+            }
+            defaultRequest {
+                url.protocol = URLProtocol.HTTP
+                url.host = "localhost"
+                url.port = this@BaseGigaVoiceIntegrationTest.port
+            }
+        }
+    }
 
     @BeforeEach
     fun resetState() {

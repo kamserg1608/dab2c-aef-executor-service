@@ -16,5 +16,6 @@ grpc:
 
 logging:
   level:
+    root: DEBUG
     ru.sbrf.ufs.dab2c.core.voice: DEBUG
     net.devh.boot.grpc: DEBUG

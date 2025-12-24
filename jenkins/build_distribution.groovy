@@ -6,8 +6,8 @@ def onDistrib(app, distr) {
 
     distr.addConf("./dab2c-core-integration-service-configs/build/resources/main/distr/*")
 
-    distr.addBH("./dab2c-core-integration-service-application/build/zero-compressed-main-jar/*.jar", "SYBSYSTEM_CODE_LOWER_CASE_PLACEHOLDER-main")
-    distr.addBH("./dab2c-core-integration-service-application/build/zero-compressed-dependencies-jars/*.jar", "SYBSYSTEM_CODE_LOWER_CASE_PLACEHOLDER-dependencies")
+    distr.addBH("./dab2c-core-integration-service-application/build/zero-compressed-main-jar/*.jar", "executor-main")
+    distr.addBH("./dab2c-core-integration-service-application/build/zero-compressed-dependencies-jars/*.jar", "executor-dependencies")
 
     distr.addDB("./dab2c-core-migrations/build/libs/db_archive.zip")
 }

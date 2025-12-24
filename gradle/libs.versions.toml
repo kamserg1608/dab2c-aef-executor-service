@@ -3,6 +3,7 @@ kotlin = "2.1.10"
 detekt = "1.23.7"
 spotbugs = "6.2.0"
 lombok = "1.18.34"
+ktor = "3.1.2"
 
 #BOMs
 ufs-platform-bom = "10.4.2.58"
@@ -68,6 +69,13 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+
+#Ktor Client
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-jackson= { module = "io.ktor:ktor-serialization-jackson", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 
 # Logging
 kotlin-logging-jvm = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
@@ -266,6 +274,15 @@ kotlinx = [
     "kotlinx-coroutines-core",
     "kotlinx-coroutines-reactor",
     "kotlinx-datetime"
+]
+
+# Ktor client
+ktor-client = [
+    "ktor-client-core",
+    "ktor-client-cio",
+    "ktor-client-content-negotiation",
+    "ktor-client-logging",
+    "ktor-serialization-jackson",
 ]
 
 # Testing

@@ -16,4 +16,5 @@ dependencies {
     testImplementation(libs.bundles.testing)
     testImplementation(libs.bundles.grpc)
     testImplementation(libs.kotlinx.coroutines.test)
+    implementation(libs.bundles.ktor.client)
 }
