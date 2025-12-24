@@ -1,5 +1,5 @@
 [versions]
-kotlin = "2.1.0"
+kotlin = "2.1.10"
 detekt = "1.23.7"
 spotbugs = "6.2.0"
 lombok = "1.18.34"
@@ -31,6 +31,13 @@ assertj = "3.24.2"
 
 #ACL
 acl = "1.0.8"
+
+# gRPC and Protobuf
+grpc = "1.58.0"
+grpc-kotlin = "1.4.1"
+grpc-spring-boot-starter = "2.15.0.RELEASE"
+protobuf = "3.25.5"
+protobuf-plugin = "0.9.4"
 
 #Migrations
 liquibase = "4.24.0"
@@ -162,6 +169,17 @@ detekt-gradle-plugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plu
 detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 spotbugs-gradle-plugin = { module = "com.github.spotbugs:com.github.spotbugs.gradle.plugin", version.ref = "spotbugs" }
 
+# gRPC and Protobuf
+grpc-netty-shaded = { module = "io.grpc:grpc-netty-shaded", version.ref = "grpc" }
+grpc-protobuf = { module = "io.grpc:grpc-protobuf", version.ref = "grpc" }
+grpc-stub = { module = "io.grpc:grpc-stub", version.ref = "grpc" }
+grpc-kotlin-stub = { module = "io.grpc:grpc-kotlin-stub", version.ref = "grpc-kotlin" }
+grpc-server-spring-boot-starter = { module = "net.devh:grpc-server-spring-boot-starter", version.ref = "grpc-spring-boot-starter" }
+grpc-client-spring-boot-starter = { module = "net.devh:grpc-client-spring-boot-starter", version.ref = "grpc-spring-boot-starter" }
+protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
+protobuf-kotlin = { module = "com.google.protobuf:protobuf-kotlin", version.ref = "protobuf" }
+protobuf-gradle-plugin = { module = "com.google.protobuf:protobuf-gradle-plugin", version.ref = "protobuf-plugin" }
+
 #Migrations
 liquibase = {module = "org.liquibase:liquibase-core", version.ref = "liquibase" }
 postgresql = {module = "org.postgresql:postgresql", version.ref = "postgresql" }
@@ -259,6 +277,15 @@ testing = [
     "assertj-core",
     "mockk",
     "rest-assured"
+]
+
+grpc = [
+    "grpc-netty-shaded",
+    "grpc-protobuf",
+    "grpc-stub",
+    "grpc-kotlin-stub",
+    "protobuf-java",
+    "protobuf-kotlin"
 ]
 
 [plugins]

@@ -2,6 +2,8 @@ rootProject.name = "dab2c-core"
 include("executor-distribution")
 include("executor-application")
 include("executor-e2e-tests")
+include("executor-clients:giga-voice")
+include("executor-services:voice-executor")
 
 pluginManagement {
     repositories {
