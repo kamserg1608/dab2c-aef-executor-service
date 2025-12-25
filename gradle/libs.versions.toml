@@ -26,7 +26,6 @@ javax-validation-api = "2.0.1.Final"
 
 # Testing
 mockk = "1.14.5"
-rest-assured = "4.5.1"
 
 resilience4j = "1.7.0"
 assertj = "3.24.2"
@@ -48,9 +47,6 @@ postgresql = "42.7.2"
 [libraries]
 #platform BOM
 ufs-platform-bom = { module = "ru.sbrf.ufs.platform:ufs-platform-bom", version.ref = "ufs-platform-bom" }
-
-#Thirdparty pom
-ufs-thirdparty-pom = { module = "ru.sbrf.ufs.platform:ufs-platform-thirdparty-pom" }
 
 # Spring Boot
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
@@ -100,7 +96,6 @@ ufs-platform-environment = { module = "ru.sbrf.ufs.platform:environment-spring-b
 ufs-platform-json-mapper = { module = "ru.sbrf.ufs.platform:ufs-platform-json-mapper" }
 
 # Testing
-rest-assured = { module = "io.rest-assured:rest-assured", version.ref = "rest-assured" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 
@@ -265,8 +260,7 @@ testing = [
     "junit-platform-launcher",
     "junit-platform-engine",
     "assertj-core",
-    "mockk",
-    "rest-assured"
+    "mockk"
 ]
 
 grpc = [

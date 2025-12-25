@@ -63,7 +63,6 @@ subprojects {
     dependencies {
         testImplementation(platform("org.junit:junit-bom:5.8.2"))
         implementation(platform(rootProject.libs.ufs.platform.bom))
-        implementation(rootProject.libs.ufs.thirdparty.pom) // TODO отказаться
 
         // Core dependencies
         implementation(rootProject.libs.javax.annotation.api)
