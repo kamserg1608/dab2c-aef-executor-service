@@ -13,7 +13,6 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.URLProtocol
-import io.ktor.http.encodedPath
 import io.ktor.serialization.jackson.jackson
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll

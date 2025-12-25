@@ -33,7 +33,7 @@ class ManagementEndpointsTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun actuatorHealth() = runTest {
-        val response = httpClient.get("${servletContext.contextPath}/healthcheck")
+        val response = httpClient.get("${servletContext.contextPath}/actuator/health")
         assertEquals(HttpStatusCode.OK, response.status)
     }
 }
