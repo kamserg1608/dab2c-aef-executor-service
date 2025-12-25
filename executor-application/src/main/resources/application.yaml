@@ -83,14 +83,6 @@ ufs:
     groups:
       readiness: "ru.sbrf.dab2c.executor.application.healthcheck.ApplicationHealthCheck"
 
-  # Интеграционный модуль
-  integration:
-    module:
-      autostart: true
-    adapter:
-      channel: @ufs.channel@
-      subsystem-code: @subsystemCode@
-
 sds:
   platformv:
     monitoring:

@@ -11,21 +11,6 @@ server:
 stand:
   type: TEST
 
-dab2c:
-  integration-service:
-    configurator:
-      stub: true
-      stubPath: "classpath:mock/configurator/initial_config.json"
-      sessionConfig: "classpath:mock/configurator/session_config.json"
-      agentConfigs: "classpath:mock/configurator/resolved_agent_configs.json"
-    session:
-      ufs-host-mapper:
-        location: "classpath:config/ufs_blocks_mapping.yaml"
-      da-cookie:
-        secure: false
-    cross-hub:
-      stubPath: "classpath:mock/cross-hub/initial_config.json"
-
 ufs:
   platform:
     # СУП
@@ -51,10 +36,6 @@ ufs:
       mode: FRONTEND_LOCAL
       providerFileName: "/mock/logger/logger.properties"
 
-  # HotReload
-  hotreload:
-    enable: false
-
   # Мониторинг
   # См. также pom.xml с включением stubMode
   monitoring:
@@ -69,45 +50,3 @@ ufs:
     client:
       stub: true
       useQuota: false
-
-  # Blockrouter
-  blockrouter:
-    source: local
-    mocksPath: "mock/standin/standin-mock-stub.json"
-
-  # Launcher
-  launcher:
-    client:
-      mode: REMOTE
-
-  # Профиль ФЛ
-  idpersonremote:
-    client:
-      mode: local
-
-  # Интеграционный модуль
-  integration:
-    module:
-      executorService:
-        poolSize: 5
-      kafka:
-        consumerFactories:
-          - name: kafka/factory/CONSUMER_FACTORY_COMMON
-            properties:
-              "[bootstrap.servers]": "tcp://@kafka.host@:@kafka.port@"
-
-  # Техперерывы
-  tech-break:
-    client:
-      enable-adapter: true
-      mode: local
-      local-source: "classpath:/mock/cbreaker/client-answers.json"
-
-  # Toggler
-  feature-toggle:
-    client:
-      mode: LOCAL
-      mock-features-path: mock/toggler/toggler-privileges-mock.json
-      mock-authorization-data:
-        # Путь до файла-заглушки привилегий авторизации (ранее использовавшийся ufs.security.client.local-file-privileges-path)
-        local-file-privileges-path: mock/toggler/authorization-privileges-mock.json
