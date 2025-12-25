@@ -36,4 +36,7 @@ dependencies {
     // Zero-compress plugin for deployment conventions
     implementation("ru.sbrf.ufs.zero-compress-plugin:gradle-plugin:1.0.5")
     implementation(libs.protobuf.gradle.plugin)
+
+    // OpenAPI Generator plugin
+    implementation("org.openapitools:openapi-generator-gradle-plugin:7.10.0")
 }

@@ -24,8 +24,7 @@ dependencies {
 checkstyle {
     toolVersion = "9.3"
     configFile = rootProject.file("config/checkstyle/checkstyle.xml")
-    // TODO после полной миграции на Gradle надо отдельной задачей починить стайлинг
-    isIgnoreFailures = true
+    isIgnoreFailures = false
     maxWarnings = 0
     maxErrors = 0
 }
