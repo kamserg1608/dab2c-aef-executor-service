@@ -15,14 +15,20 @@ class ObservingChunkProcessingServiceDelegate(
     override fun processRequestChunks(requestsChunks: Flow<GigaVoice.GigaVoiceRequest>): Flow<GigaVoice.GigaVoiceRequest> {
         logger.info { "Starting bidirectional request stream proxy" }
         val observedChunks = requestsChunks
-            .onEach { logger.info { "Received request: type=${it.requestCase}" } }
+            .onEach {
+                logger.info { "Received request: type=${it.requestCase}" }
+                logger.debug { logger.info { "Received request: type=${it.requestCase}, request=${it}" } }
+            }
         return delegate.processRequestChunks(observedChunks)
     }
 
     override fun processResponseChunks(responsesChunks: Flow<GigaVoice.GigaVoiceResponse>): Flow<GigaVoice.GigaVoiceResponse> {
         logger.info { "Starting bidirectional response stream proxy" }
         val observedChunks = responsesChunks
-            .onEach { logger.info { "Received response: type=${it.responseCase}" } }
+            .onEach {
+                logger.info { "Received response: type=${it.responseCase}" }
+                logger.debug { logger.info { "Received response: type=${it.responseCase}, request=${it}" } }
+            }
         return delegate.processResponseChunks(observedChunks)
     }
 }

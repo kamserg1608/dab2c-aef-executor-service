@@ -4,19 +4,33 @@ import GigaVoiceProtocol.GigaVoice
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.springframework.stereotype.Service
+import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.service.impl.ChunkProcessingServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.FunctionCallServiceImpl
+import ru.sbrf.dab2c.executor.voice.service.impl.NoopChunkProcessingServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.ObservingChunkProcessingServiceDelegate
 import ru.sbrf.dab2c.executor.voice.service.impl.SettingsServiceImpl
 
 @Service
-class ChunkProcessingServiceFactoryImpl: ChunkProcessingServiceFactory {
+class ChunkProcessingServiceFactoryImpl(
+    private val voiceExecutorConfigurationProperties: VoiceExecutorConfigurationProperties
+): ChunkProcessingServiceFactory {
 
     override fun create(): ChunkProcessingService {
 
+        val delegate = if (voiceExecutorConfigurationProperties.proxyMode) {
+            NoopChunkProcessingServiceImpl()
+        } else {
+            createChunkProcessingServiceImpl()
+        }
+
+        return ObservingChunkProcessingServiceDelegate(delegate)
+    }
+
+    private fun createChunkProcessingServiceImpl():ChunkProcessingService {
         val processingState = MutableStateFlow(ProcessingState())
         val callbackChannel = Channel<GigaVoice.GigaVoiceRequest>(capacity = Channel.BUFFERED)
 
@@ -24,11 +38,10 @@ class ChunkProcessingServiceFactoryImpl: ChunkProcessingServiceFactory {
         val settingsService = SettingsServiceImpl(processingState, callbackChannel)
 
         return ChunkProcessingServiceImpl(
-                processingState,
-                callbackChannel,
-                settingsService,
-                functionCallService
-            )
-            .let { ObservingChunkProcessingServiceDelegate(it) }
+            processingState,
+            callbackChannel,
+            settingsService,
+            functionCallService
+        )
     }
 }
