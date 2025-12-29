@@ -10,7 +10,6 @@ ufs-platform-bom = "10.4.2.58"
 
 # Spring Boot and related
 spring-boot = "2.7.18"
-configurator-starter = "1.1.1"
 
 # Kotlinx
 kotlinx-coroutines = "1.10.1"
@@ -27,7 +26,6 @@ javax-validation-api = "2.0.1.Final"
 # Testing
 mockk = "1.14.5"
 
-resilience4j = "1.7.0"
 assertj = "3.24.2"
 
 #ACL
@@ -39,10 +37,6 @@ grpc-kotlin = "1.4.1"
 grpc-spring-boot-starter = "2.15.0.RELEASE"
 protobuf = "3.25.5"
 protobuf-plugin = "0.9.4"
-
-#Migrations
-liquibase = "4.24.0"
-postgresql = "42.7.2"
 
 [libraries]
 #platform BOM
@@ -106,17 +100,8 @@ junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine" }
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params" }
 
-#Configurator
-configurator-starter = { module = "ru.sbrf.da.configurator.client:configurator-client-spring-boot-starter", version.ref = "configurator-starter" }
-
-#Audit
-ufs-audit-starter = { module = "ru.sbrf.ufs.platform:ufs-platform-audit-starter" }
-
 #SSD
 sds-api = { module = "ru.sbrf.ufs.sds:sds-api" }
-sds-spring-boot-starter = { module = "ru.sbrf.ufs.sds:sds-spring-boot-starter" }
-sds-platformv-adapter = { module = "sber.platform.sus:sds-platformv-adapter" }
-sds-near-cache = { module = "sber.platform.sus:sds-near-cache" }
 
 #Platform cache
 ufs-platform-cache-api = { module = "ru.sbrf.ufs.platform:ufs-platform-cache-api" }
@@ -164,10 +149,6 @@ protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "p
 protobuf-kotlin = { module = "com.google.protobuf:protobuf-kotlin", version.ref = "protobuf" }
 protobuf-gradle-plugin = { module = "com.google.protobuf:protobuf-gradle-plugin", version.ref = "protobuf-plugin" }
 
-#Migrations
-liquibase = {module = "org.liquibase:liquibase-core", version.ref = "liquibase" }
-postgresql = {module = "org.postgresql:postgresql", version.ref = "postgresql" }
-
 [bundles]
 # Spring Boot Web and Core
 
@@ -204,21 +185,6 @@ ufs-monitoring = [
 ufs-healthcheck = [
     "ufs-platform-healthcheck-api",
     "ufs-healthcheck-spring-boot-starter"
-]
-
-ufs-ssd = [
-    "sds-api",
-    "sds-spring-boot-starter",
-    "sds-platformv-adapter",
-    "sds-near-cache"
-]
-
-ufs-sup = [
-    "ufs-platform-config-api",
-    "ufs-platform-config-api",
-    "config-agent-api",
-    "ufs-platform-config-spring-boot-starter",
-    "config-agent-spring-boot-starter"
 ]
 
 spring-boot-web = [

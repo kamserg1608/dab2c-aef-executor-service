@@ -16,12 +16,13 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.ContentType
 import io.ktor.serialization.jackson.JacksonConverter
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.api.GigaVoiceAgentClient
+import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.configuration.properties.GigaVoiceAgentClientConfigurationProperties
 import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.impl.GigaVoiceAgentClientImpl
-import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.properties.api.GigaVoiceAgentClientProperties
 
 private val logger = KotlinLogging.logger {}
 
@@ -29,10 +30,10 @@ private val logger = KotlinLogging.logger {}
  * Spring configuration for GigaVoice Agent API client.
  */
 @Configuration
-@EnableConfigurationProperties(GigaVoiceAgentClientProperties::class)
+@EnableConfigurationProperties(GigaVoiceAgentClientConfigurationProperties::class)
 class GigaVoiceAgentClientConfiguration {
 
-    @Bean
+    @Bean(GIGA_VOICE_AGENT_OBJECT_MAPPER_BEAN_NAME)
     internal fun gigaVoiceAgentObjectMapper(): ObjectMapper {
         return ObjectMapper().apply {
             registerModule(kotlinModule())
@@ -43,9 +44,10 @@ class GigaVoiceAgentClientConfiguration {
         }
     }
 
-    @Bean
+    @Bean(GIGA_VOICE_AGENT_HTTP_CLIENT_BEAN_NAME)
     internal fun gigaVoiceAgentHttpClient(
-        properties: GigaVoiceAgentClientProperties,
+        properties: GigaVoiceAgentClientConfigurationProperties,
+        @Qualifier(GIGA_VOICE_AGENT_OBJECT_MAPPER_BEAN_NAME)
         objectMapper: ObjectMapper
     ): HttpClient {
         return HttpClient(CIO) {
@@ -80,12 +82,13 @@ class GigaVoiceAgentClientConfiguration {
 
     @Bean
     internal fun gigaVoiceAgentClient(
-        httpClient: HttpClient,
-        properties: GigaVoiceAgentClientProperties
-    ): GigaVoiceAgentClient {
-        return GigaVoiceAgentClientImpl(
-            httpClient = httpClient,
-            baseUrl = properties.baseUrl
-        )
+        @Qualifier(GIGA_VOICE_AGENT_HTTP_CLIENT_BEAN_NAME)
+        httpClient: HttpClient
+    ): GigaVoiceAgentClient = GigaVoiceAgentClientImpl(httpClient)
+
+    internal companion object {
+        internal const val GIGA_VOICE_AGENT_OBJECT_MAPPER_BEAN_NAME = "gigaVoiceAgentClientObjectMapper"
+        internal const val GIGA_VOICE_AGENT_HTTP_CLIENT_BEAN_NAME = "gigaVoiceAgentClientObjectMapper"
     }
+
 }

@@ -3,8 +3,6 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":executor-libraries:sup"))
-
     implementation(libs.bundles.ktor.client)
 }
 

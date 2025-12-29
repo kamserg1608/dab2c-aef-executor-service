@@ -20,8 +20,7 @@ private val logger = KotlinLogging.logger {}
  * Implementation of GigaVoice Agent API client using Ktor HTTP client.
  */
 class GigaVoiceAgentClientImpl(
-    private val httpClient: HttpClient,
-    private val baseUrl: String
+    private val httpClient: HttpClient
 ) : GigaVoiceAgentClient {
 
     override suspend fun getSettings(
@@ -32,7 +31,7 @@ class GigaVoiceAgentClientImpl(
         logger.debug { "Getting settings for session: $ufsSession" }
 
         return try {
-            httpClient.post("$baseUrl/v1/settings") {
+            httpClient.post("/v1/settings") {
                 contentType(ContentType.Application.Json)
                 header("UFS-SESSION", ufsSession)
                 header("UFS-TOKEN", ufsToken)
@@ -52,7 +51,7 @@ class GigaVoiceAgentClientImpl(
         logger.debug { "Executing function call for session: $ufsSession" }
 
         return try {
-            httpClient.post("$baseUrl/v1/function-call") {
+            httpClient.post("/v1/function-call") {
                 contentType(ContentType.Application.Json)
                 header("UFS-SESSION", ufsSession)
                 header("UFS-TOKEN", ufsToken)

@@ -74,7 +74,6 @@ subprojects {
         // UFS Platform
         implementation(rootProject.libs.bundles.ufs.core)
         implementation(rootProject.libs.bundles.ufs.logging)
-        implementation(rootProject.libs.bundles.ufs.ssd)
 
         //Other
         implementation(rootProject.libs.bundles.jackson)
