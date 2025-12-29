@@ -1,0 +1,34 @@
+package ru.sbrf.dab2c.executor.voice.service.impl
+
+import GigaVoiceProtocol.GigaVoice
+import GigaVoiceProtocol.GigaVoice.FunctionResult
+import GigaVoiceProtocol.GigaVoice.GigaVoiceRequest
+import kotlinx.coroutines.channels.Channel
+import ru.sbrf.dab2c.executor.voice.service.api.FunctionCallService
+
+class FunctionCallServiceImpl(
+    private val callBackChannel: Channel<GigaVoiceRequest>,
+): FunctionCallService {
+
+    override suspend fun callFunction(functionCalling: GigaVoice.FunctionCalling): GigaVoice.FunctionCalling? {
+        //TODO Needs not stub implementation
+        val functionCall = functionCalling.functionCall
+
+        if (functionCall.name.contains("avg")) {
+            //TODO Call avg
+            callBackChannel.send(
+                GigaVoiceRequest.newBuilder()
+                    .setFunctionResult(
+                        FunctionResult.newBuilder()
+                            .setFunctionName(functionCall.name)
+                            .setContent("NOOP")
+                            .build()
+                    )
+                    .build()
+            )
+            return null
+        }
+
+        return functionCalling
+    }
+}

@@ -4,6 +4,8 @@ include("executor-application")
 include("executor-e2e-tests")
 include("executor-clients:giga-voice")
 include("executor-clients:giga-agent")
+include("executor-clients:configurator")
+include("executor-libraries:sup")
 include("executor-services:voice-executor")
 
 pluginManagement {

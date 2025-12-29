@@ -2,6 +2,12 @@ plugins {
     id("ru.sbrf.ufs.dab2c.core.openapi-conventions")
 }
 
+dependencies {
+    implementation(project(":executor-libraries:sup"))
+
+    implementation(libs.bundles.ktor.client)
+}
+
 val generateGigaVoiceAgent = tasks
     .register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("generateGigaVoiceAgent") {
         configureOpenApi(
