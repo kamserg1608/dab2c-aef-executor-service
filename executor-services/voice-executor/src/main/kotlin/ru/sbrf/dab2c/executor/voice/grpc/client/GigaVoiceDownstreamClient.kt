@@ -1,4 +1,4 @@
-package ru.sbrf.dab2c.executor.voice.client
+package ru.sbrf.dab2c.executor.voice.grpc.client
 
 import GigaVoiceProtocol.GigaVoice
 import GigaVoiceProtocol.GigaVoiceServiceGrpcKt

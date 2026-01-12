@@ -1,10 +1,10 @@
-package ru.sbrf.dab2c.executor.voice.base
+package ru.sbrf.dab2c.executor.voice.grpc.base
 
 import GigaVoiceProtocol.GigaVoice
 import GigaVoiceProtocol.GigaVoiceServiceGrpcKt
 import kotlinx.coroutines.flow.Flow
 import net.devh.boot.grpc.server.service.GrpcService
-import ru.sbrf.dab2c.executor.voice.client.GigaVoiceDownstreamClient
+import ru.sbrf.dab2c.executor.voice.grpc.client.GigaVoiceDownstreamClient
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
 
 /**
