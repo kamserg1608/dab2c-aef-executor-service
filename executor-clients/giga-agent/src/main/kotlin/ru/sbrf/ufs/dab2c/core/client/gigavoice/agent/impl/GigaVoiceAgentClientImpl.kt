@@ -8,10 +8,10 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.ExecuteFunctionCallRequest
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionResult
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.GetSettings200Response
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.GetSettingsRequest
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsRequestSchema
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsResponseSchema
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceSettingsRequestSchema
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceSettingsResponseSchema
 import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.api.GigaVoiceAgentClient
 
 private val logger = KotlinLogging.logger {}
@@ -26,8 +26,8 @@ class GigaVoiceAgentClientImpl(
     override suspend fun getSettings(
         ufsSession: String,
         ufsToken: String,
-        request: GetSettingsRequest
-    ): GetSettings200Response {
+        request: GigaVoiceSettingsRequestSchema
+    ): GigaVoiceSettingsResponseSchema {
         logger.debug { "Getting settings for session: $ufsSession" }
 
         return try {
@@ -46,8 +46,8 @@ class GigaVoiceAgentClientImpl(
     override suspend fun executeFunctionCall(
         ufsSession: String,
         ufsToken: String,
-        request: ExecuteFunctionCallRequest
-    ): FunctionResult {
+        request: GigaVoiceFunctionsRequestSchema
+    ): GigaVoiceFunctionsResponseSchema {
         logger.debug { "Executing function call for session: $ufsSession" }
 
         return try {

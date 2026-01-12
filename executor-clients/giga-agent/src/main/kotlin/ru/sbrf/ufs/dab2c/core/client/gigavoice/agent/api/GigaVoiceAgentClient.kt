@@ -1,9 +1,9 @@
 package ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.api
 
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.ExecuteFunctionCallRequest
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionResult
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.GetSettings200Response
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.GetSettingsRequest
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsRequestSchema
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsResponseSchema
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceSettingsRequestSchema
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceSettingsResponseSchema
 
 /**
  * Client interface for GigaVoice Agent API.
@@ -21,8 +21,8 @@ interface GigaVoiceAgentClient {
     suspend fun getSettings(
         ufsSession: String,
         ufsToken: String,
-        request: GetSettingsRequest
-    ): GetSettings200Response
+        request: GigaVoiceSettingsRequestSchema
+    ): GigaVoiceSettingsResponseSchema
 
     /**
      * Execute a function call on the AB IVR side
@@ -35,6 +35,6 @@ interface GigaVoiceAgentClient {
     suspend fun executeFunctionCall(
         ufsSession: String,
         ufsToken: String,
-        request: ExecuteFunctionCallRequest
-    ): FunctionResult
+        request: GigaVoiceFunctionsRequestSchema
+    ): GigaVoiceFunctionsResponseSchema
 }

@@ -9,7 +9,7 @@ dependencies {
 val generateGigaVoiceAgent = tasks
     .register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("generateGigaVoiceAgent") {
         configureOpenApi(
-            specFile = "$projectDir/src/main/resources/openapi/agent-open-api.yml",
+            specFile = "$projectDir/src/main/resources/openapi/agent-open-api.json",
             basePackage = "ru.sbrf.dab2c.executor.clients.giga.agent",
             shouldValidateSpec = false
         )
