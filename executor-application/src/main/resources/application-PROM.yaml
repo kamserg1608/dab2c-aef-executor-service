@@ -1,46 +1,6 @@
 server:
-  # Максимальный размер заголовка HTTP
-  max-http-header-size: ${SERVER_MAX_HTTP_HEADER_SIZE}
   port: 8080
   tomcat:
     threads:
       max: ${@fpi-name@.server.tomcat.max-threads}
       min-spare: ${@fpi-name@.server.tomcat.min-spare-threads}
-
-ufs:
-  platform:
-    config:
-      directory: /tmp/ufsparams-runtime/config
-      startupConfigDirectory: /tmp/ufsparams/config
-
-  # ССД
-  sds:
-    client:
-      mode: ${ufs.sds.client.mode}
-      clusterHealthcheckDisabled: ${ufs.sds.client.clusterHealthcheckDisabled}
-      currentReplica: ${ufs.sds.client.currentReplica}
-      http:
-        integration-enabled: true
-
-  # Журналирование
-  logger:
-    client:
-      mode: FRONTEND
-
-  # Мониторинг
-  monitoring:
-    kafka:
-      enabled: false
-
-  # Аудит
-  audit:
-    client:
-      context:
-        audit:
-          CImodule: @audit-ci-name@
-          namespace: ${AUDIT_NAMESPACE}
-          pod: ${AUDIT_POD}
-          sourceSystem: @as-conf-item.uppercase@
-          ufs.client_module.context.pool.parallelism: 20
-        Async.SendUncritical.Max.Tasks: 1500
-      useQuota: false

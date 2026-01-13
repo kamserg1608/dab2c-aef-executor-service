@@ -7,18 +7,13 @@ management:
     health:
       probes:
         enabled: true
-    quartz:
-      enabled: false
-  health:
-    jms:
-      enabled: false
   endpoints:
     web:
       exposure:
         include: health,prometheus
-  metrics:
-    export:
-      prometheus:
+  prometheus:
+    metrics:
+      export:
         enabled: true
 
 grpc:
@@ -32,68 +27,3 @@ grpc:
 logging:
   level:
     root: INFO
-
-dab2c:
-  integration-service:
-    session:
-      da-cookie:
-        session-ttl-seconds: 419
-        secure: true
-        http-only: true
-        domain: ${APP_DA_COOKIE_DOMAIN}
-    monitoring:
-      tags:
-        block: ${block.id:none}
-        ci: @app-conf-item.lowercase@
-        job: "None"
-        namespace: ${AUDIT_NAMESPACE:none}
-        pod-name: ${AUDIT_POD:none}
-
-ufs:
-  platform:
-    # Платформенное Ядро
-    environment:
-      product:
-        subsystem: @subsystemCode@
-        channel: @ufs.channel@
-        deploymentUnit: @deploymentUnit1@
-        distrib_version: @distrib.version@
-        release: @ufs.release@
-        version: @project.version@
-        api-version: 1.0.0
-    # СУП. См. также класс SupAdditionalConfiguration — в нём создаётся бин для СУП Data.
-    config:
-      deploymentUnit: @deploymentUnit1@
-
-  # Мониторинг
-  monitoring:
-    client:
-      enable: true
-      channel: @ufs.channel@
-      distributiveVersion: @distrib.version@
-      version: @project.version@
-      subsystem: @subsystemCode@
-      title: @app.support.description@
-      thread-name-prefix: "ufs-monitoring-@subsystemCode@-thread"
-      unit: @deploymentUnit1@
-
-  # Healthcheck
-  healthcheck:
-    stub-agent-enabled: true
-    groups:
-      readiness: "ru.sbrf.dab2c.executor.application.healthcheck.ApplicationHealthCheck"
-
-sds:
-  platformv:
-    monitoring:
-      targets: "pvm"
-
-seans:
-  enable: true
-  optional-data-enable: true
-
-configurator.client:
-  cache-enabled:  true
-  cache-type:     lru     # lru | noop
-  cache-capacity: 512
-  success-match-cache-enabled: false # выключения кеширования флага успешного расчета конфиграции
