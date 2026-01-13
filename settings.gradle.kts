@@ -1,7 +1,9 @@
 rootProject.name = "dab2c-core"
+include("executor-domain-model")
 include("executor-distribution")
 include("executor-application")
 include("executor-e2e-tests")
+include("executor-clients:common-converters")
 include("executor-clients:giga-voice")
 include("executor-clients:giga-agent")
 include("executor-clients:efs-adapter")

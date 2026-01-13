@@ -26,6 +26,10 @@ protobuf-plugin = "0.9.4"
 # Ktor (not managed by Spring Boot)
 ktor = "3.1.2"
 
+# Konvert (mapping library)
+konvert = "4.4.0"
+ksp = "2.1.20-1.0.32"
+
 [libraries]
 # Spring Boot BOM
 spring-boot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
@@ -80,6 +84,13 @@ grpc-client-spring-boot-starter = { module = "net.devh:grpc-client-spring-boot-s
 protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
 protobuf-kotlin = { module = "com.google.protobuf:protobuf-kotlin", version.ref = "protobuf" }
 
+# Konvert (mapping library)
+konvert-api = { module = "io.mcarle:konvert-api", version.ref = "konvert" }
+konvert = { module = "io.mcarle:konvert", version.ref = "konvert" }
+
+# KSP (for buildSrc)
+ksp-gradle-plugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
+
 [bundles]
 # Kotlinx
 kotlinx = [
@@ -111,3 +122,4 @@ grpc = [
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

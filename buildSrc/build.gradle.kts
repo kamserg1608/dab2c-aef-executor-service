@@ -30,6 +30,7 @@ dependencies {
 
     implementation(libs.protobuf.gradle.plugin)
     implementation(libs.openapi.generator.gradle.plugin)
+    implementation(libs.ksp.gradle.plugin)
     implementation(gradleApi())
 
     // Zero-compress plugin for deployment conventions
