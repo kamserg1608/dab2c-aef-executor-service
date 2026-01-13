@@ -3,6 +3,8 @@ plugins {
     id("com.github.spotbugs")
 }
 
+val libs = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
+
 tasks.test {
     useJUnitPlatform()
     testLogging {
@@ -12,13 +14,12 @@ tasks.test {
 }
 
 spotbugs {
-    toolVersion.set("4.9.3")
-    // TODO После полной миграции на Gradle отдельной задачей починить все проблемы SpotBugs
+    toolVersion.set(libs.findVersion("spotbugs-tool").get().toString())
     ignoreFailures.set(true)
     excludeFilter.set(file("${project.rootDir}/config/spotbugs/excludeFilters.xml"))
 }
 
 dependencies {
-    spotbugs("com.github.spotbugs:spotbugs:4.9.3")
-    compileOnly("com.github.spotbugs:spotbugs-annotations:4.9.3")
+    spotbugs(libs.findLibrary("spotbugs").get())
+    compileOnly(libs.findLibrary("spotbugs-annotations").get())
 }

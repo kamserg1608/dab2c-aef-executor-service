@@ -1,13 +1,13 @@
 package ru.sbrf.dab2c.executor.application.healthcheck
 
+import org.springframework.boot.actuate.health.Health
+import org.springframework.boot.actuate.health.HealthIndicator
 import org.springframework.stereotype.Component
-import ru.sbrf.ufs.platform.healthcheck.Health
-import ru.sbrf.ufs.platform.healthcheck.HealthCheck
 
 /**
- * Реализация мониторинга здоровья приложения.
+ * Application health indicator implementation.
  */
 @Component
-class ApplicationHealthCheck : HealthCheck {
-    override fun check(): Health = Health.OK
+class ApplicationHealthCheck : HealthIndicator {
+    override fun health(): Health = Health.up().build()
 }

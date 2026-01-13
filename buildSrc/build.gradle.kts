@@ -23,20 +23,15 @@ repositories {
 
 dependencies {
     implementation(libs.kotlin.gradle.plugin)
+    implementation(libs.kotlin.allopen)
     implementation(libs.spring.boot.gradle.plugin)
-    implementation(gradleApi())
-
-    // Explicitly add Kotlin plugins for use in convention plugins
-    implementation("org.jetbrains.kotlin:kotlin-allopen:2.1.10")
-    implementation("org.jetbrains.kotlin:kotlin-serialization:2.1.10")
-
     implementation(libs.detekt.gradle.plugin)
     implementation(libs.spotbugs.gradle.plugin)
 
+    implementation(libs.protobuf.gradle.plugin)
+    implementation(libs.openapi.generator.gradle.plugin)
+    implementation(gradleApi())
+
     // Zero-compress plugin for deployment conventions
     implementation("ru.sbrf.ufs.zero-compress-plugin:gradle-plugin:1.0.5")
-    implementation(libs.protobuf.gradle.plugin)
-
-    // OpenAPI Generator plugin
-    implementation("org.openapitools:openapi-generator-gradle-plugin:7.10.0")
 }

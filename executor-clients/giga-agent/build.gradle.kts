@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     implementation(libs.bundles.ktor.client)
+    implementation(libs.kotlin.logging.jvm)
 }
 
 val generateGigaVoiceAgent = tasks

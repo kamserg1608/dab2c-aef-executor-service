@@ -24,7 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.test.context.ActiveProfiles
 import ru.sbrf.dab2c.executor.application.ApplicationEntryPoint
-import javax.servlet.ServletContext
+import jakarta.servlet.ServletContext
 
 @SpringBootTest(
     classes = [ApplicationEntryPoint::class],

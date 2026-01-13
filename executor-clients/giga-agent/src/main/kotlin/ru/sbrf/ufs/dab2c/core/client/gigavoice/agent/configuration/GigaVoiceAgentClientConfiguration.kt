@@ -88,7 +88,7 @@ class GigaVoiceAgentClientConfiguration {
 
     internal companion object {
         internal const val GIGA_VOICE_AGENT_OBJECT_MAPPER_BEAN_NAME = "gigaVoiceAgentClientObjectMapper"
-        internal const val GIGA_VOICE_AGENT_HTTP_CLIENT_BEAN_NAME = "gigaVoiceAgentClientObjectMapper"
+        internal const val GIGA_VOICE_AGENT_HTTP_CLIENT_BEAN_NAME = "gigaVoiceAgentClientHttpClient"
     }
 
 }

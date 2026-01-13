@@ -28,7 +28,7 @@ dependencies {
 
 detekt {
     ignoreFailures = true
-    toolVersion = "1.23.7"
+    toolVersion = libs.findVersion("detekt").get().toString()
     config.setFrom("${project.rootDir}/config/detekt/detekt_config.yml")
     buildUponDefaultConfig = true
     allRules = false
@@ -42,7 +42,7 @@ detekt {
 }
 
 dependencies {
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.7")
+    detektPlugins(libs.findLibrary("detekt-formatting").get())
 }
 
 // Force Kotlin version for detekt to match its compiled version
@@ -53,5 +53,3 @@ configurations.matching { it.name.startsWith("detekt") }.all {
         }
     }
 }
-
-

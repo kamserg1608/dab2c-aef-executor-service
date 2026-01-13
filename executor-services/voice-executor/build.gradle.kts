@@ -7,4 +7,5 @@ dependencies {
     api(project(":executor-clients:giga-agent"))
     implementation(libs.grpc.server.spring.boot.starter)
     implementation(libs.grpc.client.spring.boot.starter)
+    implementation(libs.kotlin.logging.jvm)
 }

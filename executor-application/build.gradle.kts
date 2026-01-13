@@ -12,6 +12,5 @@ springBoot {
 dependencies {
     implementation(project(":executor-distribution"))
 
-    implementation(libs.bundles.ufs.healthcheck)
-    implementation(libs.bundles.ufs.monitoring)
+    implementation(libs.spring.boot.starter.actuator)
 }
