@@ -23,6 +23,7 @@ class GigaVoiceClient {
         GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineStub(channel)
     }
 
+    /** Starts a bidirectional streaming session with GigaVoice service. */
     fun session(requests: Flow<GigaVoice.GigaVoiceRequest>): Flow<GigaVoice.GigaVoiceResponse> {
         logger.debug { "Sending request stream to GigaVoice service" }
         return stub.gigaVoice(requests)

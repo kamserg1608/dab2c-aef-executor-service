@@ -16,6 +16,9 @@ import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.api.GigaVoiceAgentClient
 
 private val logger = KotlinLogging.logger {}
 
+private const val UFS_SESSION_HEADER = "UFS-SESSION"
+private const val UFS_TOKEN_HEADER = "UFS-TOKEN"
+
 /**
  * Implementation of GigaVoice Agent API client using Ktor HTTP client.
  */
@@ -33,8 +36,8 @@ class GigaVoiceAgentClientImpl(
         return try {
             httpClient.post("/settings") {
                 contentType(ContentType.Application.Json)
-                header("UFS-SESSION", ufsSession)
-                header("UFS-TOKEN", ufsToken)
+                header(UFS_SESSION_HEADER, ufsSession)
+                header(UFS_TOKEN_HEADER, ufsToken)
                 setBody(request)
             }.body()
         } catch (e: Exception) {
@@ -53,8 +56,8 @@ class GigaVoiceAgentClientImpl(
         return try {
             httpClient.post("/functions") {
                 contentType(ContentType.Application.Json)
-                header("UFS-SESSION", ufsSession)
-                header("UFS-TOKEN", ufsToken)
+                header(UFS_SESSION_HEADER, ufsSession)
+                header(UFS_TOKEN_HEADER, ufsToken)
                 setBody(request)
             }.body()
         } catch (e: Exception) {

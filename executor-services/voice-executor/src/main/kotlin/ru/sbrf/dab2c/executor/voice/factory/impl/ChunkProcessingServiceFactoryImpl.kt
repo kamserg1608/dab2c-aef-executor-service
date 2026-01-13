@@ -15,6 +15,9 @@ import ru.sbrf.dab2c.executor.voice.service.impl.ObservingChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.service.impl.SettingsServiceImpl
 import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.api.GigaVoiceAgentClient
 
+/**
+ * Default implementation of ChunkProcessingServiceFactory.
+ */
 @Service
 class ChunkProcessingServiceFactoryImpl(
     private val voiceExecutorConfigurationProperties: VoiceExecutorConfigurationProperties,

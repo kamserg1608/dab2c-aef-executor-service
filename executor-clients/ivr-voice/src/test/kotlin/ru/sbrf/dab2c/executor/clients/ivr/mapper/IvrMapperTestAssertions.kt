@@ -15,13 +15,12 @@ object IvrMapperTestAssertions {
      * Special handling for Audio requests which contain ByteArray.
      */
     fun assertVoiceRequestEquals(actual: VoiceRequest, expected: VoiceRequest) {
-        when {
-            actual is VoiceRequest.Audio && expected is VoiceRequest.Audio -> {
-                assertThat(actual.content.audioChunk).isEqualTo(expected.content.audioChunk)
-                assertThat(actual.content.speechStart).isEqualTo(expected.content.speechStart)
-                assertThat(actual.content.speechEnd).isEqualTo(expected.content.speechEnd)
-            }
-            else -> assertThat(actual).isEqualTo(expected)
+        if (actual is VoiceRequest.Audio && expected is VoiceRequest.Audio) {
+            assertThat(actual.content.audioChunk).isEqualTo(expected.content.audioChunk)
+            assertThat(actual.content.speechStart).isEqualTo(expected.content.speechStart)
+            assertThat(actual.content.speechEnd).isEqualTo(expected.content.speechEnd)
+        } else {
+            assertThat(actual).isEqualTo(expected)
         }
     }
 

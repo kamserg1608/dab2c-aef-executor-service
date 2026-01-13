@@ -7,6 +7,9 @@ import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 
+/**
+ * ChunkProcessingService decorator that logs request/response chunks.
+ */
 class ObservingChunkProcessingServiceDelegate(
     private val delegate: ChunkProcessingService
 ) : ChunkProcessingService {

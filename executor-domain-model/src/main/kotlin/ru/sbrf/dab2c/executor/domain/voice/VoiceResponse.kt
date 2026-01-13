@@ -126,15 +126,27 @@ data class PersonIdentity(
     val genderScore: Float
 )
 
+/**
+ * Age category type.
+ */
 enum class AgeType {
+    /** Not detected. */
     NONE,
+    /** Child speaker. */
     CHILD,
+    /** Adult speaker. */
     ADULT
 }
 
+/**
+ * Gender type.
+ */
 enum class GenderType {
+    /** Not detected. */
     NONE,
+    /** Male speaker. */
     MALE,
+    /** Female speaker. */
     FEMALE
 }
 

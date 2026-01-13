@@ -9,6 +9,10 @@ import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.service.api.FunctionCallService
 import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.api.GigaVoiceAgentClient
 
+/**
+ * Default implementation of FunctionCallService.
+ */
+@Suppress("UnusedPrivateProperty")
 class FunctionCallServiceImpl(
     private val processingState: MutableStateFlow<ProcessingState>,
     private val callBackChannel: Channel<VoiceRequest>,

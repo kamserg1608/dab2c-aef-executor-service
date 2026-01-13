@@ -5,6 +5,9 @@ import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 
+/**
+ * No-op implementation of ChunkProcessingService (pass-through mode).
+ */
 class NoopChunkProcessingServiceImpl : ChunkProcessingService {
 
     override fun processRequestChunks(

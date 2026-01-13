@@ -16,6 +16,9 @@ import ru.sbrf.dab2c.executor.voice.service.api.SettingsService
 import ru.sbrf.dab2c.executor.voice.util.extensions.extractIf
 import ru.sbrf.dab2c.executor.voice.util.extensions.mapIf
 
+/**
+ * Main implementation of ChunkProcessingService with settings and function call handling.
+ */
 class ChunkProcessingServiceImpl(
     private val processingState: MutableStateFlow<ProcessingState>,
     private val callbackChannel: Channel<VoiceRequest>,

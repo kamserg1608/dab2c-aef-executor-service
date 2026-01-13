@@ -18,7 +18,7 @@ class GigaVoiceDomainMapperResponseTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("responseTestCases")
     fun `should convert proto response to domain`(
-        testName: String,
+        @Suppress("UNUSED_PARAMETER") testName: String,
         protoResponse: GigaVoiceResponse,
         expectedDomain: VoiceResponse
     ) {

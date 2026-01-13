@@ -76,12 +76,18 @@ data class FilterSettings(
     val responseContent: ResponseContentSettings? = null
 )
 
+/**
+ * Request content filter settings.
+ */
 data class RequestContentSettings(
     val neuro: Boolean? = null,
     val blacklist: Boolean? = null,
     val whitelist: Boolean? = null
 )
 
+/**
+ * Response content filter settings.
+ */
 data class ResponseContentSettings(
     val blacklist: Boolean? = null
 )
@@ -97,6 +103,9 @@ data class FunctionDefinition(
     val returnParameters: String? = null
 )
 
+/**
+ * Function few-shot example.
+ */
 data class FunctionExample(
     val request: String,
     val params: List<Pair<String, String>> = emptyList()

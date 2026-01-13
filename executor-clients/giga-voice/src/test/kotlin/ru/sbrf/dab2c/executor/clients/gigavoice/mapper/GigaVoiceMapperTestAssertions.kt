@@ -18,11 +18,10 @@ object GigaVoiceMapperTestAssertions {
      * Special handling for ByteArray fields in AudioOutput.
      */
     fun assertVoiceResponseEquals(actual: VoiceResponse, expected: VoiceResponse) {
-        when {
-            actual is VoiceResponse.Output && expected is VoiceResponse.Output -> {
-                assertContentFromModelEquals(actual.content, expected.content)
-            }
-            else -> assertThat(actual).isEqualTo(expected)
+        if (actual is VoiceResponse.Output && expected is VoiceResponse.Output) {
+            assertContentFromModelEquals(actual.content, expected.content)
+        } else {
+            assertThat(actual).isEqualTo(expected)
         }
     }
 
@@ -77,11 +76,10 @@ object GigaVoiceMapperTestAssertions {
      * Special handling for ByteArray fields in AudioContent.
      */
     fun assertVoiceRequestEquals(actual: VoiceRequest, expected: VoiceRequest) {
-        when {
-            actual is VoiceRequest.Audio && expected is VoiceRequest.Audio -> {
-                assertAudioContentEquals(actual.content, expected.content)
-            }
-            else -> assertThat(actual).isEqualTo(expected)
+        if (actual is VoiceRequest.Audio && expected is VoiceRequest.Audio) {
+            assertAudioContentEquals(actual.content, expected.content)
+        } else {
+            assertThat(actual).isEqualTo(expected)
         }
     }
 

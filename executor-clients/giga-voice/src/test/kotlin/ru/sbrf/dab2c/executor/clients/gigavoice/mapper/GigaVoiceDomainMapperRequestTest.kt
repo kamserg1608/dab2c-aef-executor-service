@@ -16,7 +16,7 @@ class GigaVoiceDomainMapperRequestTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("requestTestCases")
     fun `should convert domain request to proto`(
-        testName: String,
+        @Suppress("UNUSED_PARAMETER") testName: String,
         domainRequest: VoiceRequest,
         expectedProto: GigaVoiceRequest
     ) {

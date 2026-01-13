@@ -16,7 +16,7 @@ class IvrDomainMapperRequestTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("requestTestCases")
     fun `should convert proto request to domain`(
-        testName: String,
+        @Suppress("UNUSED_PARAMETER") testName: String,
         protoRequest: IvrRequest,
         expectedDomain: VoiceRequest
     ) {

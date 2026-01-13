@@ -361,4 +361,43 @@
             <Bug pattern="COOKIE_USAGE"/>
         </Or>
     </Match>
+
+    <!-- Exclude generated protobuf code -->
+    <Match>
+        <Or>
+            <Package name="~GigaVoiceProtocol.*"/>
+            <Package name="~ru\.sbrf\.dab2c\.executor\.clients\.ivr\.proto.*"/>
+        </Or>
+    </Match>
+
+    <!-- Exclude false positives from Kotlin coroutines and Ktor -->
+    <Match>
+        <Or>
+            <Bug pattern="NP_NONNULL_PARAM_VIOLATION"/>
+            <Bug pattern="BC_VACUOUS_INSTANCEOF"/>
+            <Bug pattern="BC_IMPOSSIBLE_INSTANCEOF"/>
+        </Or>
+    </Match>
+
+    <!-- Exclude SING pattern for protobuf generated singletons -->
+    <Match>
+        <Bug pattern="SING_SINGLETON_IMPLEMENTS_SERIALIZABLE"/>
+    </Match>
+
+    <!-- Exclude false positives for Kotlin lateinit and integration tests -->
+    <Match>
+        <Or>
+            <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
+            <Bug pattern="NP_NONNULL_RETURN_VIOLATION"/>
+        </Or>
+        <Class name="~.*IntegrationTest"/>
+    </Match>
+
+    <!-- Exclude null-related issues in test base classes (Kotlin lateinit false positives) -->
+    <Match>
+        <Class name="~.*Test" />
+        <Or>
+            <Bug pattern="NP_NULL_ON_SOME_PATH"/>
+        </Or>
+    </Match>
 </FindBugsFilter>

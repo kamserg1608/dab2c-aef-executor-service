@@ -11,7 +11,7 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceSettingsResponse
 interface GigaVoiceAgentClient {
 
     /**
-     * Get full configuration and function registry for a GigaVoice session
+     * Get full configuration and function registry for a GigaVoice session.
      *
      * @param ufsSession UFS session identifier
      * @param ufsToken UFS session token
@@ -25,7 +25,7 @@ interface GigaVoiceAgentClient {
     ): GigaVoiceSettingsResponseSchema
 
     /**
-     * Execute a function call on the AB IVR side
+     * Execute a function call on the AB IVR side.
      *
      * @param ufsSession UFS session identifier
      * @param ufsToken UFS session token

@@ -117,17 +117,18 @@ object IvrMapperTestDataLoader {
 
     // ===================== Domain Response Parsing (for response tests input) =====================
 
-    private fun parseDomainResponse(json: JsonNode): VoiceResponse {
-        return when (val type = json["type"].asText()) {
+    private fun parseDomainResponse(json: JsonNode): VoiceResponse =
+        when (val type = json["type"].asText()) {
             "Output" -> VoiceResponse.Output(parseContentFromModel(json["content"]))
             "FunctionCalling" -> VoiceResponse.FunctionCalling(parseFunctionCallingData(json["data"]))
-            "InputTranscription" -> VoiceResponse.InputTranscription(parseInputTranscriptionData(json["transcription"]))
-            "OutputTranscription" -> VoiceResponse.OutputTranscription(parseOutputTranscriptionData(json["transcription"]))
+            "InputTranscription" ->
+                VoiceResponse.InputTranscription(parseInputTranscriptionData(json["transcription"]))
+            "OutputTranscription" ->
+                VoiceResponse.OutputTranscription(parseOutputTranscriptionData(json["transcription"]))
             "Error" -> VoiceResponse.Error(parseErrorData(json["error"]))
             "Warning" -> VoiceResponse.Warning(parseWarningData(json["warning"]))
             else -> error("Unknown VoiceResponse type: $type")
         }
-    }
 
     private fun parseContentFromModel(json: JsonNode): ContentFromModel {
         return when (val type = json["type"].asText()) {

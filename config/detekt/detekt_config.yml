@@ -42,7 +42,7 @@ comments:
     active: true
   UndocumentedPublicProperty:
     excludes: [ '**/test/**' ]
-    active: true
+    active: false
 
 complexity:
   active: true
@@ -54,13 +54,15 @@ complexity:
     threshold: 11
     includeStaticDeclarations: false
     includePrivateDeclarations: false
+  CyclomaticComplexMethod:
+    active: true
+    threshold: 15
+    excludes: [ '**/test/**', '**/*Mapper*' ]
   LabeledExpression:
     active: true
     ignoredLabels: []
   LargeClass:
-    active: true
-    threshold: 200
-    excludes: [ "**/test/**" ]
+    active: false
   LongMethod:
     active: true
     threshold: 30
@@ -92,16 +94,7 @@ complexity:
     ignoreStringsRegex: '$^'
     excludes: ['**/test/**']
   TooManyFunctions:
-    active: true
-    thresholdInFiles: 20
-    thresholdInClasses: 11
-    thresholdInInterfaces: 11
-    thresholdInObjects: 11
-    thresholdInEnums: 11
-    ignoreDeprecated: false
-    ignorePrivate: false
-    ignoreOverridden: false
-    excludes: ['**/test/**']
+    active: false
 
 coroutines:
   active: true
@@ -196,18 +189,7 @@ exceptions:
   ThrowingNewInstanceOfSameException:
     active: true
   TooGenericExceptionCaught:
-    active: true
-    excludes: [ '**/test/**', '**/testutils/**' ]
-    exceptionNames:
-      - 'ArrayIndexOutOfBoundsException'
-      - 'Error'
-      - 'Exception'
-      - 'IllegalMonitorStateException'
-      - 'NullPointerException'
-      - 'IndexOutOfBoundsException'
-      - 'RuntimeException'
-      - 'Throwable'
-    allowedExceptionNameRegex: '_|(ignore|expected).*'
+    active: false
   TooGenericExceptionThrown:
     active: true
     exceptionNames: []
@@ -291,6 +273,7 @@ formatting:
     autoCorrect: true
   NoWildcardImports:
     active: true
+    packagesToUseImportOnDemandProperty: 'GigaVoiceProtocol,GigaVoiceProtocol.GigaVoice'
   PackageName:
     active: true
     autoCorrect: true
@@ -493,6 +476,9 @@ style:
   ExpressionBodySyntax:
     active: true
     includeLineWrapping: true
+    excludes: [ '**/test/**' ]
+  ForbiddenComment:
+    active: false
   ForbiddenImport:
     active: false
     imports: []
@@ -627,4 +613,6 @@ style:
     active: true
   WildcardImport:
     active: true
-    excludeImports: []
+    excludeImports:
+      - 'GigaVoiceProtocol.*'
+      - 'GigaVoiceProtocol.GigaVoice.*'

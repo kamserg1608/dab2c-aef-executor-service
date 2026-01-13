@@ -17,7 +17,7 @@ tasks.test {
 
 spotbugs {
     toolVersion.set(libs.findVersion("spotbugs-tool").get().toString())
-    ignoreFailures.set(true)
+    ignoreFailures.set(false)
     excludeFilter.set(file("${project.rootDir}/config/spotbugs/excludeFilters.xml"))
 }
 

@@ -13,6 +13,7 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.URLProtocol
 import io.ktor.serialization.jackson.jackson
+import jakarta.servlet.ServletContext
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -24,7 +25,6 @@ import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.test.context.ActiveProfiles
 import ru.sbrf.dab2c.executor.application.ApplicationEntryPoint
 import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrServiceGrpcKt.IvrServiceCoroutineStub
-import jakarta.servlet.ServletContext
 
 @SpringBootTest(
     classes = [ApplicationEntryPoint::class],

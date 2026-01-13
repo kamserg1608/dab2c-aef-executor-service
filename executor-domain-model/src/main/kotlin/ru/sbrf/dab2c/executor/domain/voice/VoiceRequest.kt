@@ -39,7 +39,9 @@ data class AudioContent(
  * Content type for synthesis.
  */
 enum class SynthesisContentType {
+    /** Plain text. */
     TEXT,
+    /** SSML markup. */
     SSML
 }
 
