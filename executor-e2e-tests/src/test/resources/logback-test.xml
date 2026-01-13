@@ -7,11 +7,17 @@
         </encoder>
     </appender>
 
-    <!-- Suppress noisy debug logs from JDK and ByteBuddy -->
+    <!-- Suppress noisy debug logs from JDK internals -->
     <logger name="java.lang.ProcessBuilder" level="INFO"/>
+
+    <!-- Suppress noisy debug logs from ByteBuddy/Mockito agent attachment -->
     <logger name="net.bytebuddy" level="INFO"/>
 
-    <root level="DEBUG">
+    <!-- Suppress gRPC optional dependency warnings -->
+    <logger name="io.grpc" level="INFO"/>
+    <logger name="io.grpc.internal" level="WARN"/>
+
+    <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
 

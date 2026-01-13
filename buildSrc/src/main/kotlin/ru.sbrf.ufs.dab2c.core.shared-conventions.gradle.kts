@@ -11,6 +11,8 @@ tasks.test {
         events("failed", "skipped")
         showStandardStreams = false
     }
+    // Allow dynamic agent loading for Mockito/ByteBuddy
+    jvmArgs("-XX:+EnableDynamicAgentLoading")
 }
 
 spotbugs {
