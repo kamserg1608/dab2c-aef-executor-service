@@ -7,6 +7,7 @@ include("executor-clients:common-converters")
 include("executor-clients:giga-voice")
 include("executor-clients:giga-agent")
 include("executor-clients:efs-adapter")
+include("executor-clients:ivr-voice")
 include("executor-services:voice-executor")
 
 pluginManagement {
