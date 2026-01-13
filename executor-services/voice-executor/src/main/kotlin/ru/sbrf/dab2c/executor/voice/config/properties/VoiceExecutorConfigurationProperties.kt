@@ -6,5 +6,5 @@ import org.springframework.boot.context.properties.ConstructorBinding
 @ConstructorBinding
 @ConfigurationProperties(prefix = "executor.voice")
 data class VoiceExecutorConfigurationProperties(
-    val proxyMode: Boolean = false
+    val proxyMode: Boolean = true
 )

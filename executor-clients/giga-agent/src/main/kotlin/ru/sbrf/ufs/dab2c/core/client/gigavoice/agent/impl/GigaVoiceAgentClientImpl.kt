@@ -31,7 +31,7 @@ class GigaVoiceAgentClientImpl(
         logger.debug { "Getting settings for session: $ufsSession" }
 
         return try {
-            httpClient.post("/v1/settings") {
+            httpClient.post("/settings") {
                 contentType(ContentType.Application.Json)
                 header("UFS-SESSION", ufsSession)
                 header("UFS-TOKEN", ufsToken)
@@ -51,7 +51,7 @@ class GigaVoiceAgentClientImpl(
         logger.debug { "Executing function call for session: $ufsSession" }
 
         return try {
-            httpClient.post("/v1/function-call") {
+            httpClient.post("/functions") {
                 contentType(ContentType.Application.Json)
                 header("UFS-SESSION", ufsSession)
                 header("UFS-TOKEN", ufsToken)

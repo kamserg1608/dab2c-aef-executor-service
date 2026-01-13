@@ -4,10 +4,15 @@ import GigaVoiceProtocol.GigaVoice
 import GigaVoiceProtocol.GigaVoice.FunctionResult
 import GigaVoiceProtocol.GigaVoice.GigaVoiceRequest
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.service.api.FunctionCallService
+import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.api.GigaVoiceAgentClient
 
 class FunctionCallServiceImpl(
+    private val processingState: MutableStateFlow<ProcessingState>,
     private val callBackChannel: Channel<GigaVoiceRequest>,
+    private val gigaVoiceAgentClient: GigaVoiceAgentClient
 ): FunctionCallService {
 
     override suspend fun callFunction(functionCalling: GigaVoice.FunctionCalling): GigaVoice.FunctionCalling? {

@@ -9,10 +9,12 @@ import ru.sbrf.dab2c.executor.voice.model.InputProcessingStage.SERVING
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.service.api.SettingsService
 import ru.sbrf.dab2c.executor.voice.util.extensions.toRequest
+import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.api.GigaVoiceAgentClient
 
 class SettingsServiceImpl(
     private val processingState: MutableStateFlow<ProcessingState>,
     private val callbackChannel: Channel<GigaVoice.GigaVoiceRequest>,
+    private val gigaVoiceAgentClient: GigaVoiceAgentClient
 ): SettingsService {
 
     private val logger = KotlinLogging.logger {}
