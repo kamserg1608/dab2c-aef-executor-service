@@ -1,0 +1,28 @@
+{
+  "name": "settings_modalities_text",
+  "description": "Settings with TEXT output modalities",
+  "input": {
+    "settings": {
+      "voiceCallId": "call-modalities",
+      "audio": {},
+      "outputModalities": "TEXT"
+    }
+  },
+  "expected": {
+    "type": "Settings",
+    "settings": {
+      "voiceCallId": "call-modalities",
+      "audio": {},
+      "disableVad": false,
+      "enableTranscribeInput": false,
+      "flags": [],
+      "outputModalities": "TEXT",
+      "mode": "UNSPECIFIED",
+      "enableDenoiser": false,
+      "enablePrefetch": false,
+      "enablePersonIdentity": false,
+      "enableWhisper": false,
+      "enableEmotion": false
+    }
+  }
+}

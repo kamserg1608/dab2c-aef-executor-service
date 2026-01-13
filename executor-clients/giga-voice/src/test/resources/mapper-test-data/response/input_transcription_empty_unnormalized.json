@@ -1,0 +1,23 @@
+{
+  "name": "input_transcription_empty_unnormalized",
+  "description": "Input transcription with empty unnormalizedText (should map to null)",
+  "input": {
+    "inputTranscription": {
+      "text": "hi",
+      "timestamp": "100",
+      "unnormalizedText": ""
+    }
+  },
+  "expected": {
+    "type": "InputTranscription",
+    "transcription": {
+      "text": "hi",
+      "timestamp": 100,
+      "unnormalizedText": null,
+      "personIdentity": null,
+      "prefetch": false,
+      "whisper": false,
+      "emotion": null
+    }
+  }
+}

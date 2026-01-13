@@ -1,0 +1,31 @@
+{
+  "name": "input_transcription_emotion",
+  "description": "Input transcription with emotion data",
+  "input": {
+    "type": "InputTranscription",
+    "transcription": {
+      "text": "emotional",
+      "timestamp": 400,
+      "prefetch": false,
+      "whisper": false,
+      "emotion": {
+        "positive": 0.1,
+        "neutral": 0.1,
+        "negative": 0.8
+      }
+    }
+  },
+  "expected": {
+    "inputTranscription": {
+      "text": "emotional",
+      "timestamp": "400",
+      "prefetch": false,
+      "whisper": false,
+      "emotion": {
+        "positive": 0.1,
+        "neutral": 0.1,
+        "negative": 0.8
+      }
+    }
+  }
+}

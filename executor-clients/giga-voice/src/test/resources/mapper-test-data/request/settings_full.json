@@ -1,0 +1,191 @@
+{
+  "name": "settings_full",
+  "description": "Settings with all fields populated",
+  "input": {
+    "type": "Settings",
+    "settings": {
+      "voiceCallId": "call-456",
+      "audio": {
+        "input": {
+          "model": "asr-model",
+          "audioEncoding": "PCM_S16LE",
+          "sampleRate": 16000,
+          "silencePhrases": ["тишина", "пауза"],
+          "silencePhrasesTimeoutMs": 5000,
+          "silenceTimeoutMs": 10000,
+          "stopPhrases": ["стоп", "хватит"],
+          "ignorePhrases": ["хм", "эээ"]
+        },
+        "output": {
+          "voice": "voice-1",
+          "audioEncoding": "OPUS"
+        }
+      },
+      "gigachat": {
+        "model": "GigaChat-Pro",
+        "temperature": 0.7,
+        "topP": 0.9,
+        "repetitionPenalty": 1.1,
+        "updateInterval": 0.5,
+        "profanityCheck": true,
+        "filtersSettings": {
+          "filter1": {
+            "requestContent": {
+              "neuro": true,
+              "blacklist": false,
+              "whitelist": true
+            },
+            "responseContent": {
+              "blacklist": true
+            }
+          }
+        },
+        "functions": [
+          {
+            "name": "getWeather",
+            "description": "Gets weather for a city",
+            "parameters": "{\"type\":\"object\"}",
+            "fewShotExamples": [
+              {
+                "request": "What's the weather?",
+                "params": [
+                  {"key": "city", "value": "Moscow"}
+                ]
+              }
+            ],
+            "returnParameters": "{\"type\":\"object\"}"
+          }
+        ],
+        "functionRegistry": {
+          "profile": "default",
+          "labels": ["label1", "label2"],
+          "abFlags": "{\"flag1\":true}"
+        }
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are a helpful assistant",
+            "functionCall": null,
+            "functionName": null,
+            "functionsStateId": null,
+            "attachments": []
+          },
+          {
+            "role": "user",
+            "content": "Hello",
+            "functionCall": null,
+            "functionName": null,
+            "functionsStateId": null,
+            "attachments": []
+          }
+        ]
+      },
+      "disableVad": true,
+      "enableTranscribeInput": true,
+      "flags": ["flag1", "flag2"],
+      "outputModalities": "AUDIO_TEXT",
+      "mode": "RECOGNIZE_GIGACHAT_SYNTHESIS",
+      "firstSpeaker": {
+        "type": "bot",
+        "lockFirstIn": true
+      },
+      "enableDenoiser": true,
+      "enablePrefetch": true,
+      "enablePersonIdentity": true,
+      "enableWhisper": true,
+      "enableEmotion": true
+    }
+  },
+  "expected": {
+    "settings": {
+      "voiceCallId": "call-456",
+      "audio": {
+        "input": {
+          "model": "asr-model",
+          "audioEncoding": "PCM_S16LE",
+          "sampleRate": 16000,
+          "silencePhrases": ["тишина", "пауза"],
+          "silencePhrasesTimeout": "5s",
+          "silenceTimeout": "10s",
+          "stopPhrases": ["стоп", "хватит"],
+          "ignorePhrases": ["хм", "эээ"]
+        },
+        "output": {
+          "voice": "voice-1",
+          "audioEncoding": "OPUS"
+        }
+      },
+      "gigachat": {
+        "model": "GigaChat-Pro",
+        "temperature": 0.7,
+        "topP": 0.9,
+        "repetitionPenalty": 1.1,
+        "updateInterval": 0.5,
+        "profanityCheck": true,
+        "filtersSettings": {
+          "filter1": {
+            "requestContent": {
+              "neuro": true,
+              "blacklist": false,
+              "whitelist": true
+            },
+            "responseContent": {
+              "blacklist": true
+            }
+          }
+        },
+        "functions": [
+          {
+            "name": "getWeather",
+            "description": "Gets weather for a city",
+            "parameters": "{\"type\":\"object\"}",
+            "fewShotExamples": [
+              {
+                "request": "What's the weather?",
+                "params": {
+                  "pairs": [
+                    {"key": "city", "value": "Moscow"}
+                  ]
+                }
+              }
+            ],
+            "returnParameters": "{\"type\":\"object\"}"
+          }
+        ],
+        "functionRegistry": {
+          "profile": "default",
+          "labels": ["label1", "label2"],
+          "abFlags": "{\"flag1\":true}"
+        }
+      },
+      "context": {
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are a helpful assistant"
+          },
+          {
+            "role": "user",
+            "content": "Hello"
+          }
+        ]
+      },
+      "disableVad": true,
+      "enableTranscribeInput": true,
+      "flags": ["flag1", "flag2"],
+      "outputModalities": "AUDIO_TEXT",
+      "mode": "RECOGNIZE_GIGACHAT_SYNTHESIS",
+      "firstSpeaker": {
+        "type": "bot",
+        "lockFirstIn": true
+      },
+      "enableDenoiser": true,
+      "enablePrefetch": true,
+      "enablePersonIdentity": true,
+      "enableWhisper": true,
+      "enableEmotion": true
+    }
+  }
+}

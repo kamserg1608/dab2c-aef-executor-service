@@ -1,0 +1,21 @@
+{
+  "name": "audio_with_chunk",
+  "description": "Audio request with audio chunk",
+  "input": {
+    "type": "Audio",
+    "content": {
+      "audioChunk": "AQID",
+      "speechStart": false,
+      "speechEnd": false
+    }
+  },
+  "expected": {
+    "input": {
+      "audioContent": {
+        "audioChunk": "AQID",
+        "speechStart": false,
+        "speechEnd": false
+      }
+    }
+  }
+}

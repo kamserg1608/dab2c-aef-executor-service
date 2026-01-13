@@ -1,0 +1,38 @@
+{
+  "name": "settings_audio_encoding_pcm_alaw",
+  "description": "Settings with PCM_ALAW audio encoding",
+  "input": {
+    "settings": {
+      "voiceCallId": "call-alaw",
+      "audio": {
+        "input": {
+          "audioEncoding": "PCM_ALAW"
+        }
+      }
+    }
+  },
+  "expected": {
+    "type": "Settings",
+    "settings": {
+      "voiceCallId": "call-alaw",
+      "audio": {
+        "input": {
+          "audioEncoding": "PCM_ALAW",
+          "silencePhrases": [],
+          "stopPhrases": [],
+          "ignorePhrases": []
+        }
+      },
+      "disableVad": false,
+      "enableTranscribeInput": false,
+      "flags": [],
+      "outputModalities": "UNSPECIFIED",
+      "mode": "UNSPECIFIED",
+      "enableDenoiser": false,
+      "enablePrefetch": false,
+      "enablePersonIdentity": false,
+      "enableWhisper": false,
+      "enableEmotion": false
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "warning_with_message",
+  "description": "Warning with message",
+  "input": {
+    "warning": {
+      "message": "Rate limit reached"
+    }
+  },
+  "expected": {
+    "type": "Warning",
+    "warning": {
+      "message": "Rate limit reached"
+    }
+  }
+}

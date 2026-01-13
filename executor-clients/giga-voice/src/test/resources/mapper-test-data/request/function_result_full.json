@@ -1,0 +1,17 @@
+{
+  "name": "function_result_full",
+  "description": "FunctionResult with all fields",
+  "input": {
+    "type": "FunctionResult",
+    "result": {
+      "content": "{\"result\":true,\"data\":{}}",
+      "functionName": "getWeather"
+    }
+  },
+  "expected": {
+    "functionResult": {
+      "content": "{\"result\":true,\"data\":{}}",
+      "functionName": "getWeather"
+    }
+  }
+}

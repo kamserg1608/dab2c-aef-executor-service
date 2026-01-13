@@ -1,0 +1,27 @@
+{
+  "name": "settings_minimal",
+  "description": "Minimal settings with voiceCallId only",
+  "input": {
+    "settings": {
+      "voiceCallId": "call-123",
+      "audio": {}
+    }
+  },
+  "expected": {
+    "type": "Settings",
+    "settings": {
+      "voiceCallId": "call-123",
+      "audio": {},
+      "disableVad": false,
+      "enableTranscribeInput": false,
+      "flags": [],
+      "outputModalities": "UNSPECIFIED",
+      "mode": "UNSPECIFIED",
+      "enableDenoiser": false,
+      "enablePrefetch": false,
+      "enablePersonIdentity": false,
+      "enableWhisper": false,
+      "enableEmotion": false
+    }
+  }
+}

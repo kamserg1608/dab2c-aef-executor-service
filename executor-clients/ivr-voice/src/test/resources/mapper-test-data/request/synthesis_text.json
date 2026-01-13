@@ -1,0 +1,20 @@
+{
+  "name": "synthesis_text",
+  "description": "TextForSynthesis with TEXT type",
+  "input": {
+    "input": {
+      "contentForSynthesis": {
+        "text": "Hello world",
+        "contentType": "TEXT"
+      }
+    }
+  },
+  "expected": {
+    "type": "TextForSynthesis",
+    "content": {
+      "text": "Hello world",
+      "contentType": "TEXT",
+      "isFinal": false
+    }
+  }
+}

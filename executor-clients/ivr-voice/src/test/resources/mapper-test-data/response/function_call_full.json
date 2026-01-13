@@ -1,0 +1,23 @@
+{
+  "name": "function_call_full",
+  "description": "Function call with timestamp",
+  "input": {
+    "type": "FunctionCalling",
+    "data": {
+      "functionCall": {
+        "name": "getWeather",
+        "arguments": "{\"city\":\"Moscow\"}"
+      },
+      "timestamp": 1234567890
+    }
+  },
+  "expected": {
+    "functionCall": {
+      "functionCall": {
+        "name": "getWeather",
+        "arguments": "{\"city\":\"Moscow\"}"
+      },
+      "timestamp": "1234567890"
+    }
+  }
+}

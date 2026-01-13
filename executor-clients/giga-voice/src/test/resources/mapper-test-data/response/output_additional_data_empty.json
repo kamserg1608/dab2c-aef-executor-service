@@ -1,0 +1,20 @@
+{
+  "name": "output_additional_data_empty",
+  "description": "AdditionalData with all optional fields absent",
+  "input": {
+    "output": {
+      "additionalData": {}
+    }
+  },
+  "expected": {
+    "type": "Output",
+    "content": {
+      "type": "AdditionalData",
+      "data": {
+        "usage": null,
+        "gigachatModelInfo": null,
+        "finishReason": null
+      }
+    }
+  }
+}

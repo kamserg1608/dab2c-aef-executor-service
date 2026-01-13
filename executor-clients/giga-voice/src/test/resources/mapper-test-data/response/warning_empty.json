@@ -1,0 +1,15 @@
+{
+  "name": "warning_empty",
+  "description": "Warning with empty message",
+  "input": {
+    "warning": {
+      "message": ""
+    }
+  },
+  "expected": {
+    "type": "Warning",
+    "warning": {
+      "message": ""
+    }
+  }
+}

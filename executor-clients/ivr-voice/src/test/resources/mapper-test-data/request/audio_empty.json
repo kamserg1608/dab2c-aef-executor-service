@@ -1,0 +1,17 @@
+{
+  "name": "audio_empty",
+  "description": "Empty audio content",
+  "input": {
+    "input": {
+      "audioContent": {
+      }
+    }
+  },
+  "expected": {
+    "type": "Audio",
+    "content": {
+      "speechStart": false,
+      "speechEnd": false
+    }
+  }
+}

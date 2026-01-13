@@ -1,0 +1,20 @@
+{
+  "name": "output_additional_data_finish_reason_only",
+  "description": "Additional data with finish reason only",
+  "input": {
+    "type": "Output",
+    "content": {
+      "type": "AdditionalData",
+      "data": {
+        "finishReason": "stop"
+      }
+    }
+  },
+  "expected": {
+    "output": {
+      "additionalData": {
+        "finishReason": "stop"
+      }
+    }
+  }
+}

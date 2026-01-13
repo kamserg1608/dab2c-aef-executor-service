@@ -1,0 +1,23 @@
+{
+  "name": "output_audio_minimal",
+  "description": "Audio output with minimal fields (empty audio chunk)",
+  "input": {
+    "output": {
+      "audio": {
+        "audioChunk": "",
+        "isFinal": false
+      }
+    }
+  },
+  "expected": {
+    "type": "Output",
+    "content": {
+      "type": "Audio",
+      "audio": {
+        "audioChunk": "",
+        "audioDurationMs": null,
+        "isFinal": false
+      }
+    }
+  }
+}

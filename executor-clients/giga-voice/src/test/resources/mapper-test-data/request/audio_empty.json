@@ -1,0 +1,20 @@
+{
+  "name": "audio_empty",
+  "description": "Audio request with no chunk",
+  "input": {
+    "type": "Audio",
+    "content": {
+      "audioChunk": null,
+      "speechStart": false,
+      "speechEnd": false
+    }
+  },
+  "expected": {
+    "input": {
+      "audioContent": {
+        "speechStart": false,
+        "speechEnd": false
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "input_transcription_minimal",
+  "description": "Minimal input transcription",
+  "input": {
+    "type": "InputTranscription",
+    "transcription": {
+      "text": "hello",
+      "timestamp": 100,
+      "prefetch": false,
+      "whisper": false
+    }
+  },
+  "expected": {
+    "inputTranscription": {
+      "text": "hello",
+      "timestamp": "100",
+      "prefetch": false,
+      "whisper": false
+    }
+  }
+}

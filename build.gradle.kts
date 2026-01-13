@@ -44,10 +44,12 @@ subprojects {
         // Spring Boot Web (includes Tomcat, Jackson, validation, etc.)
         implementation(rootProject.libs.spring.boot.starter.web)
         implementation(rootProject.libs.spring.boot.starter.aop)
+        implementation(rootProject.libs.jackson.module.kotlin)
 
         // Testing (includes JUnit 5, AssertJ, Mockito, etc.)
         testImplementation(rootProject.libs.spring.boot.starter.test)
         testImplementation(rootProject.libs.mockk)
+        testImplementation(rootProject.libs.kotlinx.coroutines.test)
         testRuntimeOnly(rootProject.libs.junit.platform.launcher)
     }
 }

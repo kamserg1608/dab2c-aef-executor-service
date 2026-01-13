@@ -1,0 +1,22 @@
+{
+  "name": "output_additional_data_empty_finish_reason",
+  "description": "AdditionalData with empty finishReason (should map to null)",
+  "input": {
+    "output": {
+      "additionalData": {
+        "finishReason": ""
+      }
+    }
+  },
+  "expected": {
+    "type": "Output",
+    "content": {
+      "type": "AdditionalData",
+      "data": {
+        "usage": null,
+        "gigachatModelInfo": null,
+        "finishReason": null
+      }
+    }
+  }
+}

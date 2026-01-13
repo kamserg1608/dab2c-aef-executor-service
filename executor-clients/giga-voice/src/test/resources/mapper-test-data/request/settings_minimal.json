@@ -1,0 +1,42 @@
+{
+  "name": "settings_minimal",
+  "description": "Settings with minimal required fields",
+  "input": {
+    "type": "Settings",
+    "settings": {
+      "voiceCallId": "call-123",
+      "audio": {
+        "input": null,
+        "output": null
+      },
+      "gigachat": null,
+      "context": null,
+      "disableVad": false,
+      "enableTranscribeInput": false,
+      "flags": [],
+      "outputModalities": "UNSPECIFIED",
+      "mode": "UNSPECIFIED",
+      "firstSpeaker": null,
+      "enableDenoiser": false,
+      "enablePrefetch": false,
+      "enablePersonIdentity": false,
+      "enableWhisper": false,
+      "enableEmotion": false
+    }
+  },
+  "expected": {
+    "settings": {
+      "voiceCallId": "call-123",
+      "audio": {},
+      "disableVad": false,
+      "enableTranscribeInput": false,
+      "outputModalities": "MODALITIES_UNSPECIFIED",
+      "mode": "MODE_UNSPECIFIED",
+      "enableDenoiser": false,
+      "enablePrefetch": false,
+      "enablePersonIdentity": false,
+      "enableWhisper": false,
+      "enableEmotion": false
+    }
+  }
+}

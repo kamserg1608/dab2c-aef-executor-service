@@ -83,6 +83,10 @@ grpc-server-spring-boot-starter = { module = "net.devh:grpc-server-spring-boot-s
 grpc-client-spring-boot-starter = { module = "net.devh:grpc-client-spring-boot-starter", version.ref = "grpc-spring-boot-starter" }
 protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
 protobuf-kotlin = { module = "com.google.protobuf:protobuf-kotlin", version.ref = "protobuf" }
+protobuf-java-util = { module = "com.google.protobuf:protobuf-java-util", version.ref = "protobuf" }
+
+# Jackson (version managed by Spring Boot BOM)
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
 
 # Konvert (mapping library)
 konvert-api = { module = "io.mcarle:konvert-api", version.ref = "konvert" }
@@ -115,7 +119,8 @@ grpc = [
     "grpc-stub",
     "grpc-kotlin-stub",
     "protobuf-java",
-    "protobuf-kotlin"
+    "protobuf-kotlin",
+    "protobuf-java-util"
 ]
 
 [plugins]

@@ -1,0 +1,18 @@
+{
+  "name": "audio_speech_start",
+  "description": "Audio with speechStart flag",
+  "input": {
+    "input": {
+      "audioContent": {
+        "speechStart": true
+      }
+    }
+  },
+  "expected": {
+    "type": "Audio",
+    "content": {
+      "speechStart": true,
+      "speechEnd": false
+    }
+  }
+}

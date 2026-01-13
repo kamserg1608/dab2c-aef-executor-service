@@ -1,0 +1,22 @@
+{
+  "name": "input_transcription_minimal",
+  "description": "Input transcription with required fields only",
+  "input": {
+    "inputTranscription": {
+      "text": "hello",
+      "timestamp": "100"
+    }
+  },
+  "expected": {
+    "type": "InputTranscription",
+    "transcription": {
+      "text": "hello",
+      "timestamp": 100,
+      "unnormalizedText": null,
+      "personIdentity": null,
+      "prefetch": false,
+      "whisper": false,
+      "emotion": null
+    }
+  }
+}

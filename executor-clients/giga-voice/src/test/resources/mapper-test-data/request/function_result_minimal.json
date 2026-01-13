@@ -1,0 +1,16 @@
+{
+  "name": "function_result_minimal",
+  "description": "FunctionResult with minimal fields",
+  "input": {
+    "type": "FunctionResult",
+    "result": {
+      "content": "{\"temp\":20}",
+      "functionName": null
+    }
+  },
+  "expected": {
+    "functionResult": {
+      "content": "{\"temp\":20}"
+    }
+  }
+}

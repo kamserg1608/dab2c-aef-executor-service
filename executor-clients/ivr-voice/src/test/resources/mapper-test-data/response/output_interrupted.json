@@ -1,0 +1,15 @@
+{
+  "name": "output_interrupted",
+  "description": "Interrupted output",
+  "input": {
+    "type": "Output",
+    "content": {
+      "type": "Interrupted"
+    }
+  },
+  "expected": {
+    "output": {
+      "interrupted": true
+    }
+  }
+}

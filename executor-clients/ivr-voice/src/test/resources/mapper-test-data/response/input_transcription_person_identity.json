@@ -1,0 +1,33 @@
+{
+  "name": "input_transcription_person_identity",
+  "description": "Input transcription with person identity",
+  "input": {
+    "type": "InputTranscription",
+    "transcription": {
+      "text": "test",
+      "timestamp": 300,
+      "personIdentity": {
+        "age": "CHILD",
+        "gender": "FEMALE",
+        "ageScore": 0.8,
+        "genderScore": 0.85
+      },
+      "prefetch": false,
+      "whisper": false
+    }
+  },
+  "expected": {
+    "inputTranscription": {
+      "text": "test",
+      "timestamp": "300",
+      "personIdentity": {
+        "age": "CHILD",
+        "gender": "FEMALE",
+        "ageScore": 0.8,
+        "genderScore": 0.85
+      },
+      "prefetch": false,
+      "whisper": false
+    }
+  }
+}

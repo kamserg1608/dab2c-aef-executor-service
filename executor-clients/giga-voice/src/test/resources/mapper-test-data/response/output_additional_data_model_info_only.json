@@ -1,0 +1,28 @@
+{
+  "name": "output_additional_data_model_info_only",
+  "description": "AdditionalData with only gigachatModelInfo present",
+  "input": {
+    "output": {
+      "additionalData": {
+        "gigachatModelInfo": {
+          "name": "GigaChat-Pro",
+          "version": "1.0.0"
+        }
+      }
+    }
+  },
+  "expected": {
+    "type": "Output",
+    "content": {
+      "type": "AdditionalData",
+      "data": {
+        "usage": null,
+        "gigachatModelInfo": {
+          "name": "GigaChat-Pro",
+          "version": "1.0.0"
+        },
+        "finishReason": null
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "error_full",
+  "description": "Error with realistic values",
+  "input": {
+    "error": {
+      "status": 500,
+      "message": "Internal server error"
+    }
+  },
+  "expected": {
+    "type": "Error",
+    "error": {
+      "status": 500,
+      "message": "Internal server error"
+    }
+  }
+}

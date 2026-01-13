@@ -1,0 +1,21 @@
+{
+  "name": "output_transcription",
+  "description": "Output transcription with all required fields",
+  "input": {
+    "outputTranscription": {
+      "text": "response text",
+      "functionsStateId": "state-1",
+      "finishReason": "stop",
+      "timestamp": "999"
+    }
+  },
+  "expected": {
+    "type": "OutputTranscription",
+    "transcription": {
+      "text": "response text",
+      "functionsStateId": "state-1",
+      "finishReason": "stop",
+      "timestamp": 999
+    }
+  }
+}

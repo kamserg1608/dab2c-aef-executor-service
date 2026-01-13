@@ -1,0 +1,33 @@
+{
+  "name": "input_transcription_person_identity_none",
+  "description": "PersonIdentity with AGE_NONE and GENDER_NONE",
+  "input": {
+    "inputTranscription": {
+      "text": "test",
+      "timestamp": "100",
+      "personIdentity": {
+        "age": "AGE_NONE",
+        "gender": "GENDER_NONE",
+        "ageScore": 0.0,
+        "genderScore": 0.0
+      }
+    }
+  },
+  "expected": {
+    "type": "InputTranscription",
+    "transcription": {
+      "text": "test",
+      "timestamp": 100,
+      "unnormalizedText": null,
+      "personIdentity": {
+        "age": "NONE",
+        "gender": "NONE",
+        "ageScore": 0.0,
+        "genderScore": 0.0
+      },
+      "prefetch": false,
+      "whisper": false,
+      "emotion": null
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "error_minimal",
+  "description": "Minimal error",
+  "input": {
+    "type": "Error",
+    "error": {
+      "status": 0,
+      "message": ""
+    }
+  },
+  "expected": {
+    "error": {}
+  }
+}

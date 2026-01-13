@@ -1,0 +1,21 @@
+{
+  "name": "audio_full",
+  "description": "Audio request with all fields set",
+  "input": {
+    "type": "Audio",
+    "content": {
+      "audioChunk": "BAUG",
+      "speechStart": true,
+      "speechEnd": true
+    }
+  },
+  "expected": {
+    "input": {
+      "audioContent": {
+        "audioChunk": "BAUG",
+        "speechStart": true,
+        "speechEnd": true
+      }
+    }
+  }
+}

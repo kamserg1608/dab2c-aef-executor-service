@@ -1,0 +1,31 @@
+{
+  "name": "input_transcription_emotion_positive",
+  "description": "Emotion with positive dominant",
+  "input": {
+    "inputTranscription": {
+      "text": "test",
+      "timestamp": "100",
+      "emotion": {
+        "positive": 0.9,
+        "neutral": 0.05,
+        "negative": 0.05
+      }
+    }
+  },
+  "expected": {
+    "type": "InputTranscription",
+    "transcription": {
+      "text": "test",
+      "timestamp": 100,
+      "unnormalizedText": null,
+      "personIdentity": null,
+      "prefetch": false,
+      "whisper": false,
+      "emotion": {
+        "positive": 0.9,
+        "neutral": 0.05,
+        "negative": 0.05
+      }
+    }
+  }
+}

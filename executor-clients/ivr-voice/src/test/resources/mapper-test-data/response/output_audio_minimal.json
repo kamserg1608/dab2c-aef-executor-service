@@ -1,0 +1,22 @@
+{
+  "name": "output_audio_minimal",
+  "description": "Minimal audio output",
+  "input": {
+    "type": "Output",
+    "content": {
+      "type": "Audio",
+      "audio": {
+        "audioChunk": "",
+        "isFinal": false
+      }
+    }
+  },
+  "expected": {
+    "output": {
+      "audio": {
+        "audioChunk": "",
+        "isFinal": false
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "warning_empty",
+  "description": "Empty warning",
+  "input": {
+    "type": "Warning",
+    "warning": {
+      "message": ""
+    }
+  },
+  "expected": {
+    "warning": {}
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "function_call_minimal",
+  "description": "Function call with minimal fields",
+  "input": {
+    "functionCall": {
+      "functionCall": {
+        "name": "fn",
+        "arguments": "{}"
+      },
+      "timestamp": "0"
+    }
+  },
+  "expected": {
+    "type": "FunctionCalling",
+    "data": {
+      "functionCall": {
+        "name": "fn",
+        "arguments": "{}"
+      },
+      "timestamp": 0
+    }
+  }
+}

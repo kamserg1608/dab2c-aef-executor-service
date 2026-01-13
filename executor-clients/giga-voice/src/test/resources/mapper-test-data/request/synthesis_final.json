@@ -1,0 +1,21 @@
+{
+  "name": "synthesis_final",
+  "description": "TextForSynthesis with isFinal flag",
+  "input": {
+    "type": "TextForSynthesis",
+    "content": {
+      "text": "goodbye",
+      "contentType": "TEXT",
+      "isFinal": true
+    }
+  },
+  "expected": {
+    "input": {
+      "contentForSynthesis": {
+        "text": "goodbye",
+        "contentType": "TEXT",
+        "isFinal": true
+      }
+    }
+  }
+}

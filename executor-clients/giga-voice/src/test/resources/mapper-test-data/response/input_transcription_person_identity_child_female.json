@@ -1,0 +1,33 @@
+{
+  "name": "input_transcription_person_identity_child_female",
+  "description": "PersonIdentity with CHILD and FEMALE",
+  "input": {
+    "inputTranscription": {
+      "text": "test",
+      "timestamp": "100",
+      "personIdentity": {
+        "age": "CHILD",
+        "gender": "FEMALE",
+        "ageScore": 0.85,
+        "genderScore": 0.92
+      }
+    }
+  },
+  "expected": {
+    "type": "InputTranscription",
+    "transcription": {
+      "text": "test",
+      "timestamp": 100,
+      "unnormalizedText": null,
+      "personIdentity": {
+        "age": "CHILD",
+        "gender": "FEMALE",
+        "ageScore": 0.85,
+        "genderScore": 0.92
+      },
+      "prefetch": false,
+      "whisper": false,
+      "emotion": null
+    }
+  }
+}

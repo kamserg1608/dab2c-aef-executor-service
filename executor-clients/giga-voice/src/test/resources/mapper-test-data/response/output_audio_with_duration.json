@@ -1,0 +1,24 @@
+{
+  "name": "output_audio_with_duration",
+  "description": "Audio output with duration set",
+  "input": {
+    "output": {
+      "audio": {
+        "audioChunk": "AQID",
+        "audioDuration": "5.5s",
+        "isFinal": false
+      }
+    }
+  },
+  "expected": {
+    "type": "Output",
+    "content": {
+      "type": "Audio",
+      "audio": {
+        "audioChunk": "AQID",
+        "audioDurationMs": 5500,
+        "isFinal": false
+      }
+    }
+  }
+}

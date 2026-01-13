@@ -1,0 +1,15 @@
+{
+  "name": "function_result_minimal",
+  "description": "FunctionResult with content only",
+  "input": {
+    "functionResult": {
+      "content": "{\"temperature\":20}"
+    }
+  },
+  "expected": {
+    "type": "FunctionResult",
+    "result": {
+      "content": "{\"temperature\":20}"
+    }
+  }
+}
