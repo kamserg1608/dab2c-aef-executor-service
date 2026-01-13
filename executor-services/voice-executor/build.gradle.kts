@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+    api(project(":executor-domain-model"))
+    api(project(":executor-clients:ivr-voice"))
     api(project(":executor-clients:giga-voice"))
     api(project(":executor-clients:giga-agent"))
     implementation(libs.grpc.server.spring.boot.starter)

@@ -9,8 +9,11 @@ import kotlinx.coroutines.flow.map
 import org.springframework.stereotype.Component
 import java.util.concurrent.atomic.AtomicInteger
 
+/**
+ * Mock GigaVoice service for testing.
+ */
 @Component
-class MockGigaVoiceDownstreamService : GigaVoiceServiceCoroutineImplBase() {
+class MockGigaVoiceService : GigaVoiceServiceCoroutineImplBase() {
 
     private val _receivedRequests = mutableListOf<GigaVoiceRequest>()
     private val _responseCounter = AtomicInteger(0)

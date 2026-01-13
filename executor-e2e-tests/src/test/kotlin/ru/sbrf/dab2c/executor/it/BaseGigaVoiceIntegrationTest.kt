@@ -1,6 +1,5 @@
 package ru.sbrf.dab2c.executor.it
 
-import GigaVoiceProtocol.GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineStub
 import com.fasterxml.jackson.databind.DeserializationFeature
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
@@ -24,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.test.context.ActiveProfiles
 import ru.sbrf.dab2c.executor.application.ApplicationEntryPoint
+import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrServiceGrpcKt.IvrServiceCoroutineStub
 import jakarta.servlet.ServletContext
 
 @SpringBootTest(
@@ -44,10 +44,10 @@ abstract class BaseGigaVoiceIntegrationTest {
     lateinit var servletContext: ServletContext
 
     @Autowired
-    protected lateinit var mockDownstreamService: MockGigaVoiceDownstreamService
+    protected lateinit var mockGigaVoiceService: MockGigaVoiceService
 
     private lateinit var clientChannel: ManagedChannel
-    protected lateinit var clientStub: GigaVoiceServiceCoroutineStub
+    protected lateinit var clientStub: IvrServiceCoroutineStub
 
     protected val httpClient: HttpClient by lazy {
         HttpClient(CIO) {
@@ -70,7 +70,7 @@ abstract class BaseGigaVoiceIntegrationTest {
 
     @BeforeEach
     fun resetState() {
-        mockDownstreamService.reset()
+        mockGigaVoiceService.reset()
     }
 
     @BeforeAll
@@ -80,7 +80,7 @@ abstract class BaseGigaVoiceIntegrationTest {
             .usePlaintext()
             .build()
 
-        clientStub = GigaVoiceServiceCoroutineStub(clientChannel)
+        clientStub = IvrServiceCoroutineStub(clientChannel)
     }
 
     @AfterAll

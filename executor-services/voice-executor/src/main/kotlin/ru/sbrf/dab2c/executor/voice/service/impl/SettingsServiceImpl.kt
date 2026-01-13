@@ -1,33 +1,33 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
-import GigaVoiceProtocol.GigaVoice
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
+import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
+import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.voice.model.InputProcessingStage.LOADING_SETTINGS
 import ru.sbrf.dab2c.executor.voice.model.InputProcessingStage.SERVING
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.service.api.SettingsService
-import ru.sbrf.dab2c.executor.voice.util.extensions.toRequest
 import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.api.GigaVoiceAgentClient
 
 class SettingsServiceImpl(
     private val processingState: MutableStateFlow<ProcessingState>,
-    private val callbackChannel: Channel<GigaVoice.GigaVoiceRequest>,
+    private val callbackChannel: Channel<VoiceRequest>,
     private val gigaVoiceAgentClient: GigaVoiceAgentClient
-): SettingsService {
+) : SettingsService {
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun initSettingsCalculation(settings: GigaVoice.Settings) {
+    override suspend fun initSettingsCalculation(settings: VoiceSettings) {
         processingState.value = processingState.value.copy(input = LOADING_SETTINGS)
         val processedSettings = calculateSettings(settings)
-        callbackChannel.send(processedSettings.toRequest())
+        callbackChannel.send(VoiceRequest.Settings(processedSettings))
         processingState.value = processingState.value.copy(input = SERVING)
     }
 
-    private suspend fun calculateSettings(settings: GigaVoice.Settings): GigaVoice.Settings {
-        //TODO call client
+    private suspend fun calculateSettings(settings: VoiceSettings): VoiceSettings {
+        // TODO: call gigaVoiceAgentClient.getSettings()
         return settings
     }
 }

@@ -1,35 +1,33 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
-import GigaVoiceProtocol.GigaVoice
-import GigaVoiceProtocol.GigaVoice.FunctionResult
-import GigaVoiceProtocol.GigaVoice.GigaVoiceRequest
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
+import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
+import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
+import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.service.api.FunctionCallService
 import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.api.GigaVoiceAgentClient
 
 class FunctionCallServiceImpl(
     private val processingState: MutableStateFlow<ProcessingState>,
-    private val callBackChannel: Channel<GigaVoiceRequest>,
+    private val callBackChannel: Channel<VoiceRequest>,
     private val gigaVoiceAgentClient: GigaVoiceAgentClient
-): FunctionCallService {
+) : FunctionCallService {
 
-    override suspend fun callFunction(functionCalling: GigaVoice.FunctionCalling): GigaVoice.FunctionCalling? {
-        //TODO Needs not stub implementation
+    override suspend fun callFunction(functionCalling: FunctionCallingData): FunctionCallingData? {
+        // TODO: Needs non-stub implementation
         val functionCall = functionCalling.functionCall
 
         if (functionCall.name.contains("avg")) {
-            //TODO Call avg
+            // TODO: Call gigaVoiceAgentClient.executeFunctionCall()
             callBackChannel.send(
-                GigaVoiceRequest.newBuilder()
-                    .setFunctionResult(
-                        FunctionResult.newBuilder()
-                            .setFunctionName(functionCall.name)
-                            .setContent("NOOP")
-                            .build()
+                VoiceRequest.FunctionResult(
+                    FunctionResultData(
+                        content = "NOOP",
+                        functionName = functionCall.name
                     )
-                    .build()
+                )
             )
             return null
         }

@@ -13,7 +13,7 @@ private val logger = KotlinLogging.logger {}
 
 @TestConfiguration
 class MockDownstreamServerConfiguration(
-    private val mockService: MockGigaVoiceDownstreamService,
+    private val mockGigaVoiceService: MockGigaVoiceService,
     @Value("\${grpc.client.downstream.address}") private val downstreamAddress: String
 ) : SmartLifecycle {
 
@@ -25,22 +25,22 @@ class MockDownstreamServerConfiguration(
     }
 
     override fun start() {
-        logger.info { "Starting mock downstream gRPC server on port $port" }
+        logger.info { "Starting mock GigaVoice gRPC server on port $port" }
         server = ServerBuilder
             .forPort(port)
-            .addService(mockService)
+            .addService(mockGigaVoiceService)
             .build()
             .start()
         running = true
-        logger.info { "Mock downstream gRPC server started on port $port" }
+        logger.info { "Mock GigaVoice gRPC server started on port $port" }
     }
 
     override fun stop() {
-        logger.info { "Stopping mock downstream gRPC server" }
+        logger.info { "Stopping mock GigaVoice gRPC server" }
         server?.shutdown()
         server?.awaitTermination()
         running = false
-        logger.info { "Mock downstream gRPC server stopped" }
+        logger.info { "Mock GigaVoice gRPC server stopped" }
     }
 
     override fun isRunning(): Boolean = running

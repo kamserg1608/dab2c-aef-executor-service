@@ -9,10 +9,10 @@ import net.devh.boot.grpc.client.inject.GrpcClient
 import org.springframework.stereotype.Component
 
 /**
- * Client for Giga-voice.
+ * gRPC client for GigaVoice service.
  */
 @Component
-class GigaVoiceDownstreamClient {
+class GigaVoiceClient {
 
     private val logger = KotlinLogging.logger {}
 
@@ -23,8 +23,8 @@ class GigaVoiceDownstreamClient {
         GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineStub(channel)
     }
 
-    fun forward(requests: Flow<GigaVoice.GigaVoiceRequest>): Flow<GigaVoice.GigaVoiceResponse> {
-        logger.debug { "Forwarding request stream to downstream service" }
+    fun session(requests: Flow<GigaVoice.GigaVoiceRequest>): Flow<GigaVoice.GigaVoiceResponse> {
+        logger.debug { "Sending request stream to GigaVoice service" }
         return stub.gigaVoice(requests)
     }
 }
