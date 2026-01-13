@@ -4,12 +4,10 @@ def onDistrib(app, distr) {
     def version = "-Pdistrib.version=${distr.version}"
     gradlew("clean build", "${version} ${skipTests}")
 
-    distr.addConf("./dab2c-core-integration-service-configs/build/resources/main/distr/*")
+    distr.addConf("./executor-distribution/build/resources/main/distr/*")
 
-    distr.addBH("./dab2c-core-integration-service-application/build/zero-compressed-main-jar/*.jar", "executor-main")
-    distr.addBH("./dab2c-core-integration-service-application/build/zero-compressed-dependencies-jars/*.jar", "executor-dependencies")
-
-    distr.addDB("./dab2c-core-migrations/build/libs/db_archive.zip")
+    distr.addBH("./executor-application/build/zero-compressed-main-jar/*.jar", "executor-main")
+    distr.addBH("./executor-application/build/zero-compressed-dependencies-jars/*.jar", "executor-dependencies")
 }
 
 void gradlew(String task, String options) {
