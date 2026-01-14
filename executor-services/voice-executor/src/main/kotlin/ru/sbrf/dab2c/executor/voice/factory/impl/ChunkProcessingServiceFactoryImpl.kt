@@ -3,6 +3,7 @@ package ru.sbrf.dab2c.executor.voice.factory.impl
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.springframework.stereotype.Service
+import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
@@ -21,7 +22,8 @@ import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.api.GigaVoiceAgentClient
 @Service
 class ChunkProcessingServiceFactoryImpl(
     private val voiceExecutorConfigurationProperties: VoiceExecutorConfigurationProperties,
-    private val gigaVoiceAgentClient: GigaVoiceAgentClient
+    private val gigaVoiceAgentClient: GigaVoiceAgentClient,
+    private val configuratorClient: ConfiguratorClient
 ) : ChunkProcessingServiceFactory {
 
     override fun create(): ChunkProcessingService {
@@ -39,7 +41,13 @@ class ChunkProcessingServiceFactoryImpl(
         val callbackChannel = Channel<VoiceRequest>(capacity = Channel.BUFFERED)
 
         val functionCallService = FunctionCallServiceImpl(processingState, callbackChannel, gigaVoiceAgentClient)
-        val settingsService = SettingsServiceImpl(processingState, callbackChannel, gigaVoiceAgentClient)
+        val settingsService = SettingsServiceImpl(
+            processingState,
+            callbackChannel,
+            gigaVoiceAgentClient,
+            configuratorClient,
+            voiceExecutorConfigurationProperties
+        )
 
         return ChunkProcessingServiceImpl(
             processingState,

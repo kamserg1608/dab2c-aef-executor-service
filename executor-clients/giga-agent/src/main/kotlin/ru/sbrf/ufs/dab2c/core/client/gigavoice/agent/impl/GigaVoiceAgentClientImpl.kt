@@ -10,9 +10,13 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsRequestSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsResponseSchema
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceSettingsRequestSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceSettingsResponseSchema
+import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
+import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
+import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.api.GigaVoiceAgentClient
+import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.mapper.GigaVoiceSettingsMapper
+import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.mapper.GigaVoiceSettingsRequestBuilder
 
 private val logger = KotlinLogging.logger {}
 
@@ -23,17 +27,23 @@ private const val UFS_TOKEN_HEADER = "UFS-TOKEN"
  * Implementation of GigaVoice Agent API client using Ktor HTTP client.
  */
 class GigaVoiceAgentClientImpl(
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
+    private val requestBuilder: GigaVoiceSettingsRequestBuilder,
+    private val mapper: GigaVoiceSettingsMapper = GigaVoiceSettingsMapper
 ) : GigaVoiceAgentClient {
 
     override suspend fun getSettings(
         ufsSession: String,
         ufsToken: String,
-        request: GigaVoiceSettingsRequestSchema
-    ): GigaVoiceSettingsResponseSchema {
+        agentConfiguration: AgentConfiguration,
+        voiceSettings: VoiceSettings,
+        channel: String
+    ): Pair<VoiceSettings, FunctionPerformers> {
         logger.debug { "Getting settings for session: $ufsSession" }
 
-        return try {
+        val request = requestBuilder.build(agentConfiguration, voiceSettings, channel)
+
+        val apiResponse: GigaVoiceSettingsResponseSchema = try {
             httpClient.post("/settings") {
                 contentType(ContentType.Application.Json)
                 header(UFS_SESSION_HEADER, ufsSession)
@@ -44,6 +54,8 @@ class GigaVoiceAgentClientImpl(
             logger.error(e) { "Failed to get settings for session: $ufsSession" }
             throw e
         }
+
+        return mapper.toDomainSettings(apiResponse.settings) to mapper.toDomainPerformers(apiResponse.performers)
     }
 
     override suspend fun executeFunctionCall(

@@ -7,6 +7,7 @@ dependencies {
     api(project(":executor-clients:ivr-voice"))
     api(project(":executor-clients:giga-voice"))
     api(project(":executor-clients:giga-agent"))
+    api(project(":executor-clients:efs-adapter"))
     implementation(libs.grpc.server.spring.boot.starter)
     implementation(libs.grpc.client.spring.boot.starter)
     implementation(libs.kotlin.logging.jvm)

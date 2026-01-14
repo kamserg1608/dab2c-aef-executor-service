@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    api(project(":executor-domain-model"))
     implementation(libs.bundles.ktor.client)
     implementation(libs.kotlin.logging.jvm)
 }
