@@ -8,13 +8,15 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsRequestSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsResponseSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceSettingsResponseSchema
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
+import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
+import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.api.GigaVoiceAgentClient
+import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.mapper.GigaVoiceFunctionCallRequestBuilder
 import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.mapper.GigaVoiceSettingsMapper
 import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.mapper.GigaVoiceSettingsRequestBuilder
 
@@ -28,7 +30,8 @@ private const val UFS_TOKEN_HEADER = "UFS-TOKEN"
  */
 class GigaVoiceAgentClientImpl(
     private val httpClient: HttpClient,
-    private val requestBuilder: GigaVoiceSettingsRequestBuilder,
+    private val settingsRequestBuilder: GigaVoiceSettingsRequestBuilder,
+    private val functionCallRequestBuilder: GigaVoiceFunctionCallRequestBuilder,
     private val mapper: GigaVoiceSettingsMapper = GigaVoiceSettingsMapper
 ) : GigaVoiceAgentClient {
 
@@ -41,7 +44,7 @@ class GigaVoiceAgentClientImpl(
     ): Pair<VoiceSettings, FunctionPerformers> {
         logger.debug { "Getting settings for session: $ufsSession" }
 
-        val request = requestBuilder.build(agentConfiguration, voiceSettings, channel)
+        val request = settingsRequestBuilder.build(agentConfiguration, voiceSettings, channel)
 
         val apiResponse: GigaVoiceSettingsResponseSchema = try {
             httpClient.post("/settings") {
@@ -61,11 +64,15 @@ class GigaVoiceAgentClientImpl(
     override suspend fun executeFunctionCall(
         ufsSession: String,
         ufsToken: String,
-        request: GigaVoiceFunctionsRequestSchema
-    ): GigaVoiceFunctionsResponseSchema {
+        functionCalling: FunctionCallingData,
+        agentConfiguration: AgentConfiguration,
+        channel: String
+    ): FunctionResultData {
         logger.debug { "Executing function call for session: $ufsSession" }
 
-        return try {
+        val request = functionCallRequestBuilder.build(agentConfiguration, functionCalling, channel)
+
+        val apiResponse: GigaVoiceFunctionsResponseSchema = try {
             httpClient.post("/functions") {
                 contentType(ContentType.Application.Json)
                 header(UFS_SESSION_HEADER, ufsSession)
@@ -76,5 +83,7 @@ class GigaVoiceAgentClientImpl(
             logger.error(e) { "Failed to execute function call for session: $ufsSession" }
             throw e
         }
+
+        return mapper.toDomainFunctionResult(apiResponse.functionResult)
     }
 }

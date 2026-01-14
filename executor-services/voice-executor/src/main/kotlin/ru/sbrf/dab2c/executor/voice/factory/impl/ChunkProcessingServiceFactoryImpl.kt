@@ -40,7 +40,13 @@ class ChunkProcessingServiceFactoryImpl(
         val processingState = MutableStateFlow(ProcessingState())
         val callbackChannel = Channel<VoiceRequest>(capacity = Channel.BUFFERED)
 
-        val functionCallService = FunctionCallServiceImpl(processingState, callbackChannel, gigaVoiceAgentClient)
+        val functionCallService = FunctionCallServiceImpl(
+            processingState,
+            callbackChannel,
+            gigaVoiceAgentClient,
+            configuratorClient,
+            voiceExecutorConfigurationProperties
+        )
         val settingsService = SettingsServiceImpl(
             processingState,
             callbackChannel,

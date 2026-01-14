@@ -1,9 +1,9 @@
 package ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.api
 
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsRequestSchema
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsResponseSchema
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
+import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
+import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 
 /**
@@ -34,12 +34,16 @@ interface GigaVoiceAgentClient {
      *
      * @param ufsSession UFS session identifier
      * @param ufsToken UFS session token
-     * @param request Agent configuration, session info and function call to execute
+     * @param functionCalling Function call data from the model
+     * @param agentConfiguration Agent configuration from EFS adapter
+     * @param channel Channel identifier
      * @return Function execution result
      */
     suspend fun executeFunctionCall(
         ufsSession: String,
         ufsToken: String,
-        request: GigaVoiceFunctionsRequestSchema
-    ): GigaVoiceFunctionsResponseSchema
+        functionCalling: FunctionCallingData,
+        agentConfiguration: AgentConfiguration,
+        channel: String
+    ): FunctionResultData
 }

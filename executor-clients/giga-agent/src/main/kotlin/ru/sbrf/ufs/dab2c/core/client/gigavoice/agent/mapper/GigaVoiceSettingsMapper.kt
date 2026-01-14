@@ -4,6 +4,7 @@ package ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.mapper
 
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.AudioSettingsInput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.AudioSettingsOutput
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionResult
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaChatSettingsInput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaChatSettingsOutput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceMode
@@ -21,9 +22,11 @@ import ru.sbrf.dab2c.executor.domain.voice.AudioOutputSettings
 import ru.sbrf.dab2c.executor.domain.voice.AudioSettings
 import ru.sbrf.dab2c.executor.domain.voice.FilterSettings
 import ru.sbrf.dab2c.executor.domain.voice.FirstSpeaker
+import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionOptions
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
 import ru.sbrf.dab2c.executor.domain.voice.FunctionRegistry
+import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
 import ru.sbrf.dab2c.executor.domain.voice.GigaChatSettings
 import ru.sbrf.dab2c.executor.domain.voice.InitialContext
 import ru.sbrf.dab2c.executor.domain.voice.Message
@@ -33,6 +36,7 @@ import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.AudioEncoding as ApiAudioEncoding
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FilterSettings as ApiFilterSettings
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FirstSpeaker as ApiFirstSpeaker
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCalling as ApiFunctionCalling
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionOptions as ApiFunctionOptions
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionRegistry as ApiFunctionRegistry
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.Message as ApiMessage
@@ -287,4 +291,21 @@ object GigaVoiceSettingsMapper {
                 lockFirstIn = it.lockFirstIn
             )
         }
+
+    // === Function Calling mapping ===
+
+    fun toApiFunctionCalling(source: FunctionCallingData): ApiFunctionCalling =
+        ApiFunctionCalling(
+            functionCall = ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCall(
+                name = source.functionCall.name,
+                arguments = source.functionCall.arguments
+            ),
+            timestamp = source.timestamp.toInt()
+        )
+
+    fun toDomainFunctionResult(source: FunctionResult): FunctionResultData =
+        FunctionResultData(
+            content = source.content,
+            functionName = source.functionName
+        )
 }

@@ -23,6 +23,7 @@ import org.springframework.context.annotation.Configuration
 import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.api.GigaVoiceAgentClient
 import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.configuration.properties.GigaVoiceAgentClientConfigurationProperties
 import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.impl.GigaVoiceAgentClientImpl
+import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.mapper.GigaVoiceFunctionCallRequestBuilder
 import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.mapper.GigaVoiceSettingsRequestBuilder
 
 private val logger = KotlinLogging.logger {}
@@ -81,8 +82,13 @@ class GigaVoiceAgentClientConfiguration {
     internal fun gigaVoiceAgentClient(
         @Qualifier(GIGA_VOICE_AGENT_HTTP_CLIENT_BEAN_NAME)
         httpClient: HttpClient,
-        requestBuilder: GigaVoiceSettingsRequestBuilder
-    ): GigaVoiceAgentClient = GigaVoiceAgentClientImpl(httpClient, requestBuilder)
+        settingsRequestBuilder: GigaVoiceSettingsRequestBuilder,
+        functionCallRequestBuilder: GigaVoiceFunctionCallRequestBuilder
+    ): GigaVoiceAgentClient = GigaVoiceAgentClientImpl(
+        httpClient,
+        settingsRequestBuilder,
+        functionCallRequestBuilder
+    )
 
     internal companion object {
         internal const val GIGA_VOICE_AGENT_OBJECT_MAPPER_BEAN_NAME = "gigaVoiceAgentClientObjectMapper"
