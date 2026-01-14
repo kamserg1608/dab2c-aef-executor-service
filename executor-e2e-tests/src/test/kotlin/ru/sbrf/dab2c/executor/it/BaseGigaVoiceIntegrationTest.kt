@@ -1,8 +1,15 @@
 package ru.sbrf.dab2c.executor.it
 
 import com.fasterxml.jackson.databind.DeserializationFeature
+import io.grpc.CallOptions
+import io.grpc.Channel
+import io.grpc.ClientCall
+import io.grpc.ClientInterceptor
+import io.grpc.ForwardingClientCall
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
+import io.grpc.Metadata
+import io.grpc.MethodDescriptor
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -23,6 +30,8 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.test.context.ActiveProfiles
+import org.wiremock.spring.ConfigureWireMock
+import org.wiremock.spring.EnableWireMock
 import ru.sbrf.dab2c.executor.application.ApplicationEntryPoint
 import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrServiceGrpcKt.IvrServiceCoroutineStub
 
@@ -31,6 +40,10 @@ import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrServiceGrpcKt.IvrServiceCorou
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @ActiveProfiles(profiles = ["STUB", "stubMode", "test"])
+@EnableWireMock(
+    ConfigureWireMock(name = "gigaVoiceAgent", baseUrlProperties = ["giga.voice.agent.client.baseUrl"]),
+    ConfigureWireMock(name = "efsAdapter", baseUrlProperties = ["efs.adapter.baseUrl"])
+)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class BaseGigaVoiceIntegrationTest {
 
@@ -86,5 +99,45 @@ abstract class BaseGigaVoiceIntegrationTest {
     @AfterAll
     fun teardown() {
         clientChannel.shutdown()
+    }
+
+    /** Creates a stub configured for proxy mode (pass-through). */
+    protected fun proxyStub(): IvrServiceCoroutineStub =
+        clientStub.withInterceptors(MetadataInterceptor(mapOf("proxy" to "true")))
+
+    /** Creates a stub configured for non-proxy mode (full processing). */
+    protected fun nonProxyStub(
+        session: String = "test-session",
+        token: String = "test-token"
+    ): IvrServiceCoroutineStub = clientStub.withInterceptors(
+        MetadataInterceptor(
+            mapOf(
+                "proxy" to "false",
+                "session" to session,
+                "token" to token
+            )
+        )
+    )
+}
+
+/** gRPC interceptor that adds metadata headers to outgoing calls. */
+private class MetadataInterceptor(
+    private val headers: Map<String, String>
+) : ClientInterceptor {
+    override fun <ReqT, RespT> interceptCall(
+        method: MethodDescriptor<ReqT, RespT>,
+        callOptions: CallOptions,
+        next: Channel
+    ): ClientCall<ReqT, RespT> {
+        return object : ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(
+            next.newCall(method, callOptions)
+        ) {
+            override fun start(responseListener: Listener<RespT>, metadata: Metadata) {
+                headers.forEach { (key, value) ->
+                    metadata.put(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER), value)
+                }
+                super.start(responseListener, metadata)
+            }
+        }
     }
 }

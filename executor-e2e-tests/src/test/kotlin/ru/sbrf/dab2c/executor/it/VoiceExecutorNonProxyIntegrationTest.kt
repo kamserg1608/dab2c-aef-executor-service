@@ -5,7 +5,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
-import io.grpc.Metadata
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -13,10 +12,6 @@ import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.test.annotation.DirtiesContext
-import org.springframework.test.context.ActiveProfiles
-import org.wiremock.spring.ConfigureWireMock
-import org.wiremock.spring.EnableWireMock
 import org.wiremock.spring.InjectWireMock
 import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioSettings
 import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
@@ -24,15 +19,9 @@ import ru.sbrf.dab2c.executor.clients.ivr.proto.Settings
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * Integration test for voice executor with proxyMode=false.
+ * Integration test for voice executor with proxy=false header.
  * Uses WireMock to stub HTTP clients (ConfiguratorClient, GigaVoiceAgentClient).
  */
-@ActiveProfiles("non-proxy-test", "STUB")
-@DirtiesContext
-@EnableWireMock(
-    ConfigureWireMock(name = "gigaVoiceAgent", baseUrlProperties = ["giga.voice.agent.client.baseUrl"]),
-    ConfigureWireMock(name = "efsAdapter", baseUrlProperties = ["efs.adapter.baseUrl"])
-)
 class VoiceExecutorNonProxyIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
     @InjectWireMock("gigaVoiceAgent")
@@ -71,7 +60,7 @@ class VoiceExecutorNonProxyIntegrationTest : BaseGigaVoiceIntegrationTest() {
                 )
         )
 
-        // Create request with metadata
+        // Create request
         val requests = flow {
             emit(
                 IvrRequest.newBuilder()
@@ -85,20 +74,8 @@ class VoiceExecutorNonProxyIntegrationTest : BaseGigaVoiceIntegrationTest() {
             )
         }
 
-        // Add required headers
-        val metadata = Metadata()
-        metadata.put(
-            Metadata.Key.of("session", Metadata.ASCII_STRING_MARSHALLER),
-            "test-session"
-        )
-        metadata.put(
-            Metadata.Key.of("token", Metadata.ASCII_STRING_MARSHALLER),
-            "test-token"
-        )
-
-        // Execute request with metadata - take first response and don't wait for stream completion
-        val stubWithHeaders = clientStub.withInterceptors(MetadataInterceptor(metadata))
-        val firstResponse = stubWithHeaders.session(requests).first()
+        // Execute request with non-proxy stub (proxy=false header + session/token)
+        val firstResponse = nonProxyStub().session(requests).first()
 
         // Give time for async HTTP calls to complete
         delay(500)
@@ -143,27 +120,5 @@ class VoiceExecutorNonProxyIntegrationTest : BaseGigaVoiceIntegrationTest() {
                 }
             }
         """.trimIndent()
-    }
-}
-
-/**
- * gRPC interceptor that adds metadata to outgoing calls.
- */
-private class MetadataInterceptor(
-    private val extraMetadata: Metadata
-) : io.grpc.ClientInterceptor {
-    override fun <ReqT, RespT> interceptCall(
-        method: io.grpc.MethodDescriptor<ReqT, RespT>,
-        callOptions: io.grpc.CallOptions,
-        next: io.grpc.Channel
-    ): io.grpc.ClientCall<ReqT, RespT> {
-        return object : io.grpc.ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(
-            next.newCall(method, callOptions)
-        ) {
-            override fun start(responseListener: Listener<RespT>, headers: Metadata) {
-                headers.merge(extraMetadata)
-                super.start(responseListener, headers)
-            }
-        }
     }
 }

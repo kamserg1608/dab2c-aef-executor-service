@@ -28,7 +28,7 @@ class GigaVoiceProxySpringIntegrationTest : BaseGigaVoiceIntegrationTest() {
         }
 
         // When
-        val responses = clientStub.session(requests).toList()
+        val responses = proxyStub().session(requests).toList()
 
         // Then
         assertThat(responses).hasSize(3)
@@ -50,7 +50,7 @@ class GigaVoiceProxySpringIntegrationTest : BaseGigaVoiceIntegrationTest() {
                     .build()
             )
         }
-        val firstResponses = clientStub.session(firstRequests).toList()
+        val firstResponses = proxyStub().session(firstRequests).toList()
         assertThat(firstResponses).hasSize(1)
 
         // Second stream
@@ -61,7 +61,7 @@ class GigaVoiceProxySpringIntegrationTest : BaseGigaVoiceIntegrationTest() {
                     .build()
             )
         }
-        val secondResponses = clientStub.session(secondRequests).toList()
+        val secondResponses = proxyStub().session(secondRequests).toList()
         assertThat(secondResponses).hasSize(1)
     }
 }

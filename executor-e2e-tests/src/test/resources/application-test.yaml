@@ -6,6 +6,11 @@ dab2c:
         path: "/testpath"
         domain: "test-domain"
 
+executor:
+  voice:
+    agentName: test-agent
+    channel: test-channel
+
 grpc:
   server:
     port: 29090
@@ -13,6 +18,21 @@ grpc:
     downstream:
       address: static://localhost:29091
       negotiation-type: plaintext
+
+# WireMock injects ports dynamically via baseUrlProperties
+giga:
+  voice:
+    agent:
+      client:
+        baseUrl: ${wiremock.server.gigaVoiceAgent.baseUrl:http://localhost:8080}
+        connectionTimeout: 5000
+        requestTimeout: 5000
+
+efs:
+  adapter:
+    baseUrl: ${wiremock.server.efsAdapter.baseUrl:http://localhost:8081}
+    connectionTimeout: 5000
+    requestTimeout: 5000
 
 logging:
   level:
