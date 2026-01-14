@@ -1,6 +1,5 @@
 package ru.sbrf.dab2c.executor.voice.factory.api
 
-import ru.sbrf.dab2c.executor.voice.model.RequestMetadata
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 
 /**
@@ -9,7 +8,7 @@ import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 interface ChunkProcessingServiceFactory {
 
     /**
-     * Creates a new ChunkProcessingService instance with the provided metadata.
+     * Creates a new ChunkProcessingService instance.
      */
-    fun create(metadata: RequestMetadata = RequestMetadata.EMPTY): ChunkProcessingService
+    fun create(): ChunkProcessingService
 }

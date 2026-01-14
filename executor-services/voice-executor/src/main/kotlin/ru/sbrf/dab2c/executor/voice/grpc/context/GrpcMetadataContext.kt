@@ -25,6 +25,7 @@ object GrpcMetadataContext {
 
     /**
      * Converts gRPC [Metadata] to [RequestMetadata].
+     * Keys are normalized to lowercase for case-insensitive access.
      * For keys with multiple values, the last value is used.
      * Binary keys (ending with "-bin") are skipped.
      */
@@ -35,7 +36,7 @@ object GrpcMetadataContext {
 
             val asciiKey = Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER)
             getAll(asciiKey)?.lastOrNull()?.let { value ->
-                result[key] = value
+                result[key.lowercase()] = value
             }
         }
         return RequestMetadata(result.toMap())

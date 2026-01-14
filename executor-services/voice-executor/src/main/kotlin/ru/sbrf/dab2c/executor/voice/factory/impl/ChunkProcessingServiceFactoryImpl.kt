@@ -7,7 +7,6 @@ import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
-import ru.sbrf.dab2c.executor.voice.model.RequestMetadata
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.service.impl.ChunkProcessingServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.FunctionCallServiceImpl
@@ -25,18 +24,18 @@ class ChunkProcessingServiceFactoryImpl(
     private val gigaVoiceAgentClient: GigaVoiceAgentClient
 ) : ChunkProcessingServiceFactory {
 
-    override fun create(metadata: RequestMetadata): ChunkProcessingService {
+    override fun create(): ChunkProcessingService {
         val delegate = if (voiceExecutorConfigurationProperties.proxyMode) {
             NoopChunkProcessingServiceImpl()
         } else {
-            createChunkProcessingServiceImpl(metadata)
+            createChunkProcessingServiceImpl()
         }
 
         return ObservingChunkProcessingServiceDelegate(delegate)
     }
 
-    private fun createChunkProcessingServiceImpl(metadata: RequestMetadata): ChunkProcessingService {
-        val processingState = MutableStateFlow(ProcessingState(metadata = metadata))
+    private fun createChunkProcessingServiceImpl(): ChunkProcessingService {
+        val processingState = MutableStateFlow(ProcessingState())
         val callbackChannel = Channel<VoiceRequest>(capacity = Channel.BUFFERED)
 
         val functionCallService = FunctionCallServiceImpl(processingState, callbackChannel, gigaVoiceAgentClient)

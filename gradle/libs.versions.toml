@@ -27,7 +27,7 @@ protobuf-plugin = "0.9.4"
 ktor = "3.1.2"
 
 # Konvert (mapping library)
-konvert = "4.4.0"
+konvert = "4.1.0"
 ksp = "2.1.20-1.0.32"
 
 [libraries]

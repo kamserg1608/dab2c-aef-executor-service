@@ -1,0 +1,825 @@
+openapi: 3.0.1
+info:
+  title: DA-UFS Sidecar Service API
+  description: API документация для всех зарегистрированных контроллеров в DA-UFS Sidecar сервисе
+  version: "1.0"
+servers:
+  - url: http://localhost:8080
+paths:
+  /audit/event:
+    post:
+      summary: Отправка события аудита
+      description: Обрабатывает POST-запрос для публикации события аудита
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuditEventServiceEvent'
+        required: true
+      responses:
+        '200':
+          description: Успешная обработка события
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseVoid'
+  /clob-data/get:
+    post:
+      summary: Получение CLOB данных
+      description: Получает CLOB данные по идентификатору клиента и алиасу
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestClobData'
+        required: true
+      responses:
+        '200':
+          description: Успешное получение данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseListString'
+  /clob-data/createOrUpdate:
+    post:
+      summary: Создание или обновление CLOB данных
+      description: Создает или обновляет CLOB запись
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrUpdateClobData'
+        required: true
+      responses:
+        '200':
+          description: Успешное создание/обновление
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseClobRecordInfo'
+  /clob-data/delete:
+    post:
+      summary: Удаление CLOB данных
+      description: Удаляет CLOB запись по идентификатору клиента, алиасу и уникальному идентификатору
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteClobData'
+        required: true
+      responses:
+        '200':
+          description: Успешное удаление
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseString'
+  /cms/get-content:
+    post:
+      summary: Получение контента из CMS
+      description: Получает контент из системы управления контентом
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SberCmsContentBrokerApiRequest'
+        required: true
+      responses:
+        '200':
+          description: Успешное получение контента
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseSberCmsContentBrokerApiResponse'
+  /getPersonInfoByRegionKind:
+    post:
+      summary: Получение информации о клиенте по регионам
+      description: Проксирование запроса со списком регионов в КМ Профиля ФЛ и возврат заполненного профиля клиента
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+        required: true
+      responses:
+        '200':
+          description: Успешное получение профиля клиента
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseProfile'
+  /retrieveParams:
+    post:
+      summary: Получение параметров
+      description: Получает значения параметров по их именам
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+        required: true
+      responses:
+        '200':
+          description: Успешное получение параметров
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseParameters'
+  /session/readData:
+    post:
+      summary: Чтение данных сессии
+      description: Читает данные сессии из SDS
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/SdsSectionInfo'
+        required: true
+      responses:
+        '200':
+          description: Успешное чтение данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseListSdsSectionData'
+  /session/writeData:
+    post:
+      summary: Запись данных сессии
+      description: Записывает данные сессии в SDS
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/SdsSectionData'
+        required: true
+      responses:
+        '200':
+          description: Успешная запись данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseVoid'
+  /tech_breaks/check_availability:
+    post:
+      summary: Проверка доступности систем
+      description: Проверяет доступность систем по их идентификаторам
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+        required: true
+      responses:
+        '200':
+          description: Результат проверки доступности
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseListSystemState'
+  /checkPermissions:
+    post:
+      summary: Проверка прав доступа
+      description: Проверяет права доступа по JSON с привилегиями
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+        required: true
+      responses:
+        '200':
+          description: Результат проверки прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponsePrivileges'
+  /fraudmon/analyze:
+    post:
+      summary: Проверка данных во Фродмониторинг
+      description: Передает данные для Фродмониторинг
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FraudmonData'
+        required: true
+      responses:
+        "200":
+          description: Результат анализа операции на предмет мошенничества
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseFraudRsMessage'
+  /configurator/success-match:
+    post:
+      summary: Получение флага успешно рассчитанной конфигурации
+      description: Получает флаг успешно рассчитанной конфигурации из ССД
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppSourceRequest'
+        required: true
+      responses:
+        "200":
+          description: Возвращает флаг успешно рассчитанной конфигурации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseBoolean'
+  /configurator/session:
+    post:
+      summary: Получение конфигурации сессии
+      description: Получает рассчитанную конфигурацию сессии из ССД
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppSourceRequest'
+        required: true
+      responses:
+        "200":
+          description: Возвращает конфигурацию сессии
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseSessionConfig'
+  /configurator/rest-agent:
+    post:
+      summary: Получение конфигурации рестовых агентов
+      description: Получает рассчитанную конфигурацию рестовых агентов из ССД
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppSourceRequest'
+        required: true
+      responses:
+        "200":
+          description: Возвращает конфигурацию рестовых агентов
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseMapStringAgentConfig'
+  /configurator/agent:
+    post:
+      summary: Получение конфигурации агентов
+      description: Получает рассчитанную конфигурацию агента из ССД
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentConfigRequest'
+        required: true
+      responses:
+        "200":
+          description: Возвращает конфигурацию агента
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseAgentConfig'
+components:
+  schemas:
+    Alert:
+      type: object
+      properties:
+        title:
+          type: string
+        text:
+          type: string
+        type:
+          type: string
+          enum:
+            - ERROR
+            - WARNING
+            - INFO
+            - VALIDATION
+            - FRAUD
+            - DIALOG
+            - CUSTOM
+        data:
+          type: object
+          additionalProperties:
+            type: string
+    AuditEventServiceEvent:
+      type: object
+      properties:
+        success:
+          type: boolean
+        event:
+          type: string
+        params:
+          type: object
+          additionalProperties:
+            type: string
+    BaseResponseVoid:
+      type: object
+      properties:
+        result:
+          type: object
+          nullable: true
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+    BaseResponseListString:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            type: string
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+    BaseResponseClobRecordInfo:
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/ClobRecordInfo'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+    BaseResponseString:
+      type: object
+      properties:
+        result:
+          type: string
+          nullable: true
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+    BaseResponseSberCmsContentBrokerApiResponse:
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/SberCmsContentBrokerApiResponse'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+    BaseResponseProfile:
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/Profile'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+    BaseResponseParameters:
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/Parameters'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+    BaseResponseListSdsSectionData:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/SdsSectionData'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+    BaseResponseListSystemState:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/SystemState'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+    BaseResponsePrivileges:
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/Privileges'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        stacktrace:
+          type: string
+    Profile:
+      type: object
+      # Схема будет определена на основе DTO
+    Parameters:
+      type: object
+      # Схема будет определена на основе DTO
+    SdsSectionData:
+      type: object
+      # Схема будет определена на основе DTO
+    SdsSectionInfo:
+      type: object
+      # Схема будет определена на основе DTO
+    SystemState:
+      type: object
+      # Схема будет определена на основе DTO
+    Privileges:
+      type: object
+      # Схема будет определена на основе DTO
+    ClobRecordInfo:
+      type: object
+      # Схема будет определена на основе DTO
+    SberCmsContentBrokerApiRequest:
+      type: object
+      # Схема будет определена на основе DTO
+    SberCmsContentBrokerApiResponse:
+      type: object
+      # Схема будет определена на основе DTO
+    RequestClobData:
+      type: object
+      properties:
+        clientId:
+          type: string
+        alias:
+          type: string
+    CreateOrUpdateClobData:
+      type: object
+      properties:
+        clientId:
+          type: string
+        alias:
+          type: string
+        uniqueId:
+          type: string
+        data:
+          type: string
+    DeleteClobData:
+      type: object
+      properties:
+        clientId:
+          type: string
+        alias:
+          type: string
+        uniqueId:
+          type: string
+    FraudmonData:
+      type: object
+      properties:
+        channelIndicator:
+          type: string
+        clientDefinedChannelIndicator:
+          type: string
+        clientDefinedEventType:
+          type: string
+        clientTransactionId:
+          type: string
+        eventType:
+          type: string
+        eventDescription:
+          type: string
+        spName:
+          type: string
+        pprbClientID:
+          type: string
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/CheckAttribute'
+    CheckAttribute:
+      required:
+        - property
+        - value
+      type: object
+      properties:
+        property:
+          type: string
+        value:
+          type: string
+    BaseResponseFraudRsMessage:
+      type: object
+    AppSourceRequest:
+      type: object
+      properties:
+        appSource:
+          type: string
+          description: App source
+      description: Универсальный запрос получения информации по App source
+    Context:
+      type: object
+      properties:
+        mediaType:
+          type: object
+          properties:
+            type:
+              type: string
+            subtype:
+              type: string
+            parameters:
+              type: object
+              additionalProperties:
+                type: string
+            wildcardSubtype:
+              type: boolean
+            wildcardType:
+              type: boolean
+        cookies:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+              version:
+                type: integer
+                format: int32
+              path:
+                type: string
+              domain:
+                type: string
+              comment:
+                type: string
+              maxAge:
+                type: integer
+                format: int32
+              expiry:
+                type: string
+                format: date-time
+              secure:
+                type: boolean
+              httpOnly:
+                type: boolean
+        headers:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+    Message:
+      type: object
+      properties:
+        title:
+          type: string
+        text:
+          type: string
+        type:
+          type: string
+        code:
+          type: string
+        uuid:
+          type: string
+    BaseResponseBoolean:
+      type: object
+      properties:
+        success:
+          type: boolean
+        body:
+          type: boolean
+        context:
+          $ref: '#/components/schemas/Context'
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        error:
+          $ref: '#/components/schemas/Error'
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alert'
+    SessionConfig:
+      type: object
+      properties:
+        block:
+          type: string
+        channel:
+          type: string
+        surface:
+          type: string
+        platform:
+          type: string
+        sdk_version:
+          type: string
+        entry_point:
+          type: string
+        app_version:
+          type: string
+        channel_version:
+          type: string
+        time_zone:
+          type: string
+    BaseResponseSessionConfig:
+      type: object
+      properties:
+        success:
+          type: boolean
+        body:
+          $ref: '#/components/schemas/SessionConfig'
+        context:
+          $ref: '#/components/schemas/Context'
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        error:
+          $ref: '#/components/schemas/Error'
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alert'
+    ToolParameterProperty:
+      type: object
+      properties:
+        type:
+          type: string
+        enum_values:
+          type: array
+          items:
+            type: string
+        description:
+          type: string
+    ToolParameters:
+      type: object
+      properties:
+        type:
+          type: string
+        properties:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ToolParameterProperty'
+        required:
+          type: array
+          items:
+            type: string
+    FewShotExample:
+      type: object
+      properties:
+        request:
+          type: string
+        params:
+          type: object
+          additionalProperties:
+            type: object
+    ReturnParameter:
+      type: object
+      properties:
+        type:
+          type: string
+        format:
+          type: string
+        description:
+          type: string
+    ReturnParameters:
+      type: object
+      properties:
+        type:
+          type: string
+        properties:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ReturnParameter'
+    ToolMeta:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        parameters:
+          $ref: '#/components/schemas/ToolParameters'
+        few_shot_examples:
+          type: array
+          items:
+            $ref: '#/components/schemas/FewShotExample'
+        return_parameters:
+          $ref: '#/components/schemas/ReturnParameters'
+        x_type:
+          type: string
+          enum:
+            - function
+            - widget
+        x_version:
+          type: integer
+          format: int32
+        x_payload:
+          type: string
+    NeighbourAgentMeta:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        description:
+          type: string
+        functional_subsystem_ci:
+          type: string
+        tools_meta:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolMeta'
+    AgentConfig:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        functional_subsystem_ci:
+          type: string
+        description:
+          type: string
+        entry_points:
+          type: array
+          items:
+            type: string
+        ufs_service_available:
+          type: boolean
+        can_access_user_info:
+          type: boolean
+        tools_meta:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolMeta'
+        neighbours_agent_meta:
+          type: array
+          items:
+            $ref: '#/components/schemas/NeighbourAgentMeta'
+        toggles:
+          type: object
+          additionalProperties:
+            type: boolean
+    BaseResponseMapStringAgentConfig:
+      type: object
+      properties:
+        success:
+          type: boolean
+        body:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/AgentConfig'
+        context:
+          $ref: '#/components/schemas/Context'
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        error:
+          $ref: '#/components/schemas/Error'
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alert'
+    AgentConfigRequest:
+      type: object
+      properties:
+        appSource:
+          type: string
+          description: App source
+        agentName:
+          type: string
+          description: Имя агента
+      description: Запрос на получение конфигурации агента
+    BaseResponseAgentConfig:
+      type: object
+      properties:
+        success:
+          type: boolean
+        body:
+          $ref: '#/components/schemas/AgentConfig'
+        context:
+          $ref: '#/components/schemas/Context'
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        error:
+          $ref: '#/components/schemas/Error'
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alert'

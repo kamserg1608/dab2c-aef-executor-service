@@ -11,7 +11,6 @@ import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrResponse
 import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrServiceGrpcKt
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
 import ru.sbrf.dab2c.executor.voice.grpc.client.GigaVoiceClient
-import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
 
 /**
  * gRPC service implementation for IVR protocol.
@@ -26,10 +25,7 @@ class IvrServiceImpl(
     private val logger = KotlinLogging.logger {}
 
     override fun session(requests: Flow<IvrRequest>): Flow<IvrResponse> {
-        val metadata = GrpcMetadataContext.current()
-        logger.debug { "Starting session with ${metadata.size} metadata entries" }
-
-        val chunkProcessingService = chunkProcessingServiceFactory.create(metadata)
+        val chunkProcessingService = chunkProcessingServiceFactory.create()
         return requests
             .map { IvrDomainMapper.toDomainRequest(it) }
             .let { chunkProcessingService.processRequestChunks(it) }
