@@ -1,7 +1,7 @@
 ### Общая информация о приложении ###
 app:
   # конфигурационный элемент КЭ приложения / модуля ПО в Service Manager
-  sm_id: "CIYYYYYYY"
+  sm_id: "CI09695564"
   # название КЭ приложения / модуля ПО в Service Manager
   sm_name: "ЕФС ФЛ Платформа. Интеграционный модуль ЦА B2C"
   # версия дистрибутива приложения в ЦУПе
@@ -21,9 +21,9 @@ team:
 ### Настройки сборки ФП ###
 fp:
   # КЭ ИТ-услуги, к которой приписан КЭ приложения
-  groupId: "CIXXXXXXX"
+  groupId: "CI07909419"
   # КЭ приложения
-  artifactId: "CIYYYYYYY"
+  artifactId: "CI09695564"
   # Maven version для артефакта инсталляционного пакета. К нему будет добавляться номер сборки, т.о. что для билда с номером 123 в Nexus артефакт будет выгружен с версией D-01.000.00-123
   version: "D-01.000.00"
 
@@ -96,7 +96,7 @@ docker:
     - "registry-ci.delta.sbrf.ru"
     - "redhat.registry-ci.delta.sbrf.ru"
     - "docker-internal.registry-ci.delta.sbrf.ru"
-  nexus_url: "CIXXXXXXX/CIYYYYYYY"
+  nexus_url: "CI07909419/CI09695564"
   builder_token: "cab-sa-dvo08817_AD"
 
 extensions:

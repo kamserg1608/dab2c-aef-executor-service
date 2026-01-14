@@ -60,7 +60,7 @@ spec:
           emptyDir: {}
       containers:
         - name: vm-agent
-          image: ${registry}/CIXXXXXXX/CIXXXXXXX/victoriametrics/vmagent:v1.108.0@sha256:232604220c39e4bbb63f8dc3e240e22e1a92526ad17590f43ed9c7fd5d24b909
+          image: ${registry}/CI07909419/CI07909419/victoriametrics/vmagent:v1.108.0@sha256:232604220c39e4bbb63f8dc3e240e22e1a92526ad17590f43ed9c7fd5d24b909
           args:
             - '-httpListenAddr=:8429'
             - '--promscrape.config=/vault/vm-agent/scrape.yaml'

@@ -9,10 +9,6 @@ import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Settings
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 
-/**
- * Integration tests for voice executor in proxy mode.
- * Verifies that requests are passed through to downstream GigaVoice service.
- */
 class GigaVoiceProxyIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test

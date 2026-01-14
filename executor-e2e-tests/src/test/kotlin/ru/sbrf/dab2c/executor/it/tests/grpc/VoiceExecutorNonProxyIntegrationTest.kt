@@ -20,10 +20,6 @@ import ru.sbrf.dab2c.executor.it.support.WireMockResponses
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 import kotlin.time.Duration.Companion.seconds
 
-/**
- * Integration tests for voice executor in non-proxy mode.
- * Uses WireMock to stub HTTP clients (ConfiguratorClient, GigaVoiceAgentClient).
- */
 class VoiceExecutorNonProxyIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
     @InjectWireMock("gigaVoiceAgent")

@@ -1,11 +1,3 @@
-dab2c:
-  integration-service:
-    session:
-      da-cookie:
-        session-ttl-seconds: 3
-        path: "/testpath"
-        domain: "test-domain"
-
 executor:
   voice:
     agentName: test-agent
