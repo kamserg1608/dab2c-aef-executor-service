@@ -1,0 +1,29 @@
+executor:
+  voice:
+    proxyMode: false
+    agentName: test-agent
+    channel: test-channel
+
+# Use different ports to avoid conflicts with other tests
+grpc:
+  server:
+    port: 29190
+  client:
+    downstream:
+      address: static://localhost:29191
+      negotiation-type: plaintext
+
+# WireMock injects ports dynamically via baseUrlProperties
+giga:
+  voice:
+    agent:
+      client:
+        baseUrl: ${wiremock.server.gigaVoiceAgent.baseUrl}
+        connectionTimeout: 5000
+        requestTimeout: 5000
+
+efs:
+  adapter:
+    baseUrl: ${wiremock.server.efsAdapter.baseUrl}
+    connectionTimeout: 5000
+    requestTimeout: 5000

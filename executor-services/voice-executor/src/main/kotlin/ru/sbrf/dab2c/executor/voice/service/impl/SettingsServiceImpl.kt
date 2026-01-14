@@ -36,21 +36,19 @@ class SettingsServiceImpl(
 
     private suspend fun calculateSettings(settings: VoiceSettings): VoiceSettings {
         val metadata = GrpcMetadataContext.current()
-        val session = checkNotNull(metadata.session) { "Session header is required" }
-        val token = checkNotNull(metadata.token) { "Token header is required" }
-        val ufsCookie = checkNotNull(metadata.ufsCookie) { "UFS cookie could not be constructed" }
 
-        logger.debug { "Calculating settings for session: $session" }
+        logger.debug { "Calculating settings for session: ${metadata.session}" }
 
         val agentConfiguration = configuratorClient.getRestAgentConfig(
             agentName = configProperties.agentName,
-            cookie = ufsCookie
+            cookie = metadata.ufsCookie
         )
         logger.debug { "Fetched agent configuration: ${agentConfiguration.name}" }
+        processingState.value = processingState.value.copy(agentConfiguration = agentConfiguration)
 
         val (processedSettings, performers) = gigaVoiceAgentClient.getSettings(
-            ufsSession = session,
-            ufsToken = token,
+            ufsSession = metadata.session,
+            ufsToken = metadata.token,
             agentConfiguration = agentConfiguration,
             voiceSettings = settings,
             channel = configProperties.channel

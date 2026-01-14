@@ -14,5 +14,6 @@ dependencies {
     testImplementation(libs.bundles.grpc)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.kotlin.logging.jvm)
+    testImplementation(libs.wiremock.spring.boot)
     implementation(libs.bundles.ktor.client)
 }

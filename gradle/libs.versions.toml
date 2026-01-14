@@ -15,6 +15,7 @@ kotlin-logging = "7.0.4"
 
 # Testing (not managed by Spring Boot)
 mockk = "1.14.7"
+wiremock = "3.10.0"
 
 # gRPC and Protobuf (not managed by Spring Boot)
 grpc = "1.71.0"
@@ -73,6 +74,7 @@ openapi-generator-gradle-plugin = { module = "org.openapitools:openapi-generator
 
 # Testing (mockk not in Spring Boot BOM)
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+wiremock-spring-boot = { module = "org.wiremock.integrations:wiremock-spring-boot", version.ref = "wiremock" }
 
 # gRPC and Protobuf
 grpc-netty-shaded = { module = "io.grpc:grpc-netty-shaded", version.ref = "grpc" }

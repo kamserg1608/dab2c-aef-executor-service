@@ -3,7 +3,6 @@ package ru.sbrf.dab2c.executor.voice.service.impl
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
@@ -19,7 +18,6 @@ class FunctionCallServiceImpl(
     private val processingState: MutableStateFlow<ProcessingState>,
     private val callBackChannel: Channel<VoiceRequest>,
     private val gigaVoiceAgentClient: GigaVoiceAgentClient,
-    private val configuratorClient: ConfiguratorClient,
     private val configProperties: VoiceExecutorConfigurationProperties
 ) : FunctionCallService {
 
@@ -37,18 +35,13 @@ class FunctionCallServiceImpl(
         logger.debug { "Executing backend function '$functionName' via agent" }
 
         val metadata = GrpcMetadataContext.current()
-        val session = checkNotNull(metadata.session) { "Session header is required" }
-        val token = checkNotNull(metadata.token) { "Token header is required" }
-        val ufsCookie = checkNotNull(metadata.ufsCookie) { "UFS cookie could not be constructed" }
-
-        val agentConfiguration = configuratorClient.getRestAgentConfig(
-            agentName = configProperties.agentName,
-            cookie = ufsCookie
-        )
+        val agentConfiguration = checkNotNull(processingState.value.agentConfiguration) {
+            "AgentConfiguration must be set before function calls"
+        }
 
         val result = gigaVoiceAgentClient.executeFunctionCall(
-            ufsSession = session,
-            ufsToken = token,
+            ufsSession = metadata.session,
+            ufsToken = metadata.token,
             functionCalling = functionCalling,
             agentConfiguration = agentConfiguration,
             channel = configProperties.channel

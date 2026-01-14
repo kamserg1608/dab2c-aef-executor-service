@@ -9,22 +9,22 @@ class RequestMetadata(
     private val headers: Map<String, String>
 ) : Map<String, String> by headers {
 
-    /** The session header value. */
-    val session: String? get() = headers[HEADER_SESSION]
+    /** The session header value. Throws if not present. */
+    val session: String
+        get() = headers[HEADER_SESSION]
+            ?: error("Session header is required")
 
-    /** The token header value. */
-    val token: String? get() = headers[HEADER_TOKEN]
+    /** The token header value. Throws if not present. */
+    val token: String
+        get() = headers[HEADER_TOKEN]
+            ?: error("Token header is required")
 
     /** The edu_id header value. */
     val eduId: String? get() = headers[HEADER_EDU_ID]
 
-    /** UFS cookie string built from session and token values. */
-    val ufsCookie: String?
-        get() = if (token != null && session != null) {
-            "$UFS_TOKEN_COOKIE=$token;$UFS_SESSION_COOKIE=$session"
-        } else {
-            null
-        }
+    /** UFS cookie string built from session and token values. Throws if headers missing. */
+    val ufsCookie: String
+        get() = "$UFS_TOKEN_COOKIE=$token;$UFS_SESSION_COOKIE=$session"
 
     /** Companion object providing factory methods and constants. */
     companion object {
