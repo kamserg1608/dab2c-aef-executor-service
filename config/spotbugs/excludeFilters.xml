@@ -379,9 +379,12 @@
         </Or>
     </Match>
 
-    <!-- Exclude SING pattern for protobuf generated singletons -->
+    <!-- Exclude SING pattern for protobuf generated singletons and Kotlin companion objects -->
     <Match>
         <Bug pattern="SING_SINGLETON_IMPLEMENTS_SERIALIZABLE"/>
+    </Match>
+    <Match>
+        <Bug pattern="SING_SINGLETON_HAS_NONPRIVATE_CONSTRUCTOR"/>
     </Match>
 
     <!-- Exclude false positives for Kotlin lateinit and integration tests -->
