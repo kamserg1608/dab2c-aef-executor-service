@@ -1,4 +1,4 @@
-package ru.sbrf.dab2c.executor.it
+package ru.sbrf.dab2c.executor.it.tests.grpc
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
@@ -16,10 +16,12 @@ import org.wiremock.spring.InjectWireMock
 import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioSettings
 import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Settings
+import ru.sbrf.dab2c.executor.it.support.WireMockResponses
+import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * Integration test for voice executor with proxy=false header.
+ * Integration tests for voice executor in non-proxy mode.
  * Uses WireMock to stub HTTP clients (ConfiguratorClient, GigaVoiceAgentClient).
  */
 class VoiceExecutorNonProxyIntegrationTest : BaseGigaVoiceIntegrationTest() {
@@ -45,7 +47,7 @@ class VoiceExecutorNonProxyIntegrationTest : BaseGigaVoiceIntegrationTest() {
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody(EFS_ADAPTER_RESPONSE)
+                        .withBody(WireMockResponses.EFS_ADAPTER_RESPONSE)
                 )
         )
 
@@ -56,7 +58,7 @@ class VoiceExecutorNonProxyIntegrationTest : BaseGigaVoiceIntegrationTest() {
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody(GIGA_VOICE_SETTINGS_RESPONSE)
+                        .withBody(WireMockResponses.GIGA_VOICE_SETTINGS_RESPONSE)
                 )
         )
 
@@ -86,39 +88,5 @@ class VoiceExecutorNonProxyIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
         // Verify we got a response
         assertThat(firstResponse).isNotNull()
-    }
-
-    companion object {
-        private val EFS_ADAPTER_RESPONSE = """
-            {
-                "success": true,
-                "body": {
-                    "test-agent": {
-                        "name": "test-agent",
-                        "type": "voice",
-                        "functional_subsystem_ci": "test-ci",
-                        "description": "Test agent",
-                        "entry_points": [],
-                        "ufs_service_available": true,
-                        "can_access_user_info": true,
-                        "tools_meta": [],
-                        "neighbours_agent_meta": [],
-                        "toggles": {}
-                    }
-                }
-            }
-        """.trimIndent()
-
-        private val GIGA_VOICE_SETTINGS_RESPONSE = """
-            {
-                "settings": {
-                    "voice_call_id": "test-call-123",
-                    "audio": {}
-                },
-                "performers": {
-                    "functions": {}
-                }
-            }
-        """.trimIndent()
     }
 }

@@ -1,4 +1,4 @@
-package ru.sbrf.dab2c.executor.it
+package ru.sbrf.dab2c.executor.it.config
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.grpc.Server
@@ -6,10 +6,15 @@ import io.grpc.ServerBuilder
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.SmartLifecycle
+import ru.sbrf.dab2c.executor.it.mock.MockGigaVoiceService
 import java.net.URI
 
 private val logger = KotlinLogging.logger {}
 
+/**
+ * Test configuration that starts a mock GigaVoice gRPC server.
+ * Automatically starts/stops with Spring lifecycle.
+ */
 @TestConfiguration
 class MockDownstreamServerConfiguration(
     private val mockGigaVoiceService: MockGigaVoiceService,

@@ -1,4 +1,4 @@
-package ru.sbrf.dab2c.executor.it
+package ru.sbrf.dab2c.executor.it.mock
 
 import GigaVoiceProtocol.GigaVoice.GigaVoiceRequest
 import GigaVoiceProtocol.GigaVoice.GigaVoiceResponse
@@ -10,7 +10,8 @@ import org.springframework.stereotype.Component
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * Mock GigaVoice service for testing.
+ * Mock GigaVoice gRPC service for integration testing.
+ * Records received requests and returns sequential responses.
  */
 @Component
 class MockGigaVoiceService : GigaVoiceServiceCoroutineImplBase() {
@@ -18,9 +19,11 @@ class MockGigaVoiceService : GigaVoiceServiceCoroutineImplBase() {
     private val _receivedRequests = mutableListOf<GigaVoiceRequest>()
     private val _responseCounter = AtomicInteger(0)
 
+    /** List of all requests received by this mock. */
     val receivedRequests: List<GigaVoiceRequest>
         get() = _receivedRequests.toList()
 
+    /** Resets the mock state (clears requests and counter). */
     fun reset() {
         _receivedRequests.clear()
         _responseCounter.set(0)

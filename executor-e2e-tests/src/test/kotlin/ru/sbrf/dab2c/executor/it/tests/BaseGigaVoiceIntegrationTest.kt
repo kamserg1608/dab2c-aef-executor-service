@@ -1,15 +1,8 @@
-package ru.sbrf.dab2c.executor.it
+package ru.sbrf.dab2c.executor.it.tests
 
 import com.fasterxml.jackson.databind.DeserializationFeature
-import io.grpc.CallOptions
-import io.grpc.Channel
-import io.grpc.ClientCall
-import io.grpc.ClientInterceptor
-import io.grpc.ForwardingClientCall
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
-import io.grpc.Metadata
-import io.grpc.MethodDescriptor
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -34,7 +27,13 @@ import org.wiremock.spring.ConfigureWireMock
 import org.wiremock.spring.EnableWireMock
 import ru.sbrf.dab2c.executor.application.ApplicationEntryPoint
 import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrServiceGrpcKt.IvrServiceCoroutineStub
+import ru.sbrf.dab2c.executor.it.mock.MockGigaVoiceService
+import ru.sbrf.dab2c.executor.it.support.MetadataInterceptor
 
+/**
+ * Base class for integration tests.
+ * Provides Spring context, gRPC client, HTTP client, and WireMock configuration.
+ */
 @SpringBootTest(
     classes = [ApplicationEntryPoint::class],
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -118,26 +117,4 @@ abstract class BaseGigaVoiceIntegrationTest {
             )
         )
     )
-}
-
-/** gRPC interceptor that adds metadata headers to outgoing calls. */
-private class MetadataInterceptor(
-    private val headers: Map<String, String>
-) : ClientInterceptor {
-    override fun <ReqT, RespT> interceptCall(
-        method: MethodDescriptor<ReqT, RespT>,
-        callOptions: CallOptions,
-        next: Channel
-    ): ClientCall<ReqT, RespT> {
-        return object : ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(
-            next.newCall(method, callOptions)
-        ) {
-            override fun start(responseListener: Listener<RespT>, metadata: Metadata) {
-                headers.forEach { (key, value) ->
-                    metadata.put(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER), value)
-                }
-                super.start(responseListener, metadata)
-            }
-        }
-    }
 }

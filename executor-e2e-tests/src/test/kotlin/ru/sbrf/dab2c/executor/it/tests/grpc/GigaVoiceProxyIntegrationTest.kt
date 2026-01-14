@@ -1,4 +1,4 @@
-package ru.sbrf.dab2c.executor.it
+package ru.sbrf.dab2c.executor.it.tests.grpc
 
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
@@ -7,8 +7,13 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Settings
+import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 
-class GigaVoiceProxySpringIntegrationTest : BaseGigaVoiceIntegrationTest() {
+/**
+ * Integration tests for voice executor in proxy mode.
+ * Verifies that requests are passed through to downstream GigaVoice service.
+ */
+class GigaVoiceProxyIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should proxy requests through Spring-managed service`() = runTest {
