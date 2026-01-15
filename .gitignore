@@ -28,3 +28,4 @@ tmp
 
 # mvn versions
 pom.xml.versionsBackup
+/*.md
