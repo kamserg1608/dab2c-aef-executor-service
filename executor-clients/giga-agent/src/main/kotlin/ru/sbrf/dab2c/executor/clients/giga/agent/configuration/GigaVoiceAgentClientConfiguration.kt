@@ -1,4 +1,4 @@
-package ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.configuration
+package ru.sbrf.dab2c.executor.clients.giga.agent.configuration
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -21,11 +21,11 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.api.GigaVoiceAgentClient
-import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.configuration.properties.GigaVoiceAgentClientConfigurationProperties
-import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.impl.GigaVoiceAgentClientImpl
-import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.mapper.GigaVoiceFunctionCallRequestBuilder
-import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.mapper.GigaVoiceSettingsRequestBuilder
+import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
+import ru.sbrf.dab2c.executor.clients.giga.agent.configuration.properties.GigaVoiceAgentClientConfigurationProperties
+import ru.sbrf.dab2c.executor.clients.giga.agent.impl.GigaVoiceAgentClientImpl
+import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceFunctionCallRequestBuilder
+import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsRequestBuilder
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import kotlin.math.pow
@@ -87,7 +87,7 @@ private fun io.ktor.client.HttpClientConfig<*>.installPlugins(
         level = LogLevel.INFO
         logger = object : Logger {
             override fun log(message: String) {
-                ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.configuration.logger.debug { message }
+                ru.sbrf.dab2c.executor.clients.giga.agent.configuration.logger.debug { message }
             }
         }
     }

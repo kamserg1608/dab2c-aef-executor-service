@@ -1,4 +1,4 @@
-package ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.stub
+package ru.sbrf.dab2c.executor.clients.giga.agent.stub
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.annotation.Profile

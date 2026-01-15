@@ -1,6 +1,6 @@
 @file:Suppress("UndocumentedPublicFunction")
 
-package ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.mapper
+package ru.sbrf.dab2c.executor.clients.giga.agent.mapper
 
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.AudioSettingsInput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.AudioSettingsOutput

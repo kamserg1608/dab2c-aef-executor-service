@@ -1,4 +1,4 @@
-package ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.impl
+package ru.sbrf.dab2c.executor.clients.giga.agent.impl
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
@@ -8,6 +8,10 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
+import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceFunctionCallRequestBuilder
+import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsMapper
+import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsRequestBuilder
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsResponseSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceSettingsResponseSchema
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
@@ -15,10 +19,6 @@ import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
 import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
-import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.api.GigaVoiceAgentClient
-import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.mapper.GigaVoiceFunctionCallRequestBuilder
-import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.mapper.GigaVoiceSettingsMapper
-import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.mapper.GigaVoiceSettingsRequestBuilder
 
 private val logger = KotlinLogging.logger {}
 

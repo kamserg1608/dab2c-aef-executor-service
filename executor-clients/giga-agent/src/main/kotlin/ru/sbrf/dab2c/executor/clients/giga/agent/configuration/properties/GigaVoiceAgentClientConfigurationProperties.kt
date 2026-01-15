@@ -1,4 +1,4 @@
-package ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.configuration.properties
+package ru.sbrf.dab2c.executor.clients.giga.agent.configuration.properties
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import ru.sbrf.dab2c.executor.clients.common.config.ConnectionPoolProperties

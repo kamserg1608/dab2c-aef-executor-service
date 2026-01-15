@@ -4,6 +4,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
+import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
@@ -15,7 +16,6 @@ import ru.sbrf.dab2c.executor.voice.service.impl.FunctionCallServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.NoopChunkProcessingServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.ObservingChunkProcessingServiceDelegate
 import ru.sbrf.dab2c.executor.voice.service.impl.SettingsServiceImpl
-import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.api.GigaVoiceAgentClient
 
 /**
  * Default implementation of ChunkProcessingServiceFactory.

@@ -12,7 +12,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy
  */
 @EnableAspectJAutoProxy
 @SpringBootApplication(exclude = [JmsAutoConfiguration::class, ValidationAutoConfiguration::class])
-@ComponentScan(basePackages = ["ru.sbrf.dab2c.executor", "ru.sbrf.ufs.dab2c.core"])
+@ComponentScan(basePackages = ["ru.sbrf.dab2c.executor"])
 class ApplicationEntryPoint
 
 /**

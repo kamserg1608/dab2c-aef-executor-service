@@ -1,38 +1,38 @@
-package ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.mapper
+package ru.sbrf.dab2c.executor.clients.giga.agent.mapper
 
 import org.springframework.stereotype.Component
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.ACLConfig
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceSettingsRequestSchema
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsRequestSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.SessionConfig
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
-import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
+import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 
 /**
- * Builder for constructing GigaVoiceSettingsRequestSchema from domain models.
+ * Builder for constructing GigaVoiceFunctionsRequestSchema from domain models.
  */
 @Component
-class GigaVoiceSettingsRequestBuilder(
-    private val settingsMapper: GigaVoiceSettingsMapper = GigaVoiceSettingsMapper
+class GigaVoiceFunctionCallRequestBuilder(
+    private val mapper: GigaVoiceSettingsMapper = GigaVoiceSettingsMapper
 ) {
 
     /**
-     * Builds a settings request from domain models.
+     * Builds a function call request from domain models.
      */
     fun build(
         agentConfiguration: AgentConfiguration,
-        voiceSettings: VoiceSettings,
+        functionCalling: FunctionCallingData,
         channel: String
-    ): GigaVoiceSettingsRequestSchema {
+    ): GigaVoiceFunctionsRequestSchema {
         val agentConfig = GigaVoiceAgentConfigMapper.toApiAgentConfig(agentConfiguration)
         val sessionConfig = SessionConfig(channel = channel)
-        val settingsInput = settingsMapper.toApiSettingsInput(voiceSettings)
+        val apiFunctionCalling = mapper.toApiFunctionCalling(functionCalling)
 
-        return GigaVoiceSettingsRequestSchema(
+        return GigaVoiceFunctionsRequestSchema(
             config = ACLConfig(
                 agentConfig = agentConfig,
                 sessionConfig = sessionConfig
             ),
-            settings = settingsInput,
+            functionCalling = apiFunctionCalling,
             sessionInfo = null,
             userInfo = null,
             context = null

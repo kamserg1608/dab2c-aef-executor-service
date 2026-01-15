@@ -1,4 +1,4 @@
-package ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.mapper
+package ru.sbrf.dab2c.executor.clients.giga.agent.mapper
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper

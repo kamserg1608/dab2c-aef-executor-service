@@ -1,4 +1,4 @@
-package ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.mapper
+package ru.sbrf.dab2c.executor.clients.giga.agent.mapper
 
 import java.math.BigDecimal
 import kotlin.time.Duration
