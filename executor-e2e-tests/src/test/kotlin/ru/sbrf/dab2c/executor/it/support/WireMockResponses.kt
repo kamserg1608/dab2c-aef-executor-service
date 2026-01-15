@@ -42,4 +42,42 @@ object WireMockResponses {
             }
         }
     """.trimIndent()
+
+    /**
+     * GigaVoice Agent settings response with function registry.
+     * Contains both backend and IVR functions.
+     */
+    val GIGA_VOICE_SETTINGS_WITH_FUNCTIONS_RESPONSE = """
+        {
+            "settings": {
+                "voice_call_id": "test-call-123",
+                "audio": {}
+            },
+            "performers": {
+                "functions": {
+                    "get_account_balance": {
+                        "is_backend_function": true
+                    },
+                    "transfer_to_operator": {
+                        "is_backend_function": false
+                    },
+                    "check_transaction_status": {
+                        "is_backend_function": true
+                    }
+                }
+            }
+        }
+    """.trimIndent()
+
+    /**
+     * GigaVoice Agent /functions endpoint response.
+     */
+    fun gigaVoiceFunctionsResponse(functionName: String, resultContent: String) = """
+        {
+            "function_result": {
+                "content": $resultContent,
+                "function_name": "$functionName"
+            }
+        }
+    """.trimIndent()
 }

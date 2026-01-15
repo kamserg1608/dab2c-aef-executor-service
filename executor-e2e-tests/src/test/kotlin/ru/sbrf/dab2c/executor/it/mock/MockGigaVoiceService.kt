@@ -2,42 +2,82 @@ package ru.sbrf.dab2c.executor.it.mock
 
 import GigaVoiceProtocol.GigaVoice.GigaVoiceRequest
 import GigaVoiceProtocol.GigaVoice.GigaVoiceResponse
-import GigaVoiceProtocol.GigaVoice.OutputTranscription
 import GigaVoiceProtocol.GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineImplBase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import org.springframework.stereotype.Component
-import java.util.concurrent.atomic.AtomicInteger
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Mock GigaVoice gRPC service for integration testing.
- * Records received requests and returns sequential responses.
+ * Uses controlled mode where tests explicitly send responses via sendResponse().
  */
 @Component
 class MockGigaVoiceService : GigaVoiceServiceCoroutineImplBase() {
 
-    private val _receivedRequests = mutableListOf<GigaVoiceRequest>()
-    private val _responseCounter = AtomicInteger(0)
+    val receivedRequests = mutableListOf<GigaVoiceRequest>()
+    private var requestChannel = Channel<GigaVoiceRequest>(Channel.UNLIMITED)
+    private var responseChannel = Channel<GigaVoiceResponse>(Channel.UNLIMITED)
+    private var collectorJob: Job? = null
 
-    /** List of all requests received by this mock. */
-    val receivedRequests: List<GigaVoiceRequest>
-        get() = _receivedRequests.toList()
-
-    /** Resets the mock state (clears requests and counter). */
+    /**
+     * Resets the mock state.
+     */
     fun reset() {
-        _receivedRequests.clear()
-        _responseCounter.set(0)
+        receivedRequests.clear()
+        collectorJob?.cancel()
+        collectorJob = null
+        requestChannel = Channel(Channel.UNLIMITED)
+        responseChannel = Channel(Channel.UNLIMITED)
     }
 
-    override fun gigaVoice(requests: Flow<GigaVoiceRequest>): Flow<GigaVoiceResponse> = requests.map { request ->
-        _receivedRequests.add(request)
-        val index = _responseCounter.getAndIncrement()
-        GigaVoiceResponse.newBuilder()
-            .setOutputTranscription(
-                OutputTranscription.newBuilder()
-                    .setText("response-$index")
-                    .build()
-            )
-            .build()
+    override fun gigaVoice(requests: Flow<GigaVoiceRequest>): Flow<GigaVoiceResponse> {
+        collectorJob = CoroutineScope(Dispatchers.IO).launch {
+            requests.collect { request ->
+                receivedRequests.add(request)
+                requestChannel.send(request)
+            }
+            requestChannel.close()
+            responseChannel.close()
+        }
+
+        return responseChannel.consumeAsFlow()
+    }
+
+    /**
+     * Waits for a request that matches the predicate.
+     */
+    @Suppress("detekt:LabeledExpression")
+    suspend fun awaitRequest(
+        timeout: Duration = 5.seconds,
+        predicate: (GigaVoiceRequest) -> Boolean = { true }
+    ): GigaVoiceRequest {
+        return withTimeout(timeout) {
+            for (request in requestChannel) {
+                if (predicate(request)) return@withTimeout request
+            }
+            error("Channel closed without matching request")
+        }
+    }
+
+    /**
+     * Sends a response to the client.
+     */
+    suspend fun sendResponse(response: GigaVoiceResponse) {
+        responseChannel.send(response)
+    }
+
+    /**
+     * Completes the response stream.
+     */
+    fun completeResponses() {
+        responseChannel.close()
     }
 }

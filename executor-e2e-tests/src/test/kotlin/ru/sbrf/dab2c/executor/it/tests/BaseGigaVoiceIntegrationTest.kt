@@ -1,6 +1,7 @@
 package ru.sbrf.dab2c.executor.it.tests
 
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.github.tomakehurst.wiremock.WireMockServer
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.ktor.client.HttpClient
@@ -25,6 +26,7 @@ import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.test.context.ActiveProfiles
 import org.wiremock.spring.ConfigureWireMock
 import org.wiremock.spring.EnableWireMock
+import org.wiremock.spring.InjectWireMock
 import ru.sbrf.dab2c.executor.application.ApplicationEntryPoint
 import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrServiceGrpcKt.IvrServiceCoroutineStub
 import ru.sbrf.dab2c.executor.it.mock.MockGigaVoiceService
@@ -45,6 +47,12 @@ import ru.sbrf.dab2c.executor.it.support.MetadataInterceptor
 )
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class BaseGigaVoiceIntegrationTest {
+
+    @InjectWireMock("gigaVoiceAgent")
+    protected lateinit var gigaVoiceAgentMock: WireMockServer
+
+    @InjectWireMock("efsAdapter")
+    protected lateinit var efsAdapterMock: WireMockServer
 
     @Value("\${grpc.server.port}")
     private var grpcServerPort: Int = 0
@@ -83,6 +91,8 @@ abstract class BaseGigaVoiceIntegrationTest {
     @BeforeEach
     fun resetState() {
         mockGigaVoiceService.reset()
+        gigaVoiceAgentMock.resetAll()
+        efsAdapterMock.resetAll()
     }
 
     @BeforeAll

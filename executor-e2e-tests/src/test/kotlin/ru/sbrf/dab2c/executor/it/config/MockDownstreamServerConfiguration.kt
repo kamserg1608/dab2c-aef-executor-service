@@ -52,7 +52,6 @@ class MockDownstreamServerConfiguration(
     override fun getPhase(): Int = Int.MIN_VALUE + 1000
 
     private fun parsePortFromAddress(address: String): Int {
-        // Address format: static://localhost:29091
         val withoutScheme = address.substringAfter("://")
         return URI("http://$withoutScheme").port
     }
