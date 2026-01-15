@@ -8,6 +8,7 @@ import com.fasterxml.jackson.module.kotlin.kotlinModule
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
@@ -25,6 +26,9 @@ import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.configuration.properties.Gi
 import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.impl.GigaVoiceAgentClientImpl
 import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.mapper.GigaVoiceFunctionCallRequestBuilder
 import ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.mapper.GigaVoiceSettingsRequestBuilder
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+import kotlin.math.pow
 
 private val logger = KotlinLogging.logger {}
 
@@ -47,41 +51,19 @@ class GigaVoiceAgentClientConfiguration {
     @Bean(GIGA_VOICE_AGENT_HTTP_CLIENT_BEAN_NAME)
     internal fun gigaVoiceAgentHttpClient(
         properties: GigaVoiceAgentClientConfigurationProperties,
-        @Qualifier(GIGA_VOICE_AGENT_OBJECT_MAPPER_BEAN_NAME)
-        objectMapper: ObjectMapper
+        @Qualifier(GIGA_VOICE_AGENT_OBJECT_MAPPER_BEAN_NAME) objectMapper: ObjectMapper
     ): HttpClient = HttpClient(CIO) {
         engine {
             requestTimeout = properties.requestTimeout
+            maxConnectionsCount = properties.pool.maxConnections
         }
-
-        install(ContentNegotiation) {
-            register(ContentType.Application.Json, JacksonConverter(objectMapper))
-        }
-
-        install(Logging) {
-            level = LogLevel.INFO
-            logger = object : Logger {
-                override fun log(message: String) {
-                    ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.configuration.logger.debug { message }
-                }
-            }
-        }
-
-        install(HttpTimeout) {
-            connectTimeoutMillis = properties.connectionTimeout
-            requestTimeoutMillis = properties.requestTimeout
-            socketTimeoutMillis = properties.requestTimeout
-        }
-
-        defaultRequest {
-            url(properties.baseUrl)
-        }
+        installPlugins(properties, objectMapper)
+        defaultRequest { url(properties.baseUrl) }
     }
 
     @Bean
     internal fun gigaVoiceAgentClient(
-        @Qualifier(GIGA_VOICE_AGENT_HTTP_CLIENT_BEAN_NAME)
-        httpClient: HttpClient,
+        @Qualifier(GIGA_VOICE_AGENT_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient,
         settingsRequestBuilder: GigaVoiceSettingsRequestBuilder,
         functionCallRequestBuilder: GigaVoiceFunctionCallRequestBuilder
     ): GigaVoiceAgentClient = GigaVoiceAgentClientImpl(
@@ -93,5 +75,34 @@ class GigaVoiceAgentClientConfiguration {
     internal companion object {
         internal const val GIGA_VOICE_AGENT_OBJECT_MAPPER_BEAN_NAME = "gigaVoiceAgentClientObjectMapper"
         internal const val GIGA_VOICE_AGENT_HTTP_CLIENT_BEAN_NAME = "gigaVoiceAgentClientHttpClient"
+    }
+}
+
+private fun io.ktor.client.HttpClientConfig<*>.installPlugins(
+    properties: GigaVoiceAgentClientConfigurationProperties,
+    objectMapper: ObjectMapper
+) {
+    install(ContentNegotiation) { register(ContentType.Application.Json, JacksonConverter(objectMapper)) }
+    install(Logging) {
+        level = LogLevel.INFO
+        logger = object : Logger {
+            override fun log(message: String) {
+                ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.configuration.logger.debug { message }
+            }
+        }
+    }
+    install(HttpTimeout) {
+        connectTimeoutMillis = properties.connectionTimeout
+        requestTimeoutMillis = properties.requestTimeout
+        socketTimeoutMillis = properties.socketTimeout
+    }
+    install(HttpRequestRetry) {
+        maxRetries = properties.retry.maxRetries
+        retryIf { _, response -> response.status.value in properties.retry.statusCodes }
+        retryOnExceptionIf { _, cause -> cause is ConnectException || cause is SocketTimeoutException }
+        delayMillis { retry ->
+            val delay = properties.retry.delay * properties.retry.multiplier.pow((retry - 1).toDouble())
+            delay.toLong().coerceAtMost(properties.retry.maxDelay)
+        }
     }
 }

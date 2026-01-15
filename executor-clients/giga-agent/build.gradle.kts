@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     api(project(":executor-domain-model"))
+    implementation(project(":executor-clients:common-converters"))
     implementation(libs.bundles.ktor.client)
     implementation(libs.kotlin.logging.jvm)
 }

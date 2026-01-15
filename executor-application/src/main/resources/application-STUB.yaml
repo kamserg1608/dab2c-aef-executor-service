@@ -5,3 +5,66 @@ server:
     threads:
       max: 20
       min-spare: 5
+
+# gRPC Configuration
+grpc:
+  server:
+    port: 9090
+  client:
+    downstream:
+      address: static://localhost:9091
+      negotiation-type: plaintext
+      keep-alive-time: 30s
+      keep-alive-timeout: 10s
+      keep-alive-without-calls: true
+      max-inbound-message-size: 4194304
+      max-outbound-message-size: 4194304
+
+# Voice Executor
+executor:
+  voice:
+    proxyMode: true
+    agentName: voice-executor-stub
+    channel: voice
+
+# GigaAgent HTTP Client
+giga:
+  voice:
+    agent:
+      client:
+        baseUrl: http://localhost:8080
+        connectionTimeout: 10000
+        requestTimeout: 30000
+        socketTimeout: 30000
+        pool:
+          maxConnections: 100
+        retry:
+          maxRetries: 3
+          delay: 1000
+          maxDelay: 10000
+          multiplier: 2.0
+          statusCodes: 502,503,504
+
+# EFS Adapter HTTP Client
+efs:
+  adapter:
+    baseUrl: http://localhost:8080
+    connectionTimeout: 5000
+    requestTimeout: 15000
+    socketTimeout: 15000
+    pool:
+      maxConnections: 50
+    retry:
+      maxRetries: 2
+      delay: 500
+      maxDelay: 5000
+      multiplier: 2.0
+      statusCodes: 502,503,504
+
+# Logging
+logging:
+  level:
+    root: INFO
+    ru.sbrf.dab2c: DEBUG
+    net.devh.boot.grpc: INFO
+    io.ktor: INFO

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.module.kotlin.kotlinModule
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
@@ -23,6 +24,9 @@ import org.springframework.context.annotation.Configuration
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.configuration.properties.EfsAdapterClientConfigurationProperties
 import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.ConfiguratorClientImpl
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+import kotlin.math.pow
 
 private val logger = KotlinLogging.logger {}
 
@@ -45,45 +49,52 @@ class EfsAdapterClientConfiguration {
     @Bean(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME)
     internal fun efsAdapterHttpClient(
         properties: EfsAdapterClientConfigurationProperties,
-        @Qualifier(EFS_ADAPTER_OBJECT_MAPPER_BEAN_NAME)
-        objectMapper: ObjectMapper
+        @Qualifier(EFS_ADAPTER_OBJECT_MAPPER_BEAN_NAME) objectMapper: ObjectMapper
     ): HttpClient = HttpClient(CIO) {
         engine {
             requestTimeout = properties.requestTimeout
+            maxConnectionsCount = properties.pool.maxConnections
         }
-
-        install(ContentNegotiation) {
-            register(ContentType.Application.Json, JacksonConverter(objectMapper))
-        }
-
-        install(Logging) {
-            level = LogLevel.INFO
-            logger = object : Logger {
-                override fun log(message: String) {
-                    ru.sbrf.dab2c.executor.clients.efs.adapter.configuration.logger.debug { message }
-                }
-            }
-        }
-
-        install(HttpTimeout) {
-            connectTimeoutMillis = properties.connectionTimeout
-            requestTimeoutMillis = properties.requestTimeout
-            socketTimeoutMillis = properties.requestTimeout
-        }
-
-        defaultRequest {
-            url(properties.baseUrl)
-        }
+        installPlugins(properties, objectMapper)
+        defaultRequest { url(properties.baseUrl) }
     }
 
     @Bean
     internal fun configuratorClient(
-        @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME)
-        httpClient: HttpClient
+        @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient
     ): ConfiguratorClient = ConfiguratorClientImpl(httpClient)
 
     internal companion object {
         internal const val EFS_ADAPTER_OBJECT_MAPPER_BEAN_NAME = "efsAdapterObjectMapper"
         internal const val EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME = "efsAdapterHttpClient"
+    }
+}
+
+private fun io.ktor.client.HttpClientConfig<*>.installPlugins(
+    properties: EfsAdapterClientConfigurationProperties,
+    objectMapper: ObjectMapper
+) {
+    install(ContentNegotiation) { register(ContentType.Application.Json, JacksonConverter(objectMapper)) }
+    install(Logging) {
+        level = LogLevel.INFO
+        logger = object : Logger {
+            override fun log(message: String) {
+                ru.sbrf.dab2c.executor.clients.efs.adapter.configuration.logger.debug { message }
+            }
+        }
+    }
+    install(HttpTimeout) {
+        connectTimeoutMillis = properties.connectionTimeout
+        requestTimeoutMillis = properties.requestTimeout
+        socketTimeoutMillis = properties.socketTimeout
+    }
+    install(HttpRequestRetry) {
+        maxRetries = properties.retry.maxRetries
+        retryIf { _, response -> response.status.value in properties.retry.statusCodes }
+        retryOnExceptionIf { _, cause -> cause is ConnectException || cause is SocketTimeoutException }
+        delayMillis { retry ->
+            val delay = properties.retry.delay * properties.retry.multiplier.pow((retry - 1).toDouble())
+            delay.toLong().coerceAtMost(properties.retry.maxDelay)
+        }
     }
 }

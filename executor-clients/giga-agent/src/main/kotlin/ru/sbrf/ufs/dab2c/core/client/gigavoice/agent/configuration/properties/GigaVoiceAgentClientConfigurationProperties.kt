@@ -1,13 +1,18 @@
 package ru.sbrf.ufs.dab2c.core.client.gigavoice.agent.configuration.properties
 
 import org.springframework.boot.context.properties.ConfigurationProperties
+import ru.sbrf.dab2c.executor.clients.common.config.ConnectionPoolProperties
+import ru.sbrf.dab2c.executor.clients.common.config.RetryProperties
 
 /**
  * Configuration properties for GigaVoice Agent HTTP client.
  */
 @ConfigurationProperties(prefix = "giga.voice.agent.client")
 data class GigaVoiceAgentClientConfigurationProperties(
-    val baseUrl: String = "http://localhost:8080",
-    val connectionTimeout: Long = 120_000,
-    val requestTimeout: Long = 120_000
+    val baseUrl: String,
+    val connectionTimeout: Long,
+    val requestTimeout: Long,
+    val socketTimeout: Long,
+    val pool: ConnectionPoolProperties,
+    val retry: RetryProperties
 )
