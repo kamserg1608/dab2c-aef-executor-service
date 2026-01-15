@@ -9,10 +9,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import io.grpc.StatusException
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioContent
 import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioSettings
@@ -21,9 +18,9 @@ import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Settings
 import ru.sbrf.dab2c.executor.it.support.MetadataInterceptor
 import ru.sbrf.dab2c.executor.it.support.WireMockResponses
+import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.withSession
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
-import kotlin.time.Duration.Companion.seconds
 
 /**
  * Full Mode - Settings Initialization Tests.
@@ -32,7 +29,7 @@ import kotlin.time.Duration.Companion.seconds
 class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
-    fun `should call EFS and GigaAgent when processing settings`() = runBlocking {
+    fun `should call EFS and GigaAgent when processing settings`() = runItTest {
         setupSuccessfulStubs()
 
         withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
@@ -45,7 +42,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should forward settings to downstream after initialization`() = runBlocking {
+    fun `should forward settings to downstream after initialization`() = runItTest {
         setupSuccessfulStubs()
 
         withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
@@ -61,7 +58,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should process audio after settings initialization`() = runBlocking {
+    fun `should process audio after settings initialization`() = runItTest {
         setupSuccessfulStubs()
 
         withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
@@ -90,7 +87,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should fail with INTERNAL when EFS adapter returns 500`() = runTest(timeout = 30.seconds) {
+    fun `should fail with INTERNAL when EFS adapter returns 500`() = runItTest {
         efsAdapterMock.stubFor(
             post(urlEqualTo("/configurator/rest-agent"))
                 .willReturn(
@@ -117,7 +114,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should fail with INTERNAL when GigaAgent settings returns 500`() = runTest(timeout = 30.seconds) {
+    fun `should fail with INTERNAL when GigaAgent settings returns 500`() = runItTest {
         efsAdapterMock.stubFor(
             post(urlEqualTo("/configurator/rest-agent"))
                 .willReturn(
@@ -155,7 +152,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should fail when session header is missing`() = runTest(timeout = 30.seconds) {
+    fun `should fail when session header is missing`() = runItTest {
         setupSuccessfulStubs()
 
         val stubWithoutSession = clientStub.withInterceptors(
@@ -171,15 +168,14 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
             emit(createSettingsRequest("missing-session-test"))
         }
 
-        assertThatThrownBy {
-            kotlinx.coroutines.runBlocking {
-                stubWithoutSession.session(requests).toList()
-            }
-        }.isInstanceOf(StatusException::class.java)
+        val result = runCatching { stubWithoutSession.session(requests).toList() }
+
+        assertThat(result.isFailure).isTrue()
+        assertThat(result.exceptionOrNull()).isInstanceOf(StatusException::class.java)
     }
 
     @Test
-    fun `should fail when token header is missing`() = runTest(timeout = 30.seconds) {
+    fun `should fail when token header is missing`() = runItTest {
         setupSuccessfulStubs()
 
         val stubWithoutToken = clientStub.withInterceptors(
@@ -195,11 +191,10 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
             emit(createSettingsRequest("missing-token-test"))
         }
 
-        assertThatThrownBy {
-            kotlinx.coroutines.runBlocking {
-                stubWithoutToken.session(requests).toList()
-            }
-        }.isInstanceOf(StatusException::class.java)
+        val result = runCatching { stubWithoutToken.session(requests).toList() }
+
+        assertThat(result.isFailure).isTrue()
+        assertThat(result.exceptionOrNull()).isInstanceOf(StatusException::class.java)
     }
 
     private fun setupSuccessfulStubs() {

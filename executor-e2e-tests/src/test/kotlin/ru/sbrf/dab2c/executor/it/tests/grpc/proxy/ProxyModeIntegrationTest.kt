@@ -2,18 +2,18 @@ package ru.sbrf.dab2c.executor.it.tests.grpc.proxy
 
 import GigaVoiceProtocol.GigaVoice.GigaVoiceResponse
 import GigaVoiceProtocol.GigaVoice.OutputTranscription
-import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Settings
+import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.withSession
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 
 class ProxyModeIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
-    fun `should proxy requests through Spring-managed service`() = runBlocking {
+    fun `should proxy requests through Spring-managed service`() = runItTest {
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             repeat(3) { i ->
                 session.sendRequest(createSettingsRequest("spring-test-call-$i"))
@@ -30,7 +30,7 @@ class ProxyModeIntegrationTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should handle multiple sequential streams`() = runBlocking {
+    fun `should handle multiple sequential streams`() = runItTest {
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(createSettingsRequest("first-stream"))
             mock.awaitRequest { it.hasSettings() }

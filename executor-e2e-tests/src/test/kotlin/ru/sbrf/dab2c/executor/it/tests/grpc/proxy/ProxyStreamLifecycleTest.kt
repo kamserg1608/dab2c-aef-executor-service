@@ -4,14 +4,13 @@ import GigaVoiceProtocol.GigaVoice.GigaVoiceResponse
 import GigaVoiceProtocol.GigaVoice.OutputTranscription
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioContent
 import ru.sbrf.dab2c.executor.clients.ivr.proto.ContentFromClient
 import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Settings
+import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.withSession
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 
@@ -22,7 +21,7 @@ import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 class ProxyStreamLifecycleTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
-    fun `should preserve message ordering in stream`() = runBlocking {
+    fun `should preserve message ordering in stream`() = runItTest {
         val messageCount = 10
 
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
@@ -43,7 +42,7 @@ class ProxyStreamLifecycleTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should handle sequential streams independently`() = runBlocking {
+    fun `should handle sequential streams independently`() = runItTest {
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(createSettingsRequest("first-stream-1"))
             mock.awaitRequest { it.hasSettings() }
@@ -75,7 +74,7 @@ class ProxyStreamLifecycleTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should handle empty stream gracefully`() = runTest {
+    fun `should handle empty stream gracefully`() = runItTest {
         val requests = flow<IvrRequest> { }
         val responses = proxyStub().session(requests).toList()
 
@@ -84,7 +83,7 @@ class ProxyStreamLifecycleTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should handle large batch of messages`() = runBlocking {
+    fun `should handle large batch of messages`() = runItTest {
         val messageCount = 100
 
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {

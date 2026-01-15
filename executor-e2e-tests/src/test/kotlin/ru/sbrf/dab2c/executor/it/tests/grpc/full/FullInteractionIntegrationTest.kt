@@ -2,13 +2,13 @@ package ru.sbrf.dab2c.executor.it.tests.grpc.full
 
 import GigaVoiceProtocol.GigaVoice
 import com.github.tomakehurst.wiremock.client.WireMock
-import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioSettings
 import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Settings
 import ru.sbrf.dab2c.executor.it.support.WireMockResponses
+import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.withSession
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 
@@ -19,7 +19,7 @@ import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 class FullInteractionIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
-    fun `should process settings through non-proxy flow with HTTP clients`() = runBlocking {
+    fun `should process settings through non-proxy flow with HTTP clients`() = runItTest {
         efsAdapterMock.stubFor(
             WireMock.post(WireMock.urlEqualTo("/configurator/rest-agent"))
                 .willReturn(

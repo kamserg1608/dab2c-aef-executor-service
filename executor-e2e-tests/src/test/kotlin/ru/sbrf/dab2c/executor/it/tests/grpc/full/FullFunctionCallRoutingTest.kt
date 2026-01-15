@@ -5,16 +5,15 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
-import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioContent
 import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioSettings
 import ru.sbrf.dab2c.executor.clients.ivr.proto.ContentFromClient
 import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Settings
 import ru.sbrf.dab2c.executor.it.support.WireMockResponses
+import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.withSession
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 import GigaVoiceProtocol.GigaVoice.FunctionCall as GigaVoiceFunctionCall
@@ -28,7 +27,7 @@ import GigaVoiceProtocol.GigaVoice.OutputTranscription as GigaVoiceOutputTranscr
 class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
-    fun `should proxy IVR function to client when isBackendFunction is false`() = runBlocking {
+    fun `should proxy IVR function to client when isBackendFunction is false`() = runItTest {
         setupSettingsWithFunctions()
 
         withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
@@ -54,7 +53,7 @@ class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should proxy unknown function to IVR client by default`() = runBlocking {
+    fun `should proxy unknown function to IVR client by default`() = runItTest {
         setupSettingsWithFunctions()
 
         withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
@@ -78,7 +77,7 @@ class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should execute backend function via GigaAgent when isBackendFunction is true`() = runBlocking {
+    fun `should execute backend function via GigaAgent when isBackendFunction is true`() = runItTest {
         setupSettingsWithFunctions()
         setupFunctionsEndpoint("get_account_balance", """{"balance": 1000}""")
 
@@ -103,7 +102,7 @@ class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should fail with error when GigaAgent functions endpoint returns 500`() = runBlocking {
+    fun `should fail with error when GigaAgent functions endpoint returns 500`() = runItTest {
         setupSettingsWithFunctions()
 
         gigaVoiceAgentMock.stubFor(
@@ -115,7 +114,7 @@ class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
                 )
         )
 
-        assertThrows<Exception> {
+        val result = runCatching {
             withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
                 session.sendRequest(createSettingsRequest("functions-error-test"))
                 mock.awaitRequest { it.hasSettings() }
@@ -134,6 +133,7 @@ class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
             }
         }
 
+        assertThat(result.isFailure).isTrue()
         gigaVoiceAgentMock.verify(1, postRequestedFor(urlEqualTo("/functions")))
     }
 

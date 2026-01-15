@@ -18,7 +18,6 @@ import GigaVoiceProtocol.GigaVoice.Usage
 import GigaVoiceProtocol.GigaVoice.Warning
 import com.google.protobuf.ByteString
 import com.google.protobuf.Duration
-import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioContent
@@ -34,6 +33,7 @@ import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Message
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Output
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Settings
+import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.withSession
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 
@@ -44,7 +44,7 @@ import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
-    fun `should transfer Settings request with full configuration`() = runBlocking {
+    fun `should transfer Settings request with full configuration`() = runItTest {
         val settings = Settings.newBuilder()
             .setVoiceCallId("test-call-123")
             .setGigachat(
@@ -132,7 +132,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should transfer AudioContent with audio bytes`() = runBlocking {
+    fun `should transfer AudioContent with audio bytes`() = runItTest {
         val audioBytes = byteArrayOf(0x01, 0x02, 0x03, 0x04, 0x05, 0x10, 0x20, 0x30)
         val audioContent = AudioContent.newBuilder()
             .setAudioChunk(ByteString.copyFrom(audioBytes))
@@ -154,7 +154,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should transfer AudioContent with speech markers`() = runBlocking {
+    fun `should transfer AudioContent with speech markers`() = runItTest {
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(
                 IvrRequest.newBuilder()
@@ -199,7 +199,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should transfer ContentForSynthesis with TEXT type`() = runBlocking {
+    fun `should transfer ContentForSynthesis with TEXT type`() = runItTest {
         val synthesisContent = ContentForSynthesis.newBuilder()
             .setText("Hello, how can I help you today?")
             .setContentType(ContentForSynthesis.ContentType.TEXT)
@@ -224,7 +224,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should transfer ContentForSynthesis with SSML type`() = runBlocking {
+    fun `should transfer ContentForSynthesis with SSML type`() = runItTest {
         val ssmlText = """<speak><prosody rate="slow">Welcome to our service</prosody></speak>"""
         val synthesisContent = ContentForSynthesis.newBuilder()
             .setText(ssmlText)
@@ -250,7 +250,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should transfer FunctionResult with content and function name`() = runBlocking {
+    fun `should transfer FunctionResult with content and function name`() = runItTest {
         val functionResult = FunctionResult.newBuilder()
             .setContent("""{"balance": 1500.50, "currency": "RUB"}""")
             .setFunctionName("get_account_balance")
@@ -269,7 +269,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should transfer Audio output with all fields`() = runBlocking {
+    fun `should transfer Audio output with all fields`() = runItTest {
         val audioBytes = byteArrayOf(0x7F, 0x00, 0x7F, 0x00, 0x50, 0x60)
         val audioResponse = GigaVoiceResponse.newBuilder()
             .setOutput(
@@ -301,7 +301,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should transfer AdditionalData output with all fields`() = runBlocking {
+    fun `should transfer AdditionalData output with all fields`() = runItTest {
         val additionalDataResponse = GigaVoiceResponse.newBuilder()
             .setOutput(
                 ContentFromModel.newBuilder()
@@ -347,7 +347,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should transfer interrupted signal`() = runBlocking {
+    fun `should transfer interrupted signal`() = runItTest {
         val interruptedResponse = GigaVoiceResponse.newBuilder()
             .setOutput(
                 ContentFromModel.newBuilder()
@@ -367,7 +367,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should transfer FunctionCalling with all fields`() = runBlocking {
+    fun `should transfer FunctionCalling with all fields`() = runItTest {
         val functionCallingResponse = GigaVoiceResponse.newBuilder()
             .setFunctionCall(
                 FunctionCalling.newBuilder()
@@ -397,7 +397,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should transfer InputTranscription with all optional fields`() = runBlocking {
+    fun `should transfer InputTranscription with all optional fields`() = runItTest {
         val inputTranscriptionResponse = GigaVoiceResponse.newBuilder()
             .setInputTranscription(
                 InputTranscription.newBuilder()
@@ -448,7 +448,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should transfer OutputTranscription with all fields`() = runBlocking {
+    fun `should transfer OutputTranscription with all fields`() = runItTest {
         val outputTranscriptionResponse = GigaVoiceResponse.newBuilder()
             .setOutputTranscription(
                 OutputTranscription.newBuilder()
@@ -475,7 +475,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should transfer Warning response`() = runBlocking {
+    fun `should transfer Warning response`() = runItTest {
         val warningResponse = GigaVoiceResponse.newBuilder()
             .setWarning(
                 Warning.newBuilder()
@@ -496,7 +496,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should transfer Error response`() = runBlocking {
+    fun `should transfer Error response`() = runItTest {
         val errorResponse = GigaVoiceResponse.newBuilder()
             .setError(
                 Error.newBuilder()
