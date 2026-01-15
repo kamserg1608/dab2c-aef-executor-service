@@ -22,8 +22,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
+import ru.sbrf.dab2c.executor.clients.efs.adapter.api.SdsClient
+import ru.sbrf.dab2c.executor.clients.efs.adapter.api.TypedSdsClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.configuration.properties.EfsAdapterClientConfigurationProperties
 import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.ConfiguratorClientImpl
+import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.SdsClientImpl
+import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.TypedSdsClientImpl
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import kotlin.math.pow
@@ -63,6 +67,17 @@ class EfsAdapterClientConfiguration {
     internal fun configuratorClient(
         @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient
     ): ConfiguratorClient = ConfiguratorClientImpl(httpClient)
+
+    @Bean
+    internal fun sdsClient(
+        @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient
+    ): SdsClient = SdsClientImpl(httpClient)
+
+    @Bean
+    internal fun typedSdsClient(
+        sdsClient: SdsClient,
+        @Qualifier(EFS_ADAPTER_OBJECT_MAPPER_BEAN_NAME) objectMapper: ObjectMapper
+    ): TypedSdsClient = TypedSdsClientImpl(sdsClient, objectMapper)
 
     internal companion object {
         internal const val EFS_ADAPTER_OBJECT_MAPPER_BEAN_NAME = "efsAdapterObjectMapper"

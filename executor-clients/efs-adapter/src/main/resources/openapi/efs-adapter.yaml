@@ -247,7 +247,7 @@ paths:
         required: true
       responses:
         "200":
-          description: Возвращает конфигурацию сессии
+          description: Возвратает конфигурацию сессии
           content:
             application/json:
               schema:
@@ -309,6 +309,16 @@ components:
           type: object
           additionalProperties:
             type: string
+    BaseResponseVoid:
+      type: object
+      properties:
+        result:
+          type: object
+          nullable: true
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
     AuditEventServiceEvent:
       type: object
       properties:
@@ -320,16 +330,6 @@ components:
           type: object
           additionalProperties:
             type: string
-    BaseResponseVoid:
-      type: object
-      properties:
-        result:
-          type: object
-          nullable: true
-        errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/Error'
     BaseResponseListString:
       type: object
       properties:
@@ -439,25 +439,87 @@ components:
       # Схема будет определена на основе DTO
     SdsSectionData:
       type: object
-      # Схема будет определена на основе DTO
+      properties:
+        sectionName:
+          type: string
+        attributeName:
+          type: string
+        data:
+          type: string
     SdsSectionInfo:
       type: object
-      # Схема будет определена на основе DTO
+      properties:
+        sectionName:
+          type: string
+        attributeName:
+          type: string
     SystemState:
       type: object
-      # Схема будет определена на основе DTO
+      properties:
+        systemId:
+          type: string
+        state:
+          type: string
     Privileges:
       type: object
-      # Схема будет определена на основе DTO
+      properties:
+        privileges:
+          type: array
+          items:
+            $ref: '#/components/schemas/Privilege'
     ClobRecordInfo:
       type: object
-      # Схема будет определена на основе DTO
+      properties:
+        mainId:
+          type: string
+        alias:
+          type: string
+        uniqueRowId:
+          type: string
+        date:
+          type: string
+          format: date-time
+        metaId:
+          type: integer
+          format: int64
     SberCmsContentBrokerApiRequest:
+      required:
+        - context
       type: object
-      # Схема будет определена на основе DTO
+      properties:
+        userID:
+          type: string
+        context:
+          $ref: '#/components/schemas/ClientContext'
+        tags:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        customConditions:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomCondition'
+        placeholders:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/Placeholder'
     SberCmsContentBrokerApiResponse:
+      required:
+        - templateTypes
       type: object
-      # Схема будет определена на основе DTO
+      properties:
+        templateTypes:
+          maxItems: 2147483647
+          minItems: 0
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateType'
+        message:
+          type: string
     RequestClobData:
       type: object
       properties:
@@ -823,3 +885,103 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Alert'
+    Client:
+      required:
+        - type
+      type: object
+      properties:
+        type:
+          type: string
+        version:
+          maxLength: 100
+          minLength: 0
+          pattern: (\d+)(.\d+)?(.\d+)?(.*)?
+          type: string
+    ClientContext:
+      required:
+        - channelSectorCode
+        - client
+        - locale
+        - subsystemCode
+      type: object
+      properties:
+        subsystemCode:
+          type: string
+        templateTypes:
+          maxItems: 2147483647
+          minItems: 0
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        channelSectorCode:
+          type: string
+        zoneOffset:
+          pattern: "^[+-](\\d)(\\d):?(\\d)(\\d)$"
+          type: string
+        client:
+          $ref: '#/components/schemas/Client'
+        locale:
+          type: string
+    CustomCondition:
+      required:
+        - key
+        - value
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+    Placeholder:
+      required:
+        - key
+        - value
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+    Template:
+      required:
+        - body
+        - id
+      type: object
+      properties:
+        id:
+          type: string
+        body:
+          type: string
+    TemplateType:
+      required:
+        - code
+      type: object
+      properties:
+        code:
+          type: string
+        templates:
+          maxItems: 2147483647
+          minItems: 1
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/Template'
+    Privilege:
+      type: object
+      properties:
+        name:
+          type: string
+        active:
+          type: boolean
+    Parameter:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        values:
+          type: array
+          items:
+            type: string
