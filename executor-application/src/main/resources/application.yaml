@@ -4,7 +4,7 @@ server:
 
 spring:
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:STUB}
+    active: ${SPRING_PROFILES_ACTIVE:PROM}
 
 management:
   endpoint:
