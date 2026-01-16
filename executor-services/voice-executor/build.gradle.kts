@@ -10,5 +10,6 @@ dependencies {
     api(project(":executor-clients:efs-adapter"))
     implementation(libs.grpc.server.spring.boot.starter)
     implementation(libs.grpc.client.spring.boot.starter)
+    implementation(libs.grpc.services)
     implementation(libs.kotlin.logging.jvm)
 }

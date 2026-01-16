@@ -9,6 +9,7 @@ server:
 grpc:
   server:
     port: ${GRPC_SERVER_PORT}
+    reflection-service-enabled: true
   client:
     downstream:
       address: static://${GRPC_DOWNSTREAM_HOST}:${GRPC_DOWNSTREAM_PORT}

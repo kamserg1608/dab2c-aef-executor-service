@@ -11,6 +11,7 @@ springBoot {
 
 dependencies {
     implementation(project(":executor-distribution"))
+    implementation(project(":executor-services:voice-executor"))
 
     implementation(libs.spring.boot.starter.actuator)
 }
