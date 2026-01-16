@@ -12,6 +12,6 @@ COPY conf/k8s/base/@fpi-name@/docker-entrypoint.sh /var/
 RUN chmod +x /var/docker-entrypoint.sh
 RUN chmod g+rwX /var/
 
-ENTRYPOINT [ "/var/docker-entrypoint.sh", "ru.sbrf.dab2c.executor.application.ApplicationEntryPoint" ]
+ENTRYPOINT [ "/var/docker-entrypoint.sh", "ru.sbrf.dab2c.executor.application.ApplicationEntryPointKt" ]
 
 EXPOSE 8080
