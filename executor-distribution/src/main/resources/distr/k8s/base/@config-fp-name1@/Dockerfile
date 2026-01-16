@@ -6,14 +6,11 @@ USER root
 RUN mkdir -p /var
 COPY bh/@deploymentUnit1@-main/*.jar /var/app/
 COPY bh/@deploymentUnit1@-dependencies/*.jar /var/app/dependencies/
-COPY conf/k8s/base/@config-fp-name1@/waitingSecrets.sh /var/
 COPY conf/k8s/base/@fpi-name@/docker-entrypoint.sh /var/
-COPY conf/k8s/base/@fpi-name@/importCertificates.sh /var/
 #endregion
 
-RUN chmod +x /var/docker-entrypoint.sh /var/waitingSecrets.sh /var/importCertificates.sh
+RUN chmod +x /var/docker-entrypoint.sh
 RUN chmod g+rwX /var/
-RUN dnf install -y openssl
 
 ENTRYPOINT [ "/var/docker-entrypoint.sh", "ru.sbrf.dab2c.executor.application.ApplicationEntryPoint" ]
 
