@@ -1,3 +1,5 @@
+@file:Suppress("LongParameterList")
+
 package ru.sbrf.dab2c.executor.clients.giga.agent.api
 
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
@@ -19,7 +21,9 @@ interface GigaVoiceAgentClient {
         ufsToken: String,
         agentConfiguration: AgentConfiguration,
         voiceSettings: VoiceSettings,
-        channel: String
+        channel: String,
+        conversationId: String,
+        eduId: String
     ): Pair<VoiceSettings, FunctionPerformers>
 
     /**
@@ -30,6 +34,8 @@ interface GigaVoiceAgentClient {
         ufsToken: String,
         functionCalling: FunctionCallingData,
         agentConfiguration: AgentConfiguration,
-        channel: String
+        channel: String,
+        conversationId: String,
+        eduId: String
     ): FunctionResultData
 }

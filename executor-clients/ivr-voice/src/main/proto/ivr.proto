@@ -16,6 +16,7 @@ message IvrRequest {
     Settings settings = 1;
     ContentFromClient input = 2;
     FunctionResult function_result = 3;
+    Context context = 10;
   }
 }
 
@@ -59,6 +60,10 @@ message Settings {
   optional bool enable_person_identity = 13;
   optional bool enable_whisper = 14;
   optional bool enable_emotion = 15;
+}
+
+message Context {
+  string content = 1;
 }
 
 message AudioSettings {

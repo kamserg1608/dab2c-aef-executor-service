@@ -25,6 +25,7 @@ tmp
 
 # GigaIDE
 .gigaide/**
+.kotlin
 
 # mvn versions
 pom.xml.versionsBackup

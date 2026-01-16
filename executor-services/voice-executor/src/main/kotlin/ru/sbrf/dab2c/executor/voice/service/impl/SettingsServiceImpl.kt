@@ -51,7 +51,9 @@ class SettingsServiceImpl(
             ufsToken = metadata.token,
             agentConfiguration = agentConfiguration,
             voiceSettings = settings,
-            channel = configProperties.channel
+            channel = configProperties.channel,
+            conversationId = metadata.conversationId ?: settings.voiceCallId,
+            eduId = metadata.eduId ?: settings.voiceCallId
         )
         logger.debug { "Received settings response with ${performers.functions.size} performers" }
 

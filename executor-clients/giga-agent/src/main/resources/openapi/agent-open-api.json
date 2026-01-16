@@ -1,14 +1,16 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "FastAPI",
+    "title": "GigaVoice Agent HTTP API",
+    "description": "API для взаимодействия с агентом для GigaVoice через HTTP.",
     "version": "0.1.0"
   },
   "paths": {
     "/settings": {
       "post": {
-        "summary": "Gigavoice Settings Invoke",
-        "operationId": "gigavoice_settings_invoke_settings_post",
+        "summary": "Обработка настроек GigaVoice",
+        "description": "Принимает запрос с конфигурацией настроек GigaVoice и контекстом выполнения. Делегирует обработку настроек агенту и возвращает объект с настройками.",
+        "operationId": "_post_settings_settings_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -45,8 +47,9 @@
     },
     "/functions": {
       "post": {
-        "summary": "Gigavoice Functions Invoke",
-        "operationId": "gigavoice_functions_invoke_functions_post",
+        "summary": "Вызов функций GigaVoice",
+        "description": "Принимает запрос с информацией о доступных функциях и контексте выполнения. Делегирует обработку агенту и возвращает список performers — систем-исполнителей функций.",
+        "operationId": "_post_functions_functions_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -75,6 +78,135 @@
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actuator/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": " Get Readiness",
+        "description": "Проверка готовности сервиса (readiness probe)",
+        "operationId": "_get_readiness_actuator_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actuator/health/liveness": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": " Get Liveness",
+        "description": "Healthcheck - Liveness probe",
+        "operationId": "_get_liveness_actuator_health_liveness_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actuator/health/readiness": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": " Get Readiness",
+        "description": "Healthcheck - Readiness probe",
+        "operationId": "_get_readiness_actuator_health_readiness_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actuator/health/{name}": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": " Get Health Component",
+        "description": "Проверка состояния отдельного компонента по его имени",
+        "operationId": "_get_health_component_actuator_health__name__get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actuator/metrics": {
+      "get": {
+        "tags": [
+          "metrics"
+        ],
+        "summary": " Get Metrics",
+        "description": "Метрики приложения в текстовом формате Prometheus.",
+        "operationId": "_get_metrics_actuator_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           }
@@ -539,21 +671,6 @@
         "title": "FunctionCalling",
         "description": "Схема для вызова функции"
       },
-      "FunctionOptions": {
-        "properties": {
-          "is_backend_function": {
-            "type": "boolean",
-            "title": "Is Backend Function",
-            "description": "Признак принадлежности функции агенту"
-          }
-        },
-        "type": "object",
-        "required": [
-          "is_backend_function"
-        ],
-        "title": "FunctionOptions",
-        "description": "Опциональные параметры функций."
-      },
       "FunctionRanker": {
         "properties": {
           "enabled": {
@@ -981,8 +1098,38 @@
         "title": "GigaChatSettings",
         "description": "Настройки модели Gigachat."
       },
+      "GigaVoiceFunction": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "is_backend_function": {
+            "type": "boolean",
+            "title": "Is Backend Function",
+            "description": "Признак принадлежности функции агенту"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "is_backend_function"
+        ],
+        "title": "GigaVoiceFunction",
+        "description": "Функции GigaVoice с параметрами."
+      },
       "GigaVoiceFunctionsRequestSchema": {
         "properties": {
+          "conversation_id": {
+            "type": "string",
+            "title": "Conversation Id",
+            "description": "Уникальный ID диалога."
+          },
+          "edu_id": {
+            "type": "string",
+            "title": "Edu Id",
+            "description": "Идентификатор звонка EDU ID."
+          },
           "config": {
             "$ref": "#/components/schemas/ACLConfig",
             "description": "Конфигурация агента, содержащая его настройки и параметры поведения"
@@ -1029,6 +1176,8 @@
         },
         "type": "object",
         "required": [
+          "conversation_id",
+          "edu_id",
           "config",
           "function_calling"
         ],
@@ -1048,6 +1197,19 @@
             "type": "array",
             "title": "Agent Analytics",
             "description": "Список данных агента для отправки событий в КАП.Каждый объект отправляется как отдельное событие."
+          },
+          "context": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context",
+            "description": "Дополнительные данные передаваемые в запросе, необходимые для работы агента."
           }
         },
         "type": "object",
@@ -1071,6 +1233,16 @@
       },
       "GigaVoiceSettingsRequestSchema": {
         "properties": {
+          "conversation_id": {
+            "type": "string",
+            "title": "Conversation Id",
+            "description": "Уникальный ID диалога."
+          },
+          "edu_id": {
+            "type": "string",
+            "title": "Edu Id",
+            "description": "Идентификатор звонка EDU ID."
+          },
           "config": {
             "$ref": "#/components/schemas/ACLConfig",
             "description": "Конфигурация агента, содержащая его настройки и параметры поведения"
@@ -1117,6 +1289,8 @@
         },
         "type": "object",
         "required": [
+          "conversation_id",
+          "edu_id",
           "config",
           "settings"
         ],
@@ -1140,6 +1314,19 @@
             "type": "array",
             "title": "Agent Analytics",
             "description": "Список данных агента для отправки событий в КАП.Каждый объект отправляется как отдельное событие."
+          },
+          "context": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context",
+            "description": "Дополнительные данные передаваемые в запросе, необходимые для работы агента."
           }
         },
         "type": "object",
@@ -1162,6 +1349,54 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "HealthResult": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/HealthStatus",
+            "default": "UNKNOWN"
+          },
+          "components": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/HealthResult"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Components"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "title": "HealthResult",
+        "description": "Модель результата проверки здоровья компонента."
+      },
+      "HealthStatus": {
+        "type": "string",
+        "enum": [
+          "UNKNOWN",
+          "UP",
+          "DOWN",
+          "OUT_OF_SERVICE"
+        ],
+        "title": "HealthStatus",
+        "description": "Перечисление возможных состояний здоровья компонента."
       },
       "InitialContext-Input": {
         "properties": {
@@ -1515,12 +1750,12 @@
       "Performers": {
         "properties": {
           "functions": {
-            "additionalProperties": {
-              "$ref": "#/components/schemas/FunctionOptions"
+            "items": {
+              "$ref": "#/components/schemas/GigaVoiceFunction"
             },
-            "type": "object",
+            "type": "array",
             "title": "Functions",
-            "description": "Названия функций GigaVoice с параметрами"
+            "description": "Функции GigaVoice с параметрами"
           }
         },
         "type": "object",
@@ -2128,7 +2363,8 @@
       "StubSounds-Output": {
         "properties": {
           "trigger_function": {
-            "$ref": "#/components/schemas/TriggerFunction"
+            "$ref": "#/components/schemas/TriggerFunction",
+            "description": "Настройки триггера для вставки заглушек"
           },
           "sounds": {
             "items": {
@@ -2155,7 +2391,8 @@
             "description": "Включён ли триггер"
           },
           "mode": {
-            "$ref": "#/components/schemas/TriggerFunctionMode"
+            "$ref": "#/components/schemas/TriggerFunctionMode",
+            "description": "Режим фильтрации: белый или чёрный список"
           },
           "function_names": {
             "items": {

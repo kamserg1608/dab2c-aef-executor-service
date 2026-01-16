@@ -23,7 +23,7 @@ private const val AGENT_TYPE_VOICE = "voice"
  * Active only when STUB profile is enabled.
  */
 @RestController
-@Profile("STUB")
+@Profile("STUB-CLIENTS")
 class EfsAdapterStubController {
 
     private val callCounter = AtomicLong(0)

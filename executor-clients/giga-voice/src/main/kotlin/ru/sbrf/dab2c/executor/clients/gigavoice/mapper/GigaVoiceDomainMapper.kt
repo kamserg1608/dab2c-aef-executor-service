@@ -197,6 +197,8 @@ object GigaVoiceDomainMapper {
             gigaVoiceRequest { input = toContentFromClientSynthesis(request.content) }
         is VoiceRequest.FunctionResult ->
             gigaVoiceRequest { functionResult = toProtoFunctionResult(request.result) }
+        is VoiceRequest.Context ->
+            error("Context requests are not forwarded to downstream GigaVoice service")
     }
 
     private fun toContentFromClient(audio: AudioContent): ContentFromClient = contentFromClient {

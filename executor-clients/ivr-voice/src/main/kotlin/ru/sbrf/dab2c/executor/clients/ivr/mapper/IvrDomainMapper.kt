@@ -48,6 +48,7 @@ import ru.sbrf.dab2c.executor.domain.voice.AudioInputSettings
 import ru.sbrf.dab2c.executor.domain.voice.AudioOutput
 import ru.sbrf.dab2c.executor.domain.voice.AudioOutputSettings
 import ru.sbrf.dab2c.executor.domain.voice.AudioSettings
+import ru.sbrf.dab2c.executor.domain.voice.ContextData
 import ru.sbrf.dab2c.executor.domain.voice.ErrorData
 import ru.sbrf.dab2c.executor.domain.voice.FilterSettings
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
@@ -103,6 +104,8 @@ object IvrDomainMapper {
                 toDomainContentFromClient(request.input)
             IvrRequest.RequestCase.FUNCTION_RESULT ->
                 VoiceRequest.FunctionResult(toDomainFunctionResult(request.functionResult))
+            IvrRequest.RequestCase.CONTEXT ->
+                VoiceRequest.Context(toDomainContext(request.context))
             IvrRequest.RequestCase.REQUEST_NOT_SET, null ->
                 error("Request not set")
         }
@@ -314,6 +317,9 @@ object IvrDomainMapper {
         content = result.content,
         functionName = result.functionName.takeIf { it.isNotEmpty() }
     )
+
+    private fun toDomainContext(context: ru.sbrf.dab2c.executor.clients.ivr.proto.Context): ContextData =
+        ContextData(content = context.content)
 
     // ==================== Response Mapping: Domain -> Proto (Server-side) ====================
 

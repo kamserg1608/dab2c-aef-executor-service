@@ -6,7 +6,7 @@ plugins {
 description = "Executor application"
 
 springBoot {
-    mainClass.set("ru.sbrf.ufs.dab2c.core.ApplicationEntryPoint")
+    mainClass.set("ru.sbrf.dab2c.executor.application.ApplicationEntryPointKt")
 }
 
 dependencies {

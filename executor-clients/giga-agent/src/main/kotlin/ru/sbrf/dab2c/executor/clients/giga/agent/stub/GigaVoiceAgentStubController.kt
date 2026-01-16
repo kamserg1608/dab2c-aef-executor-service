@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RestController
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.AudioSettingsOutput
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionOptions
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionResult
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunction
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsRequestSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsResponseSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceSettingsRequestSchema
@@ -27,7 +27,7 @@ private val logger = KotlinLogging.logger {}
  * Active only when STUB profile is enabled.
  */
 @RestController
-@Profile("STUB")
+@Profile("STUB-CLIENTS")
 class GigaVoiceAgentStubController {
 
     private val settingsCallCounter = AtomicLong(0)
@@ -95,10 +95,10 @@ class GigaVoiceAgentStubController {
     }
 
     private fun createStubPerformers(): Performers = Performers(
-        functions = mapOf(
-            "stub_function" to FunctionOptions(isBackendFunction = true),
-            "transfer_to_operator" to FunctionOptions(isBackendFunction = false),
-            "end_dialog" to FunctionOptions(isBackendFunction = false)
+        functions = listOf(
+            GigaVoiceFunction(name = "stub_function", isBackendFunction = true),
+            GigaVoiceFunction(name = "transfer_to_operator", isBackendFunction = false),
+            GigaVoiceFunction(name = "end_dialog", isBackendFunction = false)
         )
     )
 

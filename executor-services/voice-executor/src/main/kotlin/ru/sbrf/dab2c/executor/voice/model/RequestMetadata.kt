@@ -22,6 +22,9 @@ class RequestMetadata(
     /** The edu_id header value. */
     val eduId: String? get() = headers[HEADER_EDU_ID]
 
+    /** The conversation_id header value. */
+    val conversationId: String? get() = headers[HEADER_CONVERSATION_ID]
+
     /** Whether proxy mode is requested via header. Null if header not present. */
     val proxy: Boolean? get() = headers[HEADER_PROXY]?.toBoolean()
 
@@ -37,6 +40,7 @@ class RequestMetadata(
         private const val HEADER_SESSION = "session"
         private const val HEADER_TOKEN = "token"
         private const val HEADER_EDU_ID = "edu_id"
+        private const val HEADER_CONVERSATION_ID = "conversation_id"
         private const val HEADER_PROXY = "proxy"
 
         private const val UFS_TOKEN_COOKIE = "UFS-TOKEN"

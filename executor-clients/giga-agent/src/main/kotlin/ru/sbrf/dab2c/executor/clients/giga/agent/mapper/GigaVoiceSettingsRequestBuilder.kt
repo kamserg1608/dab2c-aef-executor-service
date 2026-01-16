@@ -21,13 +21,17 @@ class GigaVoiceSettingsRequestBuilder(
     fun build(
         agentConfiguration: AgentConfiguration,
         voiceSettings: VoiceSettings,
-        channel: String
+        channel: String,
+        conversationId: String,
+        eduId: String
     ): GigaVoiceSettingsRequestSchema {
         val agentConfig = GigaVoiceAgentConfigMapper.toApiAgentConfig(agentConfiguration)
         val sessionConfig = SessionConfig(channel = channel)
         val settingsInput = settingsMapper.toApiSettingsInput(voiceSettings)
 
         return GigaVoiceSettingsRequestSchema(
+            conversationId = conversationId,
+            eduId = eduId,
             config = ACLConfig(
                 agentConfig = agentConfig,
                 sessionConfig = sessionConfig

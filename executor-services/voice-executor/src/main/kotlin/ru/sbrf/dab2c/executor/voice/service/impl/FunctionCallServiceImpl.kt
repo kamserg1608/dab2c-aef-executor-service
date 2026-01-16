@@ -44,7 +44,9 @@ class FunctionCallServiceImpl(
             ufsToken = metadata.token,
             functionCalling = functionCalling,
             agentConfiguration = agentConfiguration,
-            channel = configProperties.channel
+            channel = configProperties.channel,
+            conversationId = metadata.conversationId ?: metadata.session,
+            eduId = metadata.eduId ?: metadata.session
         )
 
         callBackChannel.send(VoiceRequest.FunctionResult(result))

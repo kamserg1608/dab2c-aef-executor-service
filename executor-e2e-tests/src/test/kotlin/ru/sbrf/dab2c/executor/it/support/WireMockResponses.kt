@@ -38,7 +38,7 @@ object WireMockResponses {
                 "audio": {}
             },
             "performers": {
-                "functions": {}
+                "functions": []
             }
         }
     """.trimIndent()
@@ -54,17 +54,11 @@ object WireMockResponses {
                 "audio": {}
             },
             "performers": {
-                "functions": {
-                    "get_account_balance": {
-                        "is_backend_function": true
-                    },
-                    "transfer_to_operator": {
-                        "is_backend_function": false
-                    },
-                    "check_transaction_status": {
-                        "is_backend_function": true
-                    }
-                }
+                "functions": [
+                    {"name": "get_account_balance", "is_backend_function": true},
+                    {"name": "transfer_to_operator", "is_backend_function": false},
+                    {"name": "check_transaction_status", "is_backend_function": true}
+                ]
             }
         }
     """.trimIndent()

@@ -40,11 +40,13 @@ class GigaVoiceAgentClientImpl(
         ufsToken: String,
         agentConfiguration: AgentConfiguration,
         voiceSettings: VoiceSettings,
-        channel: String
+        channel: String,
+        conversationId: String,
+        eduId: String
     ): Pair<VoiceSettings, FunctionPerformers> {
         logger.debug { "Getting settings for session: $ufsSession" }
 
-        val request = settingsRequestBuilder.build(agentConfiguration, voiceSettings, channel)
+        val request = settingsRequestBuilder.build(agentConfiguration, voiceSettings, channel, conversationId, eduId)
 
         val apiResponse: GigaVoiceSettingsResponseSchema = try {
             httpClient.post("/settings") {
@@ -66,11 +68,15 @@ class GigaVoiceAgentClientImpl(
         ufsToken: String,
         functionCalling: FunctionCallingData,
         agentConfiguration: AgentConfiguration,
-        channel: String
+        channel: String,
+        conversationId: String,
+        eduId: String
     ): FunctionResultData {
         logger.debug { "Executing function call for session: $ufsSession" }
 
-        val request = functionCallRequestBuilder.build(agentConfiguration, functionCalling, channel)
+        val request = functionCallRequestBuilder.build(
+            agentConfiguration, functionCalling, channel, conversationId, eduId
+        )
 
         val apiResponse: GigaVoiceFunctionsResponseSchema = try {
             httpClient.post("/functions") {

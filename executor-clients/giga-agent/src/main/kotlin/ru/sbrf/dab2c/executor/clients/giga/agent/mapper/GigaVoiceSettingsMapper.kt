@@ -7,6 +7,7 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.model.AudioSettingsOutput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionResult
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaChatSettingsInput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaChatSettingsOutput
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunction
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceMode
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.InitialContextInput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.InitialContextOutput
@@ -37,7 +38,6 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.model.AudioEncoding as ApiAudio
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FilterSettings as ApiFilterSettings
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FirstSpeaker as ApiFirstSpeaker
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCalling as ApiFunctionCalling
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionOptions as ApiFunctionOptions
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionRegistry as ApiFunctionRegistry
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.Message as ApiMessage
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.OutputModalities as ApiOutputModalities
@@ -71,10 +71,10 @@ object GigaVoiceSettingsMapper {
 
     // === Performers -> FunctionPerformers ===
     fun toDomainPerformers(source: Performers): FunctionPerformers = FunctionPerformers(
-        functions = source.functions.mapValues { toDomainFunctionOptions(it.value) }
+        functions = source.functions.associate { it.name to toDomainFunctionOptions(it) }
     )
 
-    fun toDomainFunctionOptions(source: ApiFunctionOptions): FunctionOptions = FunctionOptions(
+    fun toDomainFunctionOptions(source: GigaVoiceFunction): FunctionOptions = FunctionOptions(
         isBackendFunction = source.isBackendFunction
     )
 

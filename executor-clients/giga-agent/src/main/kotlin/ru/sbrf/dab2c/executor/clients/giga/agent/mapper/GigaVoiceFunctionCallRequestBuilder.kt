@@ -21,13 +21,17 @@ class GigaVoiceFunctionCallRequestBuilder(
     fun build(
         agentConfiguration: AgentConfiguration,
         functionCalling: FunctionCallingData,
-        channel: String
+        channel: String,
+        conversationId: String,
+        eduId: String
     ): GigaVoiceFunctionsRequestSchema {
         val agentConfig = GigaVoiceAgentConfigMapper.toApiAgentConfig(agentConfiguration)
         val sessionConfig = SessionConfig(channel = channel)
         val apiFunctionCalling = mapper.toApiFunctionCalling(functionCalling)
 
         return GigaVoiceFunctionsRequestSchema(
+            conversationId = conversationId,
+            eduId = eduId,
             config = ACLConfig(
                 agentConfig = agentConfig,
                 sessionConfig = sessionConfig
