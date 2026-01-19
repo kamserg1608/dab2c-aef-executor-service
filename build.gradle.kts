@@ -42,7 +42,6 @@ subprojects {
         implementation(platform(rootProject.libs.spring.boot.dependencies))
 
         implementation(rootProject.libs.spring.boot.starter.webflux)
-        implementation(rootProject.libs.spring.boot.starter.aop)
         implementation(rootProject.libs.jackson.module.kotlin)
 
         // Testing (includes JUnit 5, AssertJ, Mockito, etc.)

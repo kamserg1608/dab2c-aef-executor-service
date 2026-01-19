@@ -8,7 +8,6 @@ openapi-generator = "7.10.0"
 
 # Kotlinx (not managed by Spring Boot)
 kotlinx-coroutines = "1.10.1"
-kotlinx-datetime = "0.6.1"
 
 # Logging (not managed by Spring Boot)
 kotlin-logging = "7.0.4"
@@ -37,7 +36,6 @@ spring-boot-dependencies = { module = "org.springframework.boot:spring-boot-depe
 
 # Spring Boot starters (versions managed by BOM)
 spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }
-spring-boot-starter-aop = { module = "org.springframework.boot:spring-boot-starter-aop" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 
@@ -46,9 +44,7 @@ junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher
 
 # Kotlinx
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
-kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
-kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 
 # Ktor Client
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
@@ -101,9 +97,7 @@ ksp-gradle-plugin = { module = "com.google.devtools.ksp:symbol-processing-gradle
 [bundles]
 # Kotlinx
 kotlinx = [
-    "kotlinx-coroutines-core",
-    "kotlinx-coroutines-reactor",
-    "kotlinx-datetime"
+    "kotlinx-coroutines-core"
 ]
 
 # Ktor client
