@@ -14,7 +14,6 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.URLProtocol
 import io.ktor.serialization.jackson.jackson
-import jakarta.servlet.ServletContext
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -60,8 +59,8 @@ abstract class BaseGigaVoiceIntegrationTest {
     @LocalServerPort
     var port: Int = 0
 
-    @Autowired
-    lateinit var servletContext: ServletContext
+    @Value("\${spring.webflux.base-path:}")
+    protected lateinit var basePath: String
 
     @Autowired
     protected lateinit var mockGigaVoiceService: MockGigaVoiceService

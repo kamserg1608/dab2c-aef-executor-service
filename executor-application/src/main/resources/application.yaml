@@ -1,8 +1,6 @@
-server:
-  servlet:
-    context-path: /@server.context.path@
-
 spring:
+  webflux:
+    base-path: /@server.context.path@
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:PROM}
 

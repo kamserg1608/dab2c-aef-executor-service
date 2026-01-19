@@ -41,8 +41,7 @@ subprojects {
         // Spring Boot BOM for dependency management
         implementation(platform(rootProject.libs.spring.boot.dependencies))
 
-        // Spring Boot Web (includes Tomcat, Jackson, validation, etc.)
-        implementation(rootProject.libs.spring.boot.starter.web)
+        implementation(rootProject.libs.spring.boot.starter.webflux)
         implementation(rootProject.libs.spring.boot.starter.aop)
         implementation(rootProject.libs.jackson.module.kotlin)
 

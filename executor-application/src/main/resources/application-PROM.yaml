@@ -1,9 +1,5 @@
 server:
   port: 8080
-  tomcat:
-    threads:
-      max: ${SERVER_TOMCAT_MAX_THREADS:200}
-      min-spare: ${SERVER_TOMCAT_MIN_SPARE_THREADS:10}
 
 # gRPC Configuration
 grpc:

@@ -1,10 +1,5 @@
 server:
-  address: @server.host@
-  port: @server.port@
-  tomcat:
-    threads:
-      max: 20
-      min-spare: 5
+  port: 8080
 
 # gRPC Configuration
 grpc:
