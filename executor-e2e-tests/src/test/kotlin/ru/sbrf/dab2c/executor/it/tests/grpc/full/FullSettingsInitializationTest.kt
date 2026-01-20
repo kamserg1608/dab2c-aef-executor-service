@@ -125,6 +125,16 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
                 )
         )
 
+        efsAdapterMock.stubFor(
+            post(urlEqualTo("/configurator/session"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.EFS_SESSION_CONFIG_RESPONSE)
+                )
+        )
+
         gigaVoiceAgentMock.stubFor(
             post(urlEqualTo("/settings"))
                 .willReturn(
@@ -159,7 +169,8 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
             MetadataInterceptor(
                 mapOf(
                     "proxy" to "false",
-                    "token" to "test-token"
+                    "token" to "test-token",
+                    "edu_id" to "test-edu-id"
                 )
             )
         )
@@ -182,7 +193,8 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
             MetadataInterceptor(
                 mapOf(
                     "proxy" to "false",
-                    "session" to "test-session"
+                    "session" to "test-session",
+                    "edu_id" to "test-edu-id"
                 )
             )
         )
@@ -197,6 +209,30 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(result.exceptionOrNull()).isInstanceOf(StatusException::class.java)
     }
 
+    @Test
+    fun `should fail when edu_id header is missing`() = runItTest {
+        setupSuccessfulStubs()
+
+        val stubWithoutEduId = clientStub.withInterceptors(
+            MetadataInterceptor(
+                mapOf(
+                    "proxy" to "false",
+                    "session" to "test-session",
+                    "token" to "test-token"
+                )
+            )
+        )
+
+        val requests = flow {
+            emit(createSettingsRequest("missing-edu-id-test"))
+        }
+
+        val result = runCatching { stubWithoutEduId.session(requests).toList() }
+
+        assertThat(result.isFailure).isTrue()
+        assertThat(result.exceptionOrNull()).isInstanceOf(StatusException::class.java)
+    }
+
     private fun setupSuccessfulStubs() {
         efsAdapterMock.stubFor(
             post(urlEqualTo("/configurator/rest-agent"))
@@ -205,6 +241,16 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
                         .withBody(WireMockResponses.EFS_ADAPTER_RESPONSE)
+                )
+        )
+
+        efsAdapterMock.stubFor(
+            post(urlEqualTo("/configurator/session"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.EFS_SESSION_CONFIG_RESPONSE)
                 )
         )
 

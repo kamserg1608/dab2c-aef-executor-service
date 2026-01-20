@@ -2,6 +2,7 @@ package ru.sbrf.dab2c.executor.clients.giga.agent.mapper
 
 import org.springframework.stereotype.Component
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.ACLConfig
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaAgentRequestContext
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsRequestSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.SessionConfig
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
@@ -19,19 +20,17 @@ class GigaVoiceFunctionCallRequestBuilder(
      * Builds a function call request from domain models.
      */
     fun build(
+        context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
-        functionCalling: FunctionCallingData,
-        channel: String,
-        conversationId: String,
-        eduId: String
+        functionCalling: FunctionCallingData
     ): GigaVoiceFunctionsRequestSchema {
         val agentConfig = GigaVoiceAgentConfigMapper.toApiAgentConfig(agentConfiguration)
-        val sessionConfig = SessionConfig(channel = channel)
+        val sessionConfig = SessionConfig(channel = context.channel)
         val apiFunctionCalling = mapper.toApiFunctionCalling(functionCalling)
 
         return GigaVoiceFunctionsRequestSchema(
-            conversationId = conversationId,
-            eduId = eduId,
+            conversationId = context.conversationId,
+            eduId = context.eduId,
             config = ACLConfig(
                 agentConfig = agentConfig,
                 sessionConfig = sessionConfig

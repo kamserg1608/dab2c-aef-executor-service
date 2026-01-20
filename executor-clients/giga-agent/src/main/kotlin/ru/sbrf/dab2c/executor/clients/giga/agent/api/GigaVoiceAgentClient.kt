@@ -1,7 +1,6 @@
-@file:Suppress("LongParameterList")
-
 package ru.sbrf.dab2c.executor.clients.giga.agent.api
 
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaAgentRequestContext
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
@@ -17,25 +16,17 @@ interface GigaVoiceAgentClient {
      * Get full configuration and function registry for a GigaVoice session.
      */
     suspend fun getSettings(
-        ufsSession: String,
-        ufsToken: String,
+        context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
-        voiceSettings: VoiceSettings,
-        channel: String,
-        conversationId: String,
-        eduId: String
+        voiceSettings: VoiceSettings
     ): Pair<VoiceSettings, FunctionPerformers>
 
     /**
      * Execute a function call on the AB IVR side.
      */
     suspend fun executeFunctionCall(
-        ufsSession: String,
-        ufsToken: String,
-        functionCalling: FunctionCallingData,
+        context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
-        channel: String,
-        conversationId: String,
-        eduId: String
+        functionCalling: FunctionCallingData
     ): FunctionResultData
 }

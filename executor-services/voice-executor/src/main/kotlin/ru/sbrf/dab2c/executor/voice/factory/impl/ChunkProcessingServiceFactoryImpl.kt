@@ -47,8 +47,7 @@ class ChunkProcessingServiceFactoryImpl(
         val functionCallService = FunctionCallServiceImpl(
             processingState,
             callbackChannel,
-            gigaVoiceAgentClient,
-            voiceExecutorConfigurationProperties
+            gigaVoiceAgentClient
         )
         val settingsService = SettingsServiceImpl(
             processingState,

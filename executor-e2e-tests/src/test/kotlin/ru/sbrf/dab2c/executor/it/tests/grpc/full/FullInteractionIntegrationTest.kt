@@ -30,6 +30,16 @@ class FullInteractionIntegrationTest : BaseGigaVoiceIntegrationTest() {
                 )
         )
 
+        efsAdapterMock.stubFor(
+            WireMock.post(WireMock.urlEqualTo("/configurator/session"))
+                .willReturn(
+                    WireMock.aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.EFS_SESSION_CONFIG_RESPONSE)
+                )
+        )
+
         gigaVoiceAgentMock.stubFor(
             WireMock.post(WireMock.urlEqualTo("/settings"))
                 .willReturn(

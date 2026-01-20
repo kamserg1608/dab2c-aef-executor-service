@@ -3,7 +3,6 @@ package ru.sbrf.dab2c.executor.clients.giga.agent.impl
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -12,6 +11,7 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceFunctionCallRequestBuilder
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsMapper
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsRequestBuilder
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaAgentRequestContext
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsResponseSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceSettingsResponseSchema
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
@@ -21,9 +21,6 @@ import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 
 private val logger = KotlinLogging.logger {}
-
-private const val UFS_SESSION_HEADER = "UFS-SESSION"
-private const val UFS_TOKEN_HEADER = "UFS-TOKEN"
 
 /**
  * Implementation of GigaVoice Agent API client using Ktor HTTP client.
@@ -36,27 +33,22 @@ class GigaVoiceAgentClientImpl(
 ) : GigaVoiceAgentClient {
 
     override suspend fun getSettings(
-        ufsSession: String,
-        ufsToken: String,
+        context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
-        voiceSettings: VoiceSettings,
-        channel: String,
-        conversationId: String,
-        eduId: String
+        voiceSettings: VoiceSettings
     ): Pair<VoiceSettings, FunctionPerformers> {
-        logger.debug { "Getting settings for session: $ufsSession" }
+        logger.debug { "Getting settings for session: ${context.ufsSession}" }
 
-        val request = settingsRequestBuilder.build(agentConfiguration, voiceSettings, channel, conversationId, eduId)
+        val request = settingsRequestBuilder.build(context, agentConfiguration, voiceSettings)
 
         val apiResponse: GigaVoiceSettingsResponseSchema = try {
             httpClient.post("/settings") {
                 contentType(ContentType.Application.Json)
-                header(UFS_SESSION_HEADER, ufsSession)
-                header(UFS_TOKEN_HEADER, ufsToken)
+                with(context) { applyHeaders() }
                 setBody(request)
             }.body()
         } catch (e: Exception) {
-            logger.error(e) { "Failed to get settings for session: $ufsSession" }
+            logger.error(e) { "Failed to get settings for session: ${context.ufsSession}" }
             throw e
         }
 
@@ -64,29 +56,22 @@ class GigaVoiceAgentClientImpl(
     }
 
     override suspend fun executeFunctionCall(
-        ufsSession: String,
-        ufsToken: String,
-        functionCalling: FunctionCallingData,
+        context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
-        channel: String,
-        conversationId: String,
-        eduId: String
+        functionCalling: FunctionCallingData
     ): FunctionResultData {
-        logger.debug { "Executing function call for session: $ufsSession" }
+        logger.debug { "Executing function call for session: ${context.ufsSession}" }
 
-        val request = functionCallRequestBuilder.build(
-            agentConfiguration, functionCalling, channel, conversationId, eduId
-        )
+        val request = functionCallRequestBuilder.build(context, agentConfiguration, functionCalling)
 
         val apiResponse: GigaVoiceFunctionsResponseSchema = try {
             httpClient.post("/functions") {
                 contentType(ContentType.Application.Json)
-                header(UFS_SESSION_HEADER, ufsSession)
-                header(UFS_TOKEN_HEADER, ufsToken)
+                with(context) { applyHeaders() }
                 setBody(request)
             }.body()
         } catch (e: Exception) {
-            logger.error(e) { "Failed to execute function call for session: $ufsSession" }
+            logger.error(e) { "Failed to execute function call for session: ${context.ufsSession}" }
             throw e
         }
 

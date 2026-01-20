@@ -12,6 +12,7 @@ import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
 import ru.sbrf.dab2c.executor.voice.model.InputProcessingStage.LOADING_SETTINGS
 import ru.sbrf.dab2c.executor.voice.model.InputProcessingStage.SERVING
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
+import ru.sbrf.dab2c.executor.voice.model.toGigaAgentContext
 import ru.sbrf.dab2c.executor.voice.service.api.SettingsService
 
 /**
@@ -34,6 +35,7 @@ class SettingsServiceImpl(
         processingState.value = processingState.value.copy(input = SERVING)
     }
 
+    @Suppress("LongMethod")
     private suspend fun calculateSettings(settings: VoiceSettings): VoiceSettings {
         val metadata = GrpcMetadataContext.current()
 
@@ -44,16 +46,26 @@ class SettingsServiceImpl(
             cookie = metadata.ufsCookie
         )
         logger.debug { "Fetched agent configuration: ${agentConfiguration.name}" }
-        processingState.value = processingState.value.copy(agentConfiguration = agentConfiguration)
+
+        val sessionConfiguration = configuratorClient.getSessionConfig(cookie = metadata.ufsCookie)
+        logger.debug { "Fetched session configuration: channel=${sessionConfiguration.channel}" }
+
+        val conversationId = settings.voiceCallId
+        processingState.value = processingState.value.copy(
+            agentConfiguration = agentConfiguration,
+            sessionConfiguration = sessionConfiguration,
+            conversationId = conversationId
+        )
+
+        val context = metadata.toGigaAgentContext(
+            sessionConfiguration = sessionConfiguration,
+            conversationId = conversationId
+        )
 
         val (processedSettings, performers) = gigaVoiceAgentClient.getSettings(
-            ufsSession = metadata.session,
-            ufsToken = metadata.token,
+            context = context,
             agentConfiguration = agentConfiguration,
-            voiceSettings = settings,
-            channel = configProperties.channel,
-            conversationId = metadata.conversationId ?: settings.voiceCallId,
-            eduId = metadata.eduId ?: settings.voiceCallId
+            voiceSettings = settings
         )
         logger.debug { "Received settings response with ${performers.functions.size} performers" }
 
