@@ -7,15 +7,39 @@ import ru.sbrf.dab2c.executor.domain.voice.ContextData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
 
 /**
- * Current processing state of the voice session.
+ * Sealed class representing the processing state of a voice session.
+ * Each subclass represents a distinct stage with its available data.
  */
-data class ProcessingState(
-    val input: InputProcessingStage = InputProcessingStage.AWAIT_CONTEXT,
-    val output: OutputProcessingStage = OutputProcessingStage.SERVING,
-    val functionRegistry: FunctionPerformers = FunctionPerformers(),
-    val agentConfiguration: AgentConfiguration? = null,
-    val sessionConfiguration: SessionConfiguration? = null,
-    val conversationId: String? = null,
-    val daSessionInfo: DaSessionInfo? = null,
-    val contextData: ContextData? = null
-)
+sealed class ProcessingState {
+
+    /**
+     * Initial state awaiting context data from IVR.
+     */
+    data object AwaitingContext : ProcessingState()
+
+    /**
+     * Received context, awaiting settings from IVR.
+     */
+    data class AwaitingSettings(
+        val contextData: ContextData
+    ) : ProcessingState()
+
+    /**
+     * Loading settings from external APIs.
+     */
+    data class LoadingSettings(
+        val contextData: ContextData
+    ) : ProcessingState()
+
+    /**
+     * Fully initialized and serving requests.
+     */
+    data class Serving(
+        val contextData: ContextData,
+        val agentConfiguration: AgentConfiguration,
+        val sessionConfiguration: SessionConfiguration,
+        val conversationId: String,
+        val daSessionInfo: DaSessionInfo,
+        val functionRegistry: FunctionPerformers
+    ) : ProcessingState()
+}

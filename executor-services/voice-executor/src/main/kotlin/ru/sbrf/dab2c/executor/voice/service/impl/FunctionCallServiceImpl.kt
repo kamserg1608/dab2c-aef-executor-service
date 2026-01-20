@@ -22,10 +22,14 @@ class FunctionCallServiceImpl(
 
     private val logger = KotlinLogging.logger {}
 
-    @Suppress("LongMethod")
     override suspend fun callFunction(functionCalling: FunctionCallingData): FunctionCallingData? {
+        val state = processingState.value
+        check(state is ProcessingState.Serving) {
+            "Expected Serving state for function calls, but was ${state::class.simpleName}"
+        }
+
         val functionName = functionCalling.functionCall.name
-        val functionOptions = processingState.value.functionRegistry.functions[functionName]
+        val functionOptions = state.functionRegistry.functions[functionName]
 
         if (functionOptions?.isBackendFunction != true) {
             logger.debug { "Function '$functionName' proxied to IVR" }
@@ -35,35 +39,18 @@ class FunctionCallServiceImpl(
         logger.debug { "Executing backend function '$functionName' via agent" }
 
         val metadata = GrpcMetadataContext.current()
-        val state = processingState.value
-        val agentConfiguration = checkNotNull(state.agentConfiguration) {
-            "AgentConfiguration must be set before function calls"
-        }
-        val sessionConfiguration = checkNotNull(state.sessionConfiguration) {
-            "SessionConfiguration must be set before function calls"
-        }
-        val conversationId = checkNotNull(state.conversationId) {
-            "ConversationId must be set before function calls"
-        }
-        val daSessionInfo = checkNotNull(state.daSessionInfo) {
-            "DaSessionInfo must be set before function calls"
-        }
-        val contextData = checkNotNull(state.contextData) {
-            "ContextData must be set before function calls"
-        }
-
         val context = metadata.toGigaAgentContext(
-            sessionConfiguration = sessionConfiguration,
-            conversationId = conversationId,
-            daSessionInfo = daSessionInfo
+            sessionConfiguration = state.sessionConfiguration,
+            conversationId = state.conversationId,
+            daSessionInfo = state.daSessionInfo
         )
 
         val result = gigaVoiceAgentClient.executeFunctionCall(
             context = context,
-            agentConfiguration = agentConfiguration,
+            agentConfiguration = state.agentConfiguration,
             functionCalling = functionCalling,
-            daSessionInfo = daSessionInfo,
-            contextData = contextData
+            daSessionInfo = state.daSessionInfo,
+            contextData = state.contextData
         )
 
         callBackChannel.send(VoiceRequest.FunctionResult(result))

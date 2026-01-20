@@ -8,9 +8,6 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.receiveAsFlow
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
-import ru.sbrf.dab2c.executor.voice.model.InputProcessingStage.AWAIT_CONTEXT
-import ru.sbrf.dab2c.executor.voice.model.InputProcessingStage.AWAIT_SETTINGS
-import ru.sbrf.dab2c.executor.voice.model.InputProcessingStage.SERVING
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.service.api.ContextService
@@ -47,11 +44,11 @@ class ChunkProcessingServiceImpl(
         }
 
     private fun isChunkAllowed(chunk: VoiceRequest): Boolean {
-        val stage = processingState.value.input
+        val state = processingState.value
         return when (chunk) {
-            is VoiceRequest.Context -> stage == AWAIT_CONTEXT
-            is VoiceRequest.Settings -> stage == AWAIT_SETTINGS
-            else -> stage == SERVING
+            is VoiceRequest.Context -> state is ProcessingState.AwaitingContext
+            is VoiceRequest.Settings -> state is ProcessingState.AwaitingSettings
+            else -> state is ProcessingState.Serving
         }
     }
 

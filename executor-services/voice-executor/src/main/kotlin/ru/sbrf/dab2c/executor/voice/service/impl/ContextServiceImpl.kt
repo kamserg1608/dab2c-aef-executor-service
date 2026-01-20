@@ -3,7 +3,6 @@ package ru.sbrf.dab2c.executor.voice.service.impl
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.MutableStateFlow
 import ru.sbrf.dab2c.executor.domain.voice.ContextData
-import ru.sbrf.dab2c.executor.voice.model.InputProcessingStage.AWAIT_SETTINGS
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.service.api.ContextService
 
@@ -19,10 +18,7 @@ class ContextServiceImpl(
     override suspend fun processContext(contextData: ContextData) {
         logger.debug { "Processing context chunk" }
 
-        processingState.value = processingState.value.copy(
-            contextData = contextData,
-            input = AWAIT_SETTINGS
-        )
+        processingState.value = ProcessingState.AwaitingSettings(contextData)
 
         logger.debug { "Context processed" }
     }

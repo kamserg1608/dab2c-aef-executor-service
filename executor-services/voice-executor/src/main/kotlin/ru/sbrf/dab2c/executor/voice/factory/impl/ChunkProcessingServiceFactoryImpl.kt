@@ -44,7 +44,7 @@ class ChunkProcessingServiceFactoryImpl(
     }
 
     private fun createChunkProcessingServiceImpl(): ChunkProcessingService {
-        val processingState = MutableStateFlow(ProcessingState())
+        val processingState = MutableStateFlow<ProcessingState>(ProcessingState.AwaitingContext)
         val callbackChannel = Channel<VoiceRequest>(capacity = Channel.BUFFERED)
 
         val contextService = ContextServiceImpl(processingState)

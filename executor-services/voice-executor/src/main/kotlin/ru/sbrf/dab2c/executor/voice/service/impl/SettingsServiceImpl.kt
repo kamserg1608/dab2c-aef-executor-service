@@ -7,12 +7,11 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.TypedSdsClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.readDaSessionInfo
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
+import ru.sbrf.dab2c.executor.domain.voice.ContextData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
 import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
-import ru.sbrf.dab2c.executor.voice.model.InputProcessingStage.LOADING_SETTINGS
-import ru.sbrf.dab2c.executor.voice.model.InputProcessingStage.SERVING
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.model.toGigaAgentContext
 import ru.sbrf.dab2c.executor.voice.service.api.SettingsService
@@ -32,14 +31,21 @@ class SettingsServiceImpl(
     private val logger = KotlinLogging.logger {}
 
     override suspend fun initSettingsCalculation(settings: VoiceSettings) {
-        processingState.value = processingState.value.copy(input = LOADING_SETTINGS)
-        val processedSettings = calculateSettings(settings)
+        val currentState = processingState.value
+        check(currentState is ProcessingState.AwaitingSettings) {
+            "Expected AwaitingSettings state, but was ${currentState::class.simpleName}"
+        }
+
+        processingState.value = ProcessingState.LoadingSettings(currentState.contextData)
+        val processedSettings = calculateSettings(settings, currentState.contextData)
         callbackChannel.send(VoiceRequest.Settings(processedSettings))
-        processingState.value = processingState.value.copy(input = SERVING)
     }
 
     @Suppress("LongMethod")
-    private suspend fun calculateSettings(settings: VoiceSettings): VoiceSettings {
+    private suspend fun calculateSettings(
+        settings: VoiceSettings,
+        contextData: ContextData
+    ): VoiceSettings {
         val metadata = GrpcMetadataContext.current()
 
         logger.debug { "Calculating settings for session: ${metadata.session}" }
@@ -57,16 +63,6 @@ class SettingsServiceImpl(
         logger.debug { "Fetched DA session info for session: ${daSessionInfo.meta.sessionId}" }
 
         val conversationId = settings.voiceCallId
-        processingState.value = processingState.value.copy(
-            agentConfiguration = agentConfiguration,
-            sessionConfiguration = sessionConfiguration,
-            conversationId = conversationId,
-            daSessionInfo = daSessionInfo
-        )
-
-        val contextData = checkNotNull(processingState.value.contextData) {
-            "ContextData must be set before settings processing"
-        }
 
         val context = metadata.toGigaAgentContext(
             sessionConfiguration = sessionConfiguration,
@@ -83,7 +79,14 @@ class SettingsServiceImpl(
         )
         logger.debug { "Received settings response with ${performers.functions.size} performers" }
 
-        processingState.value = processingState.value.copy(functionRegistry = performers)
+        processingState.value = ProcessingState.Serving(
+            contextData = contextData,
+            agentConfiguration = agentConfiguration,
+            sessionConfiguration = sessionConfiguration,
+            conversationId = conversationId,
+            daSessionInfo = daSessionInfo,
+            functionRegistry = performers
+        )
 
         return processedSettings
     }
