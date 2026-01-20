@@ -4,7 +4,7 @@ import io.mcarle.konvert.api.Konverter
 import io.mcarle.konvert.api.Mapping
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.SdsSectionData
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.SdsSectionInfo
-import ru.sbrf.dab2c.executor.domain.sds.SdsSection
+import ru.sbrf.dab2c.executor.domain.session.SdsSection
 
 /**
  * Mapper for converting between SDS contract models and domain models.

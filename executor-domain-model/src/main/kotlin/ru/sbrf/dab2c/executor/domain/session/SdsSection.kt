@@ -1,4 +1,4 @@
-package ru.sbrf.dab2c.executor.domain.sds
+package ru.sbrf.dab2c.executor.domain.session
 
 /**
  * Session data storage (SDS) section.

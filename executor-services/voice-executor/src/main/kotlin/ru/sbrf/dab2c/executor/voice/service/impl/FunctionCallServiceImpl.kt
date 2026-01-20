@@ -45,16 +45,21 @@ class FunctionCallServiceImpl(
         val conversationId = checkNotNull(state.conversationId) {
             "ConversationId must be set before function calls"
         }
+        val daSessionInfo = checkNotNull(state.daSessionInfo) {
+            "DaSessionInfo must be set before function calls"
+        }
 
         val context = metadata.toGigaAgentContext(
             sessionConfiguration = sessionConfiguration,
-            conversationId = conversationId
+            conversationId = conversationId,
+            daSessionInfo = daSessionInfo
         )
 
         val result = gigaVoiceAgentClient.executeFunctionCall(
             context = context,
             agentConfiguration = agentConfiguration,
-            functionCalling = functionCalling
+            functionCalling = functionCalling,
+            daSessionInfo = daSessionInfo
         )
 
         callBackChannel.send(VoiceRequest.FunctionResult(result))

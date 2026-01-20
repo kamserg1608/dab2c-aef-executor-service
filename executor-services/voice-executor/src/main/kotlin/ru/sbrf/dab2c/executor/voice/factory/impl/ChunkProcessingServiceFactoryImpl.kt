@@ -4,6 +4,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
+import ru.sbrf.dab2c.executor.clients.efs.adapter.api.TypedSdsClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
@@ -24,7 +25,8 @@ import ru.sbrf.dab2c.executor.voice.service.impl.SettingsServiceImpl
 class ChunkProcessingServiceFactoryImpl(
     private val voiceExecutorConfigurationProperties: VoiceExecutorConfigurationProperties,
     private val gigaVoiceAgentClient: GigaVoiceAgentClient,
-    private val configuratorClient: ConfiguratorClient
+    private val configuratorClient: ConfiguratorClient,
+    private val typedSdsClient: TypedSdsClient
 ) : ChunkProcessingServiceFactory {
 
     override fun create(): ChunkProcessingService {
@@ -54,6 +56,7 @@ class ChunkProcessingServiceFactoryImpl(
             callbackChannel,
             gigaVoiceAgentClient,
             configuratorClient,
+            typedSdsClient,
             voiceExecutorConfigurationProperties
         )
 

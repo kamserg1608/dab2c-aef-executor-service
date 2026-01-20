@@ -13,7 +13,7 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.api.SdsClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.SdsSectionMapper
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseListSdsSectionData
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseVoid
-import ru.sbrf.dab2c.executor.domain.sds.SdsSection
+import ru.sbrf.dab2c.executor.domain.session.SdsSection
 
 private val logger = KotlinLogging.logger {}
 

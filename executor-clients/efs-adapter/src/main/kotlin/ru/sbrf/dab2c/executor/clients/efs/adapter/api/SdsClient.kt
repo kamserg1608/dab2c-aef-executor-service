@@ -1,6 +1,6 @@
 package ru.sbrf.dab2c.executor.clients.efs.adapter.api
 
-import ru.sbrf.dab2c.executor.domain.sds.SdsSection
+import ru.sbrf.dab2c.executor.domain.session.SdsSection
 
 /**
  * Client interface for EFS Adapter SDS (Session Data Storage) API.

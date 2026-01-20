@@ -15,6 +15,7 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaAgentRequestContext
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsResponseSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceSettingsResponseSchema
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
+import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
 import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
@@ -35,11 +36,12 @@ class GigaVoiceAgentClientImpl(
     override suspend fun getSettings(
         context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
-        voiceSettings: VoiceSettings
+        voiceSettings: VoiceSettings,
+        daSessionInfo: DaSessionInfo
     ): Pair<VoiceSettings, FunctionPerformers> {
         logger.debug { "Getting settings for session: ${context.ufsSession}" }
 
-        val request = settingsRequestBuilder.build(context, agentConfiguration, voiceSettings)
+        val request = settingsRequestBuilder.build(context, agentConfiguration, voiceSettings, daSessionInfo)
 
         val apiResponse: GigaVoiceSettingsResponseSchema = try {
             httpClient.post("/settings") {
@@ -58,11 +60,12 @@ class GigaVoiceAgentClientImpl(
     override suspend fun executeFunctionCall(
         context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
-        functionCalling: FunctionCallingData
+        functionCalling: FunctionCallingData,
+        daSessionInfo: DaSessionInfo
     ): FunctionResultData {
         logger.debug { "Executing function call for session: ${context.ufsSession}" }
 
-        val request = functionCallRequestBuilder.build(context, agentConfiguration, functionCalling)
+        val request = functionCallRequestBuilder.build(context, agentConfiguration, functionCalling, daSessionInfo)
 
         val apiResponse: GigaVoiceFunctionsResponseSchema = try {
             httpClient.post("/functions") {

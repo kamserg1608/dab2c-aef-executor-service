@@ -6,6 +6,7 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaAgentRequestContext
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsRequestSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.SessionConfig
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
+import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 
 /**
@@ -22,7 +23,8 @@ class GigaVoiceFunctionCallRequestBuilder(
     fun build(
         context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
-        functionCalling: FunctionCallingData
+        functionCalling: FunctionCallingData,
+        daSessionInfo: DaSessionInfo
     ): GigaVoiceFunctionsRequestSchema {
         val agentConfig = GigaVoiceAgentConfigMapper.toApiAgentConfig(agentConfiguration)
         val sessionConfig = SessionConfig(channel = context.channel)
@@ -36,8 +38,8 @@ class GigaVoiceFunctionCallRequestBuilder(
                 sessionConfig = sessionConfig
             ),
             functionCalling = apiFunctionCalling,
-            sessionInfo = null,
-            userInfo = null,
+            sessionInfo = DaSessionInfoApiMapper.toApiSessionInfo(daSessionInfo),
+            userInfo = DaSessionInfoApiMapper.toApiUserInfo(daSessionInfo),
             context = null
         )
     }

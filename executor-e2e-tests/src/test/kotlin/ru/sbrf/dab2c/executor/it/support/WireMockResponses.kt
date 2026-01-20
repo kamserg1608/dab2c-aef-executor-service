@@ -77,6 +77,23 @@ object WireMockResponses {
     """.trimIndent()
 
     /**
+     * SDS session read data response with DA session info.
+     */
+    @Suppress("MaxLineLength")
+    val SDS_SESSION_READ_DATA_RESPONSE = """
+        {
+            "result": [
+                {
+                    "sectionName": "DA_SESSION",
+                    "attributeName": "SESSION_INFO_MOB_BANK",
+                    "data": "{\"meta\":{\"session_id\":\"test-session-id\",\"user_id\":\"test-user-id\",\"ucp_id\":\"test-ucp-id\",\"ufs_host\":\"test-ufs-host\",\"is_valid\":true},\"common\":{\"block\":\"retail\",\"channel\":\"MOB_BANK\",\"surface\":\"mobile\",\"platform\":\"android\",\"sdk_version\":\"1.0.0\",\"entry_point\":\"main\",\"app_version\":\"2.0.0\",\"channel_version\":\"3.0.0\",\"app_source\":\"store\",\"time_zone\":\"Europe/Moscow\"},\"user_info\":{\"first_name\":\"Test\",\"patr_name\":\"User\",\"birth_day\":\"1990-01-01\",\"segment_code_type\":\"MASS\",\"ucp_id\":\"test-ucp-id\"}}"
+                }
+            ],
+            "errors": null
+        }
+    """.trimIndent()
+
+    /**
      * GigaVoice Agent /functions endpoint response.
      */
     fun gigaVoiceFunctionsResponse(functionName: String, resultContent: String) = """

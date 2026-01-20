@@ -135,6 +135,16 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
                 )
         )
 
+        efsAdapterMock.stubFor(
+            post(urlEqualTo("/session/readData"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.SDS_SESSION_READ_DATA_RESPONSE)
+                )
+        )
+
         gigaVoiceAgentMock.stubFor(
             post(urlEqualTo("/settings"))
                 .willReturn(
@@ -251,6 +261,16 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
                         .withBody(WireMockResponses.EFS_SESSION_CONFIG_RESPONSE)
+                )
+        )
+
+        efsAdapterMock.stubFor(
+            post(urlEqualTo("/session/readData"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.SDS_SESSION_READ_DATA_RESPONSE)
                 )
         )
 

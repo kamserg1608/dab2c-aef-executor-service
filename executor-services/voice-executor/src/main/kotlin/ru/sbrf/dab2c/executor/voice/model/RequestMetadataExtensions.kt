@@ -2,17 +2,15 @@ package ru.sbrf.dab2c.executor.voice.model
 
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaAgentRequestContext
 import ru.sbrf.dab2c.executor.domain.configuration.SessionConfiguration
-
-// TODO: Replace with actual values from session data in next iteration
-private const val STUB_DA_SESSION_ID = "STUB-da-session-id"
-private const val STUB_DA_UCP_ID = "STUB-da-ucp-id"
+import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 
 /**
  * Converts RequestMetadata to GigaAgentRequestContext for GigaAgent API calls.
  */
 fun RequestMetadata.toGigaAgentContext(
     sessionConfiguration: SessionConfiguration,
-    conversationId: String
+    conversationId: String,
+    daSessionInfo: DaSessionInfo
 ) = GigaAgentRequestContext(
     ufsSession = session,
     ufsToken = token,
@@ -20,8 +18,8 @@ fun RequestMetadata.toGigaAgentContext(
     conversationId = conversationId,
     eduId = eduId,
     daRequestId = requestId,
-    daSessionId = STUB_DA_SESSION_ID,
+    daSessionId = daSessionInfo.meta.sessionId,
     daChannel = sessionConfiguration.channel,
     daPlatform = sessionConfiguration.platform,
-    daUcpId = STUB_DA_UCP_ID
+    daUcpId = daSessionInfo.meta.ucpId
 )
