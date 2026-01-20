@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioContent
 import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioSettings
 import ru.sbrf.dab2c.executor.clients.ivr.proto.ContentFromClient
+import ru.sbrf.dab2c.executor.clients.ivr.proto.Context
 import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Settings
 import ru.sbrf.dab2c.executor.it.support.WireMockResponses
@@ -31,6 +32,7 @@ class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
         setupSettingsWithFunctions()
 
         withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(createContextRequest())
             session.sendRequest(createSettingsRequest("ivr-function-test"))
             mock.awaitRequest { it.hasSettings() }
 
@@ -57,6 +59,7 @@ class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
         setupSettingsWithFunctions()
 
         withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(createContextRequest())
             session.sendRequest(createSettingsRequest("unknown-function-test"))
             mock.awaitRequest { it.hasSettings() }
 
@@ -82,6 +85,7 @@ class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
         setupFunctionsEndpoint("get_account_balance", """{"balance": 1000}""")
 
         withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(createContextRequest())
             session.sendRequest(createSettingsRequest("backend-function-test"))
             mock.awaitRequest { it.hasSettings() }
 
@@ -116,6 +120,7 @@ class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
 
         val result = runCatching {
             withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+                session.sendRequest(createContextRequest())
                 session.sendRequest(createSettingsRequest("functions-error-test"))
                 mock.awaitRequest { it.hasSettings() }
 
@@ -197,6 +202,15 @@ class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
                 Settings.newBuilder()
                     .setVoiceCallId(voiceCallId)
                     .setAudio(AudioSettings.getDefaultInstance())
+                    .build()
+            )
+            .build()
+
+    private fun createContextRequest(): IvrRequest =
+        IvrRequest.newBuilder()
+            .setContext(
+                Context.newBuilder()
+                    .setContent("{}")
                     .build()
             )
             .build()

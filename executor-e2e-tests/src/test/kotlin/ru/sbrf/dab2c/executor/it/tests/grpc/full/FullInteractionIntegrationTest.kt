@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioSettings
+import ru.sbrf.dab2c.executor.clients.ivr.proto.Context
 import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Settings
 import ru.sbrf.dab2c.executor.it.support.WireMockResponses
@@ -61,6 +62,7 @@ class FullInteractionIntegrationTest : BaseGigaVoiceIntegrationTest() {
         )
 
         withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(createContextRequest())
             session.sendRequest(
                 IvrRequest.newBuilder()
                     .setSettings(
@@ -83,6 +85,15 @@ class FullInteractionIntegrationTest : BaseGigaVoiceIntegrationTest() {
             Assertions.assertThat(response).isNotNull()
         }
     }
+
+    private fun createContextRequest(): IvrRequest =
+        IvrRequest.newBuilder()
+            .setContext(
+                Context.newBuilder()
+                    .setContent("{}")
+                    .build()
+            )
+            .build()
 
     private fun createDefaultResponse(): GigaVoice.GigaVoiceResponse =
         GigaVoice.GigaVoiceResponse.newBuilder()

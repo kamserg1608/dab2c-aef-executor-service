@@ -13,6 +13,7 @@ import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.service.impl.ChunkProcessingServiceImpl
+import ru.sbrf.dab2c.executor.voice.service.impl.ContextServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.FunctionCallServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.NoopChunkProcessingServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.ObservingChunkProcessingServiceDelegate
@@ -46,6 +47,7 @@ class ChunkProcessingServiceFactoryImpl(
         val processingState = MutableStateFlow(ProcessingState())
         val callbackChannel = Channel<VoiceRequest>(capacity = Channel.BUFFERED)
 
+        val contextService = ContextServiceImpl(processingState)
         val functionCallService = FunctionCallServiceImpl(
             processingState,
             callbackChannel,
@@ -63,6 +65,7 @@ class ChunkProcessingServiceFactoryImpl(
         return ChunkProcessingServiceImpl(
             processingState,
             callbackChannel,
+            contextService,
             settingsService,
             functionCallService
         )

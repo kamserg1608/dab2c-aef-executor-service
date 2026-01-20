@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioContent
 import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioSettings
 import ru.sbrf.dab2c.executor.clients.ivr.proto.ContentFromClient
+import ru.sbrf.dab2c.executor.clients.ivr.proto.Context
 import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Settings
 import ru.sbrf.dab2c.executor.it.support.MetadataInterceptor
@@ -33,6 +34,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
         setupSuccessfulStubs()
 
         withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(createContextRequest())
             session.sendRequest(createSettingsRequest("test-call-123"))
             wireMock.awaitPostCall("/settings")
 
@@ -46,6 +48,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
         setupSuccessfulStubs()
 
         withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(createContextRequest())
             session.sendRequest(createSettingsRequest("forwarded-call-456"))
 
             val forwardedSettings = mock.awaitRequest { it.hasSettings() }
@@ -62,6 +65,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
         setupSuccessfulStubs()
 
         withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(createContextRequest())
             session.sendRequest(createSettingsRequest("audio-flow-test"))
             mock.awaitRequest { it.hasSettings() }
 
@@ -98,6 +102,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
         )
 
         val requests = flow {
+            emit(createContextRequest())
             emit(createSettingsRequest("efs-error-test"))
         }
 
@@ -155,6 +160,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
         )
 
         val requests = flow {
+            emit(createContextRequest())
             emit(createSettingsRequest("agent-error-test"))
         }
 
@@ -186,6 +192,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
         )
 
         val requests = flow {
+            emit(createContextRequest())
             emit(createSettingsRequest("missing-session-test"))
         }
 
@@ -210,6 +217,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
         )
 
         val requests = flow {
+            emit(createContextRequest())
             emit(createSettingsRequest("missing-token-test"))
         }
 
@@ -234,6 +242,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
         )
 
         val requests = flow {
+            emit(createContextRequest())
             emit(createSettingsRequest("missing-edu-id-test"))
         }
 
@@ -308,6 +317,15 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
                             .setSpeechEnd(speechEnd)
                             .build()
                     )
+                    .build()
+            )
+            .build()
+
+    private fun createContextRequest(): IvrRequest =
+        IvrRequest.newBuilder()
+            .setContext(
+                Context.newBuilder()
+                    .setContent("{}")
                     .build()
             )
             .build()

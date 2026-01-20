@@ -64,6 +64,10 @@ class SettingsServiceImpl(
             daSessionInfo = daSessionInfo
         )
 
+        val contextData = checkNotNull(processingState.value.contextData) {
+            "ContextData must be set before settings processing"
+        }
+
         val context = metadata.toGigaAgentContext(
             sessionConfiguration = sessionConfiguration,
             conversationId = conversationId,
@@ -74,7 +78,8 @@ class SettingsServiceImpl(
             context = context,
             agentConfiguration = agentConfiguration,
             voiceSettings = settings,
-            daSessionInfo = daSessionInfo
+            daSessionInfo = daSessionInfo,
+            contextData = contextData
         )
         logger.debug { "Received settings response with ${performers.functions.size} performers" }
 

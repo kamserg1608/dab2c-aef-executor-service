@@ -3,6 +3,7 @@ package ru.sbrf.dab2c.executor.clients.giga.agent.api
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaAgentRequestContext
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
+import ru.sbrf.dab2c.executor.domain.voice.ContextData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
 import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
@@ -20,7 +21,8 @@ interface GigaVoiceAgentClient {
         context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
         voiceSettings: VoiceSettings,
-        daSessionInfo: DaSessionInfo
+        daSessionInfo: DaSessionInfo,
+        contextData: ContextData
     ): Pair<VoiceSettings, FunctionPerformers>
 
     /**
@@ -30,6 +32,7 @@ interface GigaVoiceAgentClient {
         context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
         functionCalling: FunctionCallingData,
-        daSessionInfo: DaSessionInfo
+        daSessionInfo: DaSessionInfo,
+        contextData: ContextData
     ): FunctionResultData
 }
