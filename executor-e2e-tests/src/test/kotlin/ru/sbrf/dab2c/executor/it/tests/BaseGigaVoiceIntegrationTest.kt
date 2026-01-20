@@ -30,6 +30,7 @@ import ru.sbrf.dab2c.executor.application.ApplicationEntryPoint
 import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrServiceGrpcKt.IvrServiceCoroutineStub
 import ru.sbrf.dab2c.executor.it.mock.MockGigaVoiceService
 import ru.sbrf.dab2c.executor.it.support.MetadataInterceptor
+import ru.sbrf.dab2c.executor.library.context.mdc.RequestContext
 
 /**
  * Base class for integration tests.
@@ -126,4 +127,10 @@ abstract class BaseGigaVoiceIntegrationTest {
             )
         )
     )
+
+    companion object {
+        init {
+            RequestContext.init()
+        }
+    }
 }

@@ -9,6 +9,7 @@ include("executor-clients:giga-agent")
 include("executor-clients:efs-adapter")
 include("executor-clients:ivr-voice")
 include("executor-services:voice-executor")
+include("executor-libraries:context")
 
 pluginManagement {
     repositories {

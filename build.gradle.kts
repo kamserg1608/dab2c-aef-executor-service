@@ -44,6 +44,9 @@ subprojects {
         implementation(rootProject.libs.spring.boot.starter.webflux)
         implementation(rootProject.libs.jackson.module.kotlin)
 
+        // Logging
+        implementation(rootProject.libs.kotlin.logging.jvm)
+
         // Testing (includes JUnit 5, AssertJ, Mockito, etc.)
         testImplementation(rootProject.libs.spring.boot.starter.test)
         testImplementation(rootProject.libs.mockk)
