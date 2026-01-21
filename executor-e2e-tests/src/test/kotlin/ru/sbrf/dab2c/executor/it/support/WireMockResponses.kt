@@ -96,12 +96,15 @@ object WireMockResponses {
     /**
      * GigaVoice Agent /functions endpoint response.
      */
-    fun gigaVoiceFunctionsResponse(functionName: String, resultContent: String) = """
-        {
-            "function_result": {
-                "content": $resultContent,
-                "function_name": "$functionName"
+    fun gigaVoiceFunctionsResponse(functionName: String, resultContent: String): String {
+        val escapedContent = resultContent.replace("\"", "\\\"")
+        return """
+            {
+                "function_result": {
+                    "content": "$escapedContent",
+                    "function_name": "$functionName"
+                }
             }
-        }
-    """.trimIndent()
+        """.trimIndent()
+    }
 }
