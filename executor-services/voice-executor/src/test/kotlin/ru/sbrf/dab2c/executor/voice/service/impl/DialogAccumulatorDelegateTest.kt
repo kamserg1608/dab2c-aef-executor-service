@@ -1,12 +1,16 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.domain.voice.AudioContent
 import ru.sbrf.dab2c.executor.domain.voice.AudioSettings
@@ -17,18 +21,22 @@ import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.domain.voice.WarningData
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
+import ru.sbrf.dab2c.executor.voice.service.api.DialogTurnPublisher
 
 class DialogAccumulatorDelegateTest {
 
     private lateinit var delegate: ChunkProcessingService
+    private lateinit var dialogTurnPublisher: DialogTurnPublisher
     private lateinit var accumulator: DialogAccumulatorDelegate
 
     @BeforeEach
     fun setUp() {
         delegate = mockk()
+        dialogTurnPublisher = mockk()
         every { delegate.processRequestChunks(any()) } answers { firstArg() }
         every { delegate.processResponseChunks(any()) } answers { firstArg() }
-        accumulator = DialogAccumulatorDelegate(delegate)
+        coEvery { dialogTurnPublisher.publishDialogTurn(any(), any()) } returns Unit
+        accumulator = DialogAccumulatorDelegate(delegate, dialogTurnPublisher)
     }
 
     @Test
@@ -165,6 +173,73 @@ class DialogAccumulatorDelegateTest {
         val result = accumulator.processResponseChunks(responses).toList()
 
         assertEquals(5, result.size)
+    }
+
+    @Nested
+    inner class DialogPublishingTest {
+
+        @Test
+        fun `should publish dialog when dialog turn completes`() = runTest {
+            val responses = flowOf(
+                createInputTranscription("Hello"),
+                createOutputTranscription("Hi there"),
+                createInputTranscription("Next question")
+            )
+
+            accumulator.processResponseChunks(responses).toList()
+
+            coVerify(exactly = 1) { dialogTurnPublisher.publishDialogTurn(any(), any()) }
+        }
+
+        @Test
+        fun `should publish dialog with accumulated text`() = runTest {
+            val inputSlot = slot<String>()
+            val outputSlot = slot<String>()
+            coEvery {
+                dialogTurnPublisher.publishDialogTurn(capture(inputSlot), capture(outputSlot))
+            } returns Unit
+
+            val responses = flowOf(
+                createInputTranscription("How "),
+                createInputTranscription("are you?"),
+                createOutputTranscription("I am "),
+                createOutputTranscription("fine!"),
+                createInputTranscription("Great")
+            )
+
+            accumulator.processResponseChunks(responses).toList()
+
+            assertEquals("How are you?", inputSlot.captured)
+            assertEquals("I am fine!", outputSlot.captured)
+        }
+
+        @Test
+        fun `should not publish when no output before next input`() = runTest {
+            val responses = flowOf(
+                createInputTranscription("First"),
+                createInputTranscription("Second"),
+                createInputTranscription("Third")
+            )
+
+            accumulator.processResponseChunks(responses).toList()
+
+            coVerify(exactly = 0) { dialogTurnPublisher.publishDialogTurn(any(), any()) }
+        }
+
+        @Test
+        fun `should publish multiple dialogs for multiple turns`() = runTest {
+            val responses = flowOf(
+                createInputTranscription("First"),
+                createOutputTranscription("Answer 1"),
+                createInputTranscription("Second"),
+                createOutputTranscription("Answer 2"),
+                createInputTranscription("Third")
+            )
+
+            accumulator.processResponseChunks(responses).toList()
+
+            coVerify(exactly = 2) { dialogTurnPublisher.publishDialogTurn(any(), any()) }
+        }
     }
 
     private fun createInputTranscription(text: String): VoiceResponse.InputTranscription =

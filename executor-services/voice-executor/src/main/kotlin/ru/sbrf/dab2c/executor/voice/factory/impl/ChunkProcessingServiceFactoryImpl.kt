@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.TypedSdsClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
+import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
@@ -19,7 +20,10 @@ import ru.sbrf.dab2c.executor.voice.service.impl.ChunkProcessingServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.ContextServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.DialogAccumulatorDelegate
 import ru.sbrf.dab2c.executor.voice.service.impl.FunctionCallServiceImpl
+import ru.sbrf.dab2c.executor.voice.service.impl.KapAnalyticsPublisher
+import ru.sbrf.dab2c.executor.voice.service.impl.KapDialogTurnPublisher
 import ru.sbrf.dab2c.executor.voice.service.impl.NoopChunkProcessingServiceImpl
+import ru.sbrf.dab2c.executor.voice.service.impl.NoopDialogTurnPublisher
 import ru.sbrf.dab2c.executor.voice.service.impl.ObservingChunkProcessingServiceDelegate
 import ru.sbrf.dab2c.executor.voice.service.impl.SettingsServiceImpl
 
@@ -31,35 +35,51 @@ class ChunkProcessingServiceFactoryImpl(
     private val voiceExecutorConfigurationProperties: VoiceExecutorConfigurationProperties,
     private val gigaVoiceAgentClient: GigaVoiceAgentClient,
     private val configuratorClient: ConfiguratorClient,
-    private val typedSdsClient: TypedSdsClient
+    private val typedSdsClient: TypedSdsClient,
+    private val kapProducerClient: KapProducerClient
 ) : ChunkProcessingServiceFactory {
 
     override fun create(): ChunkProcessingService {
         val requestMetadata = GrpcMetadataContext.current()
         val isProxyMode = requestMetadata.proxy ?: voiceExecutorConfigurationProperties.proxyMode
 
-        val coreService = if (isProxyMode) {
-            NoopChunkProcessingServiceImpl()
+        return if (isProxyMode) {
+            createProxyModeService()
         } else {
-            createChunkProcessingServiceImpl()
+            createFullModeService()
         }
+    }
 
+    private fun createProxyModeService(): ChunkProcessingService {
+        val coreService = NoopChunkProcessingServiceImpl()
         return ObservingChunkProcessingServiceDelegate(
-            DialogAccumulatorDelegate(coreService)
+            DialogAccumulatorDelegate(coreService, NoopDialogTurnPublisher)
         )
     }
 
-    private fun createChunkProcessingServiceImpl(): ChunkProcessingService {
+    private fun createFullModeService(): ChunkProcessingService {
         val processingState = MutableStateFlow<ProcessingState>(ProcessingState.AwaitingContext)
+        val coreService = createChunkProcessingServiceImpl(processingState)
+        val dialogTurnPublisher = KapDialogTurnPublisher(kapProducerClient, processingState)
+        return ObservingChunkProcessingServiceDelegate(
+            DialogAccumulatorDelegate(coreService, dialogTurnPublisher)
+        )
+    }
+
+    private fun createChunkProcessingServiceImpl(
+        processingState: MutableStateFlow<ProcessingState>
+    ): ChunkProcessingService {
         val callbackChannel = Channel<VoiceRequest>(capacity = Channel.BUFFERED)
         val sessionScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val analyticsPublisher = KapAnalyticsPublisher(kapProducerClient, processingState)
 
         val contextService = ContextServiceImpl(processingState)
         val functionCallService = FunctionCallServiceImpl(
             processingState,
             callbackChannel,
             gigaVoiceAgentClient,
-            sessionScope
+            sessionScope,
+            analyticsPublisher
         )
         val settingsService = SettingsServiceImpl(
             processingState,
@@ -67,7 +87,8 @@ class ChunkProcessingServiceFactoryImpl(
             gigaVoiceAgentClient,
             configuratorClient,
             typedSdsClient,
-            voiceExecutorConfigurationProperties
+            voiceExecutorConfigurationProperties,
+            analyticsPublisher
         )
 
         return ChunkProcessingServiceImpl(

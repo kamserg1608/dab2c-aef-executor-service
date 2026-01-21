@@ -11,10 +11,13 @@ dependencies {
     implementation(appProject)
     implementation(project(":executor-services:voice-executor"))
     implementation(project(":executor-libraries:context"))
+    implementation(project(":executor-clients:kap-producer"))
 
     testImplementation(libs.bundles.grpc)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.kotlin.logging.jvm)
     testImplementation(libs.wiremock.spring.boot)
+    testImplementation(libs.spring.kafka)
+    testImplementation(libs.spring.kafka.test)
     implementation(libs.bundles.ktor.client)
 }

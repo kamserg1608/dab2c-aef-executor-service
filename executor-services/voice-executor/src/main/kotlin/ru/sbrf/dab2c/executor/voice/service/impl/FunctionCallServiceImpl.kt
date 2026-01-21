@@ -11,6 +11,7 @@ import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.model.toGigaAgentContext
+import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
 import ru.sbrf.dab2c.executor.voice.service.api.FunctionCallService
 
 /**
@@ -21,7 +22,8 @@ class FunctionCallServiceImpl(
     private val processingState: MutableStateFlow<ProcessingState>,
     private val callBackChannel: Channel<VoiceRequest>,
     private val gigaVoiceAgentClient: GigaVoiceAgentClient,
-    private val scope: CoroutineScope
+    private val scope: CoroutineScope,
+    private val analyticsPublisher: AnalyticsPublisher
 ) : FunctionCallService {
 
     private val logger = KotlinLogging.logger {}
@@ -55,14 +57,17 @@ class FunctionCallServiceImpl(
 
         scope.launch {
             try {
-                val result = gigaVoiceAgentClient.executeFunctionCall(
+                val functionCallResult = gigaVoiceAgentClient.executeFunctionCall(
                     context = context,
                     agentConfiguration = state.agentConfiguration,
                     functionCalling = functionCalling,
                     daSessionInfo = state.daSessionInfo,
                     contextData = state.contextData
                 )
-                callBackChannel.send(VoiceRequest.FunctionResult(result))
+
+                analyticsPublisher.publishAnalytics(functionCallResult.analytics, context.daRequestId)
+
+                callBackChannel.send(VoiceRequest.FunctionResult(functionCallResult.result))
             } catch (e: Exception) {
                 logger.error(e) { "Failed to execute backend function '${functionCalling.functionCall.name}'" }
                 throw e

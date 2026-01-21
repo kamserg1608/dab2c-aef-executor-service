@@ -22,6 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
+import org.springframework.kafka.test.EmbeddedKafkaBroker
+import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.context.ActiveProfiles
 import org.wiremock.spring.ConfigureWireMock
 import org.wiremock.spring.EnableWireMock
@@ -45,6 +47,10 @@ import ru.sbrf.dab2c.executor.library.context.mdc.RequestContext
     ConfigureWireMock(name = "gigaVoiceAgent", baseUrlProperties = ["giga.voice.agent.client.baseUrl"]),
     ConfigureWireMock(name = "efsAdapter", baseUrlProperties = ["efs.adapter.baseUrl"])
 )
+@EmbeddedKafka(
+    partitions = 1,
+    topics = ["dab2c-core-dialogs", "dab2c-agents"]
+)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class BaseGigaVoiceIntegrationTest {
 
@@ -65,6 +71,9 @@ abstract class BaseGigaVoiceIntegrationTest {
 
     @Autowired
     protected lateinit var mockGigaVoiceService: MockGigaVoiceService
+
+    @Autowired
+    protected lateinit var embeddedKafkaBroker: EmbeddedKafkaBroker
 
     private lateinit var clientChannel: ManagedChannel
     protected lateinit var clientStub: IvrServiceCoroutineStub

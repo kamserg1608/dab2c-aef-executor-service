@@ -6,10 +6,21 @@ import GigaVoiceProtocol.contentFromModel
 import GigaVoiceProtocol.functionCall
 import GigaVoiceProtocol.functionCalling
 import GigaVoiceProtocol.gigaVoiceResponse
+import GigaVoiceProtocol.inputTranscription
 import GigaVoiceProtocol.outputTranscription
 import com.google.protobuf.ByteString
 
 object GigaVoiceResponseFixtures {
+
+    fun inputTranscriptionResponse(
+        text: String = "user input",
+        timestamp: Long = System.currentTimeMillis(),
+    ): GigaVoiceResponse = gigaVoiceResponse {
+        inputTranscription = inputTranscription {
+            this.text = text
+            this.timestamp = timestamp
+        }
+    }
 
     fun outputTranscriptionResponse(
         text: String = "response",

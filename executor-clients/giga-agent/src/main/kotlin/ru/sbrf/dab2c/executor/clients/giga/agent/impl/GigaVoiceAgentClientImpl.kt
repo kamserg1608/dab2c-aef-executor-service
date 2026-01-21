@@ -1,5 +1,6 @@
 package ru.sbrf.dab2c.executor.clients.giga.agent.impl
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -11,15 +12,17 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceFunctionCallRequestBuilder
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsMapper
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsRequestBuilder
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.ACLAgentAnalytics
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCallResult
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaAgentRequestContext
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsResponseSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceSettingsResponseSchema
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.SettingsResult
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
+import ru.sbrf.dab2c.executor.domain.voice.AgentAnalytics
 import ru.sbrf.dab2c.executor.domain.voice.ContextData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
-import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
-import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 
 private val logger = KotlinLogging.logger {}
@@ -40,7 +43,7 @@ class GigaVoiceAgentClientImpl(
         voiceSettings: VoiceSettings,
         daSessionInfo: DaSessionInfo,
         contextData: ContextData
-    ): Pair<VoiceSettings, FunctionPerformers> {
+    ): SettingsResult {
         logger.debug { "Getting settings for session: ${context.ufsSession}" }
 
         val request = settingsRequestBuilder.build(
@@ -58,7 +61,11 @@ class GigaVoiceAgentClientImpl(
             throw e
         }
 
-        return mapper.toDomainSettings(apiResponse.settings) to mapper.toDomainPerformers(apiResponse.performers)
+        return SettingsResult(
+            settings = mapper.toDomainSettings(apiResponse.settings),
+            performers = mapper.toDomainPerformers(apiResponse.performers),
+            analytics = apiResponse.agentAnalytics?.map { it.toDomain() }.orEmpty()
+        )
     }
 
     override suspend fun executeFunctionCall(
@@ -67,7 +74,7 @@ class GigaVoiceAgentClientImpl(
         functionCalling: FunctionCallingData,
         daSessionInfo: DaSessionInfo,
         contextData: ContextData
-    ): FunctionResultData {
+    ): FunctionCallResult {
         logger.debug { "Executing function call for session: ${context.ufsSession}" }
 
         val request = functionCallRequestBuilder.build(
@@ -85,6 +92,18 @@ class GigaVoiceAgentClientImpl(
             throw e
         }
 
-        return mapper.toDomainFunctionResult(apiResponse.functionResult)
+        return FunctionCallResult(
+            result = mapper.toDomainFunctionResult(apiResponse.functionResult),
+            analytics = apiResponse.agentAnalytics?.map { it.toDomain() }.orEmpty()
+        )
+    }
+
+    private fun ACLAgentAnalytics.toDomain(): AgentAnalytics = AgentAnalytics(
+        dataVersion = dataVersion,
+        data = objectMapper.writeValueAsString(data)
+    )
+
+    private companion object {
+        private val objectMapper = jacksonObjectMapper()
     }
 }

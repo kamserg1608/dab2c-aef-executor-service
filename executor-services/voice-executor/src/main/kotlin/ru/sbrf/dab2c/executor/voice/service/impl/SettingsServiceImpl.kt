@@ -14,18 +14,21 @@ import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfiguration
 import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.model.toGigaAgentContext
+import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
 import ru.sbrf.dab2c.executor.voice.service.api.SettingsService
 
 /**
  * Default implementation of SettingsService.
  */
+@Suppress("LongParameterList")
 class SettingsServiceImpl(
     private val processingState: MutableStateFlow<ProcessingState>,
     private val callbackChannel: Channel<VoiceRequest>,
     private val gigaVoiceAgentClient: GigaVoiceAgentClient,
     private val configuratorClient: ConfiguratorClient,
     private val typedSdsClient: TypedSdsClient,
-    private val configProperties: VoiceExecutorConfigurationProperties
+    private val configProperties: VoiceExecutorConfigurationProperties,
+    private val analyticsPublisher: AnalyticsPublisher
 ) : SettingsService {
 
     private val logger = KotlinLogging.logger {}
@@ -70,14 +73,14 @@ class SettingsServiceImpl(
             daSessionInfo = daSessionInfo
         )
 
-        val (processedSettings, performers) = gigaVoiceAgentClient.getSettings(
+        val settingsResult = gigaVoiceAgentClient.getSettings(
             context = context,
             agentConfiguration = agentConfiguration,
             voiceSettings = settings,
             daSessionInfo = daSessionInfo,
             contextData = contextData
         )
-        logger.debug { "Received settings response with ${performers.functions.size} performers" }
+        logger.debug { "Received settings response with ${settingsResult.performers.functions.size} performers" }
 
         processingState.value = ProcessingState.Serving(
             contextData = contextData,
@@ -85,9 +88,11 @@ class SettingsServiceImpl(
             sessionConfiguration = sessionConfiguration,
             conversationId = conversationId,
             daSessionInfo = daSessionInfo,
-            functionRegistry = performers
+            functionRegistry = settingsResult.performers
         )
 
-        return processedSettings
+        analyticsPublisher.publishAnalytics(settingsResult.analytics, context.daRequestId)
+
+        return settingsResult.settings
     }
 }

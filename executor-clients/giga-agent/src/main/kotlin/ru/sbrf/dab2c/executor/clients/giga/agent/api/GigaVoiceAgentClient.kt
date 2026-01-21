@@ -1,12 +1,12 @@
 package ru.sbrf.dab2c.executor.clients.giga.agent.api
 
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCallResult
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaAgentRequestContext
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.SettingsResult
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.domain.voice.ContextData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
-import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
-import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 
 /**
@@ -23,7 +23,7 @@ interface GigaVoiceAgentClient {
         voiceSettings: VoiceSettings,
         daSessionInfo: DaSessionInfo,
         contextData: ContextData
-    ): Pair<VoiceSettings, FunctionPerformers>
+    ): SettingsResult
 
     /**
      * Execute a function call on the AB IVR side.
@@ -34,5 +34,5 @@ interface GigaVoiceAgentClient {
         functionCalling: FunctionCallingData,
         daSessionInfo: DaSessionInfo,
         contextData: ContextData
-    ): FunctionResultData
+    ): FunctionCallResult
 }

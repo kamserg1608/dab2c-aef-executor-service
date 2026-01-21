@@ -20,3 +20,15 @@ giga:
 efs:
   adapter:
     baseUrl: ${wiremock.server.efsAdapter.baseUrl:http://localhost:8081}
+
+# KAP Producer configuration
+kafka:
+  kap:
+    producer:
+      enabled: true
+      bootstrapServers: ${spring.embedded.kafka.brokers}
+      dialogsTopic: dab2c-core-dialogs
+      agentsTopic: dab2c-agents
+      clientId: test-kap-producer
+      acks: all
+      retries: 1

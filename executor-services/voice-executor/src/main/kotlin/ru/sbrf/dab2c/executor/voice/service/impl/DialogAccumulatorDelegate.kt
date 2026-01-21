@@ -6,19 +6,19 @@ import kotlinx.coroutines.flow.onEach
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
+import ru.sbrf.dab2c.executor.voice.service.api.DialogTurnPublisher
 
 /**
- * ChunkProcessingService decorator that accumulates dialog transcriptions.
+ * ChunkProcessingService decorator that accumulates dialog transcriptions and publishes them.
  *
  * Accumulates InputTranscription chunks until OutputTranscription arrives,
  * then accumulates OutputTranscription chunks until next InputTranscription.
- * When a complete input-output pair is collected, logs the dialog turn.
+ * When a complete input-output pair is collected, publishes the dialog turn.
  */
 class DialogAccumulatorDelegate(
-    private val delegate: ChunkProcessingService
+    private val delegate: ChunkProcessingService,
+    private val dialogTurnPublisher: DialogTurnPublisher
 ) : ChunkProcessingService {
-
-    private val logger = KotlinLogging.logger {}
 
     private val inputChunks = mutableListOf<String>()
     private val outputChunks = mutableListOf<String>()
@@ -38,11 +38,11 @@ class DialogAccumulatorDelegate(
         return delegate.processResponseChunks(accumulatedChunks)
     }
 
-    private fun handleInputTranscription(response: VoiceResponse.InputTranscription) {
+    private suspend fun handleInputTranscription(response: VoiceResponse.InputTranscription) {
         val text = response.transcription.text
 
         if (phase == Phase.ACCUMULATING_OUTPUT) {
-            logDialogTurn()
+            publishDialogTurn()
             reset()
         }
 
@@ -59,13 +59,13 @@ class DialogAccumulatorDelegate(
         logger.debug { "Accumulated output chunk: '$text'" }
     }
 
-    private fun logDialogTurn() {
+    private suspend fun publishDialogTurn() {
         val inputPhrase = inputChunks.joinToString("")
         val outputPhrase = outputChunks.joinToString("")
 
-        logger.info {
-            "Dialog turn completed: input='$inputPhrase', output='$outputPhrase'"
-        }
+        logger.info { "Dialog turn completed: input='$inputPhrase', output='$outputPhrase'" }
+
+        dialogTurnPublisher.publishDialogTurn(inputPhrase, outputPhrase)
     }
 
     private fun reset() {
@@ -77,5 +77,9 @@ class DialogAccumulatorDelegate(
         AWAITING_INPUT,
         ACCUMULATING_INPUT,
         ACCUMULATING_OUTPUT
+    }
+
+    private companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }

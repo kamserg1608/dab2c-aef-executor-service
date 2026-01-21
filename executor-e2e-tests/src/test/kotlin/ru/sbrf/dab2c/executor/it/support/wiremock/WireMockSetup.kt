@@ -60,6 +60,26 @@ object WireMockSetup {
         )
     }
 
+    fun WireMockServer.stubGigaAgentSettingsWithAnalytics(
+        dataVersion: String,
+        analyticsData: String,
+        withFunctions: Boolean = false
+    ) {
+        stubFor(
+            post(urlEqualTo("/settings"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(
+                            WireMockResponses.gigaVoiceSettingsWithAnalyticsResponse(
+                                dataVersion, analyticsData, withFunctions
+                            )
+                        )
+                )
+        )
+    }
+
     fun WireMockServer.stubGigaAgentFunctions(functionName: String, resultContent: String) {
         stubFor(
             post(urlEqualTo("/functions"))
@@ -89,6 +109,27 @@ object WireMockSetup {
         )
     }
 
+    fun WireMockServer.stubGigaAgentFunctionsWithAnalytics(
+        functionName: String,
+        resultContent: String,
+        dataVersion: String,
+        analyticsData: String
+    ) {
+        stubFor(
+            post(urlEqualTo("/functions"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(
+                            WireMockResponses.gigaVoiceFunctionsWithAnalyticsResponse(
+                                functionName, resultContent, dataVersion, analyticsData
+                            )
+                        )
+                )
+        )
+    }
+
     fun setupFullModeStubs(
         efsAdapter: WireMockServer,
         gigaAgent: WireMockServer,
@@ -100,5 +141,19 @@ object WireMockSetup {
             stubSdsSessionReadData()
         }
         gigaAgent.stubGigaAgentSettings(withFunctions)
+    }
+
+    fun setupFullModeStubsWithAnalytics(
+        efsAdapter: WireMockServer,
+        gigaAgent: WireMockServer,
+        dataVersion: String,
+        analyticsData: String
+    ) {
+        with(efsAdapter) {
+            stubEfsRestAgent()
+            stubEfsSessionConfig()
+            stubSdsSessionReadData()
+        }
+        gigaAgent.stubGigaAgentSettingsWithAnalytics(dataVersion, analyticsData)
     }
 }

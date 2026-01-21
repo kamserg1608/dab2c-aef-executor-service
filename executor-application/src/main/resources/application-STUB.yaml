@@ -59,6 +59,15 @@ efs:
       multiplier: 2.0
       statusCodes: 502,503,504
 
+# KAP Producer (disabled in STUB mode)
+kafka:
+  kap:
+    producer:
+      enabled: false
+      bootstrapServers: localhost:9092
+      dialogsTopic: dab2c-core-dialogs
+      agentsTopic: dab2c-agents
+
 # Logging
 logging:
   level:

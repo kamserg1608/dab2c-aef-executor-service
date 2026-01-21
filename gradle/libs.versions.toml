@@ -39,6 +39,10 @@ spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-s
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 
+# Spring Kafka (versions managed by BOM)
+spring-kafka = { module = "org.springframework.kafka:spring-kafka" }
+spring-kafka-test = { module = "org.springframework.kafka:spring-kafka-test" }
+
 # JUnit (version managed by Spring Boot BOM)
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 

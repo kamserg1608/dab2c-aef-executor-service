@@ -94,6 +94,42 @@ object WireMockResponses {
     """.trimIndent()
 
     /**
+     * GigaVoice Agent settings response with agent analytics.
+     */
+    fun gigaVoiceSettingsWithAnalyticsResponse(
+        dataVersion: String,
+        analyticsData: String,
+        withFunctions: Boolean = false
+    ): String {
+        val functions = if (withFunctions) {
+            """
+                {"name": "get_account_balance", "is_backend_function": true},
+                {"name": "transfer_to_operator", "is_backend_function": false},
+                {"name": "check_transaction_status", "is_backend_function": true}
+            """.trimIndent()
+        } else {
+            ""
+        }
+        return """
+            {
+                "settings": {
+                    "voice_call_id": "test-call-123",
+                    "audio": {}
+                },
+                "performers": {
+                    "functions": [$functions]
+                },
+                "agent_analytics": [
+                    {
+                        "data_version": "$dataVersion",
+                        "data": $analyticsData
+                    }
+                ]
+            }
+        """.trimIndent()
+    }
+
+    /**
      * GigaVoice Agent /functions endpoint response.
      */
     fun gigaVoiceFunctionsResponse(functionName: String, resultContent: String): String {
@@ -104,6 +140,32 @@ object WireMockResponses {
                     "content": "$escapedContent",
                     "function_name": "$functionName"
                 }
+            }
+        """.trimIndent()
+    }
+
+    /**
+     * GigaVoice Agent /functions endpoint response with agent analytics.
+     */
+    fun gigaVoiceFunctionsWithAnalyticsResponse(
+        functionName: String,
+        resultContent: String,
+        dataVersion: String,
+        analyticsData: String
+    ): String {
+        val escapedContent = resultContent.replace("\"", "\\\"")
+        return """
+            {
+                "function_result": {
+                    "content": "$escapedContent",
+                    "function_name": "$functionName"
+                },
+                "agent_analytics": [
+                    {
+                        "data_version": "$dataVersion",
+                        "data": $analyticsData
+                    }
+                ]
             }
         """.trimIndent()
     }

@@ -57,6 +57,18 @@ efs:
       multiplier: ${EFS_ADAPTER_RETRY_MULTIPLIER:2.0}
       statusCodes: ${EFS_ADAPTER_RETRY_STATUS_CODES:502,503,504}
 
+# KAP Producer
+kafka:
+  kap:
+    producer:
+      enabled: ${KAFKA_KAP_PRODUCER_ENABLED:true}
+      bootstrapServers: ${KAFKA_KAP_BOOTSTRAP_SERVERS}
+      dialogsTopic: ${KAFKA_KAP_DIALOGS_TOPIC:dab2c-core-dialogs}
+      agentsTopic: ${KAFKA_KAP_AGENTS_TOPIC:dab2c-agents}
+      clientId: ${KAFKA_KAP_CLIENT_ID:AVG}
+      acks: ${KAFKA_KAP_ACKS:all}
+      retries: ${KAFKA_KAP_RETRIES:3}
+
 # Logging
 logging:
   level:
