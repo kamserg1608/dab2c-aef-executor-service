@@ -1,7 +1,5 @@
 package ru.sbrf.dab2c.executor.it.tests.grpc.full
 
-import GigaVoiceProtocol.GigaVoice.GigaVoiceResponse
-import GigaVoiceProtocol.GigaVoice.OutputTranscription
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
@@ -11,16 +9,15 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioContent
-import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioSettings
-import ru.sbrf.dab2c.executor.clients.ivr.proto.ContentFromClient
-import ru.sbrf.dab2c.executor.clients.ivr.proto.Context
-import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
-import ru.sbrf.dab2c.executor.clients.ivr.proto.Settings
-import ru.sbrf.dab2c.executor.it.support.MetadataInterceptor
-import ru.sbrf.dab2c.executor.it.support.WireMockResponses
+import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.outputTranscriptionResponse
+import ru.sbrf.dab2c.executor.it.support.fixtures.IvrRequestFixtures.audioRequest
+import ru.sbrf.dab2c.executor.it.support.fixtures.IvrRequestFixtures.contextRequest
+import ru.sbrf.dab2c.executor.it.support.fixtures.IvrRequestFixtures.settingsRequest
+import ru.sbrf.dab2c.executor.it.support.grpc.MetadataInterceptor
 import ru.sbrf.dab2c.executor.it.support.runItTest
-import ru.sbrf.dab2c.executor.it.support.withSession
+import ru.sbrf.dab2c.executor.it.support.session.withSession
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockResponses
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupFullModeStubs
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 
 /**
@@ -31,11 +28,11 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should call EFS and GigaAgent when processing settings`() = runItTest {
-        setupSuccessfulStubs()
+        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
 
         withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
-            session.sendRequest(createContextRequest())
-            session.sendRequest(createSettingsRequest("test-call-123"))
+            session.sendRequest(contextRequest())
+            session.sendRequest(settingsRequest("test-call-123"))
             wireMock.awaitPostCall("/settings")
 
             efsAdapterMock.verify(1, postRequestedFor(urlEqualTo("/configurator/rest-agent")))
@@ -45,16 +42,16 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should forward settings to downstream after initialization`() = runItTest {
-        setupSuccessfulStubs()
+        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
 
         withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
-            session.sendRequest(createContextRequest())
-            session.sendRequest(createSettingsRequest("forwarded-call-456"))
+            session.sendRequest(contextRequest())
+            session.sendRequest(settingsRequest("forwarded-call-456"))
 
             val forwardedSettings = mock.awaitRequest { it.hasSettings() }
             assertThat(forwardedSettings).isNotNull()
 
-            mock.sendResponse(createDefaultResponse())
+            mock.sendResponse(outputTranscriptionResponse())
             val response = session.awaitResponse()
             assertThat(response).isNotNull()
         }
@@ -62,23 +59,23 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should process audio after settings initialization`() = runItTest {
-        setupSuccessfulStubs()
+        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
 
         withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
-            session.sendRequest(createContextRequest())
-            session.sendRequest(createSettingsRequest("audio-flow-test"))
+            session.sendRequest(contextRequest())
+            session.sendRequest(settingsRequest("audio-flow-test"))
             mock.awaitRequest { it.hasSettings() }
 
-            mock.sendResponse(createDefaultResponse())
+            mock.sendResponse(outputTranscriptionResponse())
             session.awaitResponse()
 
-            session.sendRequest(createAudioRequest(speechStart = true))
+            session.sendRequest(audioRequest(speechStart = true))
             mock.awaitRequest { it.hasInput() && it.input.audioContent.speechStart }
 
-            mock.sendResponse(createDefaultResponse())
+            mock.sendResponse(outputTranscriptionResponse())
             session.awaitResponse()
 
-            session.sendRequest(createAudioRequest(speechEnd = true))
+            session.sendRequest(audioRequest(speechEnd = true))
             mock.awaitRequest { it.hasInput() && it.input.audioContent.speechEnd }
 
             efsAdapterMock.verify(1, postRequestedFor(urlEqualTo("/configurator/rest-agent")))
@@ -102,8 +99,8 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
         )
 
         val requests = flow {
-            emit(createContextRequest())
-            emit(createSettingsRequest("efs-error-test"))
+            emit(contextRequest())
+            emit(settingsRequest("efs-error-test"))
         }
 
         var caughtException: StatusException? = null
@@ -160,8 +157,8 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
         )
 
         val requests = flow {
-            emit(createContextRequest())
-            emit(createSettingsRequest("agent-error-test"))
+            emit(contextRequest())
+            emit(settingsRequest("agent-error-test"))
         }
 
         var caughtException: StatusException? = null
@@ -179,7 +176,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should fail when session header is missing`() = runItTest {
-        setupSuccessfulStubs()
+        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
 
         val stubWithoutSession = clientStub.withInterceptors(
             MetadataInterceptor(
@@ -192,8 +189,8 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
         )
 
         val requests = flow {
-            emit(createContextRequest())
-            emit(createSettingsRequest("missing-session-test"))
+            emit(contextRequest())
+            emit(settingsRequest("missing-session-test"))
         }
 
         val result = runCatching { stubWithoutSession.session(requests).toList() }
@@ -204,7 +201,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should fail when token header is missing`() = runItTest {
-        setupSuccessfulStubs()
+        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
 
         val stubWithoutToken = clientStub.withInterceptors(
             MetadataInterceptor(
@@ -217,8 +214,8 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
         )
 
         val requests = flow {
-            emit(createContextRequest())
-            emit(createSettingsRequest("missing-token-test"))
+            emit(contextRequest())
+            emit(settingsRequest("missing-token-test"))
         }
 
         val result = runCatching { stubWithoutToken.session(requests).toList() }
@@ -229,7 +226,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should fail when edu_id header is missing`() = runItTest {
-        setupSuccessfulStubs()
+        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
 
         val stubWithoutEduId = clientStub.withInterceptors(
             MetadataInterceptor(
@@ -242,8 +239,8 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
         )
 
         val requests = flow {
-            emit(createContextRequest())
-            emit(createSettingsRequest("missing-edu-id-test"))
+            emit(contextRequest())
+            emit(settingsRequest("missing-edu-id-test"))
         }
 
         val result = runCatching { stubWithoutEduId.session(requests).toList() }
@@ -251,91 +248,4 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(result.isFailure).isTrue()
         assertThat(result.exceptionOrNull()).isInstanceOf(StatusException::class.java)
     }
-
-    private fun setupSuccessfulStubs() {
-        efsAdapterMock.stubFor(
-            post(urlEqualTo("/configurator/rest-agent"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(WireMockResponses.EFS_ADAPTER_RESPONSE)
-                )
-        )
-
-        efsAdapterMock.stubFor(
-            post(urlEqualTo("/configurator/session"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(WireMockResponses.EFS_SESSION_CONFIG_RESPONSE)
-                )
-        )
-
-        efsAdapterMock.stubFor(
-            post(urlEqualTo("/session/readData"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(WireMockResponses.SDS_SESSION_READ_DATA_RESPONSE)
-                )
-        )
-
-        gigaVoiceAgentMock.stubFor(
-            post(urlEqualTo("/settings"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(WireMockResponses.GIGA_VOICE_SETTINGS_RESPONSE)
-                )
-        )
-    }
-
-    private fun createSettingsRequest(voiceCallId: String): IvrRequest =
-        IvrRequest.newBuilder()
-            .setSettings(
-                Settings.newBuilder()
-                    .setVoiceCallId(voiceCallId)
-                    .setAudio(AudioSettings.getDefaultInstance())
-                    .build()
-            )
-            .build()
-
-    private fun createAudioRequest(
-        speechStart: Boolean = false,
-        speechEnd: Boolean = false
-    ): IvrRequest =
-        IvrRequest.newBuilder()
-            .setInput(
-                ContentFromClient.newBuilder()
-                    .setAudioContent(
-                        AudioContent.newBuilder()
-                            .setSpeechStart(speechStart)
-                            .setSpeechEnd(speechEnd)
-                            .build()
-                    )
-                    .build()
-            )
-            .build()
-
-    private fun createContextRequest(): IvrRequest =
-        IvrRequest.newBuilder()
-            .setContext(
-                Context.newBuilder()
-                    .setContent("{}")
-                    .build()
-            )
-            .build()
-
-    private fun createDefaultResponse(): GigaVoiceResponse =
-        GigaVoiceResponse.newBuilder()
-            .setOutputTranscription(
-                OutputTranscription.newBuilder()
-                    .setText("Response")
-                    .build()
-            )
-            .build()
 }

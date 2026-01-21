@@ -1,4 +1,4 @@
-package ru.sbrf.dab2c.executor.it.support
+package ru.sbrf.dab2c.executor.it.support.wiremock
 
 /**
  * Predefined JSON responses for WireMock stubs in integration tests.

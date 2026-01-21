@@ -29,7 +29,7 @@ import org.wiremock.spring.InjectWireMock
 import ru.sbrf.dab2c.executor.application.ApplicationEntryPoint
 import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrServiceGrpcKt.IvrServiceCoroutineStub
 import ru.sbrf.dab2c.executor.it.mock.MockGigaVoiceService
-import ru.sbrf.dab2c.executor.it.support.MetadataInterceptor
+import ru.sbrf.dab2c.executor.it.support.grpc.MetadataInterceptor
 import ru.sbrf.dab2c.executor.library.context.mdc.RequestContext
 
 /**

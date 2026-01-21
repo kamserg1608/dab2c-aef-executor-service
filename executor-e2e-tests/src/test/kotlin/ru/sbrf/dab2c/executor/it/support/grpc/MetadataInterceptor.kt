@@ -1,4 +1,4 @@
-package ru.sbrf.dab2c.executor.it.support
+package ru.sbrf.dab2c.executor.it.support.grpc
 
 import io.grpc.CallOptions
 import io.grpc.Channel

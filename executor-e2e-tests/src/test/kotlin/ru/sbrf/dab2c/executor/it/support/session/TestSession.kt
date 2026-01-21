@@ -1,4 +1,4 @@
-package ru.sbrf.dab2c.executor.it.support
+package ru.sbrf.dab2c.executor.it.support.session
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job

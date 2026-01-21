@@ -1,0 +1,104 @@
+package ru.sbrf.dab2c.executor.it.support.wiremock
+
+import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+
+object WireMockSetup {
+
+    fun WireMockServer.stubEfsRestAgent() {
+        stubFor(
+            post(urlEqualTo("/configurator/rest-agent"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.EFS_ADAPTER_RESPONSE)
+                )
+        )
+    }
+
+    fun WireMockServer.stubEfsSessionConfig() {
+        stubFor(
+            post(urlEqualTo("/configurator/session"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.EFS_SESSION_CONFIG_RESPONSE)
+                )
+        )
+    }
+
+    fun WireMockServer.stubSdsSessionReadData() {
+        stubFor(
+            post(urlEqualTo("/session/readData"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.SDS_SESSION_READ_DATA_RESPONSE)
+                )
+        )
+    }
+
+    fun WireMockServer.stubGigaAgentSettings(withFunctions: Boolean = false) {
+        val responseBody = if (withFunctions) {
+            WireMockResponses.GIGA_VOICE_SETTINGS_WITH_FUNCTIONS_RESPONSE
+        } else {
+            WireMockResponses.GIGA_VOICE_SETTINGS_RESPONSE
+        }
+        stubFor(
+            post(urlEqualTo("/settings"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(responseBody)
+                )
+        )
+    }
+
+    fun WireMockServer.stubGigaAgentFunctions(functionName: String, resultContent: String) {
+        stubFor(
+            post(urlEqualTo("/functions"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.gigaVoiceFunctionsResponse(functionName, resultContent))
+                )
+        )
+    }
+
+    fun WireMockServer.stubGigaAgentFunctionsWithDelay(
+        functionName: String,
+        resultContent: String,
+        delayMs: Int,
+    ) {
+        stubFor(
+            post(urlEqualTo("/functions"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withFixedDelay(delayMs)
+                        .withBody(WireMockResponses.gigaVoiceFunctionsResponse(functionName, resultContent))
+                )
+        )
+    }
+
+    fun setupFullModeStubs(
+        efsAdapter: WireMockServer,
+        gigaAgent: WireMockServer,
+        withFunctions: Boolean = false,
+    ) {
+        with(efsAdapter) {
+            stubEfsRestAgent()
+            stubEfsSessionConfig()
+            stubSdsSessionReadData()
+        }
+        gigaAgent.stubGigaAgentSettings(withFunctions)
+    }
+}

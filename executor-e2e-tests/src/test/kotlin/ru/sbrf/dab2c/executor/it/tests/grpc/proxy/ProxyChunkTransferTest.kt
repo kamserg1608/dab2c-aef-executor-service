@@ -20,12 +20,9 @@ import com.google.protobuf.ByteString
 import com.google.protobuf.Duration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioContent
 import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioSettings
 import ru.sbrf.dab2c.executor.clients.ivr.proto.ContentForSynthesis
-import ru.sbrf.dab2c.executor.clients.ivr.proto.ContentFromClient
 import ru.sbrf.dab2c.executor.clients.ivr.proto.FirstSpeaker
-import ru.sbrf.dab2c.executor.clients.ivr.proto.FunctionResult
 import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaChatSettings
 import ru.sbrf.dab2c.executor.clients.ivr.proto.InitialContext
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Input
@@ -33,8 +30,16 @@ import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Message
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Output
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Settings
+import ru.sbrf.dab2c.executor.clients.ivr.proto.audioContent
+import ru.sbrf.dab2c.executor.clients.ivr.proto.contentForSynthesis
+import ru.sbrf.dab2c.executor.clients.ivr.proto.contentFromClient
+import ru.sbrf.dab2c.executor.clients.ivr.proto.functionResult
+import ru.sbrf.dab2c.executor.clients.ivr.proto.ivrRequest
+import ru.sbrf.dab2c.executor.clients.ivr.proto.settings
+import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.outputTranscriptionResponse
+import ru.sbrf.dab2c.executor.it.support.fixtures.IvrRequestFixtures.settingsRequest
 import ru.sbrf.dab2c.executor.it.support.runItTest
-import ru.sbrf.dab2c.executor.it.support.withSession
+import ru.sbrf.dab2c.executor.it.support.session.withSession
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 
 /**
@@ -126,7 +131,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
             assertThat(received.enableWhisper).isFalse()
             assertThat(received.enableEmotion).isTrue()
 
-            mock.sendResponse(createDefaultResponse())
+            mock.sendResponse(outputTranscriptionResponse())
             session.awaitResponse()
         }
     }
@@ -134,21 +139,20 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
     @Test
     fun `should transfer AudioContent with audio bytes`() = runItTest {
         val audioBytes = byteArrayOf(0x01, 0x02, 0x03, 0x04, 0x05, 0x10, 0x20, 0x30)
-        val audioContent = AudioContent.newBuilder()
-            .setAudioChunk(ByteString.copyFrom(audioBytes))
-            .build()
 
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(
-                IvrRequest.newBuilder()
-                    .setInput(ContentFromClient.newBuilder().setAudioContent(audioContent).build())
-                    .build()
+                ivrRequest {
+                    input = contentFromClient {
+                        audioContent = audioContent { audioChunk = ByteString.copyFrom(audioBytes) }
+                    }
+                }
             )
 
             val received = mock.awaitRequest { it.hasInput() }.input.audioContent
             assertThat(received.audioChunk.toByteArray()).isEqualTo(audioBytes)
 
-            mock.sendResponse(createDefaultResponse())
+            mock.sendResponse(outputTranscriptionResponse())
             session.awaitResponse()
         }
     }
@@ -157,60 +161,52 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
     fun `should transfer AudioContent with speech markers`() = runItTest {
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(
-                IvrRequest.newBuilder()
-                    .setInput(
-                        ContentFromClient.newBuilder()
-                            .setAudioContent(
-                                AudioContent.newBuilder()
-                                    .setSpeechStart(true)
-                                    .setSpeechEnd(false)
-                                    .build()
-                            )
-                            .build()
-                    )
-                    .build()
+                ivrRequest {
+                    input = contentFromClient {
+                        audioContent = audioContent {
+                            speechStart = true
+                            speechEnd = false
+                        }
+                    }
+                }
             )
             val receivedStart = mock.awaitRequest { it.hasInput() }.input.audioContent
             assertThat(receivedStart.speechStart).isTrue()
             assertThat(receivedStart.speechEnd).isFalse()
-            mock.sendResponse(createDefaultResponse())
+            mock.sendResponse(outputTranscriptionResponse())
             session.awaitResponse()
 
             session.sendRequest(
-                IvrRequest.newBuilder()
-                    .setInput(
-                        ContentFromClient.newBuilder()
-                            .setAudioContent(
-                                AudioContent.newBuilder()
-                                    .setSpeechStart(false)
-                                    .setSpeechEnd(true)
-                                    .build()
-                            )
-                            .build()
-                    )
-                    .build()
+                ivrRequest {
+                    input = contentFromClient {
+                        audioContent = audioContent {
+                            speechStart = false
+                            speechEnd = true
+                        }
+                    }
+                }
             )
             val receivedEnd = mock.awaitRequest { it.hasInput() }.input.audioContent
             assertThat(receivedEnd.speechStart).isFalse()
             assertThat(receivedEnd.speechEnd).isTrue()
-            mock.sendResponse(createDefaultResponse())
+            mock.sendResponse(outputTranscriptionResponse())
             session.awaitResponse()
         }
     }
 
     @Test
     fun `should transfer ContentForSynthesis with TEXT type`() = runItTest {
-        val synthesisContent = ContentForSynthesis.newBuilder()
-            .setText("Hello, how can I help you today?")
-            .setContentType(ContentForSynthesis.ContentType.TEXT)
-            .setIsFinal(true)
-            .build()
-
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(
-                IvrRequest.newBuilder()
-                    .setInput(ContentFromClient.newBuilder().setContentForSynthesis(synthesisContent).build())
-                    .build()
+                ivrRequest {
+                    input = contentFromClient {
+                        contentForSynthesis = contentForSynthesis {
+                            text = "Hello, how can I help you today?"
+                            contentType = ContentForSynthesis.ContentType.TEXT
+                            isFinal = true
+                        }
+                    }
+                }
             )
 
             val received = mock.awaitRequest { it.hasInput() }.input.contentForSynthesis
@@ -218,7 +214,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
             assertThat(received.contentType.name).isEqualTo("TEXT")
             assertThat(received.isFinal).isTrue()
 
-            mock.sendResponse(createDefaultResponse())
+            mock.sendResponse(outputTranscriptionResponse())
             session.awaitResponse()
         }
     }
@@ -226,17 +222,18 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
     @Test
     fun `should transfer ContentForSynthesis with SSML type`() = runItTest {
         val ssmlText = """<speak><prosody rate="slow">Welcome to our service</prosody></speak>"""
-        val synthesisContent = ContentForSynthesis.newBuilder()
-            .setText(ssmlText)
-            .setContentType(ContentForSynthesis.ContentType.SSML)
-            .setIsFinal(false)
-            .build()
 
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(
-                IvrRequest.newBuilder()
-                    .setInput(ContentFromClient.newBuilder().setContentForSynthesis(synthesisContent).build())
-                    .build()
+                ivrRequest {
+                    input = contentFromClient {
+                        contentForSynthesis = contentForSynthesis {
+                            text = ssmlText
+                            contentType = ContentForSynthesis.ContentType.SSML
+                            isFinal = false
+                        }
+                    }
+                }
             )
 
             val received = mock.awaitRequest { it.hasInput() }.input.contentForSynthesis
@@ -244,26 +241,28 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
             assertThat(received.contentType.name).isEqualTo("SSML")
             assertThat(received.isFinal).isFalse()
 
-            mock.sendResponse(createDefaultResponse())
+            mock.sendResponse(outputTranscriptionResponse())
             session.awaitResponse()
         }
     }
 
     @Test
     fun `should transfer FunctionResult with content and function name`() = runItTest {
-        val functionResult = FunctionResult.newBuilder()
-            .setContent("""{"balance": 1500.50, "currency": "RUB"}""")
-            .setFunctionName("get_account_balance")
-            .build()
-
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
-            session.sendRequest(IvrRequest.newBuilder().setFunctionResult(functionResult).build())
+            session.sendRequest(
+                ivrRequest {
+                    functionResult = functionResult {
+                        content = """{"balance": 1500.50, "currency": "RUB"}"""
+                        functionName = "get_account_balance"
+                    }
+                }
+            )
 
             val received = mock.awaitRequest { it.hasFunctionResult() }.functionResult
             assertThat(received.content).isEqualTo("""{"balance": 1500.50, "currency": "RUB"}""")
             assertThat(received.functionName).isEqualTo("get_account_balance")
 
-            mock.sendResponse(createDefaultResponse())
+            mock.sendResponse(outputTranscriptionResponse())
             session.awaitResponse()
         }
     }
@@ -286,7 +285,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
             .build()
 
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
-            session.sendRequest(createSettingsRequest())
+            session.sendRequest(settingsRequest())
             mock.awaitRequest { it.hasSettings() }
             mock.sendResponse(audioResponse)
 
@@ -329,7 +328,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
             .build()
 
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
-            session.sendRequest(createSettingsRequest())
+            session.sendRequest(settingsRequest())
             mock.awaitRequest { it.hasSettings() }
             mock.sendResponse(additionalDataResponse)
 
@@ -357,7 +356,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
             .build()
 
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
-            session.sendRequest(createSettingsRequest())
+            session.sendRequest(settingsRequest())
             mock.awaitRequest { it.hasSettings() }
             mock.sendResponse(interruptedResponse)
 
@@ -383,7 +382,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
             .build()
 
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
-            session.sendRequest(createSettingsRequest())
+            session.sendRequest(settingsRequest())
             mock.awaitRequest { it.hasSettings() }
             mock.sendResponse(functionCallingResponse)
 
@@ -426,7 +425,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
             .build()
 
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
-            session.sendRequest(createSettingsRequest())
+            session.sendRequest(settingsRequest())
             mock.awaitRequest { it.hasSettings() }
             mock.sendResponse(inputTranscriptionResponse)
 
@@ -461,7 +460,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
             .build()
 
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
-            session.sendRequest(createSettingsRequest())
+            session.sendRequest(settingsRequest())
             mock.awaitRequest { it.hasSettings() }
             mock.sendResponse(outputTranscriptionResponse)
 
@@ -485,7 +484,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
             .build()
 
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
-            session.sendRequest(createSettingsRequest())
+            session.sendRequest(settingsRequest())
             mock.awaitRequest { it.hasSettings() }
             mock.sendResponse(warningResponse)
 
@@ -507,7 +506,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
             .build()
 
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
-            session.sendRequest(createSettingsRequest())
+            session.sendRequest(settingsRequest())
             mock.awaitRequest { it.hasSettings() }
             mock.sendResponse(errorResponse)
 
@@ -517,14 +516,4 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
             assertThat(response.error.message).isEqualTo("Service temporarily unavailable")
         }
     }
-
-    private fun createSettingsRequest(): IvrRequest =
-        IvrRequest.newBuilder()
-            .setSettings(Settings.newBuilder().setVoiceCallId("test").build())
-            .build()
-
-    private fun createDefaultResponse(): GigaVoiceResponse =
-        GigaVoiceResponse.newBuilder()
-            .setOutputTranscription(OutputTranscription.newBuilder().setText("response").build())
-            .build()
 }
