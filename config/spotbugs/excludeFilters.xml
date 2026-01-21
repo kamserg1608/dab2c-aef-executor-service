@@ -403,4 +403,10 @@
             <Bug pattern="NP_NULL_ON_SOME_PATH"/>
         </Or>
     </Match>
+
+    <!-- Exclude false positives from Kotlin coroutines in test classes -->
+    <Match>
+        <Class name="~.*Test.*" />
+        <Bug category="CORRECTNESS"/>
+    </Match>
 </FindBugsFilter>

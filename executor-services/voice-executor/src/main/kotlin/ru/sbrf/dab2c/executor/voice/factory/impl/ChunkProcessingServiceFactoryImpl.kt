@@ -14,6 +14,7 @@ import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.service.impl.ChunkProcessingServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.ContextServiceImpl
+import ru.sbrf.dab2c.executor.voice.service.impl.DialogAccumulatorDelegate
 import ru.sbrf.dab2c.executor.voice.service.impl.FunctionCallServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.NoopChunkProcessingServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.ObservingChunkProcessingServiceDelegate
@@ -34,13 +35,15 @@ class ChunkProcessingServiceFactoryImpl(
         val requestMetadata = GrpcMetadataContext.current()
         val isProxyMode = requestMetadata.proxy ?: voiceExecutorConfigurationProperties.proxyMode
 
-        val delegate = if (isProxyMode) {
+        val coreService = if (isProxyMode) {
             NoopChunkProcessingServiceImpl()
         } else {
             createChunkProcessingServiceImpl()
         }
 
-        return ObservingChunkProcessingServiceDelegate(delegate)
+        return ObservingChunkProcessingServiceDelegate(
+            DialogAccumulatorDelegate(coreService)
+        )
     }
 
     private fun createChunkProcessingServiceImpl(): ChunkProcessingService {
