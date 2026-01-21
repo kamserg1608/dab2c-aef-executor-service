@@ -21,10 +21,12 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import ru.sbrf.dab2c.executor.clients.efs.adapter.api.AuditClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.SdsClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.TypedSdsClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.configuration.properties.EfsAdapterClientConfigurationProperties
+import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.AuditClientImpl
 import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.ConfiguratorClientImpl
 import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.SdsClientImpl
 import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.TypedSdsClientImpl
@@ -67,6 +69,11 @@ class EfsAdapterClientConfiguration {
     internal fun configuratorClient(
         @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient
     ): ConfiguratorClient = ConfiguratorClientImpl(httpClient)
+
+    @Bean
+    internal fun auditClient(
+        @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient
+    ): AuditClient = AuditClientImpl(httpClient)
 
     @Bean
     internal fun sdsClient(
