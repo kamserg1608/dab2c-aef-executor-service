@@ -13,7 +13,7 @@ def onDistrib(app, distr) {
 void gradlew(String task, String options) {
     withPreparedEnv("openjdk-21") {
         withCredentials([usernamePassword(
-                credentialsId: 'aef_dab2c_ift_cab-sa-dvo08817_ad_domain',
+                credentialsId: 'nexus_ci_cred',
                 passwordVariable: 'wrappedPassword',
                 usernameVariable: 'wrappedUser')]) {
             String wrapperOptions = getWrapperOptions(wrappedUser, wrappedPassword)
