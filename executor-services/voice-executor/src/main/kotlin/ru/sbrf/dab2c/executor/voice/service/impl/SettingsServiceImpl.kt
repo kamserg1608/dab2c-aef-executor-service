@@ -1,7 +1,9 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.TypedSdsClient
@@ -53,16 +55,18 @@ class SettingsServiceImpl(
 
         logger.debug { "Calculating settings for session: ${metadata.session}" }
 
-        val agentConfiguration = configuratorClient.getRestAgentConfig(
-            agentName = configProperties.agentName,
-            cookie = metadata.ufsCookie
-        )
+        val (agentConfiguration, sessionConfiguration, daSessionInfo) = coroutineScope {
+            Triple(
+                async { configuratorClient.getRestAgentConfig(configProperties.agentName, metadata.ufsCookie) },
+                async { configuratorClient.getSessionConfig(metadata.ufsCookie) },
+                async { typedSdsClient.readDaSessionInfo(metadata.channel, metadata.ufsCookie) }
+            )
+        }.let { (agent, session, daSession) ->
+            Triple(agent.await(), session.await(), daSession.await())
+        }
+
         logger.debug { "Fetched agent configuration: ${agentConfiguration.name}" }
-
-        val sessionConfiguration = configuratorClient.getSessionConfig(cookie = metadata.ufsCookie)
         logger.debug { "Fetched session configuration: channel=${sessionConfiguration.channel}" }
-
-        val daSessionInfo = typedSdsClient.readDaSessionInfo(sessionConfiguration.channel, metadata.ufsCookie)
         logger.debug { "Fetched DA session info for session: ${daSessionInfo.meta.sessionId}" }
 
         val conversationId = settings.voiceCallId

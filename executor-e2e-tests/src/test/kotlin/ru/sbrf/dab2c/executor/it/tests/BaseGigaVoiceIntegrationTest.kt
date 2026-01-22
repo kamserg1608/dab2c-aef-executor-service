@@ -127,14 +127,18 @@ abstract class BaseGigaVoiceIntegrationTest {
     protected fun nonProxyStub(
         session: String = "test-session",
         token: String = "test-token",
-        eduId: String = "test-edu-id"
+        eduId: String = "test-edu-id",
+        channel: String = "test-channel",
+        platform: String = "test-platform"
     ): IvrServiceCoroutineStub = clientStub.withInterceptors(
         MetadataInterceptor(
             mapOf(
                 "proxy" to "false",
                 "session" to session,
                 "token" to token,
-                "edu_id" to eduId
+                "edu_id" to eduId,
+                "channel" to channel,
+                "platform" to platform
             )
         )
     )

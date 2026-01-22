@@ -29,6 +29,16 @@ class RequestMetadata(
     /** Whether proxy mode is requested via header. Null if header not present. */
     val proxy: Boolean? get() = headers[HEADER_PROXY]?.toBoolean()
 
+    /** The channel header value. Throws if not present. */
+    val channel: String
+        get() = headers[HEADER_CHANNEL]
+            ?: error("Channel header is required")
+
+    /** The platform header value. Throws if not present. */
+    val platform: String
+        get() = headers[HEADER_PLATFORM]
+            ?: error("Platform header is required")
+
     /** UFS cookie string built from session and token values. Throws if headers missing. */
     val ufsCookie: String
         get() = "$UFS_TOKEN_COOKIE=$token;$UFS_SESSION_COOKIE=$session"
@@ -47,6 +57,8 @@ class RequestMetadata(
         private const val HEADER_TOKEN = "token"
         private const val HEADER_EDU_ID = "edu_id"
         private const val HEADER_PROXY = "proxy"
+        private const val HEADER_CHANNEL = "channel"
+        private const val HEADER_PLATFORM = "platform"
         private const val HEADER_X_REQUEST_ID = "x-request-id"
 
         private const val UFS_TOKEN_COOKIE = "UFS-TOKEN"
