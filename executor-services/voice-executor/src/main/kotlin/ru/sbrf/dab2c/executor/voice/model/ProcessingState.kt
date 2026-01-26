@@ -1,8 +1,6 @@
 package ru.sbrf.dab2c.executor.voice.model
 
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
-import ru.sbrf.dab2c.executor.domain.configuration.SessionConfiguration
-import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.domain.voice.ContextData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
 
@@ -37,9 +35,7 @@ sealed class ProcessingState {
     data class Serving(
         val contextData: ContextData,
         val agentConfiguration: AgentConfiguration,
-        val sessionConfiguration: SessionConfiguration,
         val conversationId: String,
-        val daSessionInfo: DaSessionInfo,
         val functionRegistry: FunctionPerformers
     ) : ProcessingState()
 }

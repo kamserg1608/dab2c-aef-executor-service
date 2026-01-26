@@ -5,14 +5,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
+import ru.sbrf.dab2c.executor.voice.model.RequestMetadata
 import ru.sbrf.dab2c.executor.voice.model.toGigaAgentContext
 import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
 import ru.sbrf.dab2c.executor.voice.service.api.FunctionCallService
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Default implementation of FunctionCallService.
@@ -43,34 +46,38 @@ class FunctionCallServiceImpl(
         }
 
         logger.debug { "Executing backend function '$functionName' via agent (async)" }
-        executeBackendFunctionAsync(state, functionCalling)
+        val metadata = GrpcMetadataContext.current()
+        val metadataContext = GrpcMetadataContext.asCoroutineContext()
+        executeBackendFunctionAsync(state, functionCalling, metadata, metadataContext)
         return null
     }
 
-    private fun executeBackendFunctionAsync(state: ProcessingState.Serving, functionCalling: FunctionCallingData) {
-        val metadata = GrpcMetadataContext.current()
-        val context = metadata.toGigaAgentContext(
-            sessionConfiguration = state.sessionConfiguration,
-            conversationId = state.conversationId,
-            daSessionInfo = state.daSessionInfo
-        )
+    private fun executeBackendFunctionAsync(
+        state: ProcessingState.Serving,
+        functionCalling: FunctionCallingData,
+        metadata: RequestMetadata,
+        metadataContext: CoroutineContext
+    ) {
+        val context = metadata.toGigaAgentContext(state.conversationId)
 
         scope.launch {
-            try {
-                val functionCallResult = gigaVoiceAgentClient.executeFunctionCall(
-                    context = context,
-                    agentConfiguration = state.agentConfiguration,
-                    functionCalling = functionCalling,
-                    daSessionInfo = state.daSessionInfo,
-                    contextData = state.contextData
-                )
+            withContext(metadataContext) {
+                try {
+                    val functionCallResult = gigaVoiceAgentClient.executeFunctionCall(
+                        context = context,
+                        agentConfiguration = state.agentConfiguration,
+                        functionCalling = functionCalling,
+                        daSessionInfo = metadata.daSessionInfo,
+                        contextData = state.contextData
+                    )
 
-                analyticsPublisher.publishAnalytics(functionCallResult.analytics, context.daRequestId)
+                    analyticsPublisher.publishAnalytics(functionCallResult.analytics, context.daRequestId)
 
-                callBackChannel.send(VoiceRequest.FunctionResult(functionCallResult.result))
-            } catch (e: Exception) {
-                logger.error(e) { "Failed to execute backend function '${functionCalling.functionCall.name}'" }
-                throw e
+                    callBackChannel.send(VoiceRequest.FunctionResult(functionCallResult.result))
+                } catch (e: Exception) {
+                    logger.error(e) { "Failed to execute backend function '${functionCalling.functionCall.name}'" }
+                    throw e
+                }
             }
         }
     }

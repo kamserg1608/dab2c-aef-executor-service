@@ -1,5 +1,6 @@
 package ru.sbrf.dab2c.executor.voice.model
 
+import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import java.util.UUID
 
 /**
@@ -10,6 +11,15 @@ import java.util.UUID
 class RequestMetadata private constructor(
     private val headers: Map<String, String>,
 ) : Map<String, String> by headers {
+
+    /** Internal field populated by onStart, before any processing. */
+    @Suppress("VariableNaming")
+    @Volatile
+    internal var _daSessionInfo: DaSessionInfo? = null
+
+    /** Public non-null accessor. Use only after onStart has completed. */
+    val daSessionInfo: DaSessionInfo
+        get() = _daSessionInfo ?: error("DaSessionInfo not initialized")
 
     /** Retrieves required header value. Throws if not present. */
     fun getHeader(header: RequestHeader): String =

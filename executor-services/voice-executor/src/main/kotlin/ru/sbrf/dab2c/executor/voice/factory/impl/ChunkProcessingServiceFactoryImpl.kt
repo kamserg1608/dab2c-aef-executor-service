@@ -7,7 +7,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
-import ru.sbrf.dab2c.executor.clients.efs.adapter.api.TypedSdsClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
@@ -36,12 +35,11 @@ class ChunkProcessingServiceFactoryImpl(
     private val voiceExecutorConfigurationProperties: VoiceExecutorConfigurationProperties,
     private val gigaVoiceAgentClient: GigaVoiceAgentClient,
     private val configuratorClient: ConfiguratorClient,
-    private val typedSdsClient: TypedSdsClient,
     private val kapProducerClient: KapProducerClient
 ) : ChunkProcessingServiceFactory {
 
     override fun create(): ChunkProcessingService {
-        val requestMetadata = GrpcMetadataContext.current()
+        val requestMetadata = GrpcMetadataContext.fromGrpcThread()
         val isProxyMode = requestMetadata.getHeaderOrNull(RequestHeader.PROXY)
             ?.toBoolean() ?: voiceExecutorConfigurationProperties.proxyMode
 
@@ -88,7 +86,6 @@ class ChunkProcessingServiceFactoryImpl(
             callbackChannel,
             gigaVoiceAgentClient,
             configuratorClient,
-            typedSdsClient,
             voiceExecutorConfigurationProperties,
             analyticsPublisher
         )

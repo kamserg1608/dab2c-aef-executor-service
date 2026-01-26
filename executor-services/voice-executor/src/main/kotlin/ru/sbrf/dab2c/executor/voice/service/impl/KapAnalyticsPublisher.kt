@@ -6,6 +6,7 @@ import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.mapper.AgentAnalyticsData
 import ru.sbrf.dab2c.executor.clients.kap.producer.mapper.AgentAnalyticsEnvelopeMapper
 import ru.sbrf.dab2c.executor.domain.voice.AgentAnalytics
+import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
 import java.util.UUID
@@ -41,6 +42,7 @@ class KapAnalyticsPublisher(
         requestId: String?,
         state: ProcessingState.Serving
     ) {
+        val metadata = GrpcMetadataContext.current()
         val analyticsData = AgentAnalyticsData(
             envelopeId = UUID.randomUUID().toString(),
             timestamp = System.currentTimeMillis() / MILLIS_TO_SECONDS,
@@ -48,7 +50,7 @@ class KapAnalyticsPublisher(
             requestId = requestId,
             dataVersion = analyticsItem.dataVersion,
             data = analyticsItem.data,
-            daSessionInfo = state.daSessionInfo,
+            daSessionInfo = metadata.daSessionInfo,
             agentConfiguration = state.agentConfiguration
         )
 

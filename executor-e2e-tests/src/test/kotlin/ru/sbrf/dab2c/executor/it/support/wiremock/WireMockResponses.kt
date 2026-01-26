@@ -29,19 +29,6 @@ object WireMockResponses {
     """.trimIndent()
 
     /**
-     * EFS Adapter response for session configuration.
-     */
-    val EFS_SESSION_CONFIG_RESPONSE = """
-        {
-            "success": true,
-            "body": {
-                "channel": "MOB_BANK",
-                "platform": "android"
-            }
-        }
-    """.trimIndent()
-
-    /**
      * GigaVoice Agent settings response.
      */
     val GIGA_VOICE_SETTINGS_RESPONSE = """

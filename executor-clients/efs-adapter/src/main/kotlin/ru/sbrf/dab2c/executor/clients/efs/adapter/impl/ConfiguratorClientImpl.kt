@@ -13,9 +13,7 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.AgentConfigurationMapper
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.AppSourceRequest
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseMapStringAgentConfig
-import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseSessionConfig
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
-import ru.sbrf.dab2c.executor.domain.configuration.SessionConfiguration
 
 private val logger = KotlinLogging.logger {}
 
@@ -46,29 +44,6 @@ class ConfiguratorClientImpl(
             mapper.toDomain(agentConfig)
         } catch (e: Exception) {
             logger.error(e) { "Failed to get REST agent config for agent: $agentName" }
-            throw e
-        }
-    }
-
-    override suspend fun getSessionConfig(cookie: String): SessionConfiguration {
-        logger.debug { "Getting session config" }
-
-        return try {
-            val response: BaseResponseSessionConfig = httpClient.post("/configurator/session") {
-                contentType(ContentType.Application.Json)
-                header(HttpHeaders.Cookie, cookie)
-                setBody(AppSourceRequest(appSource = DEFAULT_APP_SOURCE))
-            }.body()
-
-            val sessionConfig = response.body
-                ?: throw NoSuchElementException("Session config not found in response")
-
-            SessionConfiguration(
-                channel = sessionConfig.channel ?: error("Session config channel is required"),
-                platform = sessionConfig.platform ?: error("Session config platform is required")
-            )
-        } catch (e: Exception) {
-            logger.error(e) { "Failed to get session config" }
             throw e
         }
     }

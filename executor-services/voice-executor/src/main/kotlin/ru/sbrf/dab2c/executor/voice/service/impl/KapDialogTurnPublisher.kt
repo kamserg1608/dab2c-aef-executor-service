@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.mapper.DialogEnvelopeMapper
 import ru.sbrf.dab2c.executor.clients.kap.producer.mapper.DialogTurnData
+import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.service.api.DialogTurnPublisher
 import java.util.UUID
@@ -28,6 +29,7 @@ class KapDialogTurnPublisher(
 
         logger.info { "Publishing dialog turn: input='$inputText', output='$outputText'" }
 
+        val metadata = GrpcMetadataContext.current()
         val assistantMessageId = UUID.randomUUID().toString()
 
         val dialogTurnData = DialogTurnData(
@@ -39,7 +41,7 @@ class KapDialogTurnPublisher(
             chatId = state.conversationId,
             timestamp = System.currentTimeMillis() / MILLIS_TO_SECONDS,
             previousMessageId = previousMessageId,
-            daSessionInfo = state.daSessionInfo
+            daSessionInfo = metadata.daSessionInfo
         )
 
         val dialogEnvelope = DialogEnvelopeMapper.toDialogEnvelope(dialogTurnData)

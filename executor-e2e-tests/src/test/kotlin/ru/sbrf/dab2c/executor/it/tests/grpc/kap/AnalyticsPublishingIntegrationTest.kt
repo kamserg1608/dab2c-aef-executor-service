@@ -13,7 +13,6 @@ import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupFullModeStubsWithAnalytics
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubEfsRestAgent
-import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubEfsSessionConfig
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubGigaAgentFunctionsWithAnalytics
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubGigaAgentSettingsWithAnalytics
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubSdsSessionReadData
@@ -70,7 +69,6 @@ class AnalyticsPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
         with(efsAdapterMock) {
             stubEfsRestAgent()
-            stubEfsSessionConfig()
             stubSdsSessionReadData()
         }
         gigaVoiceAgentMock.stubGigaAgentSettingsWithAnalytics("1.0.0", """{"init":"data"}""", withFunctions = true)

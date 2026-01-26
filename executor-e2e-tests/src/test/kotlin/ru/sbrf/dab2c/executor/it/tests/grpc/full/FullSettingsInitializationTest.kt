@@ -128,16 +128,6 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
         )
 
         efsAdapterMock.stubFor(
-            post(urlEqualTo("/configurator/session"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(WireMockResponses.EFS_SESSION_CONFIG_RESPONSE)
-                )
-        )
-
-        efsAdapterMock.stubFor(
             post(urlEqualTo("/session/readData"))
                 .willReturn(
                     aResponse()

@@ -1,8 +1,9 @@
 package ru.sbrf.dab2c.executor.voice.grpc.base
 
-import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import net.devh.boot.grpc.server.service.GrpcService
 import ru.sbrf.dab2c.executor.clients.gigavoice.mapper.GigaVoiceDomainMapper
 import ru.sbrf.dab2c.executor.clients.ivr.mapper.IvrDomainMapper
@@ -11,6 +12,8 @@ import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrResponse
 import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrServiceGrpcKt
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
 import ru.sbrf.dab2c.executor.voice.grpc.client.GigaVoiceClient
+import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
+import ru.sbrf.dab2c.executor.voice.service.api.SessionInitService
 
 /**
  * gRPC service implementation for IVR protocol.
@@ -20,13 +23,13 @@ import ru.sbrf.dab2c.executor.voice.grpc.client.GigaVoiceClient
 class IvrServiceImpl(
     private val gigaVoiceClient: GigaVoiceClient,
     private val chunkProcessingServiceFactory: ChunkProcessingServiceFactory,
+    private val sessionInitService: SessionInitService,
 ) : IvrServiceGrpcKt.IvrServiceCoroutineImplBase() {
-
-    private val logger = KotlinLogging.logger {}
-
     override fun session(requests: Flow<IvrRequest>): Flow<IvrResponse> {
+        val metadataContext = GrpcMetadataContext.captureGrpcContext()
         val chunkProcessingService = chunkProcessingServiceFactory.create()
         return requests
+            .onStart { sessionInitService.initialize() }
             .map { IvrDomainMapper.toDomainRequest(it) }
             .let { chunkProcessingService.processRequestChunks(it) }
             .map { GigaVoiceDomainMapper.toProtoRequest(it) }
@@ -34,5 +37,6 @@ class IvrServiceImpl(
             .map { GigaVoiceDomainMapper.toDomainResponse(it) }
             .let { chunkProcessingService.processResponseChunks(it) }
             .map { IvrDomainMapper.toProtoResponse(it) }
+            .flowOn(metadataContext)
     }
 }

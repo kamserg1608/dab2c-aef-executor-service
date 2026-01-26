@@ -19,18 +19,6 @@ object WireMockSetup {
         )
     }
 
-    fun WireMockServer.stubEfsSessionConfig() {
-        stubFor(
-            post(urlEqualTo("/configurator/session"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(WireMockResponses.EFS_SESSION_CONFIG_RESPONSE)
-                )
-        )
-    }
-
     fun WireMockServer.stubSdsSessionReadData() {
         stubFor(
             post(urlEqualTo("/session/readData"))
@@ -137,7 +125,6 @@ object WireMockSetup {
     ) {
         with(efsAdapter) {
             stubEfsRestAgent()
-            stubEfsSessionConfig()
             stubSdsSessionReadData()
         }
         gigaAgent.stubGigaAgentSettings(withFunctions)
@@ -151,7 +138,6 @@ object WireMockSetup {
     ) {
         with(efsAdapter) {
             stubEfsRestAgent()
-            stubEfsSessionConfig()
             stubSdsSessionReadData()
         }
         gigaAgent.stubGigaAgentSettingsWithAnalytics(dataVersion, analyticsData)

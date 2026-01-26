@@ -32,6 +32,7 @@ import ru.sbrf.dab2c.executor.application.ApplicationEntryPoint
 import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrServiceGrpcKt.IvrServiceCoroutineStub
 import ru.sbrf.dab2c.executor.it.mock.MockGigaVoiceService
 import ru.sbrf.dab2c.executor.it.support.grpc.MetadataInterceptor
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubSdsSessionReadData
 
 /**
  * Base class for integration tests.
@@ -101,6 +102,7 @@ abstract class BaseGigaVoiceIntegrationTest {
         mockGigaVoiceService.reset()
         gigaVoiceAgentMock.resetAll()
         efsAdapterMock.resetAll()
+        efsAdapterMock.stubSdsSessionReadData()
     }
 
     @BeforeAll
@@ -120,7 +122,16 @@ abstract class BaseGigaVoiceIntegrationTest {
 
     /** Creates a stub configured for proxy mode (pass-through). */
     protected fun proxyStub(): IvrServiceCoroutineStub =
-        clientStub.withInterceptors(MetadataInterceptor(mapOf("proxy" to "true")))
+        clientStub.withInterceptors(
+            MetadataInterceptor(
+                mapOf(
+                    "proxy" to "true",
+                    "channel" to "MOB_BANK",
+                    "token" to "proxy-token",
+                    "session" to "proxy-session"
+                )
+            )
+        )
 
     /** Creates a stub configured for non-proxy mode (full processing). */
     protected fun nonProxyStub(

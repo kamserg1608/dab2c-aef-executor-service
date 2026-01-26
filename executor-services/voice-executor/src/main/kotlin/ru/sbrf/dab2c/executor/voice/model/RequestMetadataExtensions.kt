@@ -1,27 +1,23 @@
 package ru.sbrf.dab2c.executor.voice.model
 
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaAgentRequestContext
-import ru.sbrf.dab2c.executor.domain.configuration.SessionConfiguration
-import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 
 /**
  * Converts RequestMetadata to GigaAgentRequestContext for GigaAgent API calls.
  */
 fun RequestMetadata.toGigaAgentContext(
-    sessionConfiguration: SessionConfiguration,
-    conversationId: String,
-    daSessionInfo: DaSessionInfo
+    conversationId: String
 ) = GigaAgentRequestContext(
     ufsSession = this.getHeader(RequestHeader.SESSION),
     ufsToken = this.getHeader(RequestHeader.TOKEN),
-    channel = sessionConfiguration.channel,
+    channel = this.getHeader(RequestHeader.CHANNEL),
     conversationId = conversationId,
     eduId = this.getHeader(RequestHeader.EDU_ID),
     daRequestId = this.getHeader(RequestHeader.X_REQUEST_ID),
-    daSessionId = daSessionInfo.meta.sessionId,
-    daChannel = sessionConfiguration.channel,
-    daPlatform = sessionConfiguration.platform,
-    daUcpId = daSessionInfo.meta.ucpId
+    daSessionId = this.daSessionInfo.meta.sessionId,
+    daChannel = this.getHeader(RequestHeader.CHANNEL),
+    daPlatform = this.getHeader(RequestHeader.PLATFORM),
+    daUcpId = this.daSessionInfo.meta.ucpId
 )
 
 /** Builds EFS cookie. */
