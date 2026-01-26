@@ -15,7 +15,9 @@ import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
 import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
+import ru.sbrf.dab2c.executor.voice.model.RequestHeader
 import ru.sbrf.dab2c.executor.voice.model.toGigaAgentContext
+import ru.sbrf.dab2c.executor.voice.model.ufsCookie
 import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
 import ru.sbrf.dab2c.executor.voice.service.api.SettingsService
 
@@ -53,13 +55,15 @@ class SettingsServiceImpl(
     ): VoiceSettings {
         val metadata = GrpcMetadataContext.current()
 
-        logger.debug { "Calculating settings for session: ${metadata.session}" }
+        logger.debug { "Calculating settings for session: ${metadata.getHeader(RequestHeader.SESSION)}" }
 
         val (agentConfiguration, sessionConfiguration, daSessionInfo) = coroutineScope {
             Triple(
                 async { configuratorClient.getRestAgentConfig(configProperties.agentName, metadata.ufsCookie) },
                 async { configuratorClient.getSessionConfig(metadata.ufsCookie) },
-                async { typedSdsClient.readDaSessionInfo(metadata.channel, metadata.ufsCookie) }
+                async {
+                    typedSdsClient.readDaSessionInfo(metadata.getHeader(RequestHeader.CHANNEL), metadata.ufsCookie)
+                }
             )
         }.let { (agent, session, daSession) ->
             Triple(agent.await(), session.await(), daSession.await())

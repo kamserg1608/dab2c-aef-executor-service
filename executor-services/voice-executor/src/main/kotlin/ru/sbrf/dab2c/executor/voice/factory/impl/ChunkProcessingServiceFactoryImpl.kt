@@ -15,6 +15,7 @@ import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfiguration
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
 import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
+import ru.sbrf.dab2c.executor.voice.model.RequestHeader
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.service.impl.ChunkProcessingServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.ContextServiceImpl
@@ -41,7 +42,8 @@ class ChunkProcessingServiceFactoryImpl(
 
     override fun create(): ChunkProcessingService {
         val requestMetadata = GrpcMetadataContext.current()
-        val isProxyMode = requestMetadata.proxy ?: voiceExecutorConfigurationProperties.proxyMode
+        val isProxyMode = requestMetadata.getHeaderOrNull(RequestHeader.PROXY)
+            ?.toBoolean() ?: voiceExecutorConfigurationProperties.proxyMode
 
         return if (isProxyMode) {
             createProxyModeService()

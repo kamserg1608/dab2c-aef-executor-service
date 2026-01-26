@@ -7,61 +7,30 @@ import java.util.UUID
  * Provides type-safe access to request headers captured at session start.
  * All keys are normalized to lowercase for case-insensitive access.
  */
-class RequestMetadata(
-    private val headers: Map<String, String>
+class RequestMetadata private constructor(
+    private val headers: Map<String, String>,
 ) : Map<String, String> by headers {
 
-    /** The session header value. Throws if not present. */
-    val session: String
-        get() = headers[HEADER_SESSION]
-            ?: error("Session header is required")
+    /** Retrieves required header value. Throws if not present. */
+    fun getHeader(header: RequestHeader): String =
+        headers[header.headerName] ?: error("${header.headerName} header is required")
 
-    /** The token header value. Throws if not present. */
-    val token: String
-        get() = headers[HEADER_TOKEN]
-            ?: error("Token header is required")
-
-    /** The edu_id header value. Throws if not present. */
-    val eduId: String
-        get() = headers[HEADER_EDU_ID]
-            ?: error("edu_id header is required")
-
-    /** Whether proxy mode is requested via header. Null if header not present. */
-    val proxy: Boolean? get() = headers[HEADER_PROXY]?.toBoolean()
-
-    /** The channel header value. Throws if not present. */
-    val channel: String
-        get() = headers[HEADER_CHANNEL]
-            ?: error("Channel header is required")
-
-    /** The platform header value. Throws if not present. */
-    val platform: String
-        get() = headers[HEADER_PLATFORM]
-            ?: error("Platform header is required")
-
-    /** UFS cookie string built from session and token values. Throws if headers missing. */
-    val ufsCookie: String
-        get() = "$UFS_TOKEN_COOKIE=$token;$UFS_SESSION_COOKIE=$session"
-
-    /** Request ID from X-Request-Id header, or generated UUID if not present. */
-    val requestId: String by lazy {
-        headers[HEADER_X_REQUEST_ID] ?: UUID.randomUUID().toString()
-    }
+    /** Retrieves optional header value. Returns null if not present. */
+    fun getHeaderOrNull(header: RequestHeader): String? = headers[header.headerName]
 
     /** Companion object providing factory methods and constants. */
     companion object {
         /** Empty metadata instance for default values. */
-        val EMPTY = RequestMetadata(emptyMap())
+        val EMPTY = invoke(emptyMap())
 
-        private const val HEADER_SESSION = "session"
-        private const val HEADER_TOKEN = "token"
-        private const val HEADER_EDU_ID = "edu_id"
-        private const val HEADER_PROXY = "proxy"
-        private const val HEADER_CHANNEL = "channel"
-        private const val HEADER_PLATFORM = "platform"
-        private const val HEADER_X_REQUEST_ID = "x-request-id"
-
-        private const val UFS_TOKEN_COOKIE = "UFS-TOKEN"
-        private const val UFS_SESSION_COOKIE = "UFS-SESSION"
+        /** Creates RequestMetadata, generating X-Request-Id if not present. */
+        operator fun invoke(headers: Map<String, String>): RequestMetadata {
+            val headersWithRequestId = if (headers.containsKey(RequestHeader.X_REQUEST_ID.headerName)) {
+                headers
+            } else {
+                headers + (RequestHeader.X_REQUEST_ID.headerName to UUID.randomUUID().toString())
+            }
+            return RequestMetadata(headersWithRequestId)
+        }
     }
 }

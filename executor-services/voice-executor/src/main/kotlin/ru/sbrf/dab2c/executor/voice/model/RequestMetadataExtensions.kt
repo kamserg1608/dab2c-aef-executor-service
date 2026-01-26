@@ -12,14 +12,18 @@ fun RequestMetadata.toGigaAgentContext(
     conversationId: String,
     daSessionInfo: DaSessionInfo
 ) = GigaAgentRequestContext(
-    ufsSession = session,
-    ufsToken = token,
+    ufsSession = this.getHeader(RequestHeader.SESSION),
+    ufsToken = this.getHeader(RequestHeader.TOKEN),
     channel = sessionConfiguration.channel,
     conversationId = conversationId,
-    eduId = eduId,
-    daRequestId = requestId,
+    eduId = this.getHeader(RequestHeader.EDU_ID),
+    daRequestId = this.getHeader(RequestHeader.X_REQUEST_ID),
     daSessionId = daSessionInfo.meta.sessionId,
     daChannel = sessionConfiguration.channel,
     daPlatform = sessionConfiguration.platform,
     daUcpId = daSessionInfo.meta.ucpId
 )
+
+/** Builds EFS cookie. */
+val RequestMetadata.ufsCookie: String
+    get() = "UFS_TOKEN=${this.getHeader(RequestHeader.TOKEN)};UFS_SESSION=${this.getHeader(RequestHeader.SESSION)}"

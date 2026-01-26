@@ -2,10 +2,11 @@ package ru.sbrf.dab2c.executor.voice.grpc.context
 
 import io.grpc.Metadata
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext.toRequestMetadata
-import ru.sbrf.dab2c.executor.voice.model.RequestMetadata
+import ru.sbrf.dab2c.executor.voice.model.RequestHeader
 
 class GrpcMetadataContextTest {
 
@@ -52,19 +53,20 @@ class GrpcMetadataContextTest {
     }
 
     @Test
-    fun `toRequestMetadata should return empty RequestMetadata for empty metadata`() {
+    fun `toRequestMetadata should generate x-request-id for empty metadata`() {
         val metadata = Metadata()
 
         val result = metadata.toRequestMetadata()
 
-        assertTrue(result.isEmpty())
+        assertEquals(1, result.size)
+        assertNotNull(result.getHeader(RequestHeader.X_REQUEST_ID))
     }
 
     @Test
-    fun `current should return EMPTY when no context is set`() {
+    fun `current should return EMPTY with generated x-request-id when no context is set`() {
         val result = GrpcMetadataContext.current()
 
-        assertEquals(RequestMetadata.EMPTY, result)
-        assertTrue(result.isEmpty())
+        assertEquals(1, result.size)
+        assertNotNull(result.getHeader(RequestHeader.X_REQUEST_ID))
     }
 }
