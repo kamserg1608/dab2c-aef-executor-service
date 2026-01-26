@@ -126,9 +126,9 @@ abstract class BaseGigaVoiceIntegrationTest {
             MetadataInterceptor(
                 mapOf(
                     "proxy" to "true",
-                    "channel" to "MOB_BANK",
-                    "token" to "proxy-token",
-                    "session" to "proxy-session"
+                    "x-channel" to "MOB_BANK",
+                    "x-token" to "proxy-token",
+                    "x-session" to "proxy-session"
                 )
             )
         )
@@ -144,11 +144,11 @@ abstract class BaseGigaVoiceIntegrationTest {
         MetadataInterceptor(
             mapOf(
                 "proxy" to "false",
-                "session" to session,
-                "token" to token,
-                "edu_id" to eduId,
-                "channel" to channel,
-                "platform" to platform
+                "x-session" to session,
+                "x-token" to token,
+                "x-eduid" to eduId,
+                "x-channel" to channel,
+                "x-platform" to platform
             )
         )
     )
