@@ -13,6 +13,7 @@ import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrServiceGrpcKt
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
 import ru.sbrf.dab2c.executor.voice.grpc.client.GigaVoiceClient
 import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
+import ru.sbrf.dab2c.executor.voice.grpc.context.MetadataElement
 import ru.sbrf.dab2c.executor.voice.service.api.SessionInitService
 
 /**
@@ -26,7 +27,7 @@ class IvrServiceImpl(
     private val sessionInitService: SessionInitService,
 ) : IvrServiceGrpcKt.IvrServiceCoroutineImplBase() {
     override fun session(requests: Flow<IvrRequest>): Flow<IvrResponse> {
-        val metadataContext = GrpcMetadataContext.captureGrpcContext()
+        val metadataContext = MetadataElement(GrpcMetadataContext.fromGrpcThread())
         val chunkProcessingService = chunkProcessingServiceFactory.create()
         return requests
             .onStart { sessionInitService.initialize() }

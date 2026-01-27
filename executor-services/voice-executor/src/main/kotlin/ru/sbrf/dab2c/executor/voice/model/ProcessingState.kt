@@ -23,13 +23,6 @@ sealed class ProcessingState {
     ) : ProcessingState()
 
     /**
-     * Loading settings from external APIs.
-     */
-    data class LoadingSettings(
-        val contextData: ContextData
-    ) : ProcessingState()
-
-    /**
      * Fully initialized and serving requests.
      */
     data class Serving(

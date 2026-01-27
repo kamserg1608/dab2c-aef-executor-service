@@ -1,8 +1,5 @@
 package ru.sbrf.dab2c.executor.voice.factory.impl
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.springframework.stereotype.Service
@@ -70,7 +67,6 @@ class ChunkProcessingServiceFactoryImpl(
         processingState: MutableStateFlow<ProcessingState>
     ): ChunkProcessingService {
         val callbackChannel = Channel<VoiceRequest>(capacity = Channel.BUFFERED)
-        val sessionScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         val analyticsPublisher = KapAnalyticsPublisher(kapProducerClient, processingState)
 
         val contextService = ContextServiceImpl(processingState)
@@ -78,7 +74,6 @@ class ChunkProcessingServiceFactoryImpl(
             processingState,
             callbackChannel,
             gigaVoiceAgentClient,
-            sessionScope,
             analyticsPublisher
         )
         val settingsService = SettingsServiceImpl(

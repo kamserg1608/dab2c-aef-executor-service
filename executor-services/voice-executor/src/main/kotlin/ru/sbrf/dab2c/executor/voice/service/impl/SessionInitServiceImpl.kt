@@ -3,10 +3,10 @@ package ru.sbrf.dab2c.executor.voice.service.impl
 import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.TypedSdsClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.readDaSessionInfo
-import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
 import ru.sbrf.dab2c.executor.voice.model.RequestHeader
 import ru.sbrf.dab2c.executor.voice.model.ufsCookie
 import ru.sbrf.dab2c.executor.voice.service.api.SessionInitService
+import ru.sbrf.dab2c.executor.voice.util.extensions.currentRequestMetadata
 
 /**
  * Default implementation of SessionInitService.
@@ -18,7 +18,7 @@ class SessionInitServiceImpl(
 ) : SessionInitService {
 
     override suspend fun initialize() {
-        val metadata = GrpcMetadataContext.current()
+        val metadata = currentRequestMetadata()
         metadata._daSessionInfo = typedSdsClient.readDaSessionInfo(
             metadata.getHeader(RequestHeader.CHANNEL),
             metadata.ufsCookie

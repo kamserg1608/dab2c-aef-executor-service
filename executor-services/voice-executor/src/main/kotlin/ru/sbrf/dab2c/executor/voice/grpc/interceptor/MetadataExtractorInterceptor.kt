@@ -9,7 +9,7 @@ import io.grpc.ServerCallHandler
 import io.grpc.ServerInterceptor
 import net.devh.boot.grpc.server.interceptor.GrpcGlobalServerInterceptor
 import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
-import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext.toRequestMetadata
+import ru.sbrf.dab2c.executor.voice.util.extensions.toRequestMetadata
 
 /**
  * gRPC server interceptor that extracts all request metadata (headers)

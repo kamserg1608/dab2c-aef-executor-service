@@ -5,17 +5,20 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
+import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
+import ru.sbrf.dab2c.executor.domain.voice.AgentAnalytics
 import ru.sbrf.dab2c.executor.domain.voice.ContextData
+import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
-import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
-import ru.sbrf.dab2c.executor.voice.model.RequestHeader
 import ru.sbrf.dab2c.executor.voice.model.toGigaAgentContext
 import ru.sbrf.dab2c.executor.voice.model.ufsCookie
 import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
 import ru.sbrf.dab2c.executor.voice.service.api.SettingsService
+import ru.sbrf.dab2c.executor.voice.util.extensions.currentRequestMetadata
+import ru.sbrf.dab2c.executor.voice.util.extensions.launchAsync
 
 /**
  * Default implementation of SettingsService.
@@ -37,28 +40,41 @@ class SettingsServiceImpl(
             "Expected AwaitingSettings state, but was ${currentState::class.simpleName}"
         }
 
-        processingState.value = ProcessingState.LoadingSettings(currentState.contextData)
-        val processedSettings = calculateSettings(settings, currentState.contextData)
-        callbackChannel.send(VoiceRequest.Settings(processedSettings))
+        calculateSettingsAsync(settings, currentState.contextData)
     }
 
-    private suspend fun calculateSettings(
+    private suspend fun calculateSettingsAsync(
         settings: VoiceSettings,
         contextData: ContextData
-    ): VoiceSettings {
-        val metadata = GrpcMetadataContext.current()
+    ) {
+        logger.debug { "Calculating settings for session" }
 
-        logger.debug { "Calculating settings for session: ${metadata.getHeader(RequestHeader.SESSION)}" }
+        launchAsync {
+            try {
+                val settingsData = fetchSettingsData(settings, contextData)
+                updateStateAndPublish(settingsData, contextData)
+                callbackChannel.send(VoiceRequest.Settings(settingsData.settings))
+            } catch (e: Exception) {
+                logger.error(e) { "Failed to calculate settings" }
+                throw e
+            }
+        }
+    }
 
+    private suspend fun fetchSettingsData(
+        settings: VoiceSettings,
+        contextData: ContextData
+    ): SettingsData {
+        val metadata = currentRequestMetadata()
         val daSessionInfo = metadata.daSessionInfo
-
-        val agentConfiguration = configuratorClient.getRestAgentConfig(configProperties.agentName, metadata.ufsCookie)
+        val agentConfiguration = configuratorClient.getRestAgentConfig(
+            configProperties.agentName,
+            metadata.ufsCookie
+        )
 
         logger.debug { "Fetched agent configuration: ${agentConfiguration.name}" }
-        logger.debug { "Fetched DA session info for session: ${daSessionInfo.meta.sessionId}" }
 
         val conversationId = settings.voiceCallId
-
         val context = metadata.toGigaAgentContext(conversationId)
 
         val settingsResult = gigaVoiceAgentClient.getSettings(
@@ -68,17 +84,36 @@ class SettingsServiceImpl(
             daSessionInfo = daSessionInfo,
             contextData = contextData
         )
-        logger.debug { "Received settings response with ${settingsResult.performers.functions.size} performers" }
 
-        processingState.value = ProcessingState.Serving(
-            contextData = contextData,
+        logger.debug { "Received settings response." }
+
+        return SettingsData(
+            settings = settingsResult.settings,
             agentConfiguration = agentConfiguration,
             conversationId = conversationId,
-            functionRegistry = settingsResult.performers
+            functionRegistry = settingsResult.performers,
+            analytics = settingsResult.analytics,
+            requestId = context.daRequestId
+        )
+    }
+
+    private suspend fun updateStateAndPublish(settingsData: SettingsData, contextData: ContextData) {
+        processingState.value = ProcessingState.Serving(
+            contextData = contextData,
+            agentConfiguration = settingsData.agentConfiguration,
+            conversationId = settingsData.conversationId,
+            functionRegistry = settingsData.functionRegistry
         )
 
-        analyticsPublisher.publishAnalytics(settingsResult.analytics, context.daRequestId)
-
-        return settingsResult.settings
+        analyticsPublisher.publishAnalytics(settingsData.analytics, settingsData.requestId)
     }
+
+    private data class SettingsData(
+        val settings: VoiceSettings,
+        val agentConfiguration: AgentConfiguration,
+        val conversationId: String,
+        val functionRegistry: FunctionPerformers,
+        val analytics: List<AgentAnalytics>,
+        val requestId: String?
+    )
 }

@@ -48,6 +48,24 @@ object WireMockSetup {
         )
     }
 
+    fun WireMockServer.stubGigaAgentSettingsWithDelay(delayMs: Int, withFunctions: Boolean = false) {
+        val responseBody = if (withFunctions) {
+            WireMockResponses.GIGA_VOICE_SETTINGS_WITH_FUNCTIONS_RESPONSE
+        } else {
+            WireMockResponses.GIGA_VOICE_SETTINGS_RESPONSE
+        }
+        stubFor(
+            post(urlEqualTo("/settings"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withFixedDelay(delayMs)
+                        .withBody(responseBody)
+                )
+        )
+    }
+
     fun WireMockServer.stubGigaAgentSettingsWithAnalytics(
         dataVersion: String,
         analyticsData: String,

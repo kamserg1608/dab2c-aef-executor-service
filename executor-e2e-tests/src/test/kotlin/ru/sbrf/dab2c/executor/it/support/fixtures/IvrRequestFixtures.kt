@@ -7,6 +7,7 @@ import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Settings
 import ru.sbrf.dab2c.executor.clients.ivr.proto.audioContent
 import ru.sbrf.dab2c.executor.clients.ivr.proto.audioSettings
+import ru.sbrf.dab2c.executor.clients.ivr.proto.contentForSynthesis
 import ru.sbrf.dab2c.executor.clients.ivr.proto.contentFromClient
 import ru.sbrf.dab2c.executor.clients.ivr.proto.context
 import ru.sbrf.dab2c.executor.clients.ivr.proto.functionResult
@@ -76,5 +77,17 @@ object IvrRequestFixtures {
         block: ContentFromClient.Builder.() -> Unit,
     ): IvrRequest = ivrRequest {
         input = ContentFromClient.newBuilder().apply(block).build()
+    }
+
+    fun textForSynthesisRequest(
+        text: String,
+        isFinal: Boolean = false,
+    ): IvrRequest = ivrRequest {
+        input = contentFromClient {
+            contentForSynthesis = contentForSynthesis {
+                this.text = text
+                this.isFinal = isFinal
+            }
+        }
     }
 }

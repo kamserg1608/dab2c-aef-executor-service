@@ -10,8 +10,8 @@ import ru.sbrf.dab2c.executor.domain.session.DaSessionCommon
 import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.domain.session.DaSessionMeta
 import ru.sbrf.dab2c.executor.domain.session.DaSessionUserInfo
-import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext.toRequestMetadata
 import ru.sbrf.dab2c.executor.voice.model.RequestHeader
+import ru.sbrf.dab2c.executor.voice.util.extensions.toRequestMetadata
 
 class GrpcMetadataContextTest {
 
