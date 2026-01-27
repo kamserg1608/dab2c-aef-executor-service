@@ -1,4 +1,4 @@
-rootProject.name = "dab2c-core"
+rootProject.name = "dab2c-executor"
 include("executor-domain-model")
 include("executor-distribution")
 include("executor-application")

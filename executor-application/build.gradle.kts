@@ -14,4 +14,7 @@ dependencies {
     implementation(project(":executor-services:voice-executor"))
 
     implementation(libs.spring.boot.starter.actuator)
+
+    // JSON logging for PROM profile
+    implementation(libs.logstash.logback.encoder)
 }
