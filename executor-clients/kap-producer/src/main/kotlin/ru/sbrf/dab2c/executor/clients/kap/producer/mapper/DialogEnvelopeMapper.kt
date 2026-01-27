@@ -2,6 +2,7 @@
 
 package ru.sbrf.dab2c.executor.clients.kap.producer.mapper
 
+import ru.sbrf.dab2c.executor.clients.kap.producer.model.AgentId
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.AssistantMessage
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.DialogData
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.DialogEnvelope
@@ -20,7 +21,10 @@ data class DialogTurnData(
     val chatId: String,
     val timestamp: Long,
     val previousMessageId: String?,
-    val daSessionInfo: DaSessionInfo
+    val daSessionInfo: DaSessionInfo,
+    val agentCi: String,
+    val assistantResponseTime: Long,
+    val requestId: String? = null
 )
 
 /**
@@ -28,7 +32,7 @@ data class DialogTurnData(
  */
 object DialogEnvelopeMapper {
 
-    private const val DIALOG_VERSION = "0.0.1"
+    private const val DIALOG_VERSION = "1.2.0"
     private const val INPUT_TYPE_VOICE = "voice"
     private const val STREAM_STATUS_COMPLETED = "completed"
 
@@ -79,7 +83,10 @@ object DialogEnvelopeMapper {
             text = data.outputText,
             sessionId = sessionId.takeIfNotBlank(),
             previousMessageId = data.userMessageId,
-            streamStatus = STREAM_STATUS_COMPLETED
+            requestId = data.requestId,
+            streamStatus = STREAM_STATUS_COMPLETED,
+            agentId = listOf(AgentId(ci = data.agentCi)),
+            assistantResponseTime = data.assistantResponseTime
         )
     }
 

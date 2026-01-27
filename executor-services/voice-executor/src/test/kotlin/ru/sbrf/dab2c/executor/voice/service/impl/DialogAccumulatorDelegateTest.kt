@@ -8,6 +8,7 @@ import io.mockk.slot
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -35,7 +36,7 @@ class DialogAccumulatorDelegateTest {
         dialogTurnPublisher = mockk()
         every { delegate.processRequestChunks(any()) } answers { firstArg() }
         every { delegate.processResponseChunks(any()) } answers { firstArg() }
-        coEvery { dialogTurnPublisher.publishDialogTurn(any(), any()) } returns Unit
+        coEvery { dialogTurnPublisher.publishDialogTurn(any(), any(), any()) } returns Unit
         accumulator = DialogAccumulatorDelegate(delegate, dialogTurnPublisher)
     }
 
@@ -188,15 +189,20 @@ class DialogAccumulatorDelegateTest {
 
             accumulator.processResponseChunks(responses).toList()
 
-            coVerify(exactly = 1) { dialogTurnPublisher.publishDialogTurn(any(), any()) }
+            coVerify(exactly = 1) { dialogTurnPublisher.publishDialogTurn(any(), any(), any()) }
         }
 
         @Test
         fun `should publish dialog with accumulated text`() = runTest {
             val inputSlot = slot<String>()
             val outputSlot = slot<String>()
+            val responseTimeSlot = slot<Long>()
             coEvery {
-                dialogTurnPublisher.publishDialogTurn(capture(inputSlot), capture(outputSlot))
+                dialogTurnPublisher.publishDialogTurn(
+                    capture(inputSlot),
+                    capture(outputSlot),
+                    capture(responseTimeSlot)
+                )
             } returns Unit
 
             val responses = flowOf(
@@ -223,7 +229,7 @@ class DialogAccumulatorDelegateTest {
 
             accumulator.processResponseChunks(responses).toList()
 
-            coVerify(exactly = 0) { dialogTurnPublisher.publishDialogTurn(any(), any()) }
+            coVerify(exactly = 0) { dialogTurnPublisher.publishDialogTurn(any(), any(), any()) }
         }
 
         @Test
@@ -238,7 +244,51 @@ class DialogAccumulatorDelegateTest {
 
             accumulator.processResponseChunks(responses).toList()
 
-            coVerify(exactly = 2) { dialogTurnPublisher.publishDialogTurn(any(), any()) }
+            coVerify(exactly = 2) { dialogTurnPublisher.publishDialogTurn(any(), any(), any()) }
+        }
+
+        @Test
+        fun `should calculate assistant response time from output generation`() = runTest {
+            val responseTimeSlot = slot<Long>()
+            coEvery {
+                dialogTurnPublisher.publishDialogTurn(any(), any(), capture(responseTimeSlot))
+            } returns Unit
+
+            val responses = flowOf(
+                createInputTranscription("Hello"),
+                createOutputTranscription("Hi"),
+                createInputTranscription("Next")
+            )
+
+            accumulator.processResponseChunks(responses).toList()
+
+            assertThat(responseTimeSlot.captured).isGreaterThanOrEqualTo(0L)
+        }
+
+        @Test
+        fun `should calculate assistant response time correctly for multiple turns`() = runTest {
+            val responseTimes = mutableListOf<Long>()
+            coEvery {
+                dialogTurnPublisher.publishDialogTurn(any(), any(), capture(responseTimes))
+            } returns Unit
+
+            val responses = flowOf(
+                createInputTranscription("First"),
+                createOutputTranscription("Answer 1"),
+                createInputTranscription("Second"),
+                createOutputTranscription("Answer 2"),
+                createInputTranscription("Third")
+            )
+
+            accumulator.processResponseChunks(responses).toList()
+
+            assertThat(responseTimes).hasSize(2)
+            responseTimes.forEachIndexed { index, responseTime ->
+                assertThat(responseTime)
+                    .describedAs("Assistant response time for turn ${index + 1}")
+                    .isGreaterThanOrEqualTo(0L)
+                    .isLessThan(10_000L)
+            }
         }
     }
 

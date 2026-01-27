@@ -7,7 +7,7 @@ import ru.sbrf.dab2c.executor.voice.service.api.DialogTurnPublisher
  */
 object NoopDialogTurnPublisher : DialogTurnPublisher {
 
-    override suspend fun publishDialogTurn(inputText: String, outputText: String) {
+    override suspend fun publishDialogTurn(inputText: String, outputText: String, assistantResponseTime: Long) {
         // No-op: proxy mode does not publish dialogs
     }
 }

@@ -6,6 +6,7 @@ import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.mapper.DialogEnvelopeMapper
 import ru.sbrf.dab2c.executor.clients.kap.producer.mapper.DialogTurnData
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
+import ru.sbrf.dab2c.executor.voice.model.RequestHeader
 import ru.sbrf.dab2c.executor.voice.service.api.DialogTurnPublisher
 import ru.sbrf.dab2c.executor.voice.util.extensions.currentRequestMetadata
 import java.util.UUID
@@ -20,14 +21,16 @@ class KapDialogTurnPublisher(
 
     private var previousMessageId: String? = null
 
-    override suspend fun publishDialogTurn(inputText: String, outputText: String) {
+    override suspend fun publishDialogTurn(inputText: String, outputText: String, assistantResponseTime: Long) {
         val state = processingState.value
         if (state !is ProcessingState.Serving) {
             logger.warn { "Cannot publish dialog - not in Serving state, current state: ${state::class.simpleName}" }
             return
         }
 
-        logger.info { "Publishing dialog turn: input='$inputText', output='$outputText'" }
+        logger.info {
+            "Publishing dialog turn: input='$inputText', output='$outputText', responseTime=${assistantResponseTime}ms"
+        }
 
         val metadata = currentRequestMetadata()
         val assistantMessageId = UUID.randomUUID().toString()
@@ -41,7 +44,10 @@ class KapDialogTurnPublisher(
             chatId = state.conversationId,
             timestamp = System.currentTimeMillis() / MILLIS_TO_SECONDS,
             previousMessageId = previousMessageId,
-            daSessionInfo = metadata.daSessionInfo
+            daSessionInfo = metadata.daSessionInfo,
+            agentCi = state.agentConfiguration.functionalSubsystemCi,
+            assistantResponseTime = assistantResponseTime,
+            requestId = metadata.getHeaderOrNull(RequestHeader.X_REQUEST_ID)
         )
 
         val dialogEnvelope = DialogEnvelopeMapper.toDialogEnvelope(dialogTurnData)

@@ -67,7 +67,7 @@ class ChunkProcessingServiceFactoryImpl(
         processingState: MutableStateFlow<ProcessingState>
     ): ChunkProcessingService {
         val callbackChannel = Channel<VoiceRequest>(capacity = Channel.BUFFERED)
-        val analyticsPublisher = KapAnalyticsPublisher(kapProducerClient, processingState)
+        val analyticsPublisher = KapAnalyticsPublisher(kapProducerClient)
 
         val contextService = ContextServiceImpl(processingState)
         val functionCallService = FunctionCallServiceImpl(

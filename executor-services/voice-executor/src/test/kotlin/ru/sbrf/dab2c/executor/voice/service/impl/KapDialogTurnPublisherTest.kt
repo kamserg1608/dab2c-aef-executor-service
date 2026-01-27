@@ -45,7 +45,7 @@ class KapDialogTurnPublisherTest {
     @Test
     fun `should publish dialog to KAP`() = runTest {
         withContext(metadataContext) {
-            publisher.publishDialogTurn("Hello", "Hi there")
+            publisher.publishDialogTurn("Hello", "Hi there", 1000L)
 
             coVerify(exactly = 1) { kapProducerClient.publishDialog(any()) }
         }
@@ -57,7 +57,7 @@ class KapDialogTurnPublisherTest {
             val dialogSlot = slot<DialogEnvelope>()
             coEvery { kapProducerClient.publishDialog(capture(dialogSlot)) } returns Unit
 
-            publisher.publishDialogTurn("How are you?", "I am fine!")
+            publisher.publishDialogTurn("How are you?", "I am fine!", 1000L)
 
             val capturedDialog = dialogSlot.captured
             assertEquals("How are you?", capturedDialog.data.userMessage.text)
@@ -71,7 +71,7 @@ class KapDialogTurnPublisherTest {
             val dialogSlot = slot<DialogEnvelope>()
             coEvery { kapProducerClient.publishDialog(capture(dialogSlot)) } returns Unit
 
-            publisher.publishDialogTurn("Hello", "Hi")
+            publisher.publishDialogTurn("Hello", "Hi", 1000L)
 
             val capturedDialog = dialogSlot.captured
             assertEquals("test-conversation-id", capturedDialog.data.userMessage.chatId)
@@ -85,7 +85,7 @@ class KapDialogTurnPublisherTest {
             val dialogSlot = slot<DialogEnvelope>()
             coEvery { kapProducerClient.publishDialog(capture(dialogSlot)) } returns Unit
 
-            publisher.publishDialogTurn("Hello", "Hi")
+            publisher.publishDialogTurn("Hello", "Hi", 1000L)
 
             val userMessage = dialogSlot.captured.data.userMessage
             assertEquals("test-session-id", userMessage.sessionId)
@@ -103,7 +103,7 @@ class KapDialogTurnPublisherTest {
         withContext(metadataContext) {
             processingState.value = ProcessingState.AwaitingContext
 
-            publisher.publishDialogTurn("Hello", "Hi")
+            publisher.publishDialogTurn("Hello", "Hi", 1000L)
 
             coVerify(exactly = 0) { kapProducerClient.publishDialog(any()) }
         }
@@ -115,8 +115,8 @@ class KapDialogTurnPublisherTest {
             val dialogs = mutableListOf<DialogEnvelope>()
             coEvery { kapProducerClient.publishDialog(capture(dialogs)) } returns Unit
 
-            publisher.publishDialogTurn("First", "Answer 1")
-            publisher.publishDialogTurn("Second", "Answer 2")
+            publisher.publishDialogTurn("First", "Answer 1", 1000L)
+            publisher.publishDialogTurn("Second", "Answer 2", 1500L)
 
             val firstDialog = dialogs[0]
             val secondDialog = dialogs[1]
@@ -139,7 +139,7 @@ class KapDialogTurnPublisherTest {
             val dialogSlot = slot<DialogEnvelope>()
             coEvery { kapProducerClient.publishDialog(capture(dialogSlot)) } returns Unit
 
-            publisher.publishDialogTurn("Hello", "Hi")
+            publisher.publishDialogTurn("Hello", "Hi", 1000L)
 
             assertEquals("voice", dialogSlot.captured.data.userMessage.inputType)
         }
@@ -151,9 +151,35 @@ class KapDialogTurnPublisherTest {
             val dialogSlot = slot<DialogEnvelope>()
             coEvery { kapProducerClient.publishDialog(capture(dialogSlot)) } returns Unit
 
-            publisher.publishDialogTurn("Hello", "Hi")
+            publisher.publishDialogTurn("Hello", "Hi", 1000L)
 
             assertEquals("completed", dialogSlot.captured.data.assistantMessage?.streamStatus)
+        }
+    }
+
+    @Test
+    fun `should set agentId with CI from agent configuration`() = runTest {
+        withContext(metadataContext) {
+            val dialogSlot = slot<DialogEnvelope>()
+            coEvery { kapProducerClient.publishDialog(capture(dialogSlot)) } returns Unit
+
+            publisher.publishDialogTurn("Hello", "Hi", 1000L)
+
+            val agentId = dialogSlot.captured.data.assistantMessage?.agentId
+            assertEquals(1, agentId?.size)
+            assertEquals("test-ci", agentId?.first()?.ci)
+        }
+    }
+
+    @Test
+    fun `should set assistantResponseTime from parameter`() = runTest {
+        withContext(metadataContext) {
+            val dialogSlot = slot<DialogEnvelope>()
+            coEvery { kapProducerClient.publishDialog(capture(dialogSlot)) } returns Unit
+
+            publisher.publishDialogTurn("Hello", "Hi", 2500L)
+
+            assertEquals(2500L, dialogSlot.captured.data.assistantMessage?.assistantResponseTime)
         }
     }
 

@@ -52,9 +52,17 @@ class DialogPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(dialogRecords).isNotEmpty()
 
         val receivedDialog = dialogRecords.first()
+        assertThat(receivedDialog.version).isEqualTo("1.2.0")
         assertThat(receivedDialog.data.userMessage.text).isEqualTo("Hello")
         assertThat(receivedDialog.data.assistantMessage?.text).isEqualTo("Hi there")
         assertThat(receivedDialog.data.userMessage.chatId).isEqualTo(testChatId)
+
+        val assistantMessage = receivedDialog.data.assistantMessage
+        assertThat(assistantMessage?.agentId).isNotNull
+        assertThat(assistantMessage?.agentId).hasSize(1)
+        assertThat(assistantMessage?.agentId?.first()?.ci).isNotBlank()
+        assertThat(assistantMessage?.assistantResponseTime).isNotNull
+        assertThat(assistantMessage?.assistantResponseTime).isGreaterThanOrEqualTo(0L)
     }
 
     @Test
@@ -96,8 +104,11 @@ class DialogPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
         val firstDialog = dialogRecords.find { it.data.userMessage.previousMessageId == null }
         assertThat(firstDialog).isNotNull
-        assertThat(firstDialog!!.data.userMessage.text).isEqualTo("First question")
+        assertThat(firstDialog!!.version).isEqualTo("1.2.0")
+        assertThat(firstDialog.data.userMessage.text).isEqualTo("First question")
         assertThat(firstDialog.data.assistantMessage?.text).isEqualTo("First answer")
+        assertThat(firstDialog.data.assistantMessage?.agentId).isNotNull
+        assertThat(firstDialog.data.assistantMessage?.assistantResponseTime).isNotNull
 
         val secondDialog = dialogRecords.find {
             it.data.userMessage.previousMessageId == firstDialog.data.assistantMessage?.id
@@ -105,5 +116,7 @@ class DialogPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(secondDialog).isNotNull
         assertThat(secondDialog!!.data.userMessage.text).isEqualTo("Second question")
         assertThat(secondDialog.data.assistantMessage?.text).isEqualTo("Second answer")
+        assertThat(secondDialog.data.assistantMessage?.agentId).isNotNull
+        assertThat(secondDialog.data.assistantMessage?.assistantResponseTime).isNotNull
     }
 }

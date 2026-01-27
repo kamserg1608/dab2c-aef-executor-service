@@ -23,6 +23,8 @@ class DialogAccumulatorDelegate(
     private val inputChunks = mutableListOf<String>()
     private val outputChunks = mutableListOf<String>()
     private var phase = Phase.AWAITING_INPUT
+    private var outputStartTimestamp: Long = 0L
+    private var outputEndTimestamp: Long = 0L
 
     override fun processRequestChunks(requestsChunks: Flow<VoiceRequest>): Flow<VoiceRequest> =
         delegate.processRequestChunks(requestsChunks)
@@ -54,23 +56,35 @@ class DialogAccumulatorDelegate(
     private fun handleOutputTranscription(response: VoiceResponse.OutputTranscription) {
         val text = response.transcription.text
 
+        if (outputChunks.isEmpty()) {
+            outputStartTimestamp = System.currentTimeMillis()
+        }
+
         phase = Phase.ACCUMULATING_OUTPUT
         outputChunks.add(text)
+        outputEndTimestamp = System.currentTimeMillis()
         logger.debug { "Accumulated output chunk: '$text'" }
     }
 
     private suspend fun publishDialogTurn() {
         val inputPhrase = inputChunks.joinToString("")
         val outputPhrase = outputChunks.joinToString("")
+        val assistantResponseTime = outputEndTimestamp - outputStartTimestamp
 
-        logger.info { "Dialog turn completed: input='$inputPhrase', output='$outputPhrase'" }
+        logger.info {
+            "Dialog turn completed: input='$inputPhrase', output='$outputPhrase', " +
+                "assistantResponseTime=${assistantResponseTime}ms"
+        }
 
-        dialogTurnPublisher.publishDialogTurn(inputPhrase, outputPhrase)
+        dialogTurnPublisher.publishDialogTurn(inputPhrase, outputPhrase, assistantResponseTime)
     }
 
     private fun reset() {
         inputChunks.clear()
         outputChunks.clear()
+        outputStartTimestamp = 0L
+        outputEndTimestamp = 0L
+        phase = Phase.AWAITING_INPUT
     }
 
     private enum class Phase {

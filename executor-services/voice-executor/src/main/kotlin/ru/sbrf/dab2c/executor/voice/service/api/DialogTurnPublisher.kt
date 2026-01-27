@@ -8,5 +8,5 @@ interface DialogTurnPublisher {
     /**
      * Publishes a completed dialog turn consisting of user input and assistant output.
      */
-    suspend fun publishDialogTurn(inputText: String, outputText: String)
+    suspend fun publishDialogTurn(inputText: String, outputText: String, assistantResponseTime: Long)
 }

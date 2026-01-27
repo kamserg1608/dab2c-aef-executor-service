@@ -17,7 +17,7 @@ class DialogEnvelopeMapperTest {
         val envelope = DialogEnvelopeMapper.toDialogEnvelope(data)
 
         assertEquals("envelope-123", envelope.id)
-        assertEquals("0.0.1", envelope.version)
+        assertEquals("1.2.0", envelope.version)
         assertEquals(1705849200L, envelope.date)
     }
 
@@ -125,9 +125,50 @@ class DialogEnvelopeMapperTest {
         assertNull(envelope.data.userMessage.previousMessageId)
     }
 
+    @Test
+    fun `should map agentId as array with ci object`() {
+        val data = createTestDialogTurnData(agentCi = "agent-ci-12345")
+
+        val envelope = DialogEnvelopeMapper.toDialogEnvelope(data)
+
+        val assistantMessage = envelope.data.assistantMessage
+        assertEquals(1, assistantMessage?.agentId?.size)
+        assertEquals("agent-ci-12345", assistantMessage?.agentId?.first()?.ci)
+    }
+
+    @Test
+    fun `should map assistantResponseTime in milliseconds`() {
+        val data = createTestDialogTurnData(assistantResponseTime = 1500L)
+
+        val envelope = DialogEnvelopeMapper.toDialogEnvelope(data)
+
+        assertEquals(1500L, envelope.data.assistantMessage?.assistantResponseTime)
+    }
+
+    @Test
+    fun `should map requestId to assistant message`() {
+        val data = createTestDialogTurnData(requestId = "test-request-id-123")
+
+        val envelope = DialogEnvelopeMapper.toDialogEnvelope(data)
+
+        assertEquals("test-request-id-123", envelope.data.assistantMessage?.requestId)
+    }
+
+    @Test
+    fun `should handle null requestId`() {
+        val data = createTestDialogTurnData(requestId = null)
+
+        val envelope = DialogEnvelopeMapper.toDialogEnvelope(data)
+
+        assertNull(envelope.data.assistantMessage?.requestId)
+    }
+
     private fun createTestDialogTurnData(
         previousMessageId: String? = null,
-        daSessionInfo: DaSessionInfo = createTestSessionInfo()
+        daSessionInfo: DaSessionInfo = createTestSessionInfo(),
+        agentCi: String = "test-agent-ci",
+        assistantResponseTime: Long = 1000L,
+        requestId: String? = null
     ): DialogTurnData = DialogTurnData(
         envelopeId = "envelope-123",
         userMessageId = "user-msg-456",
@@ -137,7 +178,10 @@ class DialogEnvelopeMapperTest {
         chatId = "chat-abc",
         timestamp = 1705849200L,
         previousMessageId = previousMessageId,
-        daSessionInfo = daSessionInfo
+        daSessionInfo = daSessionInfo,
+        agentCi = agentCi,
+        assistantResponseTime = assistantResponseTime,
+        requestId = requestId
     )
 
     private fun createTestSessionInfo(): DaSessionInfo = DaSessionInfo(

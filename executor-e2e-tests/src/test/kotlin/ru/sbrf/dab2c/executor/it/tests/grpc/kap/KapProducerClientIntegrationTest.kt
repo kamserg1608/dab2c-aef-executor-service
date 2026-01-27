@@ -61,8 +61,7 @@ class KapProducerClientIntegrationTest : BaseGigaVoiceIntegrationTest() {
         val receivedAnalytics = matchingRecords.first()
         assertEquals(analytics.id, receivedAnalytics.id)
         assertEquals(analytics.version, receivedAnalytics.version)
-        assertEquals(analytics.agentName, receivedAnalytics.agentName)
-        assertEquals(analytics.sessionId, receivedAnalytics.sessionId)
+        assertEquals(analytics.data, receivedAnalytics.data)
     }
 
     private fun createTestDialogEnvelope(): DialogEnvelope {
@@ -95,18 +94,10 @@ class KapProducerClientIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
     private fun createTestAgentAnalyticsEnvelope(): AgentAnalyticsEnvelope {
         return AgentAnalyticsEnvelope(
-            version = "1.1.0",
+            version = "1.2.0",
             id = UUID.randomUUID().toString(),
             date = System.currentTimeMillis() / 1000,
-            sessionId = UUID.randomUUID().toString(),
-            conversationId = UUID.randomUUID().toString(),
-            ucpId = UUID.randomUUID().toString(),
-            block = "test-block",
-            channel = "test-channel",
-            agentName = "test-agent",
-            dataVersion = "1.0.0",
-            agentCi = "test-ci",
-            size = "0"
+            data = """{"test":"data"}"""
         )
     }
 }

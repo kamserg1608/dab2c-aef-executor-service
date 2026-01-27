@@ -27,19 +27,18 @@ class AnalyticsPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should publish analytics to KAP when settings response contains analytics`() = runItTest {
-        val testDataVersion = "2.0.0"
         val testAnalyticsData = """{"metric":"test-value","count":123}"""
 
         setupFullModeStubsWithAnalytics(
             efsAdapterMock,
             gigaVoiceAgentMock,
-            testDataVersion,
+            "2.0.0",
             testAnalyticsData
         )
 
         val analyticsRecords = embeddedKafkaBroker.withConsumer<AgentAnalyticsEnvelope>(
             topic = AGENTS_TOPIC,
-            filter = { it.dataVersion == testDataVersion }
+            filter = { it.data == testAnalyticsData }
         ) {
             runItTest {
                 withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
@@ -54,17 +53,12 @@ class AnalyticsPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(analyticsRecords).isNotEmpty()
 
         val receivedAnalytics = analyticsRecords.first()
-        assertThat(receivedAnalytics.version).isEqualTo("1.1.0")
-        assertThat(receivedAnalytics.dataVersion).isEqualTo(testDataVersion)
+        assertThat(receivedAnalytics.version).isEqualTo("1.2.0")
         assertThat(receivedAnalytics.data).isEqualTo(testAnalyticsData)
-        assertThat(receivedAnalytics.agentName).isEqualTo("test-agent")
-        assertThat(receivedAnalytics.sessionId).isNotNull()
-        assertThat(receivedAnalytics.conversationId).isNotNull()
     }
 
     @Test
     fun `should publish analytics to KAP when function response contains analytics`() = runItTest {
-        val testDataVersion = "3.0.0"
         val testAnalyticsData = """{"function_metric":"function-value","execution_time":42}"""
 
         with(efsAdapterMock) {
@@ -75,13 +69,13 @@ class AnalyticsPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
         gigaVoiceAgentMock.stubGigaAgentFunctionsWithAnalytics(
             functionName = "get_account_balance",
             resultContent = """{"balance": 1000}""",
-            dataVersion = testDataVersion,
+            dataVersion = "3.0.0",
             analyticsData = testAnalyticsData
         )
 
         val analyticsRecords = embeddedKafkaBroker.withConsumer<AgentAnalyticsEnvelope>(
             topic = AGENTS_TOPIC,
-            filter = { it.dataVersion == testDataVersion }
+            filter = { it.data == testAnalyticsData }
         ) {
             runItTest {
                 withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
@@ -106,8 +100,7 @@ class AnalyticsPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(analyticsRecords).isNotEmpty()
 
         val receivedAnalytics = analyticsRecords.first()
-        assertThat(receivedAnalytics.version).isEqualTo("1.1.0")
-        assertThat(receivedAnalytics.dataVersion).isEqualTo(testDataVersion)
+        assertThat(receivedAnalytics.version).isEqualTo("1.2.0")
         assertThat(receivedAnalytics.data).isEqualTo(testAnalyticsData)
     }
 }
