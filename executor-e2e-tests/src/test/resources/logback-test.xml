@@ -7,6 +7,15 @@
         </encoder>
     </appender>
 
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>logs/e2e-tests.log</file>
+        <append>false</append>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
     <!-- Suppress noisy debug logs from JDK internals -->
     <logger name="java.lang.ProcessBuilder" level="INFO"/>
 
@@ -16,9 +25,13 @@
     <!-- Suppress gRPC optional dependency warnings -->
     <logger name="io.grpc" level="INFO"/>
     <logger name="io.grpc.internal" level="WARN"/>
+    <logger name="kafka" level="ERROR"/>
+    <logger name="org.apache.zookeeper" level="ERROR"/>
+    <logger name="org.apache.kafka" level="ERROR"/>
 
     <root level="INFO">
-        <appender-ref ref="STDOUT" />
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
     </root>
 
 </configuration>
