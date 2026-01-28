@@ -1,8 +1,5 @@
 package ru.sbrf.dab2c.executor.it.mock
 
-import GigaVoiceProtocol.GigaVoice.GigaVoiceRequest
-import GigaVoiceProtocol.GigaVoice.GigaVoiceResponse
-import GigaVoiceProtocol.GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineImplBase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -12,6 +9,9 @@ import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import org.springframework.stereotype.Component
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineImplBase
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 

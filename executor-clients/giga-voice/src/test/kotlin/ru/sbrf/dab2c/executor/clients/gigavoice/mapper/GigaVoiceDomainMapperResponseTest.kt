@@ -1,11 +1,11 @@
 package ru.sbrf.dab2c.executor.clients.gigavoice.mapper
 
-import GigaVoiceProtocol.GigaVoice.GigaVoiceResponse
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import java.util.stream.Stream
 

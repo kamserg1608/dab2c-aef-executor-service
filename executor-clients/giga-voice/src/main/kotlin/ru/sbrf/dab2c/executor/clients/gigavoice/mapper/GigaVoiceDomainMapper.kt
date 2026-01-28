@@ -1,10 +1,55 @@
 package ru.sbrf.dab2c.executor.clients.gigavoice.mapper
 
-import GigaVoiceProtocol.*
-import GigaVoiceProtocol.GigaVoice.*
 import ru.sbrf.dab2c.executor.clients.converter.ProtoTypeConverters
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.AdditionalData
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.AgeType
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.AnyExample
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Audio
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.ContentForSynthesis
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.ContentFromClient
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.ContentFromModel
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Emotion
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Error
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FirstSpeaker
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCall
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionResult
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GenderType
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaChatModelInfo
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Input
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.InputTranscription
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Message
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Output
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.OutputTranscription
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.PersonIdentity
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Settings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Usage
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Warning
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.anyExample
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audioContent
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audioSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.contentForSynthesis
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.contentFromClient
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.filterSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.firstSpeaker
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.function
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionCall
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionRegistry
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionResult
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaChatSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.initialContext
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.input
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.message
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.output
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.pair
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.params
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.requestContentSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.responseContentSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.settings
 import ru.sbrf.dab2c.executor.domain.voice.AdditionalDataContent
-import ru.sbrf.dab2c.executor.domain.voice.AudioContent
 import ru.sbrf.dab2c.executor.domain.voice.AudioEncoding
 import ru.sbrf.dab2c.executor.domain.voice.AudioInputSettings
 import ru.sbrf.dab2c.executor.domain.voice.AudioOutput
@@ -32,6 +77,15 @@ import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.domain.voice.WarningData
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.AudioSettings as ProtoAudioSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FilterSettings as ProtoFilterSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Function as ProtoFunction
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionRegistry as ProtoFunctionRegistry
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaChatSettings as ProtoGigaChatSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.InitialContext as ProtoInitialContext
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.RequestContentSettings as ProtoRequestContentSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.ResponseContentSettings as ProtoResponseContentSettings
+import ru.sbrf.dab2c.executor.domain.voice.AudioContent as DomainAudioContent
 import ru.sbrf.dab2c.executor.domain.voice.ContentFromModel as DomainContentFromModel
 import ru.sbrf.dab2c.executor.domain.voice.Emotion as DomainEmotion
 import ru.sbrf.dab2c.executor.domain.voice.FirstSpeaker as DomainFirstSpeaker
@@ -201,7 +255,7 @@ object GigaVoiceDomainMapper {
             error("Context requests are not forwarded to downstream GigaVoice service")
     }
 
-    private fun toContentFromClient(audio: AudioContent): ContentFromClient = contentFromClient {
+    private fun toContentFromClient(audio: DomainAudioContent): ContentFromClient = contentFromClient {
         audioContent = audioContent {
             audio.audioChunk?.let { audioChunk = ProtoTypeConverters.byteArrayToByteString(it) }
             speechStart = audio.speechStart
@@ -244,7 +298,7 @@ object GigaVoiceDomainMapper {
         enableEmotion = domainSettings.enableEmotion
     }
 
-    private fun toProtoAudioSettings(domainSettings: AudioSettings): GigaVoice.AudioSettings =
+    private fun toProtoAudioSettings(domainSettings: AudioSettings): ProtoAudioSettings =
         audioSettings {
             domainSettings.input?.let { input = toProtoInput(it) }
             domainSettings.output?.let { output = toProtoOutput(it) }
@@ -286,7 +340,7 @@ object GigaVoiceDomainMapper {
             AudioEncoding.PCM_ALAW -> Output.AudioEncoding.PCM_ALAW
         }
 
-    private fun toProtoGigaChatSettings(domainSettings: GigaChatSettings): GigaVoice.GigaChatSettings =
+    private fun toProtoGigaChatSettings(domainSettings: GigaChatSettings): ProtoGigaChatSettings =
         gigaChatSettings {
             domainSettings.model?.let { model = it }
             domainSettings.temperature?.let { temperature = it }
@@ -301,7 +355,7 @@ object GigaVoiceDomainMapper {
             domainSettings.functionRegistry?.let { functionRegistry = toProtoFunctionRegistry(it) }
         }
 
-    private fun toProtoFilterSettings(domainSettings: FilterSettings): GigaVoice.FilterSettings =
+    private fun toProtoFilterSettings(domainSettings: FilterSettings): ProtoFilterSettings =
         filterSettings {
             domainSettings.requestContent?.let { requestContent = toProtoRequestContentSettings(it) }
             domainSettings.responseContent?.let {
@@ -311,7 +365,7 @@ object GigaVoiceDomainMapper {
 
     private fun toProtoRequestContentSettings(
         domainSettings: RequestContentSettings
-    ): GigaVoice.RequestContentSettings = requestContentSettings {
+    ): ProtoRequestContentSettings = requestContentSettings {
         domainSettings.neuro?.let { neuro = it }
         domainSettings.blacklist?.let { blacklist = it }
         domainSettings.whitelist?.let { whitelist = it }
@@ -319,11 +373,11 @@ object GigaVoiceDomainMapper {
 
     private fun toProtoResponseContentSettings(
         domainSettings: ResponseContentSettings
-    ): GigaVoice.ResponseContentSettings = responseContentSettings {
+    ): ProtoResponseContentSettings = responseContentSettings {
         domainSettings.blacklist?.let { blacklist = it }
     }
 
-    private fun toProtoFunction(domainFunction: FunctionDefinition): GigaVoice.Function = function {
+    private fun toProtoFunction(domainFunction: FunctionDefinition): ProtoFunction = function {
         name = domainFunction.name
         domainFunction.description?.let { description = it }
         domainFunction.parameters?.let { parameters = it }
@@ -331,7 +385,7 @@ object GigaVoiceDomainMapper {
         domainFunction.returnParameters?.let { returnParameters = it }
     }
 
-    private fun toProtoAnyExample(example: FunctionExample): GigaVoice.AnyExample = anyExample {
+    private fun toProtoAnyExample(example: FunctionExample): AnyExample = anyExample {
         request = example.request
         params = params {
             pairs.addAll(
@@ -345,14 +399,14 @@ object GigaVoiceDomainMapper {
         }
     }
 
-    private fun toProtoFunctionRegistry(domainRegistry: FunctionRegistry): GigaVoice.FunctionRegistry =
+    private fun toProtoFunctionRegistry(domainRegistry: FunctionRegistry): ProtoFunctionRegistry =
         functionRegistry {
             domainRegistry.profile?.let { profile = it }
             labels.addAll(domainRegistry.labels)
             domainRegistry.abFlags?.let { abFlags = it }
         }
 
-    private fun toProtoInitialContext(domainContext: InitialContext): GigaVoice.InitialContext =
+    private fun toProtoInitialContext(domainContext: InitialContext): ProtoInitialContext =
         initialContext {
             messages.addAll(domainContext.messages.map { toProtoMessage(it) })
         }

@@ -8,9 +8,9 @@ import kotlinx.coroutines.slf4j.MDCContext
 import net.devh.boot.grpc.server.service.GrpcService
 import ru.sbrf.dab2c.executor.clients.gigavoice.mapper.GigaVoiceDomainMapper
 import ru.sbrf.dab2c.executor.clients.ivr.mapper.IvrDomainMapper
-import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
-import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrResponse
-import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrServiceGrpcKt
+import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceResponse
+import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceServiceGrpcKt
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
 import ru.sbrf.dab2c.executor.voice.grpc.client.GigaVoiceClient
 import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
@@ -27,8 +27,8 @@ class IvrServiceImpl(
     private val gigaVoiceClient: GigaVoiceClient,
     private val chunkProcessingServiceFactory: ChunkProcessingServiceFactory,
     private val sessionInitService: SessionInitService,
-) : IvrServiceGrpcKt.IvrServiceCoroutineImplBase() {
-    override fun session(requests: Flow<IvrRequest>): Flow<IvrResponse> {
+) : GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineImplBase() {
+    override fun gigaVoice(requests: Flow<GigaVoiceRequest>): Flow<GigaVoiceResponse> {
         val metadata = GrpcMetadataContext.fromGrpcThread()
         val chunkProcessingService = chunkProcessingServiceFactory.create()
 

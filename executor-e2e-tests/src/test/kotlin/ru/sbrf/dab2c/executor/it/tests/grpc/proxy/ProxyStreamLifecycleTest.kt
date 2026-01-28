@@ -4,10 +4,10 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
+import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceRequest
+import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.audioRequest
+import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.settingsRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.outputTranscriptionResponse
-import ru.sbrf.dab2c.executor.it.support.fixtures.IvrRequestFixtures.audioRequest
-import ru.sbrf.dab2c.executor.it.support.fixtures.IvrRequestFixtures.settingsRequest
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
@@ -73,8 +73,8 @@ class ProxyStreamLifecycleTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should handle empty stream gracefully`() = runItTest {
-        val requests = flow<IvrRequest> { }
-        val responses = proxyStub().session(requests).toList()
+        val requests = flow<GigaVoiceRequest> { }
+        val responses = proxyStub().gigaVoice(requests).toList()
 
         assertThat(responses).isEmpty()
         assertThat(mockGigaVoiceService.receivedRequests).isEmpty()

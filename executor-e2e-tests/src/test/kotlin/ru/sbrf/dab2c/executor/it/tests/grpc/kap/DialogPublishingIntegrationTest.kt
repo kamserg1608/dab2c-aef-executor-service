@@ -3,10 +3,10 @@ package ru.sbrf.dab2c.executor.it.tests.grpc.kap
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.DialogEnvelope
+import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.contextRequest
+import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.settingsRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.inputTranscriptionResponse
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.outputTranscriptionResponse
-import ru.sbrf.dab2c.executor.it.support.fixtures.IvrRequestFixtures.contextRequest
-import ru.sbrf.dab2c.executor.it.support.fixtures.IvrRequestFixtures.settingsRequest
 import ru.sbrf.dab2c.executor.it.support.kafka.KafkaTestSupport.withConsumer
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession

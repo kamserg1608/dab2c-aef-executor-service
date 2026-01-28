@@ -1,7 +1,7 @@
 package ru.sbrf.dab2c.executor.clients.ivr.mapper
 
 import org.assertj.core.api.Assertions.assertThat
-import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrResponse
+import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 
 /**
@@ -25,10 +25,10 @@ object IvrMapperTestAssertions {
     }
 
     /**
-     * Asserts that two IvrResponse proto messages are equal.
+     * Asserts that two GigaVoiceResponse proto messages are equal.
      * Proto messages have proper equals() implementation.
      */
-    fun assertProtoEquals(actual: IvrResponse, expected: IvrResponse) {
+    fun assertProtoEquals(actual: GigaVoiceResponse, expected: GigaVoiceResponse) {
         assertThat(actual).isEqualTo(expected)
     }
 }

@@ -2,8 +2,8 @@ package ru.sbrf.dab2c.executor.it.tests.grpc.proxy
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.settingsRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.outputTranscriptionResponse
-import ru.sbrf.dab2c.executor.it.support.fixtures.IvrRequestFixtures.settingsRequest
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest

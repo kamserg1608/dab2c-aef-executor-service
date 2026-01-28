@@ -1,15 +1,5 @@
 package ru.sbrf.dab2c.executor.clients.gigavoice.stub
 
-import GigaVoiceProtocol.GigaVoice.GigaVoiceRequest
-import GigaVoiceProtocol.GigaVoice.GigaVoiceResponse
-import GigaVoiceProtocol.GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineImplBase
-import GigaVoiceProtocol.additionalData
-import GigaVoiceProtocol.audio
-import GigaVoiceProtocol.contentFromModel
-import GigaVoiceProtocol.gigaChatModelInfo
-import GigaVoiceProtocol.gigaVoiceResponse
-import GigaVoiceProtocol.outputTranscription
-import GigaVoiceProtocol.usage
 import com.google.protobuf.ByteString
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.Flow
@@ -17,6 +7,16 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineImplBase
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.additionalData
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audio
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.contentFromModel
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaChatModelInfo
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceResponse
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.outputTranscription
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.usage
 
 private val logger = KotlinLogging.logger {}
 

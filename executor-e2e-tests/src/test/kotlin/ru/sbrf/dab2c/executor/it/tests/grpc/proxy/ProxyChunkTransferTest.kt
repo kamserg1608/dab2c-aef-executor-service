@@ -1,32 +1,32 @@
 package ru.sbrf.dab2c.executor.it.tests.grpc.proxy
 
-import GigaVoiceProtocol.GigaVoice.AdditionalData
-import GigaVoiceProtocol.GigaVoice.AgeType
-import GigaVoiceProtocol.GigaVoice.Audio
-import GigaVoiceProtocol.GigaVoice.ContentFromModel
-import GigaVoiceProtocol.GigaVoice.Emotion
-import GigaVoiceProtocol.GigaVoice.Error
-import GigaVoiceProtocol.GigaVoice.FunctionCall
-import GigaVoiceProtocol.GigaVoice.FunctionCalling
-import GigaVoiceProtocol.GigaVoice.GenderType
-import GigaVoiceProtocol.GigaVoice.GigaChatModelInfo
-import GigaVoiceProtocol.GigaVoice.GigaVoiceResponse
-import GigaVoiceProtocol.GigaVoice.InputTranscription
-import GigaVoiceProtocol.GigaVoice.OutputTranscription
-import GigaVoiceProtocol.GigaVoice.PersonIdentity
-import GigaVoiceProtocol.GigaVoice.Usage
-import GigaVoiceProtocol.GigaVoice.Warning
 import com.google.protobuf.ByteString
 import com.google.protobuf.Duration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.AdditionalData
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.AgeType
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Audio
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.ContentFromModel
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Emotion
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Error
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCall
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GenderType
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaChatModelInfo
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.InputTranscription
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.OutputTranscription
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.PersonIdentity
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Usage
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Warning
 import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioSettings
 import ru.sbrf.dab2c.executor.clients.ivr.proto.ContentForSynthesis
 import ru.sbrf.dab2c.executor.clients.ivr.proto.FirstSpeaker
 import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaChatSettings
+import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceRequest
 import ru.sbrf.dab2c.executor.clients.ivr.proto.InitialContext
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Input
-import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Message
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Output
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Settings
@@ -34,10 +34,10 @@ import ru.sbrf.dab2c.executor.clients.ivr.proto.audioContent
 import ru.sbrf.dab2c.executor.clients.ivr.proto.contentForSynthesis
 import ru.sbrf.dab2c.executor.clients.ivr.proto.contentFromClient
 import ru.sbrf.dab2c.executor.clients.ivr.proto.functionResult
-import ru.sbrf.dab2c.executor.clients.ivr.proto.ivrRequest
+import ru.sbrf.dab2c.executor.clients.ivr.proto.gigaVoiceRequest
 import ru.sbrf.dab2c.executor.clients.ivr.proto.settings
+import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.settingsRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.outputTranscriptionResponse
-import ru.sbrf.dab2c.executor.it.support.fixtures.IvrRequestFixtures.settingsRequest
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
@@ -107,7 +107,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
             .build()
 
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
-            session.sendRequest(IvrRequest.newBuilder().setSettings(settings).build())
+            session.sendRequest(GigaVoiceRequest.newBuilder().setSettings(settings).build())
             val received = mock.awaitRequest { it.hasSettings() }.settings
 
             assertThat(received.voiceCallId).isEqualTo("test-call-123")
@@ -142,7 +142,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
 
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(
-                ivrRequest {
+                gigaVoiceRequest {
                     input = contentFromClient {
                         audioContent = audioContent { audioChunk = ByteString.copyFrom(audioBytes) }
                     }
@@ -161,7 +161,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
     fun `should transfer AudioContent with speech markers`() = runItTest {
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(
-                ivrRequest {
+                gigaVoiceRequest {
                     input = contentFromClient {
                         audioContent = audioContent {
                             speechStart = true
@@ -177,7 +177,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
             session.awaitResponse()
 
             session.sendRequest(
-                ivrRequest {
+                gigaVoiceRequest {
                     input = contentFromClient {
                         audioContent = audioContent {
                             speechStart = false
@@ -198,7 +198,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
     fun `should transfer ContentForSynthesis with TEXT type`() = runItTest {
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(
-                ivrRequest {
+                gigaVoiceRequest {
                     input = contentFromClient {
                         contentForSynthesis = contentForSynthesis {
                             text = "Hello, how can I help you today?"
@@ -225,7 +225,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
 
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(
-                ivrRequest {
+                gigaVoiceRequest {
                     input = contentFromClient {
                         contentForSynthesis = contentForSynthesis {
                             text = ssmlText
@@ -250,7 +250,7 @@ class ProxyChunkTransferTest : BaseGigaVoiceIntegrationTest() {
     fun `should transfer FunctionResult with content and function name`() = runItTest {
         withSession(proxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(
-                ivrRequest {
+                gigaVoiceRequest {
                     functionResult = functionResult {
                         content = """{"balance": 1500.50, "currency": "RUB"}"""
                         functionName = "get_account_balance"

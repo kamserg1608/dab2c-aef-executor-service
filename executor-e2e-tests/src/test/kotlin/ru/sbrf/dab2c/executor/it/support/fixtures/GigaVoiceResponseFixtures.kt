@@ -1,14 +1,14 @@
 package ru.sbrf.dab2c.executor.it.support.fixtures
 
-import GigaVoiceProtocol.GigaVoice.GigaVoiceResponse
-import GigaVoiceProtocol.audio
-import GigaVoiceProtocol.contentFromModel
-import GigaVoiceProtocol.functionCall
-import GigaVoiceProtocol.functionCalling
-import GigaVoiceProtocol.gigaVoiceResponse
-import GigaVoiceProtocol.inputTranscription
-import GigaVoiceProtocol.outputTranscription
 import com.google.protobuf.ByteString
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audio
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.contentFromModel
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionCall
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionCalling
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceResponse
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.inputTranscription
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.outputTranscription
 
 object GigaVoiceResponseFixtures {
 

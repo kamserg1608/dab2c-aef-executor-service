@@ -3,7 +3,7 @@ package ru.sbrf.dab2c.executor.clients.ivr.mapper
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrResponse
+import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import java.util.stream.Stream
 
@@ -18,7 +18,7 @@ class IvrDomainMapperResponseTest {
     fun `should convert domain response to proto`(
         @Suppress("UNUSED_PARAMETER") testName: String,
         domainResponse: VoiceResponse,
-        expectedProto: IvrResponse
+        expectedProto: GigaVoiceResponse
     ) {
         val result = IvrDomainMapper.toProtoResponse(domainResponse)
 

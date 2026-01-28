@@ -17,10 +17,10 @@ import ru.sbrf.dab2c.executor.clients.ivr.proto.FunctionCalling
 import ru.sbrf.dab2c.executor.clients.ivr.proto.FunctionResult
 import ru.sbrf.dab2c.executor.clients.ivr.proto.GenderType
 import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaChatModelInfo
+import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Input
 import ru.sbrf.dab2c.executor.clients.ivr.proto.InputTranscription
-import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
-import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrResponse
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Message
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Output
 import ru.sbrf.dab2c.executor.clients.ivr.proto.OutputTranscription
@@ -36,8 +36,8 @@ import ru.sbrf.dab2c.executor.clients.ivr.proto.error
 import ru.sbrf.dab2c.executor.clients.ivr.proto.functionCall
 import ru.sbrf.dab2c.executor.clients.ivr.proto.functionCalling
 import ru.sbrf.dab2c.executor.clients.ivr.proto.gigaChatModelInfo
+import ru.sbrf.dab2c.executor.clients.ivr.proto.gigaVoiceResponse
 import ru.sbrf.dab2c.executor.clients.ivr.proto.inputTranscription
-import ru.sbrf.dab2c.executor.clients.ivr.proto.ivrResponse
 import ru.sbrf.dab2c.executor.clients.ivr.proto.outputTranscription
 import ru.sbrf.dab2c.executor.clients.ivr.proto.personIdentity
 import ru.sbrf.dab2c.executor.clients.ivr.proto.usage
@@ -96,17 +96,17 @@ object IvrDomainMapper {
     // ==================== Request Mapping: Proto -> Domain (Server-side) ====================
 
     /** Converts IVR proto request to domain VoiceRequest. */
-    fun toDomainRequest(request: IvrRequest): VoiceRequest =
+    fun toDomainRequest(request: GigaVoiceRequest): VoiceRequest =
         when (request.requestCase) {
-            IvrRequest.RequestCase.SETTINGS ->
+            GigaVoiceRequest.RequestCase.SETTINGS ->
                 VoiceRequest.Settings(toDomainSettings(request.settings))
-            IvrRequest.RequestCase.INPUT ->
+            GigaVoiceRequest.RequestCase.INPUT ->
                 toDomainContentFromClient(request.input)
-            IvrRequest.RequestCase.FUNCTION_RESULT ->
+            GigaVoiceRequest.RequestCase.FUNCTION_RESULT ->
                 VoiceRequest.FunctionResult(toDomainFunctionResult(request.functionResult))
-            IvrRequest.RequestCase.CONTEXT ->
+            GigaVoiceRequest.RequestCase.CONTEXT ->
                 VoiceRequest.Context(toDomainContext(request.context))
-            IvrRequest.RequestCase.REQUEST_NOT_SET, null ->
+            GigaVoiceRequest.RequestCase.REQUEST_NOT_SET, null ->
                 error("Request not set")
         }
 
@@ -324,19 +324,19 @@ object IvrDomainMapper {
     // ==================== Response Mapping: Domain -> Proto (Server-side) ====================
 
     /** Converts domain VoiceResponse to IVR proto response. */
-    fun toProtoResponse(response: VoiceResponse): IvrResponse = when (response) {
+    fun toProtoResponse(response: VoiceResponse): GigaVoiceResponse = when (response) {
         is VoiceResponse.Output ->
-            ivrResponse { output = toProtoContentFromModel(response.content) }
+            gigaVoiceResponse { output = toProtoContentFromModel(response.content) }
         is VoiceResponse.FunctionCalling ->
-            ivrResponse { functionCall = toProtoFunctionCalling(response.data) }
+            gigaVoiceResponse { functionCall = toProtoFunctionCalling(response.data) }
         is VoiceResponse.InputTranscription ->
-            ivrResponse { inputTranscription = toProtoInputTranscription(response.transcription) }
+            gigaVoiceResponse { inputTranscription = toProtoInputTranscription(response.transcription) }
         is VoiceResponse.OutputTranscription ->
-            ivrResponse { outputTranscription = toProtoOutputTranscription(response.transcription) }
+            gigaVoiceResponse { outputTranscription = toProtoOutputTranscription(response.transcription) }
         is VoiceResponse.Error ->
-            ivrResponse { error = toProtoError(response.error) }
+            gigaVoiceResponse { error = toProtoError(response.error) }
         is VoiceResponse.Warning ->
-            ivrResponse { warning = toProtoWarning(response.warning) }
+            gigaVoiceResponse { warning = toProtoWarning(response.warning) }
     }
 
     private fun toProtoContentFromModel(content: DomainContentFromModel): ContentFromModel =

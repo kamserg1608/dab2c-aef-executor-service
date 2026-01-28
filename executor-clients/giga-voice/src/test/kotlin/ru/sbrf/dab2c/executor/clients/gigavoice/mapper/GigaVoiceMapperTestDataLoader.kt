@@ -1,12 +1,12 @@
 package ru.sbrf.dab2c.executor.clients.gigavoice.mapper
 
-import GigaVoiceProtocol.GigaVoice.GigaVoiceRequest
-import GigaVoiceProtocol.GigaVoice.GigaVoiceResponse
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.protobuf.util.JsonFormat
 import org.junit.jupiter.params.provider.Arguments
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.domain.voice.AdditionalDataContent
 import ru.sbrf.dab2c.executor.domain.voice.AgeType
 import ru.sbrf.dab2c.executor.domain.voice.AudioContent

@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.protobuf.util.JsonFormat
 import org.junit.jupiter.params.provider.Arguments
-import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
-import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrResponse
+import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.domain.voice.AdditionalDataContent
 import ru.sbrf.dab2c.executor.domain.voice.AgeType
 import ru.sbrf.dab2c.executor.domain.voice.AudioContent
@@ -59,7 +59,7 @@ object IvrMapperTestDataLoader {
 
     /**
      * Loads request test cases (Proto -> Domain).
-     * Input: IvrRequest proto JSON
+     * Input: GigaVoiceRequest proto JSON
      * Expected: VoiceRequest domain object
      */
     fun loadRequestTestCases(): Stream<Arguments> {
@@ -74,7 +74,7 @@ object IvrMapperTestDataLoader {
     /**
      * Loads response test cases (Domain -> Proto).
      * Input: VoiceResponse domain object
-     * Expected: IvrResponse proto JSON
+     * Expected: GigaVoiceResponse proto JSON
      */
     fun loadResponseTestCases(): Stream<Arguments> {
         return loadTestCasesFromDirectory("mapper-test-data/response/")
@@ -103,14 +103,14 @@ object IvrMapperTestDataLoader {
 
     // ===================== Proto Parsing =====================
 
-    private fun parseProtoRequest(json: JsonNode): IvrRequest {
-        val builder = IvrRequest.newBuilder()
+    private fun parseProtoRequest(json: JsonNode): GigaVoiceRequest {
+        val builder = GigaVoiceRequest.newBuilder()
         protoJsonParser.merge(json.toString(), builder)
         return builder.build()
     }
 
-    private fun parseProtoResponse(json: JsonNode): IvrResponse {
-        val builder = IvrResponse.newBuilder()
+    private fun parseProtoResponse(json: JsonNode): GigaVoiceResponse {
+        val builder = GigaVoiceResponse.newBuilder()
         protoJsonParser.merge(json.toString(), builder)
         return builder.build()
     }

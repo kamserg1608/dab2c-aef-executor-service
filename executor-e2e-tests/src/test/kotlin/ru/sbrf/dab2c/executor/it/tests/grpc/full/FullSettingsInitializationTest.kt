@@ -9,10 +9,10 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.audioRequest
+import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.contextRequest
+import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.settingsRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.outputTranscriptionResponse
-import ru.sbrf.dab2c.executor.it.support.fixtures.IvrRequestFixtures.audioRequest
-import ru.sbrf.dab2c.executor.it.support.fixtures.IvrRequestFixtures.contextRequest
-import ru.sbrf.dab2c.executor.it.support.fixtures.IvrRequestFixtures.settingsRequest
 import ru.sbrf.dab2c.executor.it.support.grpc.MetadataInterceptor
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
@@ -105,7 +105,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
 
         var caughtException: StatusException? = null
         try {
-            nonProxyStub().session(requests).toList()
+            nonProxyStub().gigaVoice(requests).toList()
         } catch (e: StatusException) {
             caughtException = e
         }
@@ -153,7 +153,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
 
         var caughtException: StatusException? = null
         try {
-            nonProxyStub().session(requests).toList()
+            nonProxyStub().gigaVoice(requests).toList()
         } catch (e: StatusException) {
             caughtException = e
         }
@@ -183,7 +183,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
             emit(settingsRequest("missing-session-test"))
         }
 
-        val result = runCatching { stubWithoutSession.session(requests).toList() }
+        val result = runCatching { stubWithoutSession.gigaVoice(requests).toList() }
 
         assertThat(result.isFailure).isTrue()
         assertThat(result.exceptionOrNull()).isInstanceOf(StatusException::class.java)
@@ -208,7 +208,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
             emit(settingsRequest("missing-token-test"))
         }
 
-        val result = runCatching { stubWithoutToken.session(requests).toList() }
+        val result = runCatching { stubWithoutToken.gigaVoice(requests).toList() }
 
         assertThat(result.isFailure).isTrue()
         assertThat(result.exceptionOrNull()).isInstanceOf(StatusException::class.java)
@@ -233,7 +233,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
             emit(settingsRequest("missing-edu-id-test"))
         }
 
-        val result = runCatching { stubWithoutEduId.session(requests).toList() }
+        val result = runCatching { stubWithoutEduId.gigaVoice(requests).toList() }
 
         assertThat(result.isFailure).isTrue()
         assertThat(result.exceptionOrNull()).isInstanceOf(StatusException::class.java)

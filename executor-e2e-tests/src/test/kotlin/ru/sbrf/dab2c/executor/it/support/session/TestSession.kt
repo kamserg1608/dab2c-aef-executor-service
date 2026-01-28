@@ -6,9 +6,9 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
-import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrRequest
-import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrResponse
-import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrServiceGrpcKt.IvrServiceCoroutineStub
+import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceResponse
+import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineStub
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -17,11 +17,11 @@ import kotlin.time.Duration.Companion.seconds
  * Provides explicit send/receive operations instead of relying on flow semantics.
  */
 class TestSession(
-    private val stub: IvrServiceCoroutineStub
+    private val stub: GigaVoiceServiceCoroutineStub
 ) {
-    private val requestChannel = Channel<IvrRequest>(Channel.UNLIMITED)
-    private val responseChannel = Channel<IvrResponse>(Channel.UNLIMITED)
-    val receivedResponses = mutableListOf<IvrResponse>()
+    private val requestChannel = Channel<GigaVoiceRequest>(Channel.UNLIMITED)
+    private val responseChannel = Channel<GigaVoiceResponse>(Channel.UNLIMITED)
+    val receivedResponses = mutableListOf<GigaVoiceResponse>()
     private var collectJob: Job? = null
 
     /**
@@ -32,7 +32,7 @@ class TestSession(
         collectJob = scope.launch {
             @Suppress("SwallowedException", "TooGenericExceptionCaught")
             try {
-                stub.session(requestChannel.consumeAsFlow()).collect { response ->
+                stub.gigaVoice(requestChannel.consumeAsFlow()).collect { response ->
                     receivedResponses.add(response)
                     responseChannel.send(response)
                 }
@@ -44,7 +44,7 @@ class TestSession(
     /**
      * Sends a request to the server.
      */
-    suspend fun sendRequest(request: IvrRequest) {
+    suspend fun sendRequest(request: GigaVoiceRequest) {
         requestChannel.send(request)
     }
 
@@ -54,8 +54,8 @@ class TestSession(
     @Suppress("detekt:LabeledExpression")
     suspend fun awaitResponse(
         timeout: Duration = 5.seconds,
-        predicate: (IvrResponse) -> Boolean = { true }
-    ): IvrResponse = withTimeout(timeout) {
+        predicate: (GigaVoiceResponse) -> Boolean = { true }
+    ): GigaVoiceResponse = withTimeout(timeout) {
         for (response in responseChannel) {
             if (predicate(response)) return@withTimeout response
         }

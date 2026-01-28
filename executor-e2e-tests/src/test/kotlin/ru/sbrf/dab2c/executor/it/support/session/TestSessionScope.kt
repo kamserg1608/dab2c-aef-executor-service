@@ -2,7 +2,7 @@ package ru.sbrf.dab2c.executor.it.support.session
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import kotlinx.coroutines.coroutineScope
-import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrServiceGrpcKt.IvrServiceCoroutineStub
+import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineStub
 import ru.sbrf.dab2c.executor.it.mock.MockGigaVoiceService
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockAwaiter
 
@@ -20,7 +20,7 @@ class TestSessionScope(
  * Runs a test session with explicit synchronization.
  */
 suspend fun withSession(
-    stub: IvrServiceCoroutineStub,
+    stub: GigaVoiceServiceCoroutineStub,
     mock: MockGigaVoiceService,
     wireMockServer: WireMockServer,
     block: suspend TestSessionScope.() -> Unit

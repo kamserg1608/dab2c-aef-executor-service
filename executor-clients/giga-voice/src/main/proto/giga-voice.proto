@@ -5,6 +5,9 @@ package GigaVoiceProtocol;
 import "google/protobuf/duration.proto";
 
 option go_package = "./;protocol";
+option java_package = "ru.sbrf.dab2c.executor.clients.gigavoice.proto";
+option java_outer_classname = "GigaVoiceProto";
+option java_multiple_files = true;
 
 service GigaVoiceService {
   rpc GigaVoice (stream GigaVoiceRequest) returns (stream GigaVoiceResponse);

@@ -3,11 +3,11 @@ package ru.sbrf.dab2c.executor.it.tests.grpc.full
 import kotlinx.coroutines.delay
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import ru.sbrf.dab2c.executor.it.support.fixtures.IvrRequestFixtures.audioRequest
-import ru.sbrf.dab2c.executor.it.support.fixtures.IvrRequestFixtures.contextRequest
-import ru.sbrf.dab2c.executor.it.support.fixtures.IvrRequestFixtures.functionResultRequest
-import ru.sbrf.dab2c.executor.it.support.fixtures.IvrRequestFixtures.settingsRequest
-import ru.sbrf.dab2c.executor.it.support.fixtures.IvrRequestFixtures.textForSynthesisRequest
+import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.audioRequest
+import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.contextRequest
+import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.functionResultRequest
+import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.settingsRequest
+import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.textForSynthesisRequest
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupFullModeStubs

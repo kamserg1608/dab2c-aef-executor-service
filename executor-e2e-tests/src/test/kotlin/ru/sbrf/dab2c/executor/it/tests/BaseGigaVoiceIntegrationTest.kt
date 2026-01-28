@@ -29,7 +29,7 @@ import org.wiremock.spring.ConfigureWireMock
 import org.wiremock.spring.EnableWireMock
 import org.wiremock.spring.InjectWireMock
 import ru.sbrf.dab2c.executor.application.ApplicationEntryPoint
-import ru.sbrf.dab2c.executor.clients.ivr.proto.IvrServiceGrpcKt.IvrServiceCoroutineStub
+import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineStub
 import ru.sbrf.dab2c.executor.it.mock.MockGigaVoiceService
 import ru.sbrf.dab2c.executor.it.support.grpc.MetadataInterceptor
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubSdsSessionReadData
@@ -76,7 +76,7 @@ abstract class BaseGigaVoiceIntegrationTest {
     protected lateinit var embeddedKafkaBroker: EmbeddedKafkaBroker
 
     private lateinit var clientChannel: ManagedChannel
-    protected lateinit var clientStub: IvrServiceCoroutineStub
+    protected lateinit var clientStub: GigaVoiceServiceCoroutineStub
 
     protected val httpClient: HttpClient by lazy {
         HttpClient(CIO) {
@@ -112,7 +112,7 @@ abstract class BaseGigaVoiceIntegrationTest {
             .usePlaintext()
             .build()
 
-        clientStub = IvrServiceCoroutineStub(clientChannel)
+        clientStub = GigaVoiceServiceCoroutineStub(clientChannel)
     }
 
     @AfterAll
@@ -121,7 +121,7 @@ abstract class BaseGigaVoiceIntegrationTest {
     }
 
     /** Creates a stub configured for proxy mode (pass-through). */
-    protected fun proxyStub(): IvrServiceCoroutineStub =
+    protected fun proxyStub(): GigaVoiceServiceCoroutineStub =
         clientStub.withInterceptors(
             MetadataInterceptor(
                 mapOf(
@@ -140,7 +140,7 @@ abstract class BaseGigaVoiceIntegrationTest {
         eduId: String = "test-edu-id",
         channel: String = "test-channel",
         platform: String = "test-platform"
-    ): IvrServiceCoroutineStub = clientStub.withInterceptors(
+    ): GigaVoiceServiceCoroutineStub = clientStub.withInterceptors(
         MetadataInterceptor(
             mapOf(
                 "proxy" to "false",

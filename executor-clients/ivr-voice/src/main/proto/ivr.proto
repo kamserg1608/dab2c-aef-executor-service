@@ -1,26 +1,28 @@
 syntax = "proto3";
 
-package ivr;
+package GigaVoiceProtocol;
 
 import "google/protobuf/duration.proto";
 
-option java_multiple_files = true;
+option go_package = "./;protocol";
 option java_package = "ru.sbrf.dab2c.executor.clients.ivr.proto";
+option java_outer_classname = "IvrProto";
+option java_multiple_files = true;
 
-service IvrService {
-  rpc Session (stream IvrRequest) returns (stream IvrResponse);
+service GigaVoiceService {
+  rpc GigaVoice (stream GigaVoiceRequest) returns (stream GigaVoiceResponse);
 }
 
-message IvrRequest {
+message GigaVoiceRequest {
   oneof request {
-    Settings settings = 1;
+    Settings settings = 1; //всегда первое
     ContentFromClient input = 2;
     FunctionResult function_result = 3;
     Context context = 10;
   }
 }
 
-message IvrResponse {
+message GigaVoiceResponse {
   oneof response {
     ContentFromModel output = 1;
     FunctionCalling function_call = 2;
@@ -33,54 +35,50 @@ message IvrResponse {
 
 message Settings {
   enum Mode {
-    MODE_UNSPECIFIED = 0;
-    RECOGNIZE_GIGACHAT_SYNTHESIS = 1;
-    GIGACHAT_SYNTHESIS = 2;
-    GIGACHAT = 3;
-    RECOGNIZE_SYNTHESIS = 4;
+    MODE_UNSPECIFIED = 0; //самый новый техстек
+    RECOGNIZE_GIGACHAT_SYNTHESIS = 1; // asr + wmcore + tts
+    GIGACHAT_SYNTHESIS = 2; // wmcore + tts
+    GIGACHAT = 3; // wmcore for future
+    RECOGNIZE_SYNTHESIS = 4; //asr + tts
   }
   enum OutputModalities {
-    MODALITIES_UNSPECIFIED = 0;
+    MODALITIES_UNSPECIFIED = 0; // по умолчанию только AUDIO
     AUDIO = 1;
     AUDIO_TEXT = 2;
     TEXT = 3;
   }
   GigaChatSettings gigachat = 1;
-  AudioSettings audio = 2;
+  AudioSettings audio  = 2;
   InitialContext context = 3;
   optional bool disable_vad = 4;
   optional bool enable_transcribe_input = 5;
-  repeated string flags = 6;
+  repeated string flags = 6; // на всякий случай
   optional OutputModalities output_modalities = 7;
   optional Mode mode = 8;
   string voice_call_id = 9;
   FirstSpeaker first_speaker = 10;
-  optional bool enable_denoiser = 11;
+  optional bool enable_denoiser = 11; //включение денойзера. по умолчанию false
   optional bool enable_prefetch = 12;
   optional bool enable_person_identity = 13;
   optional bool enable_whisper = 14;
   optional bool enable_emotion = 15;
 }
 
-message Context {
-  string content = 1;
-}
-
 message AudioSettings {
-  Input input = 1;
-  Output output = 2;
+  Input input = 1; //настройки asr например для ivr другая модель
+  Output output = 2;  // настройки tts
 }
 
 message Input {
   enum AudioEncoding {
     AUDIO_ENCODING_UNSPECIFIED = 0;
-    PCM_S16LE = 1;
-    OPUS = 2;
-    PCM_ALAW = 3;
+    PCM_S16LE = 1; // 16-bit signed little-endian (Linear PCM)
+    OPUS = 2; // mime audio/ogg; codecs=opus
+    PCM_ALAW = 3; // audio/alaw logarithmic  encoding to 8 bits per sample
   }
   optional string model = 1;
   AudioEncoding audio_encoding = 2;
-  optional int32 sample_rate = 3;
+  optional int32 sample_rate = 3;  // For PCM_16LE, ALAW audio encodings
   repeated string silence_phrases = 4;
   google.protobuf.Duration silence_phrases_timeout = 5;
   google.protobuf.Duration silence_timeout = 6;
@@ -91,47 +89,46 @@ message Input {
 message Output {
   enum AudioEncoding {
     AUDIO_ENCODING_UNSPECIFIED = 0;
-    PCM_S16LE = 1;
-    OPUS = 2;
-    PCM_ALAW = 3;
+    PCM_S16LE = 1; // 16-bit signed little-endian (Linear PCM)
+    OPUS = 2; // mime audio/ogg; codecs=opus
+    PCM_ALAW = 3; // audio/alaw logarithmic  encoding to 8 bits per sample
   }
   optional string voice = 1;
   AudioEncoding audio_encoding = 2;
 }
 
 message GigaChatSettings {
-  optional string model = 1;
+  optional string model = 1; //алиас гигачата дефолты в конфиге
   optional float temperature = 2;
   optional float top_p = 3;
   optional float repetition_penalty = 4;
   optional float update_interval = 5;
   optional bool profanity_check = 6;
   map<string, FilterSettings> filters_settings = 7;
-  repeated Function functions = 8;
+  repeated Function functions = 8; //только клиентские
   FunctionRegistry function_registry = 9;
 }
 
-message FilterSettings {
+message FilterSettings{
   RequestContentSettings request_content = 1;
   ResponseContentSettings response_content = 2;
 }
 
-message RequestContentSettings {
+message RequestContentSettings{
   optional bool neuro = 1;
   optional bool blacklist = 2;
   optional bool whitelist = 3;
 }
 
-message ResponseContentSettings {
+message ResponseContentSettings{
   optional bool blacklist = 1;
 }
-
 message Function {
   string name = 1;
   optional string description = 2;
-  optional string parameters = 3;
+  optional string parameters = 3; //Параметры в виде Json Shema
   repeated AnyExample few_shot_examples = 4;
-  optional string return_parameters = 5;
+  optional string return_parameters = 5; //Json Schema для возвращаемых функцией параметров
 }
 
 message AnyExample {
@@ -194,18 +191,22 @@ message FunctionResult {
   optional string function_name = 2;
 }
 
+message Context {
+  string content = 1;
+}
+
 message ContentFromModel {
   oneof response {
     Audio audio = 1;
-    AdditionalData additional_data = 2;
-    bool interrupted = 3;
+    AdditionalData  additional_data = 2;
+    bool interrupted = 3; //признак что произошло перебивание
   }
 }
 
 message Audio {
   bytes audio_chunk = 1;
-  google.protobuf.Duration audio_duration = 2;
-  optional bool is_final = 3;
+  google.protobuf.Duration audio_duration = 2; // time from start of audio so far
+  optional bool is_final = 3; //признак завершения генерации
 }
 
 message AdditionalData {
@@ -228,8 +229,9 @@ message FunctionCalling {
 
 message FunctionCall {
   string name = 1;
-  string arguments = 2;
+  string arguments = 2; //Аргументы функции. Содержат в себе описание в JSON формате
 }
+
 
 message OutputTranscription {
   string text = 1;
@@ -240,7 +242,7 @@ message OutputTranscription {
 
 message InputTranscription {
   string text = 1;
-  int64 timestamp = 2;
+  int64 timestamp = 2; //время завершения распознавания
   optional string unnormalized_text = 3;
   optional PersonIdentity person_identity = 4;
   optional bool prefetch = 5;
@@ -249,26 +251,26 @@ message InputTranscription {
 }
 
 message PersonIdentity {
-  AgeType age = 1;
-  GenderType gender = 2;
-  float age_score = 3;
-  float gender_score = 4;
+  AgeType age = 1;                               // age status based on model`s age_threshold
+  GenderType gender = 2;                         // gender status based on model`s gender_threshold
+  float age_score = 3;                           // age score from 0.0 to 1.0
+  float gender_score = 4;                        // gender score from 0.0 to 1.0
 }
 
-enum AgeType {
-  AGE_NONE = 0;
-  CHILD = 1;
-  ADULT = 2;
+enum AgeType {                      // age type
+  AGE_NONE = 0;                               // age not requested / not possible to determine
+  CHILD = 1;                                  // child
+  ADULT = 2;                                  // adult
 }
 
-enum GenderType {
-  GENDER_NONE = 0;
-  MALE = 1;
-  FEMALE = 2;
+enum GenderType {                   // gender type
+  GENDER_NONE = 0;                            // gender not requested / not possible to determine
+  MALE = 1;                                   // male
+  FEMALE = 2;                                 // female
 }
 
 message Emotion {
-  float positive = 1;
+  float positive = 1; // confidence [0.0 - 1.0]
   float neutral = 2;
   float negative = 3;
 }
@@ -290,5 +292,5 @@ message Warning {
 message FunctionRegistry {
   optional string profile = 1;
   repeated string labels = 2;
-  optional string ab_flags = 3;
+  optional string ab_flags = 3; //валидный json упакованный в строку
 }

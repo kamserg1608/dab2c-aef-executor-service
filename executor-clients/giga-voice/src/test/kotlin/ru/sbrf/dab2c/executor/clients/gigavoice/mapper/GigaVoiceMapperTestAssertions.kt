@@ -1,7 +1,7 @@
 package ru.sbrf.dab2c.executor.clients.gigavoice.mapper
 
-import GigaVoiceProtocol.GigaVoice.GigaVoiceRequest
 import org.assertj.core.api.Assertions.assertThat
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.AudioContent
 import ru.sbrf.dab2c.executor.domain.voice.ContentFromModel
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
