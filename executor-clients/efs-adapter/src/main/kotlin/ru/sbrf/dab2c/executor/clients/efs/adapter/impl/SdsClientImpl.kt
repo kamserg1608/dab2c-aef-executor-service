@@ -1,5 +1,6 @@
 package ru.sbrf.dab2c.executor.clients.efs.adapter.impl
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -14,14 +15,22 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.SdsSectionMapper
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseListSdsSectionData
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseVoid
 import ru.sbrf.dab2c.executor.domain.session.SdsSection
+import ru.sbrf.dab2c.executor.logging.IntegrationLogger
 
 private val logger = KotlinLogging.logger {}
+
+private const val HTTP_OK = 200
+private const val CLASS_NAME = "SdsClient"
+private const val READ_DATA_ENDPOINT = "/session/readData"
+private const val WRITE_DATA_ENDPOINT = "/session/writeData"
 
 /**
  * Implementation of SDS API client using Ktor HTTP client.
  */
 class SdsClientImpl(
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
+    private val objectMapper: ObjectMapper,
+    private val baseUrl: String
 ) : SdsClient {
 
     private val mapper = SdsSectionMapper.INSTANCE
@@ -30,12 +39,23 @@ class SdsClientImpl(
         logger.debug { "Reading SDS data for ${sections.size} section(s)" }
 
         val requestBody = sections.map { mapper.toSectionInfo(it) }
+        val requestJson = objectMapper.writeValueAsString(requestBody)
 
-        val response: BaseResponseListSdsSectionData = httpClient.post("/session/readData") {
-            contentType(ContentType.Application.Json)
-            header(HttpHeaders.Cookie, cookie)
-            setBody(requestBody)
-        }.body()
+        val response = IntegrationLogger.logHttpCallSuspend(
+            destinationSystem = baseUrl,
+            destinationService = READ_DATA_ENDPOINT,
+            rqMessage = requestJson,
+            className = CLASS_NAME,
+            responseExtractor = { resp: BaseResponseListSdsSectionData ->
+                objectMapper.writeValueAsString(resp) to HTTP_OK
+            }
+        ) {
+            httpClient.post(READ_DATA_ENDPOINT) {
+                contentType(ContentType.Application.Json)
+                header(HttpHeaders.Cookie, cookie)
+                setBody(requestBody)
+            }.body<BaseResponseListSdsSectionData>()
+        }
 
         checkErrors(response.errors, "readData")
 
@@ -46,12 +66,23 @@ class SdsClientImpl(
         logger.debug { "Writing SDS data for ${sections.size} section(s)" }
 
         val requestBody = sections.map { mapper.toSectionData(it) }
+        val requestJson = objectMapper.writeValueAsString(requestBody)
 
-        val response: BaseResponseVoid = httpClient.post("/session/writeData") {
-            contentType(ContentType.Application.Json)
-            header(HttpHeaders.Cookie, cookie)
-            setBody(requestBody)
-        }.body()
+        val response = IntegrationLogger.logHttpCallSuspend(
+            destinationSystem = baseUrl,
+            destinationService = WRITE_DATA_ENDPOINT,
+            rqMessage = requestJson,
+            className = CLASS_NAME,
+            responseExtractor = { resp: BaseResponseVoid ->
+                objectMapper.writeValueAsString(resp) to HTTP_OK
+            }
+        ) {
+            httpClient.post(WRITE_DATA_ENDPOINT) {
+                contentType(ContentType.Application.Json)
+                header(HttpHeaders.Cookie, cookie)
+                setBody(requestBody)
+            }.body<BaseResponseVoid>()
+        }
 
         checkErrors(response.errors, "writeData")
     }

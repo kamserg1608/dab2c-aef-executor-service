@@ -64,10 +64,14 @@ class GigaVoiceAgentClientConfiguration {
     @Bean
     internal fun gigaVoiceAgentClient(
         @Qualifier(GIGA_VOICE_AGENT_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient,
+        @Qualifier(GIGA_VOICE_AGENT_OBJECT_MAPPER_BEAN_NAME) objectMapper: ObjectMapper,
+        properties: GigaVoiceAgentClientConfigurationProperties,
         settingsRequestBuilder: GigaVoiceSettingsRequestBuilder,
         functionCallRequestBuilder: GigaVoiceFunctionCallRequestBuilder
     ): GigaVoiceAgentClient = GigaVoiceAgentClientImpl(
         httpClient,
+        objectMapper,
+        properties.baseUrl,
         settingsRequestBuilder,
         functionCallRequestBuilder
     )

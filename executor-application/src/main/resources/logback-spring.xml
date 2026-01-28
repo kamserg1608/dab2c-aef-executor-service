@@ -8,14 +8,16 @@
                 <includeMdc>true</includeMdc>
                 <includeCallerData>false</includeCallerData>
                 <fieldNames>
-                    <timestamp>timestamp</timestamp>
+                    <timestamp>serverEventDatetime</timestamp>
+                    <message>message</message>
+                    <level>logLevel</level>
                     <version>[ignore]</version>
                     <levelValue>[ignore]</levelValue>
                 </fieldNames>
-                <customFields>{"service":"dab2c-executor"}</customFields>
+                <customFields>{"serviceName":"dab2c-executor","tenantCode":"DAB2C"}</customFields>
                 <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
                     <maxDepthPerThrowable>30</maxDepthPerThrowable>
-                    <maxLength>2048</maxLength>
+                    <maxLength>4096</maxLength>
                     <rootCauseFirst>true</rootCauseFirst>
                 </throwableConverter>
             </encoder>
@@ -28,7 +30,7 @@
     <springProfile name="!PROM">
         <appender name="CONSOLE_TEXT" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
-                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} -%replace( [%X{type}]){'^ \[\]', ''}%replace( [%X{traceId}]){'^ \[\]', ''}%replace( [%X{sessionId}]){'^ \[\]', ''} %msg%n</pattern>
                 <charset>UTF-8</charset>
             </encoder>
         </appender>

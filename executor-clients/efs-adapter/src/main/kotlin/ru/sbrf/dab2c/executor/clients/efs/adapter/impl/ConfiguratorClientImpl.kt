@@ -1,5 +1,6 @@
 package ru.sbrf.dab2c.executor.clients.efs.adapter.impl
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -14,16 +15,22 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.AgentConfigurationMappe
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.AppSourceRequest
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseMapStringAgentConfig
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
+import ru.sbrf.dab2c.executor.logging.IntegrationLogger
 
 private val logger = KotlinLogging.logger {}
 
+private const val HTTP_OK = 200
+private const val CLASS_NAME = "ConfiguratorClient"
 private const val DEFAULT_APP_SOURCE = "default"
+private const val REST_AGENT_ENDPOINT = "/configurator/rest-agent"
 
 /**
  * Implementation of Configurator API client using Ktor HTTP client.
  */
 class ConfiguratorClientImpl(
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
+    private val objectMapper: ObjectMapper,
+    private val baseUrl: String
 ) : ConfiguratorClient {
 
     private val mapper = AgentConfigurationMapper.INSTANCE
@@ -31,20 +38,28 @@ class ConfiguratorClientImpl(
     override suspend fun getRestAgentConfig(agentName: String, cookie: String): AgentConfiguration {
         logger.debug { "Getting REST agent config for agent: $agentName" }
 
-        return try {
-            val response: BaseResponseMapStringAgentConfig = httpClient.post("/configurator/rest-agent") {
+        val request = AppSourceRequest(appSource = DEFAULT_APP_SOURCE)
+        val requestJson = objectMapper.writeValueAsString(request)
+
+        val response = IntegrationLogger.logHttpCallSuspend(
+            destinationSystem = baseUrl,
+            destinationService = REST_AGENT_ENDPOINT,
+            rqMessage = requestJson,
+            className = CLASS_NAME,
+            responseExtractor = { resp: BaseResponseMapStringAgentConfig ->
+                objectMapper.writeValueAsString(resp) to HTTP_OK
+            }
+        ) {
+            httpClient.post(REST_AGENT_ENDPOINT) {
                 contentType(ContentType.Application.Json)
                 header(HttpHeaders.Cookie, cookie)
-                setBody(AppSourceRequest(appSource = DEFAULT_APP_SOURCE))
-            }.body()
-
-            val agentConfig = response.body?.get(agentName)
-                ?: throw NoSuchElementException("Agent config not found for agent: $agentName")
-
-            mapper.toDomain(agentConfig)
-        } catch (e: Exception) {
-            logger.error(e) { "Failed to get REST agent config for agent: $agentName" }
-            throw e
+                setBody(request)
+            }.body<BaseResponseMapStringAgentConfig>()
         }
+
+        val agentConfig = response.body?.get(agentName)
+            ?: throw NoSuchElementException("Agent config not found for agent: $agentName")
+
+        return mapper.toDomain(agentConfig)
     }
 }

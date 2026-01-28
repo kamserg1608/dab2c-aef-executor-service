@@ -67,18 +67,24 @@ class EfsAdapterClientConfiguration {
 
     @Bean
     internal fun configuratorClient(
-        @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient
-    ): ConfiguratorClient = ConfiguratorClientImpl(httpClient)
+        @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient,
+        @Qualifier(EFS_ADAPTER_OBJECT_MAPPER_BEAN_NAME) objectMapper: ObjectMapper,
+        properties: EfsAdapterClientConfigurationProperties
+    ): ConfiguratorClient = ConfiguratorClientImpl(httpClient, objectMapper, properties.baseUrl)
 
     @Bean
     internal fun auditClient(
-        @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient
-    ): AuditClient = AuditClientImpl(httpClient)
+        @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient,
+        @Qualifier(EFS_ADAPTER_OBJECT_MAPPER_BEAN_NAME) objectMapper: ObjectMapper,
+        properties: EfsAdapterClientConfigurationProperties
+    ): AuditClient = AuditClientImpl(httpClient, objectMapper, properties.baseUrl)
 
     @Bean
     internal fun sdsClient(
-        @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient
-    ): SdsClient = SdsClientImpl(httpClient)
+        @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient,
+        @Qualifier(EFS_ADAPTER_OBJECT_MAPPER_BEAN_NAME) objectMapper: ObjectMapper,
+        properties: EfsAdapterClientConfigurationProperties
+    ): SdsClient = SdsClientImpl(httpClient, objectMapper, properties.baseUrl)
 
     @Bean
     internal fun typedSdsClient(

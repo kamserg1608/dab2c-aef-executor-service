@@ -1,6 +1,6 @@
 package ru.sbrf.dab2c.executor.clients.giga.agent.impl
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -24,14 +24,22 @@ import ru.sbrf.dab2c.executor.domain.voice.AgentAnalytics
 import ru.sbrf.dab2c.executor.domain.voice.ContextData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
+import ru.sbrf.dab2c.executor.logging.IntegrationLogger
 
 private val logger = KotlinLogging.logger {}
+
+private const val HTTP_OK = 200
+private const val CLASS_NAME = "GigaVoiceAgentClient"
+private const val SETTINGS_ENDPOINT = "/settings"
+private const val FUNCTIONS_ENDPOINT = "/functions"
 
 /**
  * Implementation of GigaVoice Agent API client using Ktor HTTP client.
  */
 class GigaVoiceAgentClientImpl(
     private val httpClient: HttpClient,
+    private val objectMapper: ObjectMapper,
+    private val baseUrl: String,
     private val settingsRequestBuilder: GigaVoiceSettingsRequestBuilder,
     private val functionCallRequestBuilder: GigaVoiceFunctionCallRequestBuilder,
     private val mapper: GigaVoiceSettingsMapper = GigaVoiceSettingsMapper
@@ -49,16 +57,22 @@ class GigaVoiceAgentClientImpl(
         val request = settingsRequestBuilder.build(
             context, agentConfiguration, voiceSettings, daSessionInfo, contextData
         )
+        val requestJson = objectMapper.writeValueAsString(request)
 
-        val apiResponse: GigaVoiceSettingsResponseSchema = try {
-            httpClient.post("/settings") {
+        val apiResponse = IntegrationLogger.logHttpCallSuspend(
+            destinationSystem = baseUrl,
+            destinationService = SETTINGS_ENDPOINT,
+            rqMessage = requestJson,
+            className = CLASS_NAME,
+            responseExtractor = { response: GigaVoiceSettingsResponseSchema ->
+                objectMapper.writeValueAsString(response) to HTTP_OK
+            }
+        ) {
+            httpClient.post(SETTINGS_ENDPOINT) {
                 contentType(ContentType.Application.Json)
                 with(context) { applyHeaders() }
                 setBody(request)
-            }.body()
-        } catch (e: Exception) {
-            logger.error(e) { "Failed to get settings for session: ${context.ufsSession}" }
-            throw e
+            }.body<GigaVoiceSettingsResponseSchema>()
         }
 
         return SettingsResult(
@@ -80,16 +94,22 @@ class GigaVoiceAgentClientImpl(
         val request = functionCallRequestBuilder.build(
             context, agentConfiguration, functionCalling, daSessionInfo, contextData
         )
+        val requestJson = objectMapper.writeValueAsString(request)
 
-        val apiResponse: GigaVoiceFunctionsResponseSchema = try {
-            httpClient.post("/functions") {
+        val apiResponse = IntegrationLogger.logHttpCallSuspend(
+            destinationSystem = baseUrl,
+            destinationService = FUNCTIONS_ENDPOINT,
+            rqMessage = requestJson,
+            className = CLASS_NAME,
+            responseExtractor = { response: GigaVoiceFunctionsResponseSchema ->
+                objectMapper.writeValueAsString(response) to HTTP_OK
+            }
+        ) {
+            httpClient.post(FUNCTIONS_ENDPOINT) {
                 contentType(ContentType.Application.Json)
                 with(context) { applyHeaders() }
                 setBody(request)
-            }.body()
-        } catch (e: Exception) {
-            logger.error(e) { "Failed to execute function call for session: ${context.ufsSession}" }
-            throw e
+            }.body<GigaVoiceFunctionsResponseSchema>()
         }
 
         return FunctionCallResult(
@@ -102,8 +122,4 @@ class GigaVoiceAgentClientImpl(
         dataVersion = dataVersion,
         data = objectMapper.writeValueAsString(data)
     )
-
-    private companion object {
-        private val objectMapper = jacksonObjectMapper()
-    }
 }

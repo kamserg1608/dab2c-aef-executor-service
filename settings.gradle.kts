@@ -10,6 +10,7 @@ include("executor-clients:efs-adapter")
 include("executor-clients:ivr-voice")
 include("executor-clients:kap-producer")
 include("executor-services:voice-executor")
+include("executor-libraries:logging")
 
 pluginManagement {
     repositories {

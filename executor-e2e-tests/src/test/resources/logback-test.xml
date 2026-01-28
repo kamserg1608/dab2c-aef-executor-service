@@ -3,7 +3,7 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} -%replace( [%X{type}]){'^ \[\]', ''}%replace( [%X{traceId}]){'^ \[\]', ''}%replace( [%X{sessionId}]){'^ \[\]', ''}%replace( [%X{channel}]){'^ \[\]', ''} %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -11,7 +11,7 @@
         <file>logs/e2e-tests.log</file>
         <append>false</append>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} -%replace( [type=%X{type}]){'^ \[type=\]', ''}%replace( [traceId=%X{traceId}]){'^ \[traceId=\]', ''}%replace( [sessionId=%X{sessionId}]){'^ \[sessionId=\]', ''}%replace( [channel=%X{channel}]){'^ \[channel=\]', ''}%replace( [platform=%X{platform}]){'^ \[platform=\]', ''}%replace( [rqUid=%X{rqUid}]){'^ \[rqUid=\]', ''}%replace( [dest=%X{destinationSystem}%X{destinationService}]){'^ \[dest=\]', ''}%replace( [time=%X{executionTimeLong}ms]){'^ \[time=ms\]', ''}%replace( [status=%X{statusCode}]){'^ \[status=\]', ''}%replace( [error=%X{errorCode}]){'^ \[error=\]', ''}%replace( [rq=%X{rqMessage}]){'^ \[rq=\]', ''}%replace( [rs=%X{rsMessage}]){'^ \[rs=\]', ''} %msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
     </appender>

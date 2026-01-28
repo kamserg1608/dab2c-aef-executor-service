@@ -9,6 +9,7 @@ dependencies {
     api(project(":executor-clients:giga-agent"))
     api(project(":executor-clients:efs-adapter"))
     api(project(":executor-clients:kap-producer"))
+    api(project(":executor-libraries:logging"))
     implementation(libs.grpc.server.spring.boot.starter)
     implementation(libs.grpc.client.spring.boot.starter)
     implementation(libs.grpc.services)
