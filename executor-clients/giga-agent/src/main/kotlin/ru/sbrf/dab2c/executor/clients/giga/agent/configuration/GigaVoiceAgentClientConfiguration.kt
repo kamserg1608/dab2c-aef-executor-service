@@ -9,13 +9,17 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.ResponseException
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.isSuccess
 import io.ktor.serialization.jackson.JacksonConverter
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -82,6 +86,7 @@ class GigaVoiceAgentClientConfiguration {
     }
 }
 
+@Suppress("LongMethod")
 private fun io.ktor.client.HttpClientConfig<*>.installPlugins(
     properties: GigaVoiceAgentClientConfigurationProperties,
     objectMapper: ObjectMapper
@@ -107,6 +112,14 @@ private fun io.ktor.client.HttpClientConfig<*>.installPlugins(
         delayMillis { retry ->
             val delay = properties.retry.delay * properties.retry.multiplier.pow((retry - 1).toDouble())
             delay.toLong().coerceAtMost(properties.retry.maxDelay)
+        }
+    }
+    HttpResponseValidator {
+        validateResponse { response ->
+            if (!response.status.isSuccess()) {
+                val bodyText = response.bodyAsText()
+                throw ResponseException(response, bodyText)
+            }
         }
     }
 }
