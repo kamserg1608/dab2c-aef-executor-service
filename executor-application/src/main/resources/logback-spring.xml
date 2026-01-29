@@ -2,8 +2,24 @@
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
+    <!-- Text console appender - used by ALL profiles -->
+    <appender name="CONSOLE_TEXT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %replace(%X){'^\\{\\}$', ''} %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- PROM profile: Text to console + JSON to file -->
     <springProfile name="PROM">
-        <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <appender name="FILE_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>/app/log/executor.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>/app/log/executor.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                <maxFileSize>100MB</maxFileSize>
+                <maxHistory>7</maxHistory>
+                <totalSizeCap>1GB</totalSizeCap>
+            </rollingPolicy>
             <encoder class="net.logstash.logback.encoder.LogstashEncoder">
                 <includeMdc>true</includeMdc>
                 <includeCallerData>false</includeCallerData>
@@ -23,17 +39,13 @@
             </encoder>
         </appender>
         <root level="INFO">
-            <appender-ref ref="CONSOLE_JSON"/>
+            <appender-ref ref="CONSOLE_TEXT"/>
+            <appender-ref ref="FILE_JSON"/>
         </root>
     </springProfile>
 
+    <!-- Non-PROM profiles: Text to console only -->
     <springProfile name="!PROM">
-        <appender name="CONSOLE_TEXT" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder>
-                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} -%replace( [%X{type}]){'^ \[\]', ''}%replace( [%X{traceId}]){'^ \[\]', ''}%replace( [%X{sessionId}]){'^ \[\]', ''} %msg%n</pattern>
-                <charset>UTF-8</charset>
-            </encoder>
-        </appender>
         <root level="INFO">
             <appender-ref ref="CONSOLE_TEXT"/>
         </root>
