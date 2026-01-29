@@ -7,11 +7,13 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
+import ru.sbrf.dab2c.executor.library.monitoring.service.api.MonitoringServiceFactory
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
 import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.model.RequestHeader
+import ru.sbrf.dab2c.executor.voice.monitoring.MonitoringChunksProcessingDecorator
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.service.impl.ChunkProcessingServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.ContextServiceImpl
@@ -32,6 +34,7 @@ class ChunkProcessingServiceFactoryImpl(
     private val voiceExecutorConfigurationProperties: VoiceExecutorConfigurationProperties,
     private val gigaVoiceAgentClient: GigaVoiceAgentClient,
     private val configuratorClient: ConfiguratorClient,
+    private val monitoringServiceFactory: MonitoringServiceFactory,
     private val kapProducerClient: KapProducerClient
 ) : ChunkProcessingServiceFactory {
 
@@ -40,11 +43,16 @@ class ChunkProcessingServiceFactoryImpl(
         val isProxyMode = requestMetadata.getHeaderOrNull(RequestHeader.PROXY)
             ?.toBoolean() ?: voiceExecutorConfigurationProperties.proxyMode
 
-        return if (isProxyMode) {
+        val observingService = if (isProxyMode) {
             createProxyModeService()
         } else {
             createFullModeService()
         }
+
+        return MonitoringChunksProcessingDecorator(
+            observingService,
+            monitoringServiceFactory
+        )
     }
 
     private fun createProxyModeService(): ChunkProcessingService {

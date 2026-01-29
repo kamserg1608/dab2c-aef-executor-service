@@ -3,8 +3,9 @@ kotlin = "2.1.20"
 detekt = "1.23.7"
 spotbugs-plugin = "6.2.0"
 spotbugs-tool = "4.9.3"
-spring-boot = "3.5.5"
+spring-boot = "3.5.4"
 openapi-generator = "7.10.0"
+micrometer = "1.13.4"
 
 # Kotlinx (not managed by Spring Boot)
 kotlinx-coroutines = "1.10.1"
@@ -18,7 +19,7 @@ mockk = "1.14.7"
 wiremock = "3.10.0"
 
 # gRPC and Protobuf (not managed by Spring Boot)
-grpc = "1.71.0"
+grpc = "1.75.0"
 grpc-kotlin = "1.4.3"
 grpc-spring-boot-starter = "3.1.0.RELEASE"
 protobuf = "4.29.3"
@@ -54,7 +55,8 @@ kotlinx-coroutines-slf4j = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 
 # Micrometer Context Propagation
-micrometer-context-propagation = { module = "io.micrometer:context-propagation", version = "1.1.1" }
+micrometer-context-propagation = { module = "io.micrometer:context-propagation", version = "micrometer" }
+micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
 
 # Ktor Client
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }

@@ -10,6 +10,7 @@ dependencies {
     implementation(appProject.the<SourceSetContainer>()["main"].output)
     implementation(appProject)
     implementation(project(":executor-services:voice-executor"))
+    implementation(project(":executor-libraries:monitoring-service"))
     implementation(project(":executor-clients:kap-producer"))
 
     testImplementation(libs.bundles.grpc)

@@ -128,7 +128,8 @@ abstract class BaseGigaVoiceIntegrationTest {
                     "proxy" to "true",
                     "x-channel" to "MOB_BANK",
                     "x-token" to "proxy-token",
-                    "x-session" to "proxy-session"
+                    "x-session" to "proxy-session",
+                    "x-platform" to "proxy-platform"
                 )
             )
         )

@@ -11,6 +11,7 @@ include("executor-clients:ivr-voice")
 include("executor-clients:kap-producer")
 include("executor-services:voice-executor")
 include("executor-libraries:logging")
+include("executor-libraries:monitoring-service")
 
 pluginManagement {
     repositories {
