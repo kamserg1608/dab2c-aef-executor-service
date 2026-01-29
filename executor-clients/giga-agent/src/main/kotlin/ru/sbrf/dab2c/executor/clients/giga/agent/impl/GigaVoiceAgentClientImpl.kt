@@ -8,6 +8,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import ru.sbrf.dab2c.executor.clients.common.util.buildFullUrl
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceFunctionCallRequestBuilder
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsMapper
@@ -68,7 +69,7 @@ class GigaVoiceAgentClientImpl(
                 objectMapper.writeValueAsString(response) to HTTP_OK
             }
         ) {
-            httpClient.post(SETTINGS_ENDPOINT) {
+            httpClient.post(buildFullUrl(baseUrl, SETTINGS_ENDPOINT)) {
                 contentType(ContentType.Application.Json)
                 with(context) { applyHeaders() }
                 setBody(request)
@@ -105,7 +106,7 @@ class GigaVoiceAgentClientImpl(
                 objectMapper.writeValueAsString(response) to HTTP_OK
             }
         ) {
-            httpClient.post(FUNCTIONS_ENDPOINT) {
+            httpClient.post(buildFullUrl(baseUrl, FUNCTIONS_ENDPOINT)) {
                 contentType(ContentType.Application.Json)
                 with(context) { applyHeaders() }
                 setBody(request)

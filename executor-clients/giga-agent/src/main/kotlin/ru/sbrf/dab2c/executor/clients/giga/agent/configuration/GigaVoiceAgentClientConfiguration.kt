@@ -13,7 +13,6 @@ import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
@@ -62,7 +61,6 @@ class GigaVoiceAgentClientConfiguration {
             maxConnectionsCount = properties.pool.maxConnections
         }
         installPlugins(properties, objectMapper)
-        defaultRequest { url(properties.baseUrl) }
     }
 
     @Bean

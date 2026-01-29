@@ -10,6 +10,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
+import ru.sbrf.dab2c.executor.clients.common.util.buildFullUrl
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.AgentConfigurationMapper
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.AppSourceRequest
@@ -50,7 +51,7 @@ class ConfiguratorClientImpl(
                 objectMapper.writeValueAsString(resp) to HTTP_OK
             }
         ) {
-            httpClient.post(REST_AGENT_ENDPOINT) {
+            httpClient.post(buildFullUrl(baseUrl, REST_AGENT_ENDPOINT)) {
                 contentType(ContentType.Application.Json)
                 header(HttpHeaders.Cookie, cookie)
                 setBody(request)

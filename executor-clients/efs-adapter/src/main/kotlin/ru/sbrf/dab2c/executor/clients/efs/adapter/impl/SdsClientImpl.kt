@@ -10,6 +10,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
+import ru.sbrf.dab2c.executor.clients.common.util.buildFullUrl
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.SdsClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.SdsSectionMapper
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseListSdsSectionData
@@ -50,7 +51,7 @@ class SdsClientImpl(
                 objectMapper.writeValueAsString(resp) to HTTP_OK
             }
         ) {
-            httpClient.post(READ_DATA_ENDPOINT) {
+            httpClient.post(buildFullUrl(baseUrl, READ_DATA_ENDPOINT)) {
                 contentType(ContentType.Application.Json)
                 header(HttpHeaders.Cookie, cookie)
                 setBody(requestBody)
@@ -77,7 +78,7 @@ class SdsClientImpl(
                 objectMapper.writeValueAsString(resp) to HTTP_OK
             }
         ) {
-            httpClient.post(WRITE_DATA_ENDPOINT) {
+            httpClient.post(buildFullUrl(baseUrl, WRITE_DATA_ENDPOINT)) {
                 contentType(ContentType.Application.Json)
                 header(HttpHeaders.Cookie, cookie)
                 setBody(requestBody)
