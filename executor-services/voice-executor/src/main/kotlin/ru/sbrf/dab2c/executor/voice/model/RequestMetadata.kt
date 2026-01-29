@@ -9,7 +9,7 @@ import java.util.UUID
  * All keys are normalized to lowercase for case-insensitive access.
  */
 class RequestMetadata private constructor(
-    private val headers: Map<String, String>,
+    val headers: Map<String, String>,
 ) : Map<String, String> by headers {
 
     /** Internal field populated by onStart, before any processing. */

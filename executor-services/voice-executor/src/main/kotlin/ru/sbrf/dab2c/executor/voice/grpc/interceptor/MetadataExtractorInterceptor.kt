@@ -9,6 +9,7 @@ import io.grpc.ServerCallHandler
 import io.grpc.ServerInterceptor
 import net.devh.boot.grpc.server.interceptor.GrpcGlobalServerInterceptor
 import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
+import ru.sbrf.dab2c.executor.voice.model.RequestMetadata
 import ru.sbrf.dab2c.executor.voice.util.extensions.toRequestMetadata
 
 /**
@@ -30,7 +31,8 @@ class MetadataExtractorInterceptor : ServerInterceptor {
         logger.debug {
             "Extracted ${requestMetadata.size} metadata entries for ${call.methodDescriptor.fullMethodName}"
         }
-        logger.trace { "Metadata: $requestMetadata" }
+
+        logger.trace { "Metadata: ${requestMetadata.asString()}" }
 
         val contextWithMetadata = Context.current()
             .withValue(GrpcMetadataContext.METADATA_KEY, requestMetadata)
@@ -38,3 +40,5 @@ class MetadataExtractorInterceptor : ServerInterceptor {
         return Contexts.interceptCall(contextWithMetadata, call, headers, next)
     }
 }
+
+private fun RequestMetadata.asString() = this.headers.entries.joinToString("; ") { "${it.key}=${it.value}" }
