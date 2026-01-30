@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpRequestRetry
@@ -13,6 +12,7 @@ import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.DEFAULT
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
@@ -32,8 +32,6 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsRequest
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import kotlin.math.pow
-
-private val logger = KotlinLogging.logger {}
 
 /**
  * Spring configuration for GigaVoice Agent API client.
@@ -91,12 +89,8 @@ private fun io.ktor.client.HttpClientConfig<*>.installPlugins(
 ) {
     install(ContentNegotiation) { register(ContentType.Application.Json, JacksonConverter(objectMapper)) }
     install(Logging) {
-        level = LogLevel.INFO
-        logger = object : Logger {
-            override fun log(message: String) {
-                ru.sbrf.dab2c.executor.clients.giga.agent.configuration.logger.debug { message }
-            }
-        }
+        logger = Logger.DEFAULT
+        level = LogLevel.ALL
     }
     install(HttpTimeout) {
         connectTimeoutMillis = properties.connectionTimeout

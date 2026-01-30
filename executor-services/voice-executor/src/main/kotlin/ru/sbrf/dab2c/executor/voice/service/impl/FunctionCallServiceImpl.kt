@@ -1,11 +1,12 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
+import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
+import ru.sbrf.dab2c.executor.voice.model.CallbackChannels
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.model.toGigaAgentContext
 import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
@@ -19,7 +20,7 @@ import ru.sbrf.dab2c.executor.voice.util.extensions.launchAsync
  */
 class FunctionCallServiceImpl(
     private val processingState: MutableStateFlow<ProcessingState>,
-    private val callBackChannel: Channel<VoiceRequest>,
+    private val callbackChannels: CallbackChannels,
     private val gigaVoiceAgentClient: GigaVoiceAgentClient,
     private val analyticsPublisher: AnalyticsPublisher
 ) : FunctionCallService {
@@ -64,10 +65,19 @@ class FunctionCallServiceImpl(
 
                 analyticsPublisher.publishAnalytics(functionCallResult.analytics, context.daRequestId)
 
-                callBackChannel.send(VoiceRequest.FunctionResult(functionCallResult.result))
+                callbackChannels.downstream.send(VoiceRequest.FunctionResult(functionCallResult.result))
             } catch (e: Exception) {
                 logger.error(e) { "Failed to execute backend function '${functionCalling.functionCall.name}'" }
-                throw e
+                val escapedMessage = e.message?.replace("\"", "\\\"") ?: "Function execution failed"
+                val errorContent = """{"error":{"code":500,"message":"$escapedMessage"}}"""
+                callbackChannels.downstream.send(
+                    VoiceRequest.FunctionResult(
+                        FunctionResultData(
+                            content = errorContent,
+                            functionName = functionCalling.functionCall.name
+                        )
+                    )
+                )
             }
         }
     }

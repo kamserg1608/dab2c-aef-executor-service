@@ -88,7 +88,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should fail with INTERNAL when EFS adapter returns 500`() = runItTest {
+    fun `should send error response when EFS adapter returns 500`() = runItTest {
         efsAdapterMock.stubFor(
             post(urlEqualTo("/configurator/rest-agent"))
                 .willReturn(
@@ -98,25 +98,20 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
                 )
         )
 
-        val requests = flow {
-            emit(contextRequest())
-            emit(settingsRequest("efs-error-test"))
+        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(contextRequest())
+            session.sendRequest(settingsRequest("efs-error-test"))
+
+            val errorResponse = session.awaitResponse { it.hasError() }
+            assertThat(errorResponse.error.status).isEqualTo(1501)
+            assertThat(errorResponse.error.message).isNotBlank()
         }
 
-        var caughtException: StatusException? = null
-        try {
-            nonProxyStub().gigaVoice(requests).toList()
-        } catch (e: StatusException) {
-            caughtException = e
-        }
-
-        assertThat(caughtException).isNotNull()
-        assertThat(caughtException!!.status.code.name).isIn("INTERNAL", "UNKNOWN", "UNAVAILABLE")
         efsAdapterMock.verify(1, postRequestedFor(urlEqualTo("/configurator/rest-agent")))
     }
 
     @Test
-    fun `should fail with INTERNAL when GigaAgent settings returns 500`() = runItTest {
+    fun `should send error response when GigaAgent settings returns 500`() = runItTest {
         efsAdapterMock.stubFor(
             post(urlEqualTo("/configurator/rest-agent"))
                 .willReturn(
@@ -146,20 +141,15 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
                 )
         )
 
-        val requests = flow {
-            emit(contextRequest())
-            emit(settingsRequest("agent-error-test"))
+        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(contextRequest())
+            session.sendRequest(settingsRequest("agent-error-test"))
+
+            val errorResponse = session.awaitResponse { it.hasError() }
+            assertThat(errorResponse.error.status).isEqualTo(1501)
+            assertThat(errorResponse.error.message).isNotBlank()
         }
 
-        var caughtException: StatusException? = null
-        try {
-            nonProxyStub().gigaVoice(requests).toList()
-        } catch (e: StatusException) {
-            caughtException = e
-        }
-
-        assertThat(caughtException).isNotNull()
-        assertThat(caughtException!!.status.code.name).isIn("INTERNAL", "UNKNOWN", "UNAVAILABLE")
         efsAdapterMock.verify(1, postRequestedFor(urlEqualTo("/configurator/rest-agent")))
         gigaVoiceAgentMock.verify(1, postRequestedFor(urlEqualTo("/settings")))
     }

@@ -102,7 +102,7 @@ class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    fun `should fail with error when GigaAgent functions endpoint returns 500`() = runItTest {
+    fun `should send error function result to downstream when GigaAgent functions endpoint returns 500`() = runItTest {
         setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
 
         gigaVoiceAgentMock.stubFor(
@@ -114,27 +114,27 @@ class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
                 )
         )
 
-        val result = runCatching {
-            withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
-                session.sendRequest(contextRequest())
-                session.sendRequest(settingsRequest("functions-error-test"))
-                mock.awaitRequest { it.hasSettings() }
+        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(contextRequest())
+            session.sendRequest(settingsRequest("functions-error-test"))
+            mock.awaitRequest { it.hasSettings() }
 
-                mock.sendResponse(outputTranscriptionResponse())
-                session.awaitResponse()
+            mock.sendResponse(outputTranscriptionResponse())
+            session.awaitResponse()
 
-                session.sendRequest(audioRequest(speechStart = true))
-                mock.awaitRequest { it.hasInput() }
+            session.sendRequest(audioRequest(speechStart = true))
+            mock.awaitRequest { it.hasInput() }
 
-                mock.sendResponse(functionCallingResponse("get_account_balance", """{"account_id": "12345"}"""))
+            mock.sendResponse(functionCallingResponse("get_account_balance", """{"account_id": "12345"}"""))
 
-                wireMock.awaitPostCall("/functions")
+            wireMock.awaitPostCall("/functions")
 
-                session.awaitResponse()
-            }
+            val errorFunctionResult = mock.awaitRequest { it.hasFunctionResult() }
+            assertThat(errorFunctionResult.functionResult.functionName).isEqualTo("get_account_balance")
+            assertThat(errorFunctionResult.functionResult.content).contains("error")
+            assertThat(errorFunctionResult.functionResult.content).contains("500")
         }
 
-        assertThat(result.isFailure).isTrue()
         gigaVoiceAgentMock.verify(1, postRequestedFor(urlEqualTo("/functions")))
     }
 }

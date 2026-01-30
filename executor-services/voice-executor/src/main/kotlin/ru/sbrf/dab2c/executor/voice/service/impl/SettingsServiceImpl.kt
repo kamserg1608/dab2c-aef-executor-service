@@ -1,17 +1,19 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.voice.AgentAnalytics
 import ru.sbrf.dab2c.executor.domain.voice.ContextData
+import ru.sbrf.dab2c.executor.domain.voice.ErrorData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
+import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
+import ru.sbrf.dab2c.executor.voice.model.CallbackChannels
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.model.toGigaAgentContext
 import ru.sbrf.dab2c.executor.voice.model.ufsCookie
@@ -25,7 +27,7 @@ import ru.sbrf.dab2c.executor.voice.util.extensions.launchAsync
  */
 class SettingsServiceImpl(
     private val processingState: MutableStateFlow<ProcessingState>,
-    private val callbackChannel: Channel<VoiceRequest>,
+    private val callbackChannels: CallbackChannels,
     private val gigaVoiceAgentClient: GigaVoiceAgentClient,
     private val configuratorClient: ConfiguratorClient,
     private val configProperties: VoiceExecutorConfigurationProperties,
@@ -53,10 +55,12 @@ class SettingsServiceImpl(
             try {
                 val settingsData = fetchSettingsData(settings, contextData)
                 updateStateAndPublish(settingsData, contextData)
-                callbackChannel.send(VoiceRequest.Settings(settingsData.settings))
+                callbackChannels.downstream.send(VoiceRequest.Settings(settingsData.settings))
             } catch (e: Exception) {
                 logger.error(e) { "Failed to calculate settings" }
-                throw e
+                callbackChannels.upstream.send(
+                    VoiceResponse.Error(ErrorData(status = 1501, message = e.message ?: "Settings calculation failed"))
+                )
             }
         }
     }
