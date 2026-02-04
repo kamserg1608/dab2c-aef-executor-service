@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.SdsClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.TypedSdsClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.DaSessionInfoMapper
-import ru.sbrf.dab2c.executor.clients.efs.adapter.model.SdsSessionInfo
-import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
+import ru.sbrf.dab2c.executor.clients.efs.adapter.model.SdsSessionMeta
+import ru.sbrf.dab2c.executor.domain.session.DaSessionMeta
 import ru.sbrf.dab2c.executor.domain.session.SdsSection
 
 /**
@@ -70,12 +70,12 @@ private const val SESSION_INFO_KEY_PREFIX = "SESSION_INFO"
  * Read DA session info from SDS.
  * @throws IllegalStateException if session info is not found (invalid session)
  */
-suspend fun TypedSdsClient.readDaSessionInfo(channel: String, cookie: String): DaSessionInfo {
+suspend fun TypedSdsClient.readDaSessionMeta(channel: String, cookie: String): DaSessionMeta {
     val attributeName = "${SESSION_INFO_KEY_PREFIX}_${channel.uppercase()}"
-    val sdsSessionInfo = read<SdsSessionInfo>(
+    val sdsSessionMeta = read<SdsSessionMeta>(
         sectionName = DA_SESSION_SECTION_NAME,
         attributeName = attributeName,
         cookie = cookie
     ) ?: error("Failed to fetch DA session info: session is invalid or not found")
-    return DaSessionInfoMapper.INSTANCE.toDomain(sdsSessionInfo)
+    return DaSessionInfoMapper.INSTANCE.toDomain(sdsSessionMeta)
 }
