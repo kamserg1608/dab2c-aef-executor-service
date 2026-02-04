@@ -69,7 +69,7 @@ object WireMockResponses {
     @Suppress("MaxLineLength")
     val SDS_SESSION_READ_DATA_RESPONSE = """
         {
-            "result": [
+            "body": [
                 {
                     "sectionName": "DA_SESSION",
                     "attributeName": "SESSION_INFO_MOB_BANK",

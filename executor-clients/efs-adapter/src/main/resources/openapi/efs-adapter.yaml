@@ -390,7 +390,7 @@ components:
     BaseResponseListSdsSectionData:
       type: object
       properties:
-        result:
+        body:
           type: array
           items:
             $ref: '#/components/schemas/SdsSectionData'

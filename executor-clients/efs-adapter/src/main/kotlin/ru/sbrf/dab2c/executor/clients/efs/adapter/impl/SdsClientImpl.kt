@@ -60,13 +60,13 @@ class SdsClientImpl(
             response.body<BaseResponseListSdsSectionData>()
         }
 
-        logger.info { "Response from /session/readData: ${response.result}" }
+        logger.info { "Response from /session/readData: ${response.body}" }
         // для отладки
         logger.info { "Response to mapper: ${objectMapper.writeValueAsString(response)}" }
 
         checkErrors(response.errors, "readData")
 
-        return response.result?.map { mapper.toDomain(it) } ?: emptyList()
+        return response.body?.map { mapper.toDomain(it) } ?: emptyList()
     }
 
     override suspend fun writeData(sections: List<SdsSection>, cookie: String) {
