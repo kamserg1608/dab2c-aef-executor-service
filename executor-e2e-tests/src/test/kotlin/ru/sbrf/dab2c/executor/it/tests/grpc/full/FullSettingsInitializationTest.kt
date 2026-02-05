@@ -128,7 +128,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody(WireMockResponses.SDS_SESSION_READ_DATA_RESPONSE)
+                        .withBody(WireMockResponses.SDS_DA_SESSION)
                 )
         )
 

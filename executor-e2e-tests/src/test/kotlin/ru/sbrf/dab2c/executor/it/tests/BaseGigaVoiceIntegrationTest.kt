@@ -32,6 +32,7 @@ import ru.sbrf.dab2c.executor.application.ApplicationEntryPoint
 import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineStub
 import ru.sbrf.dab2c.executor.it.mock.MockGigaVoiceService
 import ru.sbrf.dab2c.executor.it.support.grpc.MetadataInterceptor
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubConfiguratorSession
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubSdsSessionReadData
 
 /**
@@ -103,6 +104,7 @@ abstract class BaseGigaVoiceIntegrationTest {
         gigaVoiceAgentMock.resetAll()
         efsAdapterMock.resetAll()
         efsAdapterMock.stubSdsSessionReadData()
+        efsAdapterMock.stubConfiguratorSession()
     }
 
     @BeforeAll

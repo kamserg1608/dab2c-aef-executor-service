@@ -26,7 +26,19 @@ object WireMockSetup {
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody(WireMockResponses.SDS_SESSION_READ_DATA_RESPONSE)
+                        .withBody(WireMockResponses.SDS_DA_SESSION)
+                )
+        )
+    }
+
+    fun WireMockServer.stubConfiguratorSession() {
+        stubFor(
+            post(urlEqualTo("/configurator/session"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.SDS_COMMON_DA_CONFIGURATOR)
                 )
         )
     }
@@ -144,6 +156,7 @@ object WireMockSetup {
         with(efsAdapter) {
             stubEfsRestAgent()
             stubSdsSessionReadData()
+            stubConfiguratorSession()
         }
         gigaAgent.stubGigaAgentSettings(withFunctions)
     }
@@ -157,6 +170,7 @@ object WireMockSetup {
         with(efsAdapter) {
             stubEfsRestAgent()
             stubSdsSessionReadData()
+            stubConfiguratorSession()
         }
         gigaAgent.stubGigaAgentSettingsWithAnalytics(dataVersion, analyticsData)
     }
