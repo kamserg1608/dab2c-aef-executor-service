@@ -113,7 +113,6 @@ abstract class BaseGigaVoiceIntegrationTest {
             .forAddress("localhost", grpcServerPort)
             .usePlaintext()
             .build()
-
         clientStub = GigaVoiceServiceCoroutineStub(clientChannel)
     }
 
