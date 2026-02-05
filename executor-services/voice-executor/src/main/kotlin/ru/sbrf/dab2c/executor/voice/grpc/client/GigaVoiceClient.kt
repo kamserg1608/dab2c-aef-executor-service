@@ -10,7 +10,6 @@ import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceServiceGrpcKt
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.CounterMetric
-import ru.sbrf.dab2c.executor.library.monitoring.service.api.Metric
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MonitoringServiceFactory
 import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
 import ru.sbrf.dab2c.executor.voice.model.RequestHeader
@@ -35,10 +34,11 @@ class GigaVoiceClient(
         GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineStub(channel)
     }
 
+    /** Starts a bidirectional streaming session with GigaVoice service. */
+    @Suppress("LongMethod")
     fun session(requests: Flow<GigaVoiceRequest>): Flow<GigaVoiceResponse> {
         logger.debug { "Starting bidirectional session with GigaVoice" }
 
-        // Оборачиваем входящий поток (от нас → GigaVoice)
         val monitoredRequests = requests.onEach { request ->
             val chunkType = request::class.simpleName!!
             val profanityCheck = request.settings?.gigachat?.profanityCheck ?: ""
@@ -50,17 +50,14 @@ class GigaVoiceClient(
                     platform = getPlatformHeader(),
                     channel = getChannelHeader(),
                     tagsMap = mapOf(
-                        "stream_chunk_type" to chunkType,
-                        "profanity_check" to profanityCheck.toString()
+                        STREAM_CHUNK_TYPE to chunkType,
+                        PROFANITY_CHECK to profanityCheck.toString()
                     )
                 )
             }
             counter()
-
-            logger.trace { "[OUT] → GigaVoice: $request" }
         }
 
-        // Выполняем вызов и оборачиваем ответы (от GigaVoice → нам)
         return stub.gigaVoice(monitoredRequests).onEach { response ->
             val chunkType = response::class.simpleName!!
             val functionName = if (chunkType == "FunctionCall") {
@@ -76,8 +73,8 @@ class GigaVoiceClient(
                     platform = getPlatformHeader(),
                     channel = getChannelHeader(),
                     tagsMap = mapOf(
-                        "stream_chunk_type" to chunkType,
-                        "function_name" to functionName
+                        STREAM_CHUNK_TYPE to chunkType,
+                        FUNCTION_NAME to functionName
                     )
                 )
             }
@@ -95,5 +92,12 @@ class GigaVoiceClient(
     private suspend fun getChannelHeader(): String {
         val metadata = currentRequestMetadata()
         return metadata.getHeader(RequestHeader.CHANNEL)
+    }
+
+    /** Constants for metric tags. */
+    companion object {
+        const val STREAM_CHUNK_TYPE = "stream_chunk_type"
+        const val PROFANITY_CHECK = "profanity_check"
+        const val FUNCTION_NAME = "function_name"
     }
 }

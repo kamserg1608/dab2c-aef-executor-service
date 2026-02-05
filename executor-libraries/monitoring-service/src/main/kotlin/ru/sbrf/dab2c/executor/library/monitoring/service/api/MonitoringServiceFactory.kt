@@ -20,6 +20,9 @@ interface MonitoringServiceFactory {
      */
     fun createGauge(name: Metric, platform: String, channel: String, tagsMap: Map<String, String>): GaugeMetric
 
+    /**
+     * Create timer sample metric.
+     */
     fun createTimerSample(
         name: Metric,
         platform: String,

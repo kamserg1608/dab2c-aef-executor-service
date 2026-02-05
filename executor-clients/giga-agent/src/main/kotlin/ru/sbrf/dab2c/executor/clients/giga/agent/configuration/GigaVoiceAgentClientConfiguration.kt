@@ -62,6 +62,7 @@ class GigaVoiceAgentClientConfiguration {
         installPlugins(properties, objectMapper)
     }
 
+    @Suppress("LongParameterList")
     @Bean
     internal fun gigaVoiceAgentClient(
         @Qualifier(GIGA_VOICE_AGENT_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient,

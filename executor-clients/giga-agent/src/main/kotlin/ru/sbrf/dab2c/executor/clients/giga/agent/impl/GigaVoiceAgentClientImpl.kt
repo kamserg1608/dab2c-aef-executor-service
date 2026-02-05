@@ -30,7 +30,6 @@ import ru.sbrf.dab2c.executor.library.monitoring.service.api.CounterMetric
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MonitoringServiceFactory
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.RecordMetric
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
-import kotlin.collections.mapOf
 
 private val logger = KotlinLogging.logger {}
 
@@ -42,7 +41,9 @@ private const val FUNCTIONS_ENDPOINT = "/functions"
 /**
  * Implementation of GigaVoice Agent API client using Ktor HTTP client.
  */
-class GigaVoiceAgentClientImpl @Suppress("LongParameterList") constructor(
+class GigaVoiceAgentClientImpl
+@Suppress("LongParameterList")
+constructor(
     private val httpClient: HttpClient,
     private val objectMapper: ObjectMapper,
     private val baseUrl: String,
@@ -52,7 +53,6 @@ class GigaVoiceAgentClientImpl @Suppress("LongParameterList") constructor(
     private val mapper: GigaVoiceSettingsMapper = GigaVoiceSettingsMapper
 ) : GigaVoiceAgentClient {
 
-    // Кэш для счётчиков и таймеров — ключ: метрика + теги
     private val counterCache = mutableMapOf<String, CounterMetric>()
     private val timerCache = mutableMapOf<String, RecordMetric>()
 
@@ -71,31 +71,29 @@ class GigaVoiceAgentClientImpl @Suppress("LongParameterList") constructor(
         )
         val requestJson = objectMapper.writeValueAsString(request)
 
-        // Получаем или создаём таймер
-        val timerKey = buildTimerKey(
+        val channel = context.daChannel
+        val platform = context.daPlatform
+
+        val timerTags = mapOf(
+            TAG_DESTINATION_SERVICE to GIGA_VOICE_AGENT,
+            TAG_ENDPOINT to SETTINGS_ENDPOINT,
+            TAG_METHOD to POST,
+            TAG_CHANNEL to channel,
+            TAG_PLATFORM to platform
+        )
+
+        val timerKey = buildCacheKey(
             metric = ClientMetric.HTTP_INTEGRATION_REQUEST_DURATION_SECONDS,
             platform = context.daPlatform,
             channel = context.daChannel,
-            tags = mapOf(
-                "destination_service" to "gigavoice-agent",
-                "endpoint" to SETTINGS_ENDPOINT,
-                "method" to "POST",
-                "channel" to context.daChannel,
-                "platform" to context.daPlatform
-            )
+            tags = timerTags
         )
         val timer = timerCache.getOrPut(timerKey) {
             monitoringService.createTimer(
                 ClientMetric.HTTP_INTEGRATION_REQUEST_DURATION_SECONDS,
                 context.daPlatform,
                 context.daChannel,
-                tagsMap = mapOf(
-                    "destination_service" to "gigavoice-agent",
-                    "endpoint" to SETTINGS_ENDPOINT,
-                    "method" to "POST",
-                    "channel" to context.daChannel,
-                    "platform" to context.daPlatform
-                )
+                tagsMap = timerTags
             )
         }
 
@@ -115,31 +113,20 @@ class GigaVoiceAgentClientImpl @Suppress("LongParameterList") constructor(
                     setBody(request)
                 }
 
-                // Счётчик вызовов
-                val counterKey = buildCounterKey(
+                val counterTags = timerTags + (TAG_STATUS_CODE to response.status.value.toString())
+
+                val counterKey = buildCacheKey(
                     metric = ClientMetric.HTTP_INTEGRATION_REQUEST_TOTAL,
                     platform = context.daPlatform,
                     channel = context.daChannel,
-                    tags = mapOf(
-                        "destination_service" to "gigavoice-agent",
-                        "status_code" to response.status.value.toString(),
-                        "endpoint" to SETTINGS_ENDPOINT,
-                        "channel" to context.daChannel,
-                        "platform" to context.daPlatform
-                    )
+                    tags = counterTags
                 )
                 val counter = counterCache.getOrPut(counterKey) {
                     monitoringService.createCounter(
                         ClientMetric.HTTP_INTEGRATION_REQUEST_TOTAL,
                         context.daPlatform,
                         context.daChannel,
-                        tagsMap = mapOf(
-                            "destination_service" to "gigavoice-agent",
-                            "status_code" to response.status.value.toString(),
-                            "endpoint" to SETTINGS_ENDPOINT,
-                            "channel" to context.daChannel,
-                            "platform" to context.daPlatform
-                        )
+                        tagsMap = counterTags
                     )
                 }
                 counter.increment()
@@ -151,7 +138,7 @@ class GigaVoiceAgentClientImpl @Suppress("LongParameterList") constructor(
             throw e
         }
 
-        timer.record {} // Завершаем измерение времени
+        timer.record {}
 
         return SettingsResult(
             settings = mapper.toDomainSettings(apiResponse.settings),
@@ -175,33 +162,31 @@ class GigaVoiceAgentClientImpl @Suppress("LongParameterList") constructor(
         )
         val requestJson = objectMapper.writeValueAsString(request)
 
-        // Получаем или создаём таймер
-        val timerKey = buildTimerKey(
+        val channel = context.daChannel
+        val platform = context.daPlatform
+        val functionName = functionCalling.functionCall.name
+
+        val timerTags = mapOf(
+            TAG_DESTINATION_SERVICE to AB_IVR,
+            TAG_ENDPOINT to FUNCTIONS_ENDPOINT,
+            TAG_METHOD to POST,
+            TAG_FUNCTION_NAME to functionName,
+            TAG_CHANNEL to channel,
+            TAG_PLATFORM to platform
+        )
+
+        val timerKey = buildCacheKey(
             metric = ClientMetric.HTTP_INTEGRATION_REQUEST_DURATION_SECONDS,
             platform = context.daPlatform,
             channel = context.daChannel,
-            tags = mapOf(
-                "destination_service" to "ab-ivr",
-                "endpoint" to FUNCTIONS_ENDPOINT,
-                "method" to "POST",
-                "function_name" to (functionCalling.functionCall.name),
-                "channel" to context.daChannel,
-                "platform" to context.daPlatform
-            )
+            tags = timerTags
         )
         val timer = timerCache.getOrPut(timerKey) {
             monitoringService.createTimer(
                 ClientMetric.HTTP_INTEGRATION_REQUEST_DURATION_SECONDS,
                 context.daPlatform,
                 context.daChannel,
-                tagsMap = mapOf(
-                    "destination_service" to "ab-ivr",
-                    "endpoint" to FUNCTIONS_ENDPOINT,
-                    "method" to "POST",
-                    "function_name" to (functionCalling.functionCall.name),
-                    "channel" to context.daChannel,
-                    "platform" to context.daPlatform
-                )
+                tagsMap = timerTags
             )
         }
 
@@ -221,19 +206,14 @@ class GigaVoiceAgentClientImpl @Suppress("LongParameterList") constructor(
                     setBody(request)
                 }
 
+                val counterTags = timerTags + (TAG_STATUS_CODE to response.status.value.toString())
+
                 // Счётчик вызовов
-                val counterKey = buildCounterKey(
+                val counterKey = buildCacheKey(
                     metric = ClientMetric.HTTP_INTEGRATION_REQUEST_TOTAL,
                     platform = context.daPlatform,
                     channel = context.daChannel,
-                    tags = mapOf(
-                        "destination_service" to "ab-ivr",
-                        "status_code" to response.status.value.toString(),
-                        "endpoint" to FUNCTIONS_ENDPOINT,
-                        "function_name" to (functionCalling.functionCall.name),
-                        "channel" to context.daChannel,
-                        "platform" to context.daPlatform
-                    )
+                    tags = counterTags
                 )
                 val counter = counterCache.getOrPut(counterKey) {
                     monitoringService.createCounter(
@@ -241,12 +221,12 @@ class GigaVoiceAgentClientImpl @Suppress("LongParameterList") constructor(
                         context.daPlatform,
                         context.daChannel,
                         tagsMap = mapOf(
-                            "destination_service" to "ab-ivr",
-                            "status_code" to response.status.value.toString(),
-                            "endpoint" to FUNCTIONS_ENDPOINT,
-                            "function_name" to (functionCalling.functionCall.name),
-                            "channel" to context.daChannel,
-                            "platform" to context.daPlatform
+                            TAG_DESTINATION_SERVICE to AB_IVR,
+                            TAG_STATUS_CODE to response.status.value.toString(),
+                            TAG_ENDPOINT to FUNCTIONS_ENDPOINT,
+                            TAG_FUNCTION_NAME to functionCalling.functionCall.name,
+                            TAG_CHANNEL to context.daChannel,
+                            TAG_PLATFORM to context.daPlatform
                         )
                     )
                 }
@@ -268,22 +248,9 @@ class GigaVoiceAgentClientImpl @Suppress("LongParameterList") constructor(
     }
 
     /**
-     * Строит уникальный ключ для кэширования счётчика.
-     */
-    private fun buildCounterKey(
-        metric: ClientMetric,
-        platform: String,
-        channel: String,
-        tags: Map<String, String>
-    ): String = buildString {
-        append("$metric|$platform|$channel|")
-        tags.toSortedMap().forEach { (k, v) -> append("$k=$v;") }
-    }
-
-    /**
      * Строит уникальный ключ для кэширования таймера.
      */
-    private fun buildTimerKey(
+    private fun buildCacheKey(
         metric: ClientMetric,
         platform: String,
         channel: String,
@@ -297,4 +264,20 @@ class GigaVoiceAgentClientImpl @Suppress("LongParameterList") constructor(
         dataVersion = dataVersion,
         data = objectMapper.writeValueAsString(data)
     )
+
+    /**
+     * Tags for metrics.
+     */
+    companion object Tags {
+        const val TAG_DESTINATION_SERVICE = "destination_service"
+        const val TAG_ENDPOINT = "endpoint"
+        const val TAG_METHOD = "method"
+        const val TAG_STATUS_CODE = "status_code"
+        const val TAG_FUNCTION_NAME = "function_name"
+        const val TAG_CHANNEL = "channel"
+        const val TAG_PLATFORM = "platform"
+        const val POST = "post"
+        const val GIGA_VOICE_AGENT = "gigavoice-agent"
+        const val AB_IVR = "ab-ivr"
+    }
 }

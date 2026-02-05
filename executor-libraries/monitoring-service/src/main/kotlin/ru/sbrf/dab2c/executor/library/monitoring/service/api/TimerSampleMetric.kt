@@ -6,12 +6,19 @@ package ru.sbrf.dab2c.executor.library.monitoring.service.api
  */
 fun interface TimerSampleMetric {
 
+    /**
+     * Start the timer.
+     */
     fun start(): TimerSample
 
     /**
      * Handle to stop the timer and record the duration.
      */
     interface TimerSample {
+
+        /**
+         *  Stop the timer.
+         */
         fun stop()
     }
 }

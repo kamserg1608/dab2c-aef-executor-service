@@ -35,6 +35,12 @@ class MonitoringChunksProcessingDecorator(
     private var connectionDurationTimer: TimerSampleMetric? = null
     private val connectionsCounter = AtomicInteger(0)
 
+    @Suppress("LongMethod")
+    private var timeToFirstTranscriptionTimer: TimerSampleMetric? = null
+    private var timeToFirstTranscriptionSample: TimerSampleMetric.TimerSample? = null
+    private var firstTranscriptionReceived = false
+
+    @Suppress("LongMethod")
     override fun processRequestChunks(requestsChunks: Flow<VoiceRequest>): Flow<VoiceRequest> {
         logger.trace { "Start monitoring for incoming request flow" }
 
@@ -50,7 +56,6 @@ class MonitoringChunksProcessingDecorator(
                 activeConnectionsGauge?.set(newValue.toDouble())
                 totalConnectionsCounter?.increment()
 
-                // Начинаем замер времени
                 timerSample = getOrCreateTimerSample()
 
                 logger.info { "gRPC connection opened. Total active: $newValue" }
@@ -78,13 +83,27 @@ class MonitoringChunksProcessingDecorator(
         return delegate.processRequestChunks(monitoredChunks)
     }
 
+    @Suppress("LongMethod")
     override fun processResponseChunks(responsesChunks: Flow<VoiceResponse>): Flow<VoiceResponse> {
         logger.trace { "Starting monitoring for the query output stream" }
 
+        firstTranscriptionReceived = false
+
         val monitoredChunks = responsesChunks
+            .onStart {
+                ensureTimeToFirstTranscriptionTimerInitialized()
+                timeToFirstTranscriptionSample = timeToFirstTranscriptionTimer?.start()
+            }
             .onEach { response ->
                 logger.info { "Response chunk: ${response::class.simpleName}" }
                 trackChunk(response, ExecutorVoiceMetric.GRPC_OUTGOING_FROM_INITIATOR_CHUNKS_TOTAL)
+
+                if (!firstTranscriptionReceived && response is VoiceResponse.InputTranscription) {
+                    timeToFirstTranscriptionSample?.stop()
+                    firstTranscriptionReceived = true
+                    logger.debug { "First InputTranscription received, time measured." }
+                }
+
                 if (response is VoiceResponse.Output) {
                     val modelInfo = response.content as? ContentFromModel.AdditionalData
 
@@ -92,9 +111,9 @@ class MonitoringChunksProcessingDecorator(
                         response,
                         ExecutorVoiceMetric.GRPC_RESPONSE_TOTAL_TOKENS,
                         mapOf(
-                            "model" to modelInfo?.data?.gigachatModelInfo?.name!!,
-                            "version" to modelInfo?.data?.gigachatModelInfo?.version!!
-                        ) // проверить
+                            "model" to (modelInfo?.data?.gigachatModelInfo?.name ?: "unknown"),
+                            "version" to (modelInfo?.data?.gigachatModelInfo?.version ?: "unknown")
+                        )
                     )
                 }
             }
@@ -103,6 +122,20 @@ class MonitoringChunksProcessingDecorator(
             }
 
         return delegate.processResponseChunks(monitoredChunks)
+    }
+
+    private suspend fun ensureTimeToFirstTranscriptionTimerInitialized() {
+        if (timeToFirstTranscriptionTimer != null) return
+
+        val platform = getPlatformHeader()
+        val channel = getChannelHeader()
+
+        timeToFirstTranscriptionTimer = monitoringServiceFactory.createTimerSample(
+            ExecutorVoiceMetric.GRPC_CONNECTIONS_TTFB_SECONDS,
+            platform = platform,
+            channel = channel,
+            tagsMap = emptyMap()
+        )
     }
 
     private suspend fun ensureConnectionDurationTimerInitialized() {
@@ -119,11 +152,10 @@ class MonitoringChunksProcessingDecorator(
         )
     }
 
-    private fun getOrCreateTimerSample(): TimerSampleMetric.TimerSample {
-        return connectionDurationTimer?.start() ?: object : TimerSampleMetric.TimerSample {
-            override fun stop() {} // fallback
+    private fun getOrCreateTimerSample() =
+        connectionDurationTimer?.start() ?: object : TimerSampleMetric.TimerSample {
+            override fun stop() {}
         }
-    }
 
     private suspend fun ensureActiveConnectionsGaugeInitialized() {
         if (activeConnectionsGauge != null) return
@@ -133,7 +165,7 @@ class MonitoringChunksProcessingDecorator(
 
         activeConnectionsGauge = monitoringServiceFactory.createGauge(
             ExecutorVoiceMetric.GRPC_CONNECTIONS_ACTIVE,
-            platform = platform ,
+            platform = platform,
             channel = channel,
             tagsMap = emptyMap()
         )

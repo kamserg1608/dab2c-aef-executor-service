@@ -1,8 +1,8 @@
 package ru.sbrf.dab2c.executor.library.monitoring.service.impl
 
 import io.micrometer.core.instrument.Counter
-import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Gauge
+import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Timer
 import org.springframework.stereotype.Service
@@ -79,7 +79,6 @@ class MonitoringServiceFactoryImpl(
             .tag(CHANNEL, channel)
             .tags(tagsMap.map { Tag.of(it.key, it.value) })
             .register(meterRegistry)
-
 
         return GaugeMetric { gauge.value() }
     }
