@@ -40,6 +40,8 @@ class GigaVoiceClient(
         logger.debug { "Starting bidirectional session with GigaVoice" }
 
         val monitoredRequests = requests.onEach { request ->
+            logger.info { "[OUT] → GigaVoice: $request" }
+
             val chunkType = request::class.simpleName!!
             val profanityCheck = request.settings?.gigachat?.profanityCheck ?: ""
             val key = "out|$chunkType|$profanityCheck"
@@ -80,7 +82,7 @@ class GigaVoiceClient(
             }
             counter()
 
-            logger.trace { "[IN] ← GigaVoice: $response" }
+            logger.info { "[IN] ← GigaVoice: $response" }
         }
     }
 
