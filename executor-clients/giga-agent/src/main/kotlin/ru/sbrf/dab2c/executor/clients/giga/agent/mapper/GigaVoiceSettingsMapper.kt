@@ -73,7 +73,7 @@ object GigaVoiceSettingsMapper {
     )
 
     // === Performers -> FunctionPerformers ===
-    fun toDomainFunctionsDefinition(source: Performers): FunctionPerformers = FunctionPerformers(
+    fun toDomainPerformers(source: Performers): FunctionPerformers = FunctionPerformers(
         functions = source.functions.associate { it.name to toDomainFunctionOptions(it) }
     )
 
@@ -219,7 +219,6 @@ object GigaVoiceSettingsMapper {
                 functionRegistry = it.functionRegistry?.let { reg -> toDomainFunctionRegistry(reg) }
             )
         }
-
 
     // === Function mapping (Domain → API) ===
 
