@@ -66,7 +66,7 @@ class MonitoringChunksProcessingDecorator(
 
                 timerSample = getOrCreateTimerSample()
 
-                logger.info { "gRPC connection opened. Total active: $newValue" }
+                logger.debug { "gRPC connection opened. Total active: $newValue" }
             }
             .onCompletion { cause ->
                 if (cause == null) {
@@ -80,7 +80,6 @@ class MonitoringChunksProcessingDecorator(
                 timerSample?.stop()
             }
             .onEach {
-                logger.info { "Request chunk: $it" }
                 trackChunk(it, ExecutorVoiceMetric.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL)
             }
             .catch { e ->
@@ -95,7 +94,6 @@ class MonitoringChunksProcessingDecorator(
     override fun processResponseChunks(responsesChunks: Flow<VoiceResponse>): Flow<VoiceResponse> {
         logger.trace { "Starting monitoring for the query output stream" }
 
-        // Локальная переменная для каждого вызова метода - потокобезопасна
         var firstTranscriptionReceived = false
         var timeToFirstTranscriptionSample: TimerSampleMetric.TimerSample? = null
 
@@ -105,7 +103,6 @@ class MonitoringChunksProcessingDecorator(
                 timeToFirstTranscriptionSample = timeToFirstTranscriptionTimer?.start()
             }
             .onEach { response ->
-                logger.info { "Response chunk: ${response::class.simpleName}" }
                 trackChunk(response, ExecutorVoiceMetric.GRPC_OUTGOING_FROM_INITIATOR_CHUNKS_TOTAL)
 
                 if (!firstTranscriptionReceived && response is VoiceResponse.InputTranscription) {
