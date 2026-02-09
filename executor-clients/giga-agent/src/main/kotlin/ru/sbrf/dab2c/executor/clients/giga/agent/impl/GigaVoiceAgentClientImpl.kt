@@ -204,6 +204,7 @@ constructor(
                 val response = httpClient.post(buildFullUrl(baseUrl, FUNCTIONS_ENDPOINT)) {
                     contentType(ContentType.Application.Json)
                     with(context) { applyHeaders() }
+                    with(context) { applyCookies() }
                     setBody(request)
                 }
 
