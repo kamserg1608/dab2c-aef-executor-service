@@ -132,8 +132,6 @@ constructor(
                 }
                 counter.increment()
 
-                val responseStr = response.body<String>()
-                println("Response: $responseStr")
                 response.body<GigaVoiceSettingsResponseSchema>()
             }
         } catch (e: Exception) {
