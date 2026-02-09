@@ -110,6 +110,7 @@ constructor(
                 val response = httpClient.post(buildFullUrl(baseUrl, SETTINGS_ENDPOINT)) {
                     contentType(ContentType.Application.Json)
                     with(context) { applyHeaders() }
+                    with(context) { applyCookies() }
                     setBody(request)
                 }
 
@@ -131,6 +132,8 @@ constructor(
                 }
                 counter.increment()
 
+                val responseStr = response.body<String>()
+                println("Response: $responseStr")
                 response.body<GigaVoiceSettingsResponseSchema>()
             }
         } catch (e: Exception) {
