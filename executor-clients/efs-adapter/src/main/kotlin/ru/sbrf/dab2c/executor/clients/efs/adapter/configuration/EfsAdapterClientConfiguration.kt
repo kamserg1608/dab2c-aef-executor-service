@@ -26,11 +26,13 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.AuditClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
+import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ProfileClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.SdsClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.TypedSdsClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.configuration.properties.EfsAdapterClientConfigurationProperties
 import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.AuditClientImpl
 import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.ConfiguratorClientImpl
+import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.ProfileClientImpl
 import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.SdsClientImpl
 import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.TypedSdsClientImpl
 import java.net.ConnectException
@@ -91,6 +93,13 @@ class EfsAdapterClientConfiguration {
         sdsClient: SdsClient,
         @Qualifier(EFS_ADAPTER_OBJECT_MAPPER_BEAN_NAME) objectMapper: ObjectMapper
     ): TypedSdsClient = TypedSdsClientImpl(sdsClient, objectMapper)
+
+    @Bean
+    internal fun profileClient(
+        @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient,
+        @Qualifier(EFS_ADAPTER_OBJECT_MAPPER_BEAN_NAME) objectMapper: ObjectMapper,
+        properties: EfsAdapterClientConfigurationProperties
+    ): ProfileClient = ProfileClientImpl(httpClient, objectMapper, properties.baseUrl)
 
     internal companion object {
         internal const val EFS_ADAPTER_OBJECT_MAPPER_BEAN_NAME = "efsAdapterObjectMapper"

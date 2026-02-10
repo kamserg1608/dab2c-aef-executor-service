@@ -98,6 +98,118 @@ object WireMockResponses {
     """.trimIndent()
 
     /**
+     * Person info response.
+     */
+    @Suppress("MaxLineLength")
+    val PERSON_INFO = """
+        {
+            "success": true,
+            "body": {
+                "person": {
+                    "surName": "Б.",
+                    "firstName": "Всеслав",
+                    "patrName": "Владиславович",
+                    "creationType": "UDBO",
+                    "personDepartment": {
+                        "tb": "38",
+                        "osb": "9038",
+                        "vsp": "1688"
+                    },
+                    "birthDay": "1998-01-20T14:50:00.000+0300",
+                    "gender": "M",
+                    "email": "FOO@FOO.RU",
+                    "citizenShip": "РОССИЯ",
+                    "birthPlace": "Москва",
+                    "mobileBankProfile": {
+                        "registeredPhonesListFull": {
+                            "phone": [
+                                {
+                                    "phoneNumber": "7980***5850",
+                                    "isMainPhone": true,
+                                    "status": "ACTIVE",
+                                    "mainPhone": true
+                                }
+                            ]
+                        }
+                    },
+                    "phoneList": {
+                        "phone": [
+                            {
+                                "phoneType": "MOBILE",
+                                "number": "7980***5850"
+                            }
+                        ]
+                    },
+                    "documentList": {
+                        "document": [
+                            {
+                                "documentType": {
+                                    "id": 21,
+                                    "description": "Паспорт гражданина РФ",
+                                    "name": "Паспорт гражданина Российской Федерации"
+                                },
+                                "series": "41 22",
+                                "number": "****97",
+                                "main": true,
+                                "documentIssueDate": "2022-03-09T14:50:00.000+0300",
+                                "documentIssueBy": "ТП № 116 ОУФМС РОССИИ ПО САНКТ-ПЕТЕРБУРГУ И ЛЕНИНГРАДСКОЙ ОБЛ. В КИРОВСКОМ РАЙОНЕ",
+                                "documentIssueByCode": "470-032",
+                                "documentTimeUpDate": "2043-01-20T00:00:00.000+0300",
+                                "documentIdentify": true
+                            }
+                        ]
+                    },
+                    "addressList": {
+                        "address": [
+                            {
+                                "type": "REGISTRATION",
+                                "postalCode": "119019",
+                                "province": "МОСКВА",
+                                "city": "МОСКВА",
+                                "street": "****ВАЯ",
+                                "house": "18",
+                                "flat": "20",
+                                "unparseableAddress": "******* ******* ****** ** * ******* ** ******** * ** ** **"
+                            }
+                        ]
+                    },
+                    "serviceInfo": {
+                        "agreementNumber": "380060356439",
+                        "agreementDate": "2025-03-27T00:00:00.000+0300",
+                        "lastUpdateDate": "2026-02-10T14:07:34.553+0300",
+                        "managerDepartmentInfo": {}
+                    },
+                    "additionalInfo": {
+                        "isResident": true,
+                        "mdmState": "NOT_SENT",
+                        "segmentCodeType": "1",
+                        "tariff": {
+                            "tarifPlanCodeType": "0",
+                            "tarifPlanConnectionDate": "2026-02-10T00:00:00.000+0300"
+                        }
+                    },
+                    "optionList": {
+                        "options": []
+                    },
+                    "papers": {},
+                    "ucpId": "2064943548742642674",
+                    "partyToPartyGroups": [
+                        {
+                            "version": 0,
+                            "updateDateTime": "2025-03-27T17:35:45.792+0300",
+                            "partyGroup": {
+                                "code": 95
+                            }
+                        }
+                    ],
+                    "isPrivateBanking": false
+                }
+            },
+            "messages": []
+        }
+    """.trimIndent()
+
+    /**
      * GigaVoice Agent settings response with agent analytics.
      */
     fun gigaVoiceSettingsWithAnalyticsResponse(

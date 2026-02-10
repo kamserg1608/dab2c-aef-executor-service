@@ -43,6 +43,18 @@ object WireMockSetup {
         )
     }
 
+    fun WireMockServer.stubPersonInfo() {
+        stubFor(
+            post(urlEqualTo("/getPersonInfoByRegionKind"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.PERSON_INFO)
+                )
+        )
+    }
+
     fun WireMockServer.stubGigaAgentSettings(withFunctions: Boolean = false) {
         val responseBody = if (withFunctions) {
             WireMockResponses.GIGA_VOICE_SETTINGS_WITH_FUNCTIONS_RESPONSE

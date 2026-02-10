@@ -3,6 +3,7 @@ package ru.sbrf.dab2c.executor.domain.voice
 /**
  * Supported audio encoding formats.
  */
+@Suppress("MagicNumber")
 enum class AudioEncoding(
     val value: Int
 ) {

@@ -3,6 +3,7 @@ package ru.sbrf.dab2c.executor.domain.voice
 /**
  * Output modalities for voice responses.
  */
+@Suppress("MagicNumber")
 enum class OutputModalities(
     val value: Int
 ) {

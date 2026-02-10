@@ -43,6 +43,6 @@ data class DaSessionUserInfo(
     val firstName: String? = null,
     val patrName: String? = null,
     val birthDay: String? = null,
-    val segmentCodeType: String? = null,
+    val segmentCodeType: String? = "0",
     val ucpId: String? = null
 )
