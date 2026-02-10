@@ -3,6 +3,7 @@ package ru.sbrf.dab2c.executor.domain.voice
 /**
  * Voice processing mode.
  */
+@Suppress("MagicNumber")
 enum class VoiceMode(
     val value: Int
 ) {

@@ -9,7 +9,7 @@ import ru.sbrf.dab2c.executor.library.monitoring.service.api.Metric
  * - [HTTP_INTEGRATION_REQUEST_DURATION_SECONDS] — время выполнения HTTP-запросов к интеграциям (в секундах).
  */
 enum class ClientMetric(
-    override var metricName: String
+    override val metricName: String
 ) : Metric {
     HTTP_INTEGRATION_REQUEST_TOTAL("http_integration_requests_total"),
     HTTP_INTEGRATION_REQUEST_DURATION_SECONDS("http_integration_request_duration_seconds")

@@ -6,20 +6,15 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import ru.sbrf.dab2c.executor.domain.voice.ContentFromModel
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
-import ru.sbrf.dab2c.executor.library.monitoring.service.api.CounterMetric
-import ru.sbrf.dab2c.executor.library.monitoring.service.api.GaugeMetric
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MonitoringServiceFactory
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.TimerSampleMetric
 import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
 import ru.sbrf.dab2c.executor.voice.model.RequestHeader
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.util.extensions.currentRequestMetadata
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -32,20 +27,6 @@ class MonitoringChunksProcessingDecorator(
 ) : ChunkProcessingService {
 
     private val logger = KotlinLogging.logger { }
-    private val counters = ConcurrentHashMap<String, CounterMetric>()
-
-    private val activeConnectionsGaugeLock = Mutex()
-    private var activeConnectionsGauge: GaugeMetric? = null
-
-    private val totalConnectionsCounterLock = Mutex()
-    private var totalConnectionsCounter: CounterMetric? = null
-
-    private val connectionDurationTimerLock = Mutex()
-    private var connectionDurationTimer: TimerSampleMetric? = null
-
-    private val timeToFirstTranscriptionTimerLock = Mutex()
-    private var timeToFirstTranscriptionTimer: TimerSampleMetric? = null
-
     private val connectionsCounter = AtomicInteger(0)
 
     @Suppress("LongMethod")
@@ -56,17 +37,33 @@ class MonitoringChunksProcessingDecorator(
 
         val monitoredChunks = requestsChunks
             .onStart {
-                ensureActiveConnectionsGaugeInitialized()
-                ensureTotalConnectionsCounterInitialized()
-                ensureConnectionDurationTimerInitialized()
+                val platform = getPlatformHeader()
+                val channel = getChannelHeader()
 
-                val newValue = connectionsCounter.incrementAndGet()
-                activeConnectionsGauge?.set(newValue.toDouble())
-                totalConnectionsCounter?.increment()
+                monitoringServiceFactory.createGauge(
+                    ExecutorVoiceMetric.GRPC_CONNECTIONS_ACTIVE,
+                    platform = platform,
+                    channel = channel,
+                    tagsMap = emptyMap(),
+                    stateObject = connectionsCounter
+                ) { it.get().toDouble() }
+                connectionsCounter.incrementAndGet()
 
-                timerSample = getOrCreateTimerSample()
+                monitoringServiceFactory.createCounter(
+                    ExecutorVoiceMetric.GRPC_CONNECTIONS_TOTAL,
+                    platform = platform,
+                    channel = channel,
+                    tagsMap = emptyMap()
+                ).increment()
 
-                logger.debug { "gRPC connection opened. Total active: $newValue" }
+                timerSample = monitoringServiceFactory.createTimerSample(
+                    ExecutorVoiceMetric.GRPC_CONNECTIONS_DURATION,
+                    platform = platform,
+                    channel = channel,
+                    tagsMap = emptyMap()
+                ).start()
+
+                logger.debug { "gRPC connection opened. Total active: ${connectionsCounter.get()}" }
             }
             .onCompletion { cause ->
                 if (cause == null) {
@@ -74,9 +71,8 @@ class MonitoringChunksProcessingDecorator(
                 } else {
                     logger.warn(cause) { "gRPC connection closed with error" }
                 }
-                val newValue = connectionsCounter.decrementAndGet()
-                activeConnectionsGauge?.set(newValue.toDouble())
 
+                connectionsCounter.decrementAndGet()
                 timerSample?.stop()
             }
             .onEach {
@@ -99,8 +95,15 @@ class MonitoringChunksProcessingDecorator(
 
         val monitoredChunks = responsesChunks
             .onStart {
-                ensureTimeToFirstTranscriptionTimerInitialized()
-                timeToFirstTranscriptionSample = timeToFirstTranscriptionTimer?.start()
+                val platform = getPlatformHeader()
+                val channel = getChannelHeader()
+
+                timeToFirstTranscriptionSample = monitoringServiceFactory.createTimerSample(
+                    ExecutorVoiceMetric.GRPC_CONNECTIONS_TTFB_SECONDS,
+                    platform = platform,
+                    channel = channel,
+                    tagsMap = emptyMap()
+                ).start()
             }
             .onEach { response ->
                 trackChunk(response, ExecutorVoiceMetric.GRPC_OUTGOING_FROM_INITIATOR_CHUNKS_TOTAL)
@@ -131,83 +134,6 @@ class MonitoringChunksProcessingDecorator(
         return delegate.processResponseChunks(monitoredChunks)
     }
 
-    private suspend fun ensureTimeToFirstTranscriptionTimerInitialized() {
-        if (timeToFirstTranscriptionTimer != null) return
-
-        timeToFirstTranscriptionTimerLock.withLock {
-            if (timeToFirstTranscriptionTimer != null) return
-
-            val platform = getPlatformHeader()
-            val channel = getChannelHeader()
-
-            timeToFirstTranscriptionTimer = monitoringServiceFactory.createTimerSample(
-                ExecutorVoiceMetric.GRPC_CONNECTIONS_TTFB_SECONDS,
-                platform = platform,
-                channel = channel,
-                tagsMap = emptyMap()
-            )
-        }
-    }
-
-    private suspend fun ensureConnectionDurationTimerInitialized() {
-        if (connectionDurationTimer != null) return
-
-        connectionDurationTimerLock.withLock {
-            if (connectionDurationTimer != null) return
-
-            val platform = getPlatformHeader()
-            val channel = getChannelHeader()
-
-            connectionDurationTimer = monitoringServiceFactory.createTimerSample(
-                ExecutorVoiceMetric.GRPC_CONNECTIONS_DURATION,
-                platform = platform,
-                channel = channel,
-                tagsMap = emptyMap()
-            )
-        }
-    }
-
-    private fun getOrCreateTimerSample() =
-        connectionDurationTimer?.start() ?: object : TimerSampleMetric.TimerSample {
-            override fun stop() {}
-        }
-
-    private suspend fun ensureActiveConnectionsGaugeInitialized() {
-        if (activeConnectionsGauge != null) return
-
-        activeConnectionsGaugeLock.withLock {
-            if (activeConnectionsGauge != null) return
-
-            val platform = getPlatformHeader()
-            val channel = getChannelHeader()
-
-            activeConnectionsGauge = monitoringServiceFactory.createGauge(
-                ExecutorVoiceMetric.GRPC_CONNECTIONS_ACTIVE,
-                platform = platform,
-                channel = channel,
-                tagsMap = emptyMap()
-            )
-        }
-    }
-
-    private suspend fun ensureTotalConnectionsCounterInitialized() {
-        if (totalConnectionsCounter != null) return
-
-        totalConnectionsCounterLock.withLock {
-            if (totalConnectionsCounter != null) return
-
-            val platform = getPlatformHeader()
-            val channel = getChannelHeader()
-
-            totalConnectionsCounter = monitoringServiceFactory.createCounter(
-                ExecutorVoiceMetric.GRPC_CONNECTIONS_TOTAL,
-                platform = platform,
-                channel = channel,
-                tagsMap = emptyMap()
-            )
-        }
-    }
-
     private suspend inline fun <reified T : Any> trackChunk(
         chunk: T,
         metricName: ExecutorVoiceMetric,
@@ -216,19 +142,14 @@ class MonitoringChunksProcessingDecorator(
         val className = chunk::class.simpleName!!
         val platform = getPlatformHeader()
         val channel = getChannelHeader()
+        val tags = mapOf(STREAM_CHUNK_TYPE_TAG to className) + additionalTags
 
-        val tags = (mapOf(STREAM_CHUNK_TYPE_TAG to className) + additionalTags).toMap()
-        val key = "${metricName.name}|$platform|$channel|${tags.entries.joinToString("|")}"
-
-        val counter = counters.getOrPut(key) {
-            monitoringServiceFactory.createCounter(
-                metricName,
-                platform = platform,
-                channel = channel,
-                tagsMap = tags
-            )
-        }
-        counter()
+        monitoringServiceFactory.createCounter(
+            metricName,
+            platform = platform,
+            channel = channel,
+            tagsMap = tags
+        ).increment()
     }
 
     private suspend fun getPlatformHeader(): String {
