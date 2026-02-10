@@ -3,13 +3,15 @@ package ru.sbrf.dab2c.executor.domain.voice
 /**
  * Output modalities for voice responses.
  */
-enum class OutputModalities {
+enum class OutputModalities(
+    val value: Int
+) {
     /** Modality not specified. */
-    UNSPECIFIED,
+    UNSPECIFIED(0),
     /** Audio only output. */
-    AUDIO,
+    AUDIO(1),
     /** Audio and text output. */
-    AUDIO_TEXT,
+    AUDIO_TEXT(2),
     /** Text only output. */
-    TEXT
+    TEXT(3)
 }

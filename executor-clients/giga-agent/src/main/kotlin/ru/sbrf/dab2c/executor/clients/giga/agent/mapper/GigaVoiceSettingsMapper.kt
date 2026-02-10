@@ -84,57 +84,23 @@ object GigaVoiceSettingsMapper {
     // === Helper methods for enum conversions ===
 
     fun toApiVoiceMode(mode: VoiceMode): Int =
-        when (mode) {
-            VoiceMode.UNSPECIFIED -> Numbers.ZERO
-            VoiceMode.RECOGNIZE_GIGACHAT_SYNTHESIS -> Numbers.ONE
-            VoiceMode.GIGACHAT_SYNTHESIS -> Numbers.TWO
-            VoiceMode.GIGACHAT -> Numbers.THREE
-            VoiceMode.RECOGNIZE_SYNTHESIS -> Numbers.FOUR
-        }
+        mode.value
 
     fun toDomainVoiceMode(mode: Int?): VoiceMode =
-        when (mode) {
-            null, Numbers.ZERO -> VoiceMode.UNSPECIFIED
-            Numbers.ONE -> VoiceMode.RECOGNIZE_GIGACHAT_SYNTHESIS
-            Numbers.TWO -> VoiceMode.GIGACHAT_SYNTHESIS
-            Numbers.THREE -> VoiceMode.GIGACHAT
-            Numbers.FOUR -> VoiceMode.RECOGNIZE_SYNTHESIS
-            else -> VoiceMode.UNSPECIFIED
-        }
+        mode?.let { VoiceMode.entries[it] } ?: VoiceMode.UNSPECIFIED
 
     fun toApiOutputModalities(modalities: OutputModalities): Int =
-        when (modalities) {
-            OutputModalities.UNSPECIFIED -> Numbers.ZERO
-            OutputModalities.AUDIO -> Numbers.ONE
-            OutputModalities.AUDIO_TEXT -> Numbers.TWO
-            OutputModalities.TEXT -> Numbers.THREE
-        }
+        modalities.value
 
     fun toDomainOutputModalities(modalities: Int?): OutputModalities =
-        when (modalities) {
-            Numbers.ZERO -> OutputModalities.UNSPECIFIED
-            Numbers.ONE -> OutputModalities.AUDIO
-            Numbers.TWO -> OutputModalities.AUDIO_TEXT
-            Numbers.THREE -> OutputModalities.TEXT
-            else -> OutputModalities.UNSPECIFIED
-        }
+        modalities?.let { OutputModalities.entries[it] } ?: OutputModalities.UNSPECIFIED
 
     fun toApiAudioEncoding(encoding: AudioEncoding): Int =
-        when (encoding) {
-            AudioEncoding.UNSPECIFIED -> Numbers.ZERO
-            AudioEncoding.PCM_S16LE -> Numbers.ONE
-            AudioEncoding.OPUS -> Numbers.TWO
-            AudioEncoding.PCM_ALAW -> Numbers.THREE
-        }
+        encoding.value
 
     fun toDomainAudioEncoding(encoding: Int?): AudioEncoding =
-        when (encoding) {
-            null, Numbers.ZERO -> AudioEncoding.UNSPECIFIED
-            Numbers.ONE -> AudioEncoding.PCM_S16LE
-            Numbers.TWO -> AudioEncoding.OPUS
-            Numbers.THREE -> AudioEncoding.PCM_ALAW
-            else -> AudioEncoding.UNSPECIFIED
-        }
+        encoding?.let { AudioEncoding.entries[it] } ?: AudioEncoding.UNSPECIFIED
+
     // === Audio settings mapping ===
 
     fun toApiAudioSettings(source: AudioSettings): AudioSettingsInput =
@@ -388,15 +354,4 @@ object GigaVoiceSettingsMapper {
             content = source.content,
             functionName = source.functionName
         )
-
-    /**
-     * Numbers.
-     */
-    object Numbers {
-        const val ZERO = 0
-        const val ONE = 1
-        const val TWO = 2
-        const val THREE = 3
-        const val FOUR = 4
-    }
 }
