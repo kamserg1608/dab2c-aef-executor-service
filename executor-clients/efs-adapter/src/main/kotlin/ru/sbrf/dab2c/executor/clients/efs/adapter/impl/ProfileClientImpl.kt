@@ -52,6 +52,9 @@ class ProfileClientImpl(
             }.body<BaseResponseProfile>()
         }
 
-        return personInfoMapper.toDomain(response.body?.person!!)
+        val person = response.body?.person
+        val additionalInfo = person?.additionalInfo
+
+        return personInfoMapper.toDomain(person, additionalInfo)
     }
 }
