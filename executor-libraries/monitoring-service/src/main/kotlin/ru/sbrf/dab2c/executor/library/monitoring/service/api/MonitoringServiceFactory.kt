@@ -16,9 +16,17 @@ interface MonitoringServiceFactory {
     fun createTimer(name: Metric, platform: String, channel: String, tagsMap: Map<String, String>): RecordMetric
 
     /**
-     * Create gauge metric.
+     * Create gauge metric that observes the given state object.
      */
-    fun createGauge(name: Metric, platform: String, channel: String, tagsMap: Map<String, String>): GaugeMetric
+    @Suppress("LongParameterList")
+    fun <T : Any> createGauge(
+        name: Metric,
+        platform: String,
+        channel: String,
+        tagsMap: Map<String, String>,
+        stateObject: T,
+        valueFunction: (T) -> Double
+    )
 
     /**
      * Create timer sample metric.

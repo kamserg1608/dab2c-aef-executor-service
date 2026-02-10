@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceServiceGrpcKt
-import ru.sbrf.dab2c.executor.library.monitoring.service.api.CounterMetric
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MonitoringServiceFactory
 import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
 import ru.sbrf.dab2c.executor.voice.model.RequestHeader
@@ -24,8 +23,6 @@ class GigaVoiceClient(
 ) {
 
     private val logger = KotlinLogging.logger {}
-    private val outgoingCounters = mutableMapOf<String, CounterMetric>()
-    private val incomingCounters = mutableMapOf<String, CounterMetric>()
 
     @GrpcClient("downstream")
     private lateinit var channel: Channel
@@ -44,20 +41,16 @@ class GigaVoiceClient(
 
             val chunkType = request::class.simpleName!!
             val profanityCheck = request.settings?.gigachat?.profanityCheck ?: ""
-            val key = "out|$chunkType|$profanityCheck"
 
-            val counter = outgoingCounters.getOrPut(key) {
-                monitoringServiceFactory.createCounter(
-                    ExecutorVoiceMetric.GRPC_OUTGOING_FROM_GIGAVOICE_CHUNKS_TOTAL,
-                    platform = getPlatformHeader(),
-                    channel = getChannelHeader(),
-                    tagsMap = mapOf(
-                        STREAM_CHUNK_TYPE to chunkType,
-                        PROFANITY_CHECK to profanityCheck.toString()
-                    )
+            monitoringServiceFactory.createCounter(
+                ExecutorVoiceMetric.GRPC_OUTGOING_FROM_GIGAVOICE_CHUNKS_TOTAL,
+                platform = getPlatformHeader(),
+                channel = getChannelHeader(),
+                tagsMap = mapOf(
+                    STREAM_CHUNK_TYPE to chunkType,
+                    PROFANITY_CHECK to profanityCheck.toString()
                 )
-            }
-            counter()
+            ).increment()
         }
 
         return stub.gigaVoice(monitoredRequests).onEach { response ->
@@ -67,20 +60,16 @@ class GigaVoiceClient(
             } else {
                 ""
             }
-            val key = "in|$chunkType|$functionName"
 
-            val counter = incomingCounters.getOrPut(key) {
-                monitoringServiceFactory.createCounter(
-                    ExecutorVoiceMetric.GRPC_INCOMING_FROM_GIGAVOICE_CHUNKS_TOTAL,
-                    platform = getPlatformHeader(),
-                    channel = getChannelHeader(),
-                    tagsMap = mapOf(
-                        STREAM_CHUNK_TYPE to chunkType,
-                        FUNCTION_NAME to functionName
-                    )
+            monitoringServiceFactory.createCounter(
+                ExecutorVoiceMetric.GRPC_INCOMING_FROM_GIGAVOICE_CHUNKS_TOTAL,
+                platform = getPlatformHeader(),
+                channel = getChannelHeader(),
+                tagsMap = mapOf(
+                    STREAM_CHUNK_TYPE to chunkType,
+                    FUNCTION_NAME to functionName
                 )
-            }
-            counter()
+            ).increment()
 
             logger.info { "[IN] ← GigaVoice: $response" }
         }
