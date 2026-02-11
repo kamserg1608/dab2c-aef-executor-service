@@ -2465,11 +2465,7 @@
             "title": "Ucp Id",
             "description": "ЕПК ID клиента"
           }
-        },
-        "additionalProperties": true,
-        "type": "object",
-        "title": "UserInfo",
-        "description": "Информация о пользователе из сессии.\nВключается параметром `can_access_user_info` в AgentConfig"
+        }
       },
       "ValidationError": {
         "properties": {
