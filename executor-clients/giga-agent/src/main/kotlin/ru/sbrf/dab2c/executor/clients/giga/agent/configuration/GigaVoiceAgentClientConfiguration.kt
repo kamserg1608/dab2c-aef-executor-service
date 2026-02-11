@@ -33,10 +33,8 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsRequest
 import ru.sbrf.dab2c.executor.clients.giga.agent.monitoring.MonitoringGigaVoiceAgentClientDecorator
 import ru.sbrf.dab2c.executor.library.audit.api.AgentInteractionAuditor
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MonitoringServiceFactory
-
 import java.net.ConnectException
 import java.net.SocketTimeoutException
-
 import kotlin.math.pow
 
 /**
