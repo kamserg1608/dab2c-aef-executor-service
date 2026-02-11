@@ -12,7 +12,7 @@ include("executor-clients:kap-producer")
 include("executor-services:voice-executor")
 include("executor-libraries:logging")
 include("executor-libraries:monitoring-service")
-
+include("executor-libraries:audit-service")
 pluginManagement {
     repositories {
         val nexusUsername = System.getProperty("gradle.wrapperUser")
