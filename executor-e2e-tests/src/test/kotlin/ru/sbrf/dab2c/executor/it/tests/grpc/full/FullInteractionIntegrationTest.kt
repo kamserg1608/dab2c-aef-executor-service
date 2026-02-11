@@ -32,8 +32,8 @@ class FullInteractionIntegrationTest : BaseGigaVoiceIntegrationTest() {
             val response = session.awaitResponse()
 
             efsAdapterMock.verify(1, postRequestedFor(urlEqualTo("/configurator/rest-agent")))
-//            efsAdapterMock.verify(1, postRequestedFor(urlEqualTo("/audit/event")))
             gigaVoiceAgentMock.verify(1, postRequestedFor(urlEqualTo("/settings")))
+            efsAdapterMock.verify(1, postRequestedFor(urlEqualTo("/audit/event")))
 
             assertThat(response).isNotNull()
         }
