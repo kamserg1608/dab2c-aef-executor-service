@@ -365,12 +365,7 @@
       },
       "AudioEncoding": {
         "type": "integer",
-        "enum": [
-          0,
-          1,
-          2,
-          3
-        ],
+        "format": "int32",
         "title": "AudioEncoding",
         "description": "Набор поддерживаемых форматов аудио данных."
       },
@@ -1221,13 +1216,6 @@
       },
       "GigaVoiceMode": {
         "type": "integer",
-        "enum": [
-          0,
-          1,
-          2,
-          3,
-          4
-        ],
         "title": "GigaVoiceMode",
         "description": "Режим работы Gigavoice."
       },
@@ -1699,12 +1687,6 @@
       },
       "OutputModalities": {
         "type": "integer",
-        "enum": [
-          0,
-          1,
-          2,
-          3
-        ],
         "title": "OutputModalities",
         "description": "Определяют формат ответа Gigavoice."
       },

@@ -22,4 +22,4 @@ fun RequestMetadata.toGigaAgentContext(
 
 /** Builds EFS cookie. */
 val RequestMetadata.ufsCookie: String
-    get() = "UFS_TOKEN=${this.getHeader(RequestHeader.TOKEN)};UFS_SESSION=${this.getHeader(RequestHeader.SESSION)}"
+    get() = "UFS-TOKEN=${this.getHeader(RequestHeader.TOKEN)};UFS-SESSION=${this.getHeader(RequestHeader.SESSION)}"

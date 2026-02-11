@@ -51,5 +51,5 @@ class GigaVoiceSettingsRequestBuilder(
     }
 
     private fun parseContextJson(json: String): Map<String, Any> =
-        objectMapper.readValue(json)
+        if (json.isEmpty()) emptyMap() else objectMapper.readValue(json)
 }

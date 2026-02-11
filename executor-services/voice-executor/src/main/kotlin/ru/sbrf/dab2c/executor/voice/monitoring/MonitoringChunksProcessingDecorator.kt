@@ -3,15 +3,19 @@ package ru.sbrf.dab2c.executor.voice.monitoring
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
+import ru.sbrf.dab2c.executor.domain.voice.ContentFromModel
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
-import ru.sbrf.dab2c.executor.library.monitoring.service.api.CounterMetric
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MonitoringServiceFactory
-import ru.sbrf.dab2c.executor.voice.model.ExecutorMetrics
+import ru.sbrf.dab2c.executor.library.monitoring.service.api.TimerSampleMetric
+import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
 import ru.sbrf.dab2c.executor.voice.model.RequestHeader
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.util.extensions.currentRequestMetadata
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Decorator for monitoring voice chunk processing.
@@ -23,13 +27,57 @@ class MonitoringChunksProcessingDecorator(
 ) : ChunkProcessingService {
 
     private val logger = KotlinLogging.logger { }
-    private val counters = mutableMapOf<String, CounterMetric>()
+    private val connectionsCounter = AtomicInteger(0)
 
+    @Suppress("LongMethod")
     override fun processRequestChunks(requestsChunks: Flow<VoiceRequest>): Flow<VoiceRequest> {
         logger.trace { "Start monitoring for incoming request flow" }
 
+        var timerSample: TimerSampleMetric.TimerSample? = null
+
         val monitoredChunks = requestsChunks
-            .onEach { trackChunk(it, ExecutorMetrics.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL) }
+            .onStart {
+                val platform = getPlatformHeader()
+                val channel = getChannelHeader()
+
+                monitoringServiceFactory.createGauge(
+                    ExecutorVoiceMetric.GRPC_CONNECTIONS_ACTIVE,
+                    platform = platform,
+                    channel = channel,
+                    tagsMap = emptyMap(),
+                    stateObject = connectionsCounter
+                ) { it.get().toDouble() }
+                connectionsCounter.incrementAndGet()
+
+                monitoringServiceFactory.createCounter(
+                    ExecutorVoiceMetric.GRPC_CONNECTIONS_TOTAL,
+                    platform = platform,
+                    channel = channel,
+                    tagsMap = emptyMap()
+                ).increment()
+
+                timerSample = monitoringServiceFactory.createTimerSample(
+                    ExecutorVoiceMetric.GRPC_CONNECTIONS_DURATION,
+                    platform = platform,
+                    channel = channel,
+                    tagsMap = emptyMap()
+                ).start()
+
+                logger.debug { "gRPC connection opened. Total active: ${connectionsCounter.get()}" }
+            }
+            .onCompletion { cause ->
+                if (cause == null) {
+                    logger.info { "gRPC connection closed gracefully" }
+                } else {
+                    logger.warn(cause) { "gRPC connection closed with error" }
+                }
+
+                connectionsCounter.decrementAndGet()
+                timerSample?.stop()
+            }
+            .onEach {
+                trackChunk(it, ExecutorVoiceMetric.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL)
+            }
             .catch { e ->
                 logger.error(e) { "Error on request stream: ${e.message}" }
                 throw e
@@ -38,11 +86,47 @@ class MonitoringChunksProcessingDecorator(
         return delegate.processRequestChunks(monitoredChunks)
     }
 
+    @Suppress("LongMethod")
     override fun processResponseChunks(responsesChunks: Flow<VoiceResponse>): Flow<VoiceResponse> {
         logger.trace { "Starting monitoring for the query output stream" }
 
+        var firstTranscriptionReceived = false
+        var timeToFirstTranscriptionSample: TimerSampleMetric.TimerSample? = null
+
         val monitoredChunks = responsesChunks
-            .onEach { trackChunk(it, ExecutorMetrics.GRPC_OUTGOING_FROM_INITIATOR_CHUNKS_TOTAL) }
+            .onStart {
+                val platform = getPlatformHeader()
+                val channel = getChannelHeader()
+
+                timeToFirstTranscriptionSample = monitoringServiceFactory.createTimerSample(
+                    ExecutorVoiceMetric.GRPC_CONNECTIONS_TTFB_SECONDS,
+                    platform = platform,
+                    channel = channel,
+                    tagsMap = emptyMap()
+                ).start()
+            }
+            .onEach { response ->
+                trackChunk(response, ExecutorVoiceMetric.GRPC_OUTGOING_FROM_INITIATOR_CHUNKS_TOTAL)
+
+                if (!firstTranscriptionReceived && response is VoiceResponse.InputTranscription) {
+                    timeToFirstTranscriptionSample?.stop()
+                    firstTranscriptionReceived = true
+                    logger.debug { "First InputTranscription received, time measured." }
+                }
+
+                if (response is VoiceResponse.Output) {
+                    val modelInfo = response.content as? ContentFromModel.AdditionalData
+
+                    trackChunk(
+                        response,
+                        ExecutorVoiceMetric.GRPC_RESPONSE_TOTAL_TOKENS,
+                        mapOf(
+                            "model" to (modelInfo?.data?.gigachatModelInfo?.name ?: UNKNOWN),
+                            "version" to (modelInfo?.data?.gigachatModelInfo?.version ?: UNKNOWN)
+                        )
+                    )
+                }
+            }
             .catch { e ->
                 throw e
             }
@@ -50,18 +134,22 @@ class MonitoringChunksProcessingDecorator(
         return delegate.processResponseChunks(monitoredChunks)
     }
 
-    private suspend inline fun <reified T : Any> trackChunk(chunk: T, metricName: ExecutorMetrics) {
+    private suspend inline fun <reified T : Any> trackChunk(
+        chunk: T,
+        metricName: ExecutorVoiceMetric,
+        additionalTags: Map<String, String> = emptyMap()
+    ) {
         val className = chunk::class.simpleName!!
+        val platform = getPlatformHeader()
+        val channel = getChannelHeader()
+        val tags = mapOf(STREAM_CHUNK_TYPE_TAG to className) + additionalTags
 
-        val counter = counters.getOrPut(className) {
-            monitoringServiceFactory.createCounter(
-                metricName,
-                getPlatformHeader(),
-                getChannelHeader(),
-                tagsMap = mapOf(STREAM_CHUNK_TYPE_TAG to className)
-            )
-        }
-        counter()
+        monitoringServiceFactory.createCounter(
+            metricName,
+            platform = platform,
+            channel = channel,
+            tagsMap = tags
+        ).increment()
     }
 
     private suspend fun getPlatformHeader(): String {
@@ -79,5 +167,6 @@ class MonitoringChunksProcessingDecorator(
      */
     companion object {
         private const val STREAM_CHUNK_TYPE_TAG = "stream_chunk_type"
+        private const val UNKNOWN = "unknown"
     }
 }

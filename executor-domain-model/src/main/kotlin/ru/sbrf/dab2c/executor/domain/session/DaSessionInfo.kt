@@ -24,25 +24,25 @@ data class DaSessionMeta(
  * Common session data.
  */
 data class DaSessionCommon(
-    val block: String,
+    val block: String? = null,
     val channel: String,
-    val surface: String,
-    val platform: String,
-    val sdkVersion: String,
-    val entryPoint: String,
-    val appVersion: String,
-    val channelVersion: String,
-    val appSource: String,
-    val timeZone: String
+    val surface: String? = null,
+    val platform: String? = null,
+    val sdkVersion: String? = null,
+    val entryPoint: String? = null,
+    val appVersion: String? = null,
+    val channelVersion: String? = null,
+    val appSource: String? = null,
+    val timeZone: String? = null
 )
 
 /**
  * Session user info.
  */
 data class DaSessionUserInfo(
-    val firstName: String,
-    val patrName: String,
-    val birthDay: String,
-    val segmentCodeType: String,
-    val ucpId: String
+    val firstName: String? = null,
+    val patrName: String? = null,
+    val birthDay: String? = null,
+    val segmentCodeType: String? = null,
+    val ucpId: String? = null
 )

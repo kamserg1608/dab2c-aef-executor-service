@@ -1,6 +1,7 @@
 package ru.sbrf.dab2c.executor.library.monitoring.service.impl
 
 import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.Gauge
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Timer
@@ -9,6 +10,7 @@ import ru.sbrf.dab2c.executor.library.monitoring.service.api.CounterMetric
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.Metric
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MonitoringServiceFactory
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.RecordMetric
+import ru.sbrf.dab2c.executor.library.monitoring.service.api.TimerSampleMetric
 import java.time.Duration
 
 /**
@@ -31,7 +33,7 @@ class MonitoringServiceFactoryImpl(
             .tags(tagsMap.map { Tag.of(it.key, it.value) })
             .register(meterRegistry)
 
-        return CounterMetric { counter.increment() }
+        return CounterMetric { amount -> counter.increment(amount) }
     }
 
     override fun createTimer(
@@ -40,27 +42,70 @@ class MonitoringServiceFactoryImpl(
         channel: String,
         tagsMap: Map<String, String>
     ): RecordMetric {
-        val timer = Timer.builder(name.metricName)
-            .tag(PLATFORM, platform)
-            .tag(CHANNEL, channel)
-            .tags(tagsMap.map { Tag.of(it.key, it.value) })
-            .serviceLevelObjectives(
-                Duration.ofMillis(FAST_RESPONSE_THRESHOLD_MS),
-                Duration.ofMillis(STANDARD_RESPONSE_THRESHOLD_MS),
-                Duration.ofMillis(SLOW_RESPONSE_THRESHOLD_MS)
-            )
-            .register(meterRegistry)
+        val timer = buildTimer(name, platform, channel, tagsMap)
 
-        return RecordMetric { block ->
-            val startTime = System.nanoTime()
-            try {
-                block()
-            } finally {
-                val durationNs = System.nanoTime() - startTime
-                timer.record(durationNs, java.util.concurrent.TimeUnit.NANOSECONDS)
+        return object : RecordMetric {
+            override suspend fun <T> record(block: suspend () -> T): T {
+                val startTime = System.nanoTime()
+                try {
+                    return block()
+                } finally {
+                    val durationNs = System.nanoTime() - startTime
+                    timer.record(durationNs, java.util.concurrent.TimeUnit.NANOSECONDS)
+                }
             }
         }
     }
+
+    @Suppress("LongParameterList")
+    override fun <T : Any> createGauge(
+        name: Metric,
+        platform: String,
+        channel: String,
+        tagsMap: Map<String, String>,
+        stateObject: T,
+        valueFunction: (T) -> Double
+    ) {
+        Gauge.builder(name.metricName, stateObject) { valueFunction(it) }
+            .tag(PLATFORM, platform)
+            .tag(CHANNEL, channel)
+            .tags(tagsMap.map { Tag.of(it.key, it.value) })
+            .register(meterRegistry)
+    }
+
+    override fun createTimerSample(
+        name: Metric,
+        platform: String,
+        channel: String,
+        tagsMap: Map<String, String>
+    ): TimerSampleMetric {
+        val timer = buildTimer(name, platform, channel, tagsMap)
+
+        return TimerSampleMetric {
+            val sample = Timer.start(meterRegistry)
+            object : TimerSampleMetric.TimerSample {
+                override fun stop() {
+                    sample.stop(timer)
+                }
+            }
+        }
+    }
+
+    private fun buildTimer(
+        name: Metric,
+        platform: String,
+        channel: String,
+        tagsMap: Map<String, String>
+    ): Timer = Timer.builder(name.metricName)
+        .tag(PLATFORM, platform)
+        .tag(CHANNEL, channel)
+        .tags(tagsMap.map { Tag.of(it.key, it.value) })
+        .serviceLevelObjectives(
+            Duration.ofMillis(FAST_RESPONSE_THRESHOLD_MS),
+            Duration.ofMillis(STANDARD_RESPONSE_THRESHOLD_MS),
+            Duration.ofMillis(SLOW_RESPONSE_THRESHOLD_MS)
+        )
+        .register(meterRegistry)
 
     /**
      * Companion object containing constant values used in the monitoring service.

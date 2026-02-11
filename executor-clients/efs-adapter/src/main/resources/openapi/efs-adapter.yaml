@@ -372,12 +372,22 @@ components:
     BaseResponseProfile:
       type: object
       properties:
-        result:
+        success:
+          type: boolean
+        body:
           $ref: '#/components/schemas/Profile'
-        errors:
+        context:
+          $ref: '#/components/schemas/Context'
+        messages:
           type: array
           items:
-            $ref: '#/components/schemas/Error'
+            $ref: '#/components/schemas/Message'
+        error:
+          $ref: '#/components/schemas/Error'
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alert'
     BaseResponseParameters:
       type: object
       properties:
@@ -390,7 +400,7 @@ components:
     BaseResponseListSdsSectionData:
       type: object
       properties:
-        result:
+        body:
           type: array
           items:
             $ref: '#/components/schemas/SdsSectionData'
@@ -431,9 +441,1065 @@ components:
           type: string
         stacktrace:
           type: string
+    ProductsExt:
+      type: object
+      properties:
+        cards:
+          $ref: '#/components/schemas/CardsExt'
+        accounts:
+          $ref: '#/components/schemas/AccountsExt'
+        loans:
+          $ref: '#/components/schemas/LoansAcctExt'
+        targets:
+          $ref: '#/components/schemas/AccountTargetsExt'
+        imAccounts:
+          $ref: '#/components/schemas/ImAccountsExt'
+        depoAccounts:
+          $ref: '#/components/schemas/DepoAccountsExt'
+        servicePackages:
+          $ref: '#/components/schemas/ServicePackagesExt'
+        packageOptions:
+          $ref: '#/components/schemas/PackageOptionsExt'
+        brokerageAgreements:
+          $ref: '#/components/schemas/BrokerageAgreementsExt'
+        transactionAccounts:
+          $ref: '#/components/schemas/TransactionAccounts'
+        securityAccounts:
+          $ref: '#/components/schemas/SecurityAccountsExt'
+        kidsCards:
+          $ref: '#/components/schemas/CardsExt'
+      description: Продукты клиента.
     Profile:
       type: object
-      # Схема будет определена на основе DTO
+      properties:
+        person:
+          $ref: '#/components/schemas/PersonType'
+        products:
+          $ref: '#/components/schemas/ProductsExt'
+        ukoSettings:
+          $ref: '#/components/schemas/UkoSettings'
+        regionInfo:
+          type: object
+          description: Не используется. Данные по региону и валидности информации
+            в нём.
+          deprecated: true
+        employeeInfo:
+          $ref: '#/components/schemas/EmployeeInfo'
+    UkoSettings:
+      type: object
+      properties:
+        sbolNotificationSettings:
+          $ref: '#/components/schemas/SbolNotificationSettings'
+        usPerson:
+          $ref: '#/components/schemas/UsPerson'
+        usCardList:
+          $ref: '#/components/schemas/UsCardList'
+        usAccountList:
+          $ref: '#/components/schemas/UsAccountList'
+        usImAccountList:
+          $ref: '#/components/schemas/UsImAccountList'
+        usInsuranceList:
+          $ref: '#/components/schemas/UsInsuranceList'
+        usLoanList:
+          $ref: '#/components/schemas/UsLoanList'
+        usDepoAccountList:
+          $ref: '#/components/schemas/UsDepoAccountList'
+        usTransactionAccountList:
+          $ref: '#/components/schemas/UsTransactionAccountList'
+        usSecurityAccountList:
+          $ref: '#/components/schemas/UsSecurityAccountList'
+      description: Пользовательские настройки клиента.
+    UsAccountList:
+      type: object
+      description: Настройки счетов в СБОЛ.
+    UsCardList:
+      type: object
+      description: Настройки карт в СБОЛ.
+    UsDepoAccountList:
+      type: object
+      description: Настройки по счетам ДЕПО
+    UsImAccountList:
+      type: object
+      description: Настройки по металлическим счетам.
+    UsInsuranceList:
+      type: object
+      description: Настройки по страховкам.
+    UsLoanList:
+      type: object
+      description: Настройки по кредитам.
+    UsPaymentRegion:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID в БД ЕРИБ.
+          format: int64
+        name:
+          type: string
+          description: Наименование региона.
+        code:
+          type: string
+          description: код региона в справочнике ЦАС НСИ.
+      description: "Географический регион поставщиков услуг, который клиент выбрал\
+          \ в профиле СБОЛ (null - если регион не выбран)."
+    UsPerson:
+      type: object
+      properties:
+        sbolNotificationSettings:
+          $ref: '#/components/schemas/SbolNotificationSettings'
+        loginId:
+          type: integer
+          description: Логин ID клиента в ЦСА (цифровой логин в СБОЛ).
+          format: int64
+        blockId:
+          type: integer
+          description: "Номер блока ЕРИБ, в котором обслуживается клиент."
+          format: int64
+        email:
+          type: string
+          description: "Адрес электронной почты, указанный для получения оповещени\
+              й СБОЛ."
+        paymentRegion:
+          $ref: '#/components/schemas/UsPaymentRegion'
+        mobileBankProfile:
+          $ref: '#/components/schemas/MobileBankProfile'
+        userAddedDocumentList:
+          $ref: '#/components/schemas/UserAddedDocumentList'
+      description: Настройки персонального профиля в СБОЛ.
+    UsSecurityAccountList:
+      type: object
+      description: Настройки по СберСертификатам
+    UsTransactionAccountList:
+      type: object
+      description: Настройки по транзакционными счетам
+    PersonDepartment:
+      type: object
+      properties:
+        tb:
+          type: string
+          description: ТБ.
+        osb:
+          type: string
+          description: ОСБ.
+        vsp:
+          type: string
+          description: ВСП.
+        name:
+          type: string
+          description: Наименование.
+      description: personDepartment.
+    PersonType:
+      type: object
+      properties:
+        loginId:
+          type: integer
+          description: Логин ID клиента в ЦСА (цифровой логин в СБОЛ).
+          format: int64
+        mdmId:
+          type: integer
+          description: Идентификатор клиента в MDM.
+          format: int64
+        surName:
+          type: string
+          description: Фамилия с маской.
+        firstName:
+          type: string
+          description: Имя.
+        patrName:
+          type: string
+          description: Отчество.
+        surNameNotMasked:
+          type: string
+          description: Фамилия без маски.
+        linkFio:
+          type: string
+          description: Ссылка для редиректа в ЕРИБ при нажатии на ФИО.
+        lastIpAddress:
+          type: string
+          description: IP адрес последнего входа.
+        creationType:
+          type: string
+          description: "Тип договора, по которому подключен клиент"
+        department:
+          $ref: '#/components/schemas/Department'
+        personDepartment:
+          $ref: '#/components/schemas/PersonDepartment'
+        lastLogonDate:
+          type: string
+          description: "Дата последнего входа [yyyy-MM-dd'T'HH:mm:ss.SSSZ]"
+          format: date-time
+        blockId:
+          type: integer
+          description: "Номер блока ЕРИБ, в котором обслуживается клиент."
+          format: int64
+        birthDay:
+          type: string
+          description: "Дата рождения [yyyy-MM-dd'T'HH:mm:ss.SSSZ]"
+          format: date-time
+        confirmType:
+          type: string
+          description: Способ подтверждения входа клиента
+        ernpInfo:
+          type: string
+          description: "ERNPInfo код, на основе которого будет считаться курс валю\
+                т клиента"
+        gender:
+          type: string
+          description: Пол.
+        email:
+          type: string
+          description: Адрес электронной почты.
+        citizenShip:
+          type: string
+          description: Гражданство.
+        birthPlace:
+          type: string
+          description: Место рождения.
+        mobileBankProfile:
+          $ref: '#/components/schemas/MobileBankProfile'
+        phoneList:
+          $ref: '#/components/schemas/PhoneList'
+        documentList:
+          $ref: '#/components/schemas/DocumentList'
+        addressList:
+          $ref: '#/components/schemas/AddressList'
+        serviceInfo:
+          $ref: '#/components/schemas/ServiceInfo'
+        additionalInfo:
+          $ref: '#/components/schemas/AdditionalInfo'
+        regionExt:
+          $ref: '#/components/schemas/PersonRegionExt'
+        optionList:
+          $ref: '#/components/schemas/OptionList'
+        segmentCode:
+          type: string
+          description: Код сегмента обслуживания клиента
+        snils:
+          type: string
+          description: Снилс.
+        fatca:
+          $ref: '#/components/schemas/SbrfPersonFatca'
+        papers:
+          $ref: '#/components/schemas/NonIdentificationPapersVa'
+        ucpId:
+          type: string
+          description: Идентификатор единого профиля клиента(ЕПК id).
+        isSelfEmployed:
+          type: boolean
+          description: Признак самозанятого
+        isPrivateBanking:
+          type: boolean
+          description: Признак принадлежности клиента к сегменту Private Banking.
+        customerKnowledge:
+          $ref: '#/components/schemas/CustomerKnowledge'
+        segmentB2c:
+          $ref: '#/components/schemas/SegmentB2c'
+      description: Персональные данные клиента
+    Department:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: id.
+          format: int64
+        name:
+          type: string
+          description: name.
+      description: Идентификатор ВСП обслуживания клиента.
+    MobileBankProfile:
+      type: object
+      properties:
+        registeredPhonesListFull:
+          $ref: '#/components/schemas/RegisteredPhones'
+        mbSystem:
+          type: string
+          description: "Система МБ, в которой зарегистрирован клиент"
+      description: Данные о клиенте в мобильном банке МБК.
+    PhoneList:
+      type: object
+      description: Телефоны клиента.
+    DocumentList:
+      type: object
+      description: Список ДУЛов клиента.
+    AddressList:
+      type: object
+      description: "Адреса клиента (регистрации, проживания…)."
+    ServiceInfo:
+      type: object
+      properties:
+        agreementNumber:
+          type: string
+          description: Номер договора.
+        agreementDate:
+          type: string
+          description: Дата оформления договора
+          format: date-time
+        serviceInsertionDate:
+          type: string
+          description: Дата начала обслуживания
+          format: date-time
+        prolongationRejectionDate:
+          type: string
+          description: Дата расторжения договора
+          format: date-time
+        contractCancellationCouse:
+          type: string
+          description: Причина расторжения договора.
+        lastUpdateDate:
+          type: string
+          description: Дата и время последнего изменения данных
+          format: date-time
+        employeeId:
+          type: string
+          description: "идентификатор сотрудника, который отправил заявку на удале\
+                ние клиента."
+        managerId:
+          type: string
+          description: "Номер менеджера, за которым закреплён клиент."
+        managerDepartmentInfo:
+          $ref: '#/components/schemas/ManagerDepartmentInfo'
+      description: Данные о договоре клиента с Банком.
+    AdditionalInfo:
+      type: object
+      properties:
+        mobileOperator:
+          type: string
+          description: Мобильный оператор.
+        isResident:
+          type: boolean
+          description: Является ли резидентом.
+        displayClientId:
+          type: string
+          description: displayClientId.
+        isRegisteredInDepo:
+          type: boolean
+          description: Признак регистрации в депозитарии.
+        mdmState:
+          type: string
+          description: Информация об отправке данных в МДМ
+        segmentCodeType:
+          type: string
+          description: "Код сегмента, к которому относят клиента."
+        tariff:
+          $ref: '#/components/schemas/TariffInfo'
+        securityType:
+          type: string
+          description: Уровень безопасности
+      description: Остальные данные клиента.
+    PersonRegionExt:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Идентификатор региона в справочнике Регионов.
+          format: int64
+        name:
+          type: string
+          description: Наименование региона.
+        code:
+          type: string
+          description: Код региона.
+      description: "Регион, который клиент выбрал в профиле СБОЛ (null - если реги\
+            он не выбран)."
+    SbrfPersonFatca:
+      type: object
+      properties:
+        versionalInformation:
+          $ref: '#/components/schemas/LongIdVersionalInformation'
+        consent:
+          type: string
+          description: Согласия клиента.
+          enum:
+            - AGREE
+            - DISAGREE_RF
+            - DISAGREE_OTHER
+            - RESERVED
+            - UNKNOWN
+        birthCountry:
+          $ref: '#/components/schemas/Country'
+        refusingType:
+          type: string
+          description: Отказ от гражданства США.
+          enum:
+            - "NO"
+            - "YES"
+            - NOT_APPLICABLE
+            - UNKNOWN
+        refusingDocument:
+          type: string
+          description: Документы отказа от гражданства США.
+          enum:
+            - CERTIFICATE_OF_LOSS
+            - WRITTEN_EXPLANATIONS
+            - UNKNOWN
+        taxResidentStatus:
+          type: string
+          description: Налоговый статус.
+          enum:
+            - USA_PROVIDE_W9_FORM
+            - RF_TAX_RESIDENT
+            - OTHER_COUNTRY
+            - USA_PROVIDE_W9_FORM_PLUS_OTHER_COUNTRY
+            - OTHER_COUNTRY_UNLESS_RF
+            - UNKNOWN
+        hasW9Form:
+          type: boolean
+          description: Предоставлена форма W-9.
+        sbrfPersonW9Form:
+          $ref: '#/components/schemas/SbrfPersonW9Form'
+        fillingDate:
+          type: string
+          description: Дата заполнения.
+          format: date-time
+          deprecated: true
+        fillingCDate:
+          type: string
+          description: Дата заполнения.
+          format: date-time
+        fatcaStatus:
+          type: string
+          description: FATCA-статус.
+        crsStatus:
+          type: string
+          description: CRS-статус.
+        questionnaireType:
+          type: string
+          description: Тип анкеты.
+          enum:
+            - FATCA_PRE_2017
+            - FATCA_AFTER_2017
+            - UNKNOWN
+        updateDateTime:
+          type: string
+          description: Дата изменения.
+          format: date-time
+          deprecated: true
+        updateCDate:
+          type: string
+          description: Дата изменения.
+          format: date-time
+        surveyFatcaData:
+          $ref: '#/components/schemas/SurveyFatcaData'
+        clienComment:
+          type: string
+          description: Причина различий страны проживания и стран налогового резидентства.
+        hasUsCitizenshipDeprivationCertificate:
+          type: boolean
+          description: Наличие свидетельства об утрате гражданства США.
+        trustee:
+          type: boolean
+          description: Клиент является подопечным.
+        usCitizenshipRejectReason:
+          type: string
+          description: Причина отказа от гражданства США.
+      description: Налоговый статус FATCA/CRS.
+    OptionList:
+      type: object
+      description: Набор опций клиента по УДБО из ЦОДа
+    NonIdentificationPapersVa:
+      type: object
+      properties:
+        drivingLicense:
+          $ref: '#/components/schemas/DrivingLicenseVa'
+        vehicleRegistration:
+          $ref: '#/components/schemas/VehicleRegistrationVa'
+        inn:
+          $ref: '#/components/schemas/InnVa'
+        snils:
+          $ref: '#/components/schemas/SnilsVa'
+        migrationCard:
+          $ref: '#/components/schemas/MigrationCardVa'
+        residencePermit:
+          $ref: '#/components/schemas/ResidencePermitVa'
+      description: Документы не являющиеся ДУЛ.
+    TariffInfo:
+      type: object
+      properties:
+        tarifPlanCodeType:
+          type: string
+          description: Код тарифного плана.
+        tarifPlanConnectionDate:
+          type: string
+          description: Дата подключения тарифного плана
+          format: date-time
+      description: Информация о тарифе.
+    RegisteredPhones:
+      type: object
+      description: Список телефонов клиента в МБК
+    DrivingLicenseVa:
+      type: object
+      properties:
+        paperId:
+          type: string
+          description: ID документа
+        notVerified:
+          type: boolean
+          description: Признак верификации
+        seria:
+          type: string
+          description: Серия водительского удостоверения
+        number:
+          type: string
+          description: Номер водительского удостоверения
+        expirationCDate:
+          type: string
+          description: Дата завершения действия водительского удостоверения
+          format: date-time
+        issueCDate:
+          type: string
+          description: Дата выдачи водительского удостоверения
+          format: date-time
+        issuedBy:
+          type: string
+          description: Кем выдано водительское удостоверение
+      description: ВУ (Водительское удостоверение)
+    InnVa:
+      type: object
+      properties:
+        paperId:
+          type: string
+          description: ID документа
+        notVerified:
+          type: boolean
+          description: Признак верификации
+        inn:
+          type: string
+          description: ИНН
+      description: ИНН (Идентификационный номер налогоплательщика)
+    MigrationCardVa:
+      type: object
+      properties:
+        paperId:
+          type: string
+          description: ID документа
+        notVerified:
+          type: boolean
+          description: Признак верификации
+        seria:
+          type: string
+          description: Серия
+        number:
+          type: string
+          description: Номер
+        startCDate:
+          type: string
+          description: Дата начала действия
+          format: date-time
+        issueCDate:
+          type: string
+          description: Дата выдачи
+          format: date-time
+        expirationCDate:
+          type: string
+          description: Дата завершения действия
+          format: date-time
+      description: Миграционная карта
+    ResidencePermitVa:
+      type: object
+      properties:
+        paperId:
+          type: string
+          description: ID документа
+        notVerified:
+          type: boolean
+          description: Признак верификации
+        seria:
+          type: string
+          description: Серия документа
+        number:
+          type: string
+          description: Номер документа
+        issuedBy:
+          type: string
+          description: Кем выдан
+        startCDate:
+          type: string
+          description: Начало действия
+          format: date-time
+        issueCDate:
+          type: string
+          description: Дата выдачи
+          format: date-time
+        expirationCDate:
+          type: string
+          description: Дата завершения действия
+          format: date-time
+      description: ВНЖ (Вид на жительство)
+    SnilsVa:
+      type: object
+      properties:
+        paperId:
+          type: string
+          description: ID документа
+        notVerified:
+          type: boolean
+          description: Признак верификации
+        snils:
+          type: string
+          description: СНИЛС
+      description: СНИЛС ("Страховой Номер Индивидуального Лицевого Счета")
+    VehicleRegistrationVa:
+      type: object
+      properties:
+        paperId:
+          type: string
+          description: ID документа
+        notVerified:
+          type: boolean
+          description: Признак верификации
+        issueCDate:
+          type: string
+          description: Дата выдачи
+          format: date-time
+        series:
+          type: string
+          description: Серия
+        number:
+          type: string
+          description: Номер
+        issuedBy:
+          type: string
+          description: Кем выдано
+      description: СТС (Свидетелство о регистрации транспортного средства)
+    CustomerKnowledge:
+      type: object
+      description: Знание о клиенте.
+    SegmentB2c:
+      type: object
+      properties:
+        segment:
+          type: string
+          description: Атрибут клиента "Сегмент".
+      description: Атрибуты сегмента B2C.
+    AccountExtList:
+      type: object
+      description: Список скрытых счетов
+    AccountTargetExtList:
+      type: object
+      description: Список целей
+    AccountTargetsExt:
+      type: object
+      properties:
+        targetList:
+          $ref: '#/components/schemas/AccountTargetExtList'
+      description: Цели клиента.
+    AccountsExt:
+      type: object
+      properties:
+        accountList:
+          $ref: '#/components/schemas/AccountExtList'
+        accountHiddenList:
+          $ref: '#/components/schemas/AccountExtList'
+      description: Счета клиента.
+    BrokerageAgreementExtList:
+      type: object
+      description: Список брокерских счетов.
+    BrokerageAgreementsExt:
+      type: object
+      properties:
+        brokerageAgreementList:
+          $ref: '#/components/schemas/BrokerageAgreementExtList'
+      description: Брокерские счета.
+    CardExtList:
+      type: object
+      description: Список скрытых карт
+    CardsExt:
+      type: object
+      properties:
+        cardList:
+          $ref: '#/components/schemas/CardExtList'
+        cardHiddenList:
+          $ref: '#/components/schemas/CardExtList'
+      description: Детские карты
+    DepoAccountsExt:
+      type: object
+      properties:
+        depoAccountList:
+          $ref: '#/components/schemas/DepoAccountsExtList'
+        depoAccountHiddenList:
+          $ref: '#/components/schemas/DepoAccountsExtList'
+      description: Счета ДЕПО.
+    DepoAccountsExtList:
+      type: object
+      description: Список скрытых счетов ДЕПО
+    ImAccountExtList:
+      type: object
+      description: Список скрытых ОМС (металлических счетов).
+    ImAccountsExt:
+      type: object
+      properties:
+        imAccountList:
+          $ref: '#/components/schemas/ImAccountExtList'
+        imAccountHiddenList:
+          $ref: '#/components/schemas/ImAccountExtList'
+      description: Продукты ОМС (металлические счета).
+    LoanAcctExtList:
+      type: object
+      description: Список скрытых кредитов
+    LoansAcctExt:
+      type: object
+      properties:
+        loanList:
+          $ref: '#/components/schemas/LoanAcctExtList'
+        loanAcctHiddenList:
+          $ref: '#/components/schemas/LoanAcctExtList'
+      description: Кредитные продукты.
+    PackageOption:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Id опции в модуле управления.
+        payerEpkId:
+          type: string
+          description: Идентификатор клиента - основного владельца опции в ЕПК.
+        ownerEpkId:
+          type: string
+          description: Идентификатор клиента - владельца опции в ЕПК.
+        code:
+          type: string
+          description: Код опции.
+        description:
+          type: string
+          description: Описание опции.
+        value:
+          type: string
+          description: Значение опции.
+        preferentialType:
+          type: string
+          description: Тип льготного использования продукта.
+        preferentialValue:
+          type: number
+          description: Размер надбавки в процентах (от текущей базовой ставки).
+        channelsForUse:
+          type: string
+          description: Каналы доступности опции.
+        groupCode:
+          type: string
+          description: Код группы опции.
+        priority:
+          type: integer
+          description: Приоритет опции.
+          format: int64
+        clientRegisteredFlag:
+          type: boolean
+          description: Признак 'Клиент зарегистрировался в программе партнера'.
+        validityPeriod:
+          $ref: '#/components/schemas/PackageOptionValidityPeriod'
+        providerInfo:
+          $ref: '#/components/schemas/PackageOptionProviderInfo'
+        optionStatus:
+          $ref: '#/components/schemas/PackageOptionStatus'
+        instanceInfo:
+          $ref: '#/components/schemas/InstanceInfo'
+    PackageOptionExtList:
+      type: object
+      properties:
+        servicePackages:
+          type: array
+          writeOnly: true
+          items:
+            $ref: '#/components/schemas/PackageOption'
+      description: Список данных по всем опциям клиента.
+    PackageOptionProviderInfo:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Код провайдера услуги.
+        extProviderId:
+          type: string
+          description: Внешний идентификатор провайдера.
+        name:
+          type: string
+          description: Наименование провайдера.
+      description: Информация о провайдере.
+    PackageOptionStatus:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Код статуса.
+        name:
+          type: string
+          description: Описание статуса для отображения параметра.
+        reason:
+          $ref: '#/components/schemas/PackageOptionStatusReason'
+      description: Статус опции.
+    PackageOptionStatusReason:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Код в виде строки.
+        name:
+          type: string
+          description: Причина статуса.
+      description: Информация о причине статуса.
+    PackageOptionValidityPeriod:
+      type: object
+      properties:
+        startDate:
+          type: string
+          description: Дата начала периода действия опции.
+          format: date-time
+        endDate:
+          type: string
+          description: Дата окончания периода действия опции.
+          format: date-time
+      description: Период действия опции.
+    PackageOptionsExt:
+      type: object
+      properties:
+        packageOptionList:
+          $ref: '#/components/schemas/PackageOptionExtList'
+      description: Данные по всем опциям клиента.
+    SecurityAccountExtList:
+      type: object
+      description: Список СберСертификатов.
+    SecurityAccountsExt:
+      type: object
+      properties:
+        securityAccountList:
+          $ref: '#/components/schemas/SecurityAccountExtList'
+      description: СберСертификаты.
+    ServicePackageExtList:
+      type: object
+      description: Список пакетов услуг
+    ServicePackagesExt:
+      type: object
+      properties:
+        servicePackageList:
+          $ref: '#/components/schemas/ServicePackageExtList'
+      description: ППРБ пакеты услуг.
+    TransactionAccounts:
+      type: object
+      properties:
+        transactionAccountsList:
+          $ref: '#/components/schemas/TransactionAccountsList'
+        transactionAccountHiddenList:
+          $ref: '#/components/schemas/TransactionAccountsList'
+      description: Транзакционные счета.
+    TransactionAccountsList:
+      type: object
+      description: Список скрытых транзакционных счетов
+    InstanceInfo:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус ответа внешней системы.
+        valid:
+          type: boolean
+          description: Признак актуальности региона в ССД.
+        timestamp:
+          type: string
+          description: "Время, на которое состояние экземпляра продукта было актуа\
+                льно."
+          format: date-time
+      description: Информации о запросе продукта региона.
+    EmployeeInfo:
+      type: object
+      properties:
+        login:
+          type: string
+          description: Логин.
+        firstName:
+          type: string
+          description: Имя.
+        secondName:
+          type: string
+          description: Отчество.
+        lastName:
+          type: string
+          description: Фамилия.
+        tb:
+          type: string
+          description: ТБ.
+        osb:
+          type: string
+          description: ОСБ.
+        vsp:
+          type: string
+          description: ВСП.
+        jobTittle:
+          type: string
+          description: Должность.
+        personalNumber:
+          type: string
+          description: Табельный номер.
+      description: Не используется. Информация для сессии сотрудника
+    Country:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID страны.
+          format: int64
+        name:
+          type: string
+          description: Наименование страны.
+        longName:
+          type: string
+          description: Полное наименование страны.
+        code:
+          type: string
+          description: Цифровой код по ОК 025-2001.
+        uncooperativeTerritory:
+          type: integer
+          description: Требуется уточнение
+          format: int32
+        iso2Code:
+          type: string
+          description: Двухбуквенный ИСО код страны.
+        iso3Code:
+          type: string
+          description: Трёхбуквенный ИСО код страны.
+        appId:
+          type: string
+          description: Идентификатор экземпляра для PL в ИС ЕФС.
+      description: Страна рождения.
+    LongIdVersionalInformation:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID версии
+          format: int64
+        startDate:
+          type: string
+          description: Дата начала действия
+          format: date-time
+          deprecated: true
+        startCDate:
+          type: string
+          description: Дата начала действия
+          format: date-time
+        endDate:
+          type: string
+          description: Дата окончания действия
+          format: date-time
+          deprecated: true
+        endCDate:
+          type: string
+          description: Дата окончания действия
+          format: date-time
+        updateDate:
+          type: string
+          description: Дата обновления
+          format: date-time
+          deprecated: true
+        updateCDate:
+          type: string
+          description: Дата обновления
+          format: date-time
+        versionStartDate:
+          type: string
+          description: Требует уточнения
+          format: date-time
+          deprecated: true
+        versionStartCDate:
+          type: string
+          description: Требует уточнения
+          format: date-time
+        versionNumber:
+          type: integer
+          description: Номер версии
+          format: int32
+      description: Версионная информация.
+    SbrfPersonW9Form:
+      type: object
+      properties:
+        fullName:
+          type: string
+          description: ФИО на иностранном языке.
+        lastName:
+          type: string
+          description: Фамилия.
+        firstName:
+          type: string
+          description: Имя.
+        middleName:
+          type: string
+          description: Отчество.
+        usTaxId:
+          type: string
+          description: ИНН США.
+        fullAddress:
+          type: string
+          description: Адрес на иностранном языке.
+        postalCode:
+          type: string
+          description: Почтовый индекс на иностранном языке.
+        country:
+          type: string
+          description: Страна на иностранном языке.
+        region:
+          type: string
+          description: Штат/регион на иностранном языке.
+        city:
+          type: string
+          description: Город на иностранном языке.
+        shortAddress:
+          type: string
+          description: "Улица, номер дома, квартира на иностранном языке."
+      description: Форма W9.
+    SurveyFatcaData:
+      type: object
+      properties:
+        procurationRole:
+          type: string
+          description: "Роль (например, Доверенное лицо, Законный представитель)."
+        procurationType:
+          type: string
+          description: "Тип доверенности (например, Банковская, Нотариальная)."
+        procurationIssueDate:
+          type: string
+          description: Дата выдачи доверенности.
+          format: date-time
+        procurationNumber:
+          type: string
+          description: Номер бланка доверенности.
+        procurationExpiryDate:
+          type: string
+          description: Дата истечения доверенности.
+          format: date-time
+      description: Данные подписанта для печатной формы анкеты (если подписант отличается
+        от анкетируемого клиента).
+    ManagerDepartmentInfo:
+      type: object
+      properties:
+        managertb:
+          type: string
+          description: Тер. банк клиентского менеджера.
+        managerosb:
+          type: string
+          description: ОСБ клиентского менеджера.
+        managervsp:
+          type: string
+          description: ВСП клиентского менеджера.
+      description: Отделение клиентского менеджера.
+    SbolNotificationSettings:
+      type: object
+      properties:
+        mobileNotificationChannel:
+          type: string
+          description: Канал уведомлений по телефону.
+          enum:
+            - SMS
+            - PUSH
+        mailFormat:
+          type: string
+          description: Формат писем с оповещениями
+        subscriptionList:
+          $ref: '#/components/schemas/SubscriptionList'
+      description: Настройки оповещений из СБОЛ ЕРИБ.
+    SubscriptionList:
+      type: object
+      description: Список настроек оповещений.
+    UserAddedDocumentList:
+      type: object
+      description: "Документы, добавленные клиентом в ЕРИБ."
     Parameters:
       type: object
       # Схема будет определена на основе DTO

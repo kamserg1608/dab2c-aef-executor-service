@@ -64,19 +64,148 @@ object WireMockResponses {
     """.trimIndent()
 
     /**
-     * SDS session read data response with DA session info.
+     * SDS session read data response from DA-SESSION section.
      */
     @Suppress("MaxLineLength")
-    val SDS_SESSION_READ_DATA_RESPONSE = """
+    val SDS_DA_SESSION = """
         {
-            "result": [
+            "success": true,
+            "body": [
                 {
                     "sectionName": "DA_SESSION",
                     "attributeName": "SESSION_INFO_MOB_BANK",
-                    "data": "{\"meta\":{\"session_id\":\"test-session-id\",\"user_id\":\"test-user-id\",\"ucp_id\":\"test-ucp-id\",\"ufs_host\":\"test-ufs-host\",\"is_valid\":true},\"common\":{\"block\":\"retail\",\"channel\":\"MOB_BANK\",\"surface\":\"mobile\",\"platform\":\"android\",\"sdk_version\":\"1.0.0\",\"entry_point\":\"main\",\"app_version\":\"2.0.0\",\"channel_version\":\"3.0.0\",\"app_source\":\"store\",\"time_zone\":\"Europe/Moscow\"},\"user_info\":{\"first_name\":\"Test\",\"patr_name\":\"User\",\"birth_day\":\"1990-01-01\",\"segment_code_type\":\"MASS\",\"ucp_id\":\"test-ucp-id\"}}"
+                    "data": "{\"session_id\":\"test-session-id\",\"user_id\":\"test-user-id\",\"ucp_id\":\"test-ucp-id\",\"ufs_host\":\"test-ufs-host\",\"is_valid\":true}"
                 }
             ],
             "errors": null
+        }
+    """.trimIndent()
+
+    /**
+     * SDS session read data response from SESSION section.
+     */
+    @Suppress("MaxLineLength")
+    val SDS_COMMON_DA_CONFIGURATOR = """
+        {
+            "success": true,
+            "body": {
+                "block": "sflkc-ift-b3-eag001.sberbank.ru",
+                "channel": "ivr",
+                "platform": "gsm"
+            },
+            "messages": []
+        }
+    """.trimIndent()
+
+    /**
+     * Person info response.
+     */
+    @Suppress("MaxLineLength")
+    val PERSON_INFO = """
+        {
+            "success": true,
+            "body": {
+                "person": {
+                    "surName": "Б.",
+                    "firstName": "Всеслав",
+                    "patrName": "Владиславович",
+                    "creationType": "UDBO",
+                    "personDepartment": {
+                        "tb": "38",
+                        "osb": "9038",
+                        "vsp": "1688"
+                    },
+                    "birthDay": "1998-01-20T14:50:00.000+0300",
+                    "gender": "M",
+                    "email": "FOO@FOO.RU",
+                    "citizenShip": "РОССИЯ",
+                    "birthPlace": "Москва",
+                    "mobileBankProfile": {
+                        "registeredPhonesListFull": {
+                            "phone": [
+                                {
+                                    "phoneNumber": "7980***5850",
+                                    "isMainPhone": true,
+                                    "status": "ACTIVE",
+                                    "mainPhone": true
+                                }
+                            ]
+                        }
+                    },
+                    "phoneList": {
+                        "phone": [
+                            {
+                                "phoneType": "MOBILE",
+                                "number": "7980***5850"
+                            }
+                        ]
+                    },
+                    "documentList": {
+                        "document": [
+                            {
+                                "documentType": {
+                                    "id": 21,
+                                    "description": "Паспорт гражданина РФ",
+                                    "name": "Паспорт гражданина Российской Федерации"
+                                },
+                                "series": "41 22",
+                                "number": "****97",
+                                "main": true,
+                                "documentIssueDate": "2022-03-09T14:50:00.000+0300",
+                                "documentIssueBy": "ТП № 116 ОУФМС РОССИИ ПО САНКТ-ПЕТЕРБУРГУ И ЛЕНИНГРАДСКОЙ ОБЛ. В КИРОВСКОМ РАЙОНЕ",
+                                "documentIssueByCode": "470-032",
+                                "documentTimeUpDate": "2043-01-20T00:00:00.000+0300",
+                                "documentIdentify": true
+                            }
+                        ]
+                    },
+                    "addressList": {
+                        "address": [
+                            {
+                                "type": "REGISTRATION",
+                                "postalCode": "119019",
+                                "province": "МОСКВА",
+                                "city": "МОСКВА",
+                                "street": "****ВАЯ",
+                                "house": "18",
+                                "flat": "20",
+                                "unparseableAddress": "******* ******* ****** ** * ******* ** ******** * ** ** **"
+                            }
+                        ]
+                    },
+                    "serviceInfo": {
+                        "agreementNumber": "380060356439",
+                        "agreementDate": "2025-03-27T00:00:00.000+0300",
+                        "lastUpdateDate": "2026-02-10T14:07:34.553+0300",
+                        "managerDepartmentInfo": {}
+                    },
+                    "additionalInfo": {
+                        "isResident": true,
+                        "mdmState": "NOT_SENT",
+                        "segmentCodeType": "1",
+                        "tariff": {
+                            "tarifPlanCodeType": "0",
+                            "tarifPlanConnectionDate": "2026-02-10T00:00:00.000+0300"
+                        }
+                    },
+                    "optionList": {
+                        "options": []
+                    },
+                    "papers": {},
+                    "ucpId": "2064943548742642674",
+                    "partyToPartyGroups": [
+                        {
+                            "version": 0,
+                            "updateDateTime": "2025-03-27T17:35:45.792+0300",
+                            "partyGroup": {
+                                "code": 95
+                            }
+                        }
+                    ],
+                    "isPrivateBanking": false
+                }
+            },
+            "messages": []
         }
     """.trimIndent()
 

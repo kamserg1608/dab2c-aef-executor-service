@@ -11,7 +11,7 @@ import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.audi
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
-import ru.sbrf.dab2c.executor.voice.model.ExecutorMetrics
+import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
 
 class ProxyMonitoringTest : BaseGigaVoiceIntegrationTest() {
 
@@ -32,10 +32,10 @@ class ProxyMonitoringTest : BaseGigaVoiceIntegrationTest() {
         print(response.bodyAsText())
 
         assertThat(
-            response.bodyAsText().contains(ExecutorMetrics.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL.metricName)
+            response.bodyAsText().contains(ExecutorVoiceMetric.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL.metricName)
         ).isTrue()
         assertThat(
-            response.bodyAsText().contains(ExecutorMetrics.GRPC_OUTGOING_FROM_INITIATOR_CHUNKS_TOTAL.metricName)
+            response.bodyAsText().contains(ExecutorVoiceMetric.GRPC_OUTGOING_FROM_INITIATOR_CHUNKS_TOTAL.metricName)
         ).isTrue()
     }
 
@@ -56,7 +56,9 @@ class ProxyMonitoringTest : BaseGigaVoiceIntegrationTest() {
 
         val responseBody = response.bodyAsText()
 
-        assertThat(responseBody).contains(ExecutorMetrics.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL.metricName)
-        assertThat(responseBody).contains(ExecutorMetrics.GRPC_OUTGOING_FROM_INITIATOR_CHUNKS_TOTAL.metricName)
+        print(responseBody)
+
+        assertThat(responseBody).contains(ExecutorVoiceMetric.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL.metricName)
+        assertThat(responseBody).contains(ExecutorVoiceMetric.GRPC_OUTGOING_FROM_INITIATOR_CHUNKS_TOTAL.metricName)
     }
 }

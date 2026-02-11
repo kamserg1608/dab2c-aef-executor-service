@@ -58,7 +58,7 @@ object IntegrationLogger {
                 serverEventDatetime, destinationSystem, destinationService,
                 rqMessage, executionTime, className
             )
-            logger.error(e) { "HTTP $destinationService failed" }
+            logger.error(e) { "HTTP $destinationService failed: ${e.message}" }
             throw e
         } finally {
             // Restore back to SYSTEM type after logging

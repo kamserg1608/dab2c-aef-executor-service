@@ -2,13 +2,16 @@
 
 package ru.sbrf.dab2c.executor.clients.giga.agent.mapper
 
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.AnyExampleInput
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.AnyExampleOutput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.AudioSettingsInput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.AudioSettingsOutput
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionInput
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionOutput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionResult
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaChatSettingsInput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaChatSettingsOutput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunction
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceMode
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.InitialContextInput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.InitialContextOutput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.Input
@@ -24,6 +27,8 @@ import ru.sbrf.dab2c.executor.domain.voice.AudioSettings
 import ru.sbrf.dab2c.executor.domain.voice.FilterSettings
 import ru.sbrf.dab2c.executor.domain.voice.FirstSpeaker
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
+import ru.sbrf.dab2c.executor.domain.voice.FunctionDefinition
+import ru.sbrf.dab2c.executor.domain.voice.FunctionExample
 import ru.sbrf.dab2c.executor.domain.voice.FunctionOptions
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
 import ru.sbrf.dab2c.executor.domain.voice.FunctionRegistry
@@ -34,13 +39,11 @@ import ru.sbrf.dab2c.executor.domain.voice.Message
 import ru.sbrf.dab2c.executor.domain.voice.OutputModalities
 import ru.sbrf.dab2c.executor.domain.voice.VoiceMode
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.AudioEncoding as ApiAudioEncoding
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FilterSettings as ApiFilterSettings
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FirstSpeaker as ApiFirstSpeaker
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCalling as ApiFunctionCalling
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionRegistry as ApiFunctionRegistry
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.Message as ApiMessage
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.OutputModalities as ApiOutputModalities
 
 /**
  * Mapper for converting between domain models and GigaVoice Agent API models.
@@ -80,23 +83,23 @@ object GigaVoiceSettingsMapper {
 
     // === Helper methods for enum conversions ===
 
-    fun toApiVoiceMode(mode: VoiceMode): GigaVoiceMode =
-        GigaVoiceMode.entries[mode.ordinal]
+    fun toApiVoiceMode(mode: VoiceMode): Int =
+        mode.value
 
-    fun toDomainVoiceMode(mode: GigaVoiceMode?): VoiceMode =
-        mode?.let { VoiceMode.entries[it.value] } ?: VoiceMode.UNSPECIFIED
+    fun toDomainVoiceMode(mode: Int?): VoiceMode =
+        mode?.let { VoiceMode.entries[it] } ?: VoiceMode.UNSPECIFIED
 
-    fun toApiOutputModalities(modalities: OutputModalities): ApiOutputModalities =
-        ApiOutputModalities.entries[modalities.ordinal]
+    fun toApiOutputModalities(modalities: OutputModalities): Int =
+        modalities.value
 
-    fun toDomainOutputModalities(modalities: ApiOutputModalities?): OutputModalities =
-        modalities?.let { OutputModalities.entries[it.value] } ?: OutputModalities.UNSPECIFIED
+    fun toDomainOutputModalities(modalities: Int?): OutputModalities =
+        modalities?.let { OutputModalities.entries[it] } ?: OutputModalities.UNSPECIFIED
 
-    fun toApiAudioEncoding(encoding: AudioEncoding): ApiAudioEncoding =
-        ApiAudioEncoding.entries[encoding.ordinal]
+    fun toApiAudioEncoding(encoding: AudioEncoding): Int =
+        encoding.value
 
-    fun toDomainAudioEncoding(encoding: ApiAudioEncoding?): AudioEncoding =
-        encoding?.let { AudioEncoding.entries[it.value] } ?: AudioEncoding.UNSPECIFIED
+    fun toDomainAudioEncoding(encoding: Int?): AudioEncoding =
+        encoding?.let { AudioEncoding.entries[it] } ?: AudioEncoding.UNSPECIFIED
 
     // === Audio settings mapping ===
 
@@ -161,13 +164,13 @@ object GigaVoiceSettingsMapper {
                 profanityCheck = it.profanityCheck,
                 filtersSettings = it.filtersSettings.mapValues { entry -> toApiFilterSettings(entry.value) }
                     .takeIf { map -> map.isNotEmpty() },
-                functions = null, // Functions are handled separately via functionRegistry
+                functions = it.functions.map { func -> toApiFunctionDefinition(func) },
                 functionRegistry = it.functionRegistry?.let { reg -> toApiFunctionRegistry(reg) }
             )
         }
 
     fun toDomainGigaChatSettings(source: GigaChatSettingsOutput?): GigaChatSettings? =
-        source?.let {
+        source?.let { it ->
             GigaChatSettings(
                 model = it.model,
                 temperature = TypeConverters.bigDecimalToFloat(it.temperature),
@@ -177,10 +180,53 @@ object GigaVoiceSettingsMapper {
                 profanityCheck = it.profanityCheck,
                 filtersSettings = it.filtersSettings?.mapValues { entry -> toDomainFilterSettings(entry.value) }
                     ?: emptyMap(),
-                functions = emptyList(), // Functions handled separately
+                functions = it.functions?.map { toDomainFunctionDefinition(it) }
+                    ?: emptyList(),
                 functionRegistry = it.functionRegistry?.let { reg -> toDomainFunctionRegistry(reg) }
             )
         }
+
+    // === Function mapping (Domain → API) ===
+
+    private fun toApiFunctionDefinition(source: FunctionDefinition): FunctionInput =
+        FunctionInput(
+            name = source.name,
+            description = source.description,
+            parameters = source.parameters,
+            fewShotExamples = source.fewShotExamples.map { toApiFunctionExample(it) },
+            returnParameters = source.returnParameters
+        )
+
+    private fun toApiFunctionExample(source: FunctionExample): AnyExampleInput =
+        AnyExampleInput(
+            request = source.request,
+            params = ru.sbrf.dab2c.executor.clients.giga.agent.model.Params(
+                pairs = source.params.map { (key, value) ->
+                    ru.sbrf.dab2c.executor.clients.giga.agent.model.Pair(
+                        key = key,
+                        value = value
+                    )
+                }
+            )
+        )
+
+    // === Function mapping (API → Domain) ===
+
+    fun toDomainFunctionDefinition(source: FunctionOutput): FunctionDefinition =
+        FunctionDefinition(
+            name = source.name,
+            description = source.description,
+            parameters = source.parameters,
+            fewShotExamples = source.fewShotExamples?.map { toDomainFunctionExample(it) }
+                ?: emptyList(),
+            returnParameters = source.returnParameters
+        )
+
+    fun toDomainFunctionExample(source: AnyExampleOutput): FunctionExample =
+        FunctionExample(
+            request = source.request,
+            params = source.params.pairs.map { it.key to it.value }
+        )
 
     fun toApiFilterSettings(source: FilterSettings): ApiFilterSettings =
         ApiFilterSettings(

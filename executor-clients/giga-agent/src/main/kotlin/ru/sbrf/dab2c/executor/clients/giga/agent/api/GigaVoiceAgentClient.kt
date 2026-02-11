@@ -35,4 +35,12 @@ interface GigaVoiceAgentClient {
         daSessionInfo: DaSessionInfo,
         contextData: ContextData
     ): FunctionCallResult
+
+    /**
+     * API endpoint paths.
+     */
+    companion object {
+        const val SETTINGS_ENDPOINT = "/settings"
+        const val FUNCTIONS_ENDPOINT = "/functions"
+    }
 }

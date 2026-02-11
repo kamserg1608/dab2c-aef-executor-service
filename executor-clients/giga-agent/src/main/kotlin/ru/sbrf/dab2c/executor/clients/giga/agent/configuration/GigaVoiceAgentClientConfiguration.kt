@@ -29,6 +29,8 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.configuration.properties.GigaVo
 import ru.sbrf.dab2c.executor.clients.giga.agent.impl.GigaVoiceAgentClientImpl
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceFunctionCallRequestBuilder
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsRequestBuilder
+import ru.sbrf.dab2c.executor.clients.giga.agent.monitoring.MonitoringGigaVoiceAgentClientDecorator
+import ru.sbrf.dab2c.executor.library.monitoring.service.api.MonitoringServiceFactory
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import kotlin.math.pow
@@ -61,20 +63,25 @@ class GigaVoiceAgentClientConfiguration {
         installPlugins(properties, objectMapper)
     }
 
+    @Suppress("LongParameterList")
     @Bean
     internal fun gigaVoiceAgentClient(
         @Qualifier(GIGA_VOICE_AGENT_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient,
         @Qualifier(GIGA_VOICE_AGENT_OBJECT_MAPPER_BEAN_NAME) objectMapper: ObjectMapper,
         properties: GigaVoiceAgentClientConfigurationProperties,
         settingsRequestBuilder: GigaVoiceSettingsRequestBuilder,
-        functionCallRequestBuilder: GigaVoiceFunctionCallRequestBuilder
-    ): GigaVoiceAgentClient = GigaVoiceAgentClientImpl(
-        httpClient,
-        objectMapper,
-        properties.baseUrl,
-        settingsRequestBuilder,
-        functionCallRequestBuilder
-    )
+        functionCallRequestBuilder: GigaVoiceFunctionCallRequestBuilder,
+        monitoringServiceFactory: MonitoringServiceFactory
+    ): GigaVoiceAgentClient {
+        val impl = GigaVoiceAgentClientImpl(
+            httpClient,
+            objectMapper,
+            properties.baseUrl,
+            settingsRequestBuilder,
+            functionCallRequestBuilder
+        )
+        return MonitoringGigaVoiceAgentClientDecorator(impl, monitoringServiceFactory)
+    }
 
     internal companion object {
         internal const val GIGA_VOICE_AGENT_OBJECT_MAPPER_BEAN_NAME = "gigaVoiceAgentClientObjectMapper"

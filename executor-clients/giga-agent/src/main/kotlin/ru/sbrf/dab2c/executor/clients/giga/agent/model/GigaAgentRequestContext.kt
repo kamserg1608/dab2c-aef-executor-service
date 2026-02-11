@@ -1,6 +1,7 @@
 package ru.sbrf.dab2c.executor.clients.giga.agent.model
 
 import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.cookie
 import io.ktor.client.request.header
 
 /**
@@ -23,8 +24,7 @@ data class GigaAgentRequestContext(
      * Applies all HTTP headers from this context to the request builder.
      */
     fun HttpRequestBuilder.applyHeaders() {
-        header(UFS_SESSION_HEADER, ufsSession)
-        header(UFS_TOKEN_HEADER, ufsToken)
+        header(UFS_SESSION, ufsSession)
         header(DA_REQUEST_ID_HEADER, daRequestId)
         header(DA_SESSION_ID_HEADER, daSessionId)
         header(DA_CHANNEL_HEADER, daChannel)
@@ -32,9 +32,17 @@ data class GigaAgentRequestContext(
         header(DA_UCP_ID_HEADER, daUcpId)
     }
 
+    /**
+     * Applies cookies from this context to the request builder.
+     */
+    fun HttpRequestBuilder.applyCookies() {
+        cookie(UFS_SESSION, ufsSession)
+        cookie(UFS_TOKEN, ufsToken)
+    }
+
     private companion object {
-        const val UFS_SESSION_HEADER = "UFS-SESSION"
-        const val UFS_TOKEN_HEADER = "UFS-TOKEN"
+        const val UFS_SESSION = "UFS-SESSION"
+        const val UFS_TOKEN = "UFS-TOKEN"
         const val DA_REQUEST_ID_HEADER = "da-request-id"
         const val DA_SESSION_ID_HEADER = "da-session-id"
         const val DA_CHANNEL_HEADER = "da-channel"

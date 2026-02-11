@@ -10,6 +10,8 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import ru.sbrf.dab2c.executor.clients.common.util.buildFullUrl
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
+import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient.Companion.FUNCTIONS_ENDPOINT
+import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient.Companion.SETTINGS_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceFunctionCallRequestBuilder
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsMapper
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsRequestBuilder
@@ -31,8 +33,6 @@ private val logger = KotlinLogging.logger {}
 
 private const val HTTP_OK = 200
 private const val CLASS_NAME = "GigaVoiceAgentClient"
-private const val SETTINGS_ENDPOINT = "/settings"
-private const val FUNCTIONS_ENDPOINT = "/functions"
 
 /**
  * Implementation of GigaVoice Agent API client using Ktor HTTP client.
@@ -51,7 +51,7 @@ class GigaVoiceAgentClientImpl(
         agentConfiguration: AgentConfiguration,
         voiceSettings: VoiceSettings,
         daSessionInfo: DaSessionInfo,
-        contextData: ContextData
+        contextData: ContextData,
     ): SettingsResult {
         logger.debug { "Getting settings for session: ${context.ufsSession}" }
 
@@ -72,6 +72,7 @@ class GigaVoiceAgentClientImpl(
             httpClient.post(buildFullUrl(baseUrl, SETTINGS_ENDPOINT)) {
                 contentType(ContentType.Application.Json)
                 with(context) { applyHeaders() }
+                with(context) { applyCookies() }
                 setBody(request)
             }.body<GigaVoiceSettingsResponseSchema>()
         }
@@ -109,6 +110,7 @@ class GigaVoiceAgentClientImpl(
             httpClient.post(buildFullUrl(baseUrl, FUNCTIONS_ENDPOINT)) {
                 contentType(ContentType.Application.Json)
                 with(context) { applyHeaders() }
+                with(context) { applyCookies() }
                 setBody(request)
             }.body<GigaVoiceFunctionsResponseSchema>()
         }

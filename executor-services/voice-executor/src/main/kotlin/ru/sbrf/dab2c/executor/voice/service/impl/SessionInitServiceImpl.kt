@@ -1,8 +1,11 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
 import org.springframework.stereotype.Service
+import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
+import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ProfileClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.TypedSdsClient
-import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.readDaSessionInfo
+import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.readDaSessionMeta
+import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.voice.logging.VoiceMdcInitializer
 import ru.sbrf.dab2c.executor.voice.model.RequestHeader
 import ru.sbrf.dab2c.executor.voice.model.ufsCookie
@@ -15,15 +18,23 @@ import ru.sbrf.dab2c.executor.voice.util.extensions.currentRequestMetadata
  */
 @Service
 class SessionInitServiceImpl(
-    private val typedSdsClient: TypedSdsClient
+    private val typedSdsClient: TypedSdsClient,
+    private val configuratorClient: ConfiguratorClient,
+    private val profileClient: ProfileClient
 ) : SessionInitService {
 
+    @Suppress("LongMethod")
     override suspend fun initialize() {
         val metadata = currentRequestMetadata()
-        metadata._daSessionInfo = typedSdsClient.readDaSessionInfo(
+        val daSessionMeta = typedSdsClient.readDaSessionMeta(
             metadata.getHeader(RequestHeader.CHANNEL),
             metadata.ufsCookie
         )
+
+        val daSessionCommon = configuratorClient.getDaSessionCommon(metadata.ufsCookie)
+        val daSessionUserInfo = profileClient.getPersonInfo(metadata.ufsCookie)
+
+        metadata._daSessionInfo = DaSessionInfo(daSessionMeta, daSessionCommon, daSessionUserInfo)
 
         val daSessionInfo = metadata.daSessionInfo
         VoiceMdcInitializer.updateWithSessionInfo(

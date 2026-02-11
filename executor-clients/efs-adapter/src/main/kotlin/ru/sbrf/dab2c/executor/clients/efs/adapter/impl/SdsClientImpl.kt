@@ -51,16 +51,22 @@ class SdsClientImpl(
                 objectMapper.writeValueAsString(resp) to HTTP_OK
             }
         ) {
-            httpClient.post(buildFullUrl(baseUrl, READ_DATA_ENDPOINT)) {
+            val response = httpClient.post(buildFullUrl(baseUrl, READ_DATA_ENDPOINT)) {
                 contentType(ContentType.Application.Json)
                 header(HttpHeaders.Cookie, cookie)
                 setBody(requestBody)
-            }.body<BaseResponseListSdsSectionData>()
+            }
+
+            response.body<BaseResponseListSdsSectionData>()
         }
+
+        logger.info { "Response from /session/readData: ${response.body}" }
+        // для отладки
+        logger.info { "Response to mapper: ${objectMapper.writeValueAsString(response)}" }
 
         checkErrors(response.errors, "readData")
 
-        return response.result?.map { mapper.toDomain(it) } ?: emptyList()
+        return response.body?.map { mapper.toDomain(it) } ?: emptyList()
     }
 
     override suspend fun writeData(sections: List<SdsSection>, cookie: String) {
