@@ -13,7 +13,6 @@ import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.domain.voice.ContextData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
-import ru.sbrf.dab2c.executor.library.audit.api.AgentInteractionAuditor
 import ru.sbrf.dab2c.executor.library.audit.model.AuditMessageSchema
 
 private val logger = KotlinLogging.logger {}
@@ -42,12 +41,19 @@ class AuditedGigaVoiceAgentClientDecorator(
         logger.debug { "GigaVoice getSettings -> receiver=$receiver, conversationId=${context.conversationId}" }
 
         val rqMessage = buildSettingsRqMessage(context, agentConfiguration, voiceSettings, contextData)
-
+        val cookie = context.auditCookie()
         return runCatching {
             delegate.getSettings(context, agentConfiguration, voiceSettings, daSessionInfo, contextData)
         }.fold(
-            onSuccess = { rs -> rs.also { auditSuccess(rqMessage, rs) } },
-            onFailure = { e -> throw auditFailure(rqMessage, e, AuditMessageSchema.ERROR_CODE_GIGAVOICE_SETTINGS) }
+            onSuccess = { rs -> rs.also { auditSuccess(rqMessage, rs, cookie) } },
+            onFailure = { e ->
+                throw auditFailure(
+                    rqMessage,
+                    e,
+                    AuditMessageSchema.ERROR_CODE_GIGAVOICE_SETTINGS,
+                    cookie
+                )
+            }
         )
     }
 
@@ -61,12 +67,19 @@ class AuditedGigaVoiceAgentClientDecorator(
         logger.debug { "GigaVoice executeFunctionCall -> receiver=$receiver, conversationId=${context.conversationId}" }
 
         val rqMessage = buildFunctionRqMessage(context, agentConfiguration, functionCalling, contextData)
-
+        val cookie = context.auditCookie()
         return runCatching {
             delegate.executeFunctionCall(context, agentConfiguration, functionCalling, daSessionInfo, contextData)
         }.fold(
-            onSuccess = { rs -> rs.also { auditSuccess(rqMessage, rs) } },
-            onFailure = { e -> throw auditFailure(rqMessage, e, AuditMessageSchema.ERROR_CODE_GIGAVOICE_FUNCTION) }
+            onSuccess = { rs -> rs.also { auditSuccess(rqMessage, rs, cookie) } },
+            onFailure = { e ->
+                throw auditFailure(
+                    rqMessage,
+                    e,
+                    AuditMessageSchema.ERROR_CODE_GIGAVOICE_FUNCTION,
+                    cookie
+                )
+            }
         )
     }
 
@@ -118,23 +131,30 @@ class AuditedGigaVoiceAgentClientDecorator(
         AuditMessageSchema.KEY_CONTEXT_DATA to contextData
     )
 
-    private suspend fun auditSuccess(rqMessage: String, response: Any) {
+    private suspend fun auditSuccess(rqMessage: String, response: Any, cookie: String) {
+
         auditor.success(
-            AuditMessageSchema.ANSWER_CODE_OK,
-            rqMessage,
-            safeJson(response)
+            request = AgentInteractionAuditRequest(
+                answerCode = AuditMessageSchema.ANSWER_CODE_OK,
+                rqMessage = rqMessage,
+                rsMessage = safeJson(response)
+            ),
+            cookie = cookie
         )
     }
 
-    private suspend fun auditFailure(rqMessage: String, e: Throwable, errorCode: String): Throwable {
+    private suspend fun auditFailure(rqMessage: String, e: Throwable, errorCode: String, cookie: String): Throwable {
         logger.warn(e) { "GigaVoice call failed: ${e.message}" }
 
         auditor.failed(
-            AuditMessageSchema.ANSWER_CODE_FAIL,
-            rqMessage,
-            null,
-            errorCode,
-            e.message ?: AuditMessageSchema.DEFAULT_ERROR_TITLE
+            request = AgentInteractionAuditRequest(
+                answerCode = AuditMessageSchema.ANSWER_CODE_FAIL,
+                rqMessage = rqMessage,
+                rsMessage = null,
+                errorCode = errorCode,
+                errorTitle = e.message ?: AuditMessageSchema.DEFAULT_ERROR_TITLE
+            ),
+            cookie = cookie
         )
         return e
     }

@@ -25,13 +25,13 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
+import ru.sbrf.dab2c.executor.clients.giga.agent.audit.AgentInteractionAuditor
 import ru.sbrf.dab2c.executor.clients.giga.agent.audit.AuditedGigaVoiceAgentClientDecorator
 import ru.sbrf.dab2c.executor.clients.giga.agent.configuration.properties.GigaVoiceAgentClientConfigurationProperties
 import ru.sbrf.dab2c.executor.clients.giga.agent.impl.GigaVoiceAgentClientImpl
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceFunctionCallRequestBuilder
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsRequestBuilder
 import ru.sbrf.dab2c.executor.clients.giga.agent.monitoring.MonitoringGigaVoiceAgentClientDecorator
-import ru.sbrf.dab2c.executor.library.audit.api.AgentInteractionAuditor
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MonitoringServiceFactory
 import java.net.ConnectException
 import java.net.SocketTimeoutException

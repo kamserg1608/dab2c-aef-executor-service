@@ -9,9 +9,11 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
-import ru.sbrf.dab2c.executor.library.audit.api.ExternalInteractionAuditor
 import ru.sbrf.dab2c.executor.library.audit.model.AuditMessageSchema
+import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
+import ru.sbrf.dab2c.executor.voice.model.ufsCookie
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
+import ru.sbrf.dab2c.executor.voice.util.extensions.currentRequestMetadata
 
 private val logger = KotlinLogging.logger {}
 
@@ -44,9 +46,11 @@ class ExternalInteractionChunksProcessingDecorator(
             }
             .catch { e ->
                 logger.warn(e) { "Voice request stream failed: ${e.message}" }
+                val requestMetadata = GrpcMetadataContext.fromGrpcThread()
                 sendFailure(
                     errorCode = AuditMessageSchema.ERROR_CODE_VOICE_REQUEST_STREAM,
-                    errorTitle = e.message
+                    errorTitle = e.message,
+                    cookie = requestMetadata.ufsCookie
                 )
                 throw e
             }
@@ -60,17 +64,22 @@ class ExternalInteractionChunksProcessingDecorator(
                 lastRsMessage = safeSerializeAny(chunk)
             }
             .onCompletion { cause ->
+                val metadata = currentRequestMetadata()
                 if (cause == null) {
                     auditor.success(
-                        answerCode = AuditMessageSchema.ANSWER_CODE_OK,
-                        rqMessage = lastRqMessage,
-                        rsMessage = lastRsMessage
+                        request = ExternalInteractionRequest(
+                            answerCode = AuditMessageSchema.ANSWER_CODE_OK,
+                            rqMessage = lastRqMessage,
+                            rsMessage = lastRsMessage
+                        ),
+                        cookie = metadata.ufsCookie
                     )
                 } else {
                     logger.warn(cause) { "Voice response stream completed with error: ${cause.message}" }
                     sendFailure(
                         errorCode = AuditMessageSchema.ERROR_CODE_VOICE_RESPONSE_STREAM,
-                        errorTitle = cause.message
+                        errorTitle = cause.message,
+                        cookie = metadata.ufsCookie
                     )
                 }
             }
@@ -81,13 +90,16 @@ class ExternalInteractionChunksProcessingDecorator(
         return delegate.processResponseChunks(auditedOutput)
     }
 
-    private suspend fun sendFailure(errorCode: String, errorTitle: String?) {
+    private suspend fun sendFailure(errorCode: String, errorTitle: String?, cookie: String) {
         auditor.failed(
-            answerCode = AuditMessageSchema.ANSWER_CODE_FAIL,
-            rqMessage = lastRqMessage,
-            rsMessage = lastRsMessage,
-            errorCode = errorCode,
-            errorTitle = errorTitle ?: AuditMessageSchema.ERROR_TITLE_VOICE_STREAM
+            request = ExternalInteractionRequest(
+                answerCode = AuditMessageSchema.ANSWER_CODE_FAIL,
+                rqMessage = lastRqMessage,
+                rsMessage = lastRsMessage,
+                errorCode = errorCode,
+                errorTitle = errorTitle ?: AuditMessageSchema.ERROR_TITLE_VOICE_STREAM
+            ),
+            cookie = cookie
         )
     }
 

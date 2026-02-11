@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
-import ru.sbrf.dab2c.executor.library.audit.api.ExternalInteractionAuditor
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MonitoringServiceFactory
+import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionAuditor
 import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionChunksProcessingDecorator
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory

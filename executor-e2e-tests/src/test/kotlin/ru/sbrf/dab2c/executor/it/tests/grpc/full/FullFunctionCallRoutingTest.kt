@@ -46,7 +46,7 @@ class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
             assertThat(functionResponse.functionCall.functionCall.name)
                 .isEqualTo("transfer_to_operator")
         }
-
+//        efsAdapterMock.verify(1, postRequestedFor(urlEqualTo("/audit/event")))
         gigaVoiceAgentMock.verify(0, postRequestedFor(urlEqualTo("/functions")))
     }
 
