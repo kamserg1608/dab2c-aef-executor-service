@@ -60,34 +60,39 @@ class ExternalInteractionChunksProcessingDecorator(
 
     override fun processResponseChunks(responsesChunks: Flow<VoiceResponse>): Flow<VoiceResponse> {
         val auditedOutput = responsesChunks
-            .onEach { chunk ->
-                lastRsMessage = safeSerializeAny(chunk)
-            }
-            .onCompletion { cause ->
-                val metadata = currentRequestMetadata()
-                if (cause == null) {
-                    auditor.success(
-                        request = ExternalInteractionRequest(
-                            answerCode = AuditMessageSchema.ANSWER_CODE_OK,
-                            rqMessage = lastRqMessage,
-                            rsMessage = lastRsMessage
-                        ),
-                        cookie = metadata.ufsCookie
-                    )
-                } else {
-                    logger.warn(cause) { "Voice response stream completed with error: ${cause.message}" }
-                    sendFailure(
-                        errorCode = AuditMessageSchema.ERROR_CODE_VOICE_RESPONSE_STREAM,
-                        errorTitle = cause.message,
-                        cookie = metadata.ufsCookie
-                    )
-                }
-            }
-            .catch { e ->
-                throw e
-            }
+            .onEach(::handleResponseChunk)
+            .onCompletion { cause -> handleResponseCompletion(cause) }
+            .catch { e -> throw e }
 
         return delegate.processResponseChunks(auditedOutput)
+    }
+
+    private fun handleResponseChunk(chunk: VoiceResponse) {
+        lastRsMessage = safeSerializeAny(chunk)
+    }
+
+    private suspend fun handleResponseCompletion(cause: Throwable?) {
+        val metadata = currentRequestMetadata()
+        val cookie = metadata.ufsCookie
+
+        if (cause == null) {
+            auditor.success(
+                request = ExternalInteractionRequest(
+                    answerCode = AuditMessageSchema.ANSWER_CODE_OK,
+                    rqMessage = lastRqMessage,
+                    rsMessage = lastRsMessage
+                ),
+                cookie = cookie
+            )
+            return
+        }
+
+        logger.warn(cause) { "Voice response stream completed with error: ${cause.message}" }
+        sendFailure(
+            errorCode = AuditMessageSchema.ERROR_CODE_VOICE_RESPONSE_STREAM,
+            errorTitle = cause.message,
+            cookie = cookie
+        )
     }
 
     private suspend fun sendFailure(errorCode: String, errorTitle: String?, cookie: String) {

@@ -3,7 +3,6 @@ package ru.sbrf.dab2c.executor.voice.audit
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.AuditClient
-import ru.sbrf.dab2c.executor.library.audit.impl.ExternalInteractionAuditorImpl
 
 /**
  * Spring configuration for external voice interaction audit components.
@@ -31,5 +30,4 @@ class ExternalInteractionAuditConfiguration {
             receiver = "voice-external",
             auditClient = auditClient
         )
-
 }

@@ -1,12 +1,19 @@
-package ru.sbrf.dab2c.executor.library.audit.impl
+package ru.sbrf.dab2c.executor.voice.audit
 
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.AuditClient
 import ru.sbrf.dab2c.executor.domain.audit.AuditEvent
 import ru.sbrf.dab2c.executor.library.audit.model.AuditEventNames
 import ru.sbrf.dab2c.executor.library.audit.model.AuditParams
-import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionAuditor
-import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionRequest
 
+/**
+ * Default implementation of [ExternalInteractionAuditor].
+ *
+ * Builds audit payload and sends it via [AuditClient].
+ *
+ * Emits:
+ *  - DAB2C_EXTERNAL_INTERACTION
+ *  - DAB2C_EXTERNAL_INTERACTION_FAILED
+ */
 class ExternalInteractionAuditorImpl(
     private val senderValue: String,
     private val receiver: String,
