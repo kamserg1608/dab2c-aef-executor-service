@@ -42,15 +42,14 @@ class ExternalInteractionChunksProcessingDecorator(
     override fun processRequestChunks(requestsChunks: Flow<VoiceRequest>): Flow<VoiceRequest> {
         val auditedInput = requestsChunks
             .onEach { chunk ->
-                lastRqMessage = safeSerializeRequestChunk(chunk)
+                lastRqMessage = serializeRequestChunk(chunk)
             }
             .catch { e ->
-                logger.warn(e) { "Voice request stream failed: ${e.message}" }
-                val requestMetadata = GrpcMetadataContext.fromGrpcThread()
+                val metadata = GrpcMetadataContext.fromGrpcThread()
                 sendFailure(
                     errorCode = AuditMessageSchema.ERROR_CODE_VOICE_REQUEST_STREAM,
                     errorTitle = e.message,
-                    cookie = requestMetadata.ufsCookie
+                    cookie = metadata.ufsCookie
                 )
                 throw e
             }
@@ -60,15 +59,14 @@ class ExternalInteractionChunksProcessingDecorator(
 
     override fun processResponseChunks(responsesChunks: Flow<VoiceResponse>): Flow<VoiceResponse> {
         val auditedOutput = responsesChunks
-            .onEach(::handleResponseChunk)
-            .onCompletion { cause -> handleResponseCompletion(cause) }
-            .catch { e -> throw e }
+            .onEach { chunk ->
+                lastRsMessage = toJson(chunk)
+            }
+            .onCompletion { cause ->
+                handleResponseCompletion(cause)
+            }
 
         return delegate.processResponseChunks(auditedOutput)
-    }
-
-    private fun handleResponseChunk(chunk: VoiceResponse) {
-        lastRsMessage = safeSerializeAny(chunk)
     }
 
     private suspend fun handleResponseCompletion(cause: Throwable?) {
@@ -88,6 +86,7 @@ class ExternalInteractionChunksProcessingDecorator(
         }
 
         logger.warn(cause) { "Voice response stream completed with error: ${cause.message}" }
+
         sendFailure(
             errorCode = AuditMessageSchema.ERROR_CODE_VOICE_RESPONSE_STREAM,
             errorTitle = cause.message,
@@ -95,7 +94,11 @@ class ExternalInteractionChunksProcessingDecorator(
         )
     }
 
-    private suspend fun sendFailure(errorCode: String, errorTitle: String?, cookie: String) {
+    private suspend fun sendFailure(
+        errorCode: String,
+        errorTitle: String?,
+        cookie: String
+    ) {
         auditor.failed(
             request = ExternalInteractionRequest(
                 answerCode = AuditMessageSchema.ANSWER_CODE_FAIL,
@@ -108,19 +111,15 @@ class ExternalInteractionChunksProcessingDecorator(
         )
     }
 
-    private fun safeSerializeRequestChunk(chunk: VoiceRequest): String =
-        runCatching {
-            if (chunk is VoiceRequest.Audio) {
-                serializeAudioChunk(chunk)
-            } else {
-                objectMapper.writeValueAsString(chunk)
-            }
-        }.getOrElse {
-            "${chunk::class.simpleName}(serializationError=${it.message})"
+    private fun serializeRequestChunk(chunk: VoiceRequest): String =
+        if (chunk is VoiceRequest.Audio) {
+            serializeAudioChunk(chunk)
+        } else {
+            toJson(chunk)
         }
 
     private fun serializeAudioChunk(chunk: VoiceRequest.Audio): String =
-        objectMapper.writeValueAsString(
+        toJson(
             mapOf(
                 AuditMessageSchema.KEY_TYPE to AuditMessageSchema.TYPE_AUDIO,
                 AuditMessageSchema.KEY_SPEECH_START to chunk.content.speechStart,
@@ -130,7 +129,6 @@ class ExternalInteractionChunksProcessingDecorator(
             )
         )
 
-    private fun safeSerializeAny(value: Any?): String =
-        runCatching { objectMapper.writeValueAsString(value) }
-            .getOrElse { "${value?.javaClass?.simpleName}(serializationError=${it.message})" }
+    private fun toJson(value: Any?): String =
+        objectMapper.writeValueAsString(value)
 }

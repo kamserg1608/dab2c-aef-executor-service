@@ -42,19 +42,20 @@ class AuditedGigaVoiceAgentClientDecorator(
 
         val rqMessage = buildSettingsRqMessage(context, agentConfiguration, voiceSettings, contextData)
         val cookie = context.auditCookie()
-        return runCatching {
-            delegate.getSettings(context, agentConfiguration, voiceSettings, daSessionInfo, contextData)
-        }.fold(
-            onSuccess = { rs -> rs.also { auditSuccess(rqMessage, rs, cookie) } },
-            onFailure = { e ->
-                throw auditFailure(
-                    rqMessage,
-                    e,
-                    AuditMessageSchema.ERROR_CODE_GIGAVOICE_SETTINGS,
-                    cookie
-                )
-            }
-        )
+
+        return try {
+            val rs = delegate.getSettings(context, agentConfiguration, voiceSettings, daSessionInfo, contextData)
+            auditSuccess(rqMessage, rs, cookie)
+            rs
+        } catch (e: Throwable) {
+            auditFailure(
+                rqMessage = rqMessage,
+                e = e,
+                errorCode = AuditMessageSchema.ERROR_CODE_GIGAVOICE_SETTINGS,
+                cookie = cookie
+            )
+            throw e
+        }
     }
 
     override suspend fun executeFunctionCall(
@@ -68,19 +69,20 @@ class AuditedGigaVoiceAgentClientDecorator(
 
         val rqMessage = buildFunctionRqMessage(context, agentConfiguration, functionCalling, contextData)
         val cookie = context.auditCookie()
-        return runCatching {
-            delegate.executeFunctionCall(context, agentConfiguration, functionCalling, daSessionInfo, contextData)
-        }.fold(
-            onSuccess = { rs -> rs.also { auditSuccess(rqMessage, rs, cookie) } },
-            onFailure = { e ->
-                throw auditFailure(
-                    rqMessage,
-                    e,
-                    AuditMessageSchema.ERROR_CODE_GIGAVOICE_FUNCTION,
-                    cookie
-                )
-            }
-        )
+
+        return try {
+            val rs = delegate.executeFunctionCall(context, agentConfiguration, functionCalling, daSessionInfo, contextData)
+            auditSuccess(rqMessage, rs, cookie)
+            rs
+        } catch (e: Throwable) {
+            auditFailure(
+                rqMessage = rqMessage,
+                e = e,
+                errorCode = AuditMessageSchema.ERROR_CODE_GIGAVOICE_FUNCTION,
+                cookie = cookie
+            )
+            throw e
+        }
     }
 
     private fun buildSettingsRqMessage(
@@ -88,7 +90,7 @@ class AuditedGigaVoiceAgentClientDecorator(
         agentConfiguration: AgentConfiguration,
         voiceSettings: VoiceSettings,
         contextData: ContextData
-    ): String = safeJson(
+    ): String = toJson(
         baseRqMap(
             endpoint = SETTINGS_ENDPOINT,
             context = context,
@@ -104,7 +106,7 @@ class AuditedGigaVoiceAgentClientDecorator(
         agentConfiguration: AgentConfiguration,
         functionCalling: FunctionCallingData,
         contextData: ContextData
-    ): String = safeJson(
+    ): String = toJson(
         baseRqMap(
             endpoint = FUNCTIONS_ENDPOINT,
             context = context,
@@ -132,20 +134,17 @@ class AuditedGigaVoiceAgentClientDecorator(
     )
 
     private suspend fun auditSuccess(rqMessage: String, response: Any, cookie: String) {
-
         auditor.success(
             request = AgentInteractionAuditRequest(
                 answerCode = AuditMessageSchema.ANSWER_CODE_OK,
                 rqMessage = rqMessage,
-                rsMessage = safeJson(response)
+                rsMessage = toJson(response)
             ),
             cookie = cookie
         )
     }
 
-    private suspend fun auditFailure(rqMessage: String, e: Throwable, errorCode: String, cookie: String): Throwable {
-        logger.warn(e) { "GigaVoice call failed: ${e.message}" }
-
+    private suspend fun auditFailure(rqMessage: String, e: Throwable, errorCode: String, cookie: String) {
         auditor.failed(
             request = AgentInteractionAuditRequest(
                 answerCode = AuditMessageSchema.ANSWER_CODE_FAIL,
@@ -156,10 +155,8 @@ class AuditedGigaVoiceAgentClientDecorator(
             ),
             cookie = cookie
         )
-        return e
     }
 
-    private fun safeJson(value: Any?): String =
-        runCatching { objectMapper.writeValueAsString(value) }
-            .getOrElse { "${value?.javaClass?.simpleName}(serializationError=${it.message})" }
+    private fun toJson(value: Any?): String =
+        objectMapper.writeValueAsString(value)
 }

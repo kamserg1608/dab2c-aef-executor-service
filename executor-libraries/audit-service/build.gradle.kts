@@ -4,6 +4,5 @@ plugins {
 
 dependencies {
     api(project(":executor-domain-model"))
-    api(project(":executor-clients:efs-adapter"))
     api(project(":executor-libraries:logging"))
 }

@@ -33,7 +33,7 @@ class AuditClientImpl(
 ) : AuditClient {
 
     override suspend fun sendEvent(event: AuditEvent, cookie: String) {
-        logger.debug { "Sending audit event: ${event.event}" }
+        logger.debug { "Sending audit event: ${event.event} params: ${event.params}" }
 
         val request = AuditEventServiceEvent(
             event = event.event,
