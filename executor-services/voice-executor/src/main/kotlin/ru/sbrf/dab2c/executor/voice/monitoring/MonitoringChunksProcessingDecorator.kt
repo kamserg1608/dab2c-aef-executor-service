@@ -15,6 +15,7 @@ import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
 import ru.sbrf.dab2c.executor.voice.model.RequestHeader
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.util.extensions.currentRequestMetadata
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -27,27 +28,30 @@ class MonitoringChunksProcessingDecorator(
 ) : ChunkProcessingService {
 
     private val logger = KotlinLogging.logger { }
-    private val connectionsCounter = AtomicInteger(0)
 
     @Suppress("LongMethod")
     override fun processRequestChunks(requestsChunks: Flow<VoiceRequest>): Flow<VoiceRequest> {
         logger.trace { "Start monitoring for incoming request flow" }
 
         var timerSample: TimerSampleMetric.TimerSample? = null
+        var counter: AtomicInteger? = null
 
         val monitoredChunks = requestsChunks
             .onStart {
                 val platform = getPlatformHeader()
                 val channel = getChannelHeader()
+                val key = "$platform:$channel"
+
+                counter = activeConnectionCounters.computeIfAbsent(key) { AtomicInteger(0) }
 
                 monitoringServiceFactory.createGauge(
                     ExecutorVoiceMetric.GRPC_CONNECTIONS_ACTIVE,
                     platform = platform,
                     channel = channel,
                     tagsMap = emptyMap(),
-                    stateObject = connectionsCounter
+                    stateObject = counter!!
                 ) { it.get().toDouble() }
-                connectionsCounter.incrementAndGet()
+                counter!!.incrementAndGet()
 
                 monitoringServiceFactory.createCounter(
                     ExecutorVoiceMetric.GRPC_CONNECTIONS_TOTAL,
@@ -63,7 +67,7 @@ class MonitoringChunksProcessingDecorator(
                     tagsMap = emptyMap()
                 ).start()
 
-                logger.info { "gRPC connection opened. Total active: ${connectionsCounter.get()}" }
+                logger.info { "gRPC connection opened. Active connections ($key): ${counter!!.get()}" }
             }
             .onCompletion { cause ->
                 if (cause == null) {
@@ -72,7 +76,7 @@ class MonitoringChunksProcessingDecorator(
                     logger.warn(cause) { "gRPC connection closed with error" }
                 }
 
-                connectionsCounter.decrementAndGet()
+                counter?.decrementAndGet()
                 timerSample?.stop()
             }
             .onEach {
@@ -168,5 +172,7 @@ class MonitoringChunksProcessingDecorator(
     companion object {
         private const val STREAM_CHUNK_TYPE_TAG = "stream_chunk_type"
         private const val UNKNOWN = "unknown"
+
+        private val activeConnectionCounters = ConcurrentHashMap<String, AtomicInteger>()
     }
 }
