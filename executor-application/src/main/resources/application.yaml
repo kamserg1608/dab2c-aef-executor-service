@@ -1,24 +1,21 @@
 spring:
   webflux:
-    base-path: /@server.context.path@
+    base-path: /
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:PROM}
 
 management:
-  server:
-    port: 8081  # только для эндпоинтов actuator
   endpoint:
     health:
       probes:
         enabled: true
   endpoints:
     web:
-      base-path: /actuator
       exposure:
         include: health,prometheus
       path-mapping:
         prometheus: metrics
+  prometheus:
     metrics:
       export:
-        prometheus:
-         enabled: true
+        enabled: true
