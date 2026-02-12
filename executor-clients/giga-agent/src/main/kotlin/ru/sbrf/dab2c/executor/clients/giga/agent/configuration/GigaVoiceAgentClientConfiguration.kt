@@ -25,6 +25,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
+import ru.sbrf.dab2c.executor.clients.giga.agent.audit.AgentInteractionAuditor
+import ru.sbrf.dab2c.executor.clients.giga.agent.audit.AuditedGigaVoiceAgentClientDecorator
 import ru.sbrf.dab2c.executor.clients.giga.agent.configuration.properties.GigaVoiceAgentClientConfigurationProperties
 import ru.sbrf.dab2c.executor.clients.giga.agent.impl.GigaVoiceAgentClientImpl
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceFunctionCallRequestBuilder
@@ -71,16 +73,21 @@ class GigaVoiceAgentClientConfiguration {
         properties: GigaVoiceAgentClientConfigurationProperties,
         settingsRequestBuilder: GigaVoiceSettingsRequestBuilder,
         functionCallRequestBuilder: GigaVoiceFunctionCallRequestBuilder,
-        monitoringServiceFactory: MonitoringServiceFactory
+        monitoringServiceFactory: MonitoringServiceFactory,
+        agentInteractionAuditor: AgentInteractionAuditor
     ): GigaVoiceAgentClient {
+
         val impl = GigaVoiceAgentClientImpl(
-            httpClient,
-            objectMapper,
-            properties.baseUrl,
-            settingsRequestBuilder,
-            functionCallRequestBuilder
+            httpClient, objectMapper, properties.baseUrl, settingsRequestBuilder, functionCallRequestBuilder
         )
-        return MonitoringGigaVoiceAgentClientDecorator(impl, monitoringServiceFactory)
+
+        val monitored = MonitoringGigaVoiceAgentClientDecorator(
+            impl, monitoringServiceFactory
+        )
+
+        return AuditedGigaVoiceAgentClientDecorator(
+            monitored, agentInteractionAuditor, objectMapper, properties.baseUrl
+        )
     }
 
     internal companion object {

@@ -1,0 +1,12 @@
+package ru.sbrf.dab2c.executor.library.audit.model
+
+/**
+ * Contains DAB2C audit event name constants.
+ */
+object AuditEventNames {
+    const val DAB2C_AGENT_INTERACTION = "DAB2C_AGENT_INTERACTION"
+    const val DAB2C_AGENT_INTERACTION_FAILED = "DAB2C_AGENT_INTERACTION_FAILED"
+
+    const val DAB2C_EXTERNAL_INTERACTION = "DAB2C_EXTERNAL_INTERACTION"
+    const val DAB2C_EXTERNAL_INTERACTION_FAILED = "DAB2C_EXTERNAL_INTERACTION_FAILED"
+}

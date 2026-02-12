@@ -8,6 +8,8 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MonitoringServiceFactory
+import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionAuditor
+import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionChunksProcessingDecorator
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
 import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
@@ -36,7 +38,8 @@ class ChunkProcessingServiceFactoryImpl(
     private val gigaVoiceAgentClient: GigaVoiceAgentClient,
     private val configuratorClient: ConfiguratorClient,
     private val monitoringServiceFactory: MonitoringServiceFactory,
-    private val kapProducerClient: KapProducerClient
+    private val kapProducerClient: KapProducerClient,
+    private val externalInteractionAuditor: ExternalInteractionAuditor
 ) : ChunkProcessingServiceFactory {
 
     private val logger = KotlinLogging.logger {}
@@ -55,9 +58,14 @@ class ChunkProcessingServiceFactoryImpl(
             createFullModeService()
         }
 
-        return MonitoringChunksProcessingDecorator(
+        val monitored = MonitoringChunksProcessingDecorator(
             observingService,
             monitoringServiceFactory
+        )
+
+        return ExternalInteractionChunksProcessingDecorator(
+            monitored,
+            externalInteractionAuditor
         )
     }
 

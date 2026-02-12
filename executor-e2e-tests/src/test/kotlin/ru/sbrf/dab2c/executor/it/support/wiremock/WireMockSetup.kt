@@ -55,6 +55,18 @@ object WireMockSetup {
         )
     }
 
+    fun WireMockServer.stubEfsAuditEvent() {
+        stubFor(
+            post(urlEqualTo("/audit/event"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.EFS_AUDIT_EVENT_RESPONSE)
+                )
+        )
+    }
+
     fun WireMockServer.stubGigaAgentSettings(withFunctions: Boolean = false) {
         val responseBody = if (withFunctions) {
             WireMockResponses.GIGA_VOICE_SETTINGS_WITH_FUNCTIONS_RESPONSE
@@ -169,6 +181,7 @@ object WireMockSetup {
             stubEfsRestAgent()
             stubSdsSessionReadData()
             stubConfiguratorSession()
+            stubEfsAuditEvent()
         }
         gigaAgent.stubGigaAgentSettings(withFunctions)
     }
@@ -183,6 +196,7 @@ object WireMockSetup {
             stubEfsRestAgent()
             stubSdsSessionReadData()
             stubConfiguratorSession()
+            stubEfsAuditEvent()
         }
         gigaAgent.stubGigaAgentSettingsWithAnalytics(dataVersion, analyticsData)
     }

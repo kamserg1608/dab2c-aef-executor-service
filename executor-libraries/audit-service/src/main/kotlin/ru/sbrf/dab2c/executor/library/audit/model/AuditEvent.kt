@@ -1,4 +1,4 @@
-package ru.sbrf.dab2c.executor.domain.audit
+package ru.sbrf.dab2c.executor.library.audit.model
 
 /**
  * Audit event to be sent to EFS Adapter for tracking and logging.

@@ -46,7 +46,6 @@ class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
             assertThat(functionResponse.functionCall.functionCall.name)
                 .isEqualTo("transfer_to_operator")
         }
-
         gigaVoiceAgentMock.verify(0, postRequestedFor(urlEqualTo("/functions")))
     }
 

@@ -14,7 +14,7 @@ import ru.sbrf.dab2c.executor.clients.common.util.buildFullUrl
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.AuditClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.AuditEventServiceEvent
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseVoid
-import ru.sbrf.dab2c.executor.domain.audit.AuditEvent
+import ru.sbrf.dab2c.executor.library.audit.model.AuditEvent
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
 
 private val logger = KotlinLogging.logger {}
@@ -33,7 +33,7 @@ class AuditClientImpl(
 ) : AuditClient {
 
     override suspend fun sendEvent(event: AuditEvent, cookie: String) {
-        logger.debug { "Sending audit event: ${event.event}" }
+        logger.debug { "Sending audit event: ${event.event} params: ${event.params}" }
 
         val request = AuditEventServiceEvent(
             event = event.event,

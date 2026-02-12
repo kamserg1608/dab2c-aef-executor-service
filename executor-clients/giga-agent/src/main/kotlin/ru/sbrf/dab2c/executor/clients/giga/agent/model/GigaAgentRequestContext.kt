@@ -20,6 +20,7 @@ data class GigaAgentRequestContext(
     val daPlatform: String,
     val daUcpId: String
 ) {
+
     /**
      * Applies all HTTP headers from this context to the request builder.
      */
@@ -40,6 +41,15 @@ data class GigaAgentRequestContext(
         cookie(UFS_TOKEN, ufsToken)
     }
 
+    /**
+     * Builds cookie header value for audit sender.
+     *
+     * Format:
+     *  UFS-SESSION=<session>; UFS-TOKEN=<token>
+     */
+    fun auditCookie(): String =
+        COOKIE_TEMPLATE.format(ufsSession, ufsToken)
+
     private companion object {
         const val UFS_SESSION = "UFS-SESSION"
         const val UFS_TOKEN = "UFS-TOKEN"
@@ -48,5 +58,7 @@ data class GigaAgentRequestContext(
         const val DA_CHANNEL_HEADER = "da-channel"
         const val DA_PLATFORM_HEADER = "da-platform"
         const val DA_UCP_ID_HEADER = "da-ucp-id"
+
+        private const val COOKIE_TEMPLATE = "$UFS_SESSION=%s; $UFS_TOKEN=%s"
     }
 }

@@ -98,6 +98,17 @@ object WireMockResponses {
     """.trimIndent()
 
     /**
+     * EFS Adapter response for audit event endpoint.
+     */
+    val EFS_AUDIT_EVENT_RESPONSE = """
+    {
+        "success": true,
+        "body": null,
+        "errors": null
+    }
+    """.trimIndent()
+
+    /**
      * Person info response.
      */
     @Suppress("MaxLineLength")
