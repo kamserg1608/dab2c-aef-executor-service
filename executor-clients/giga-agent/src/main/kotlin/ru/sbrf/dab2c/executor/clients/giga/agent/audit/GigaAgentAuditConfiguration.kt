@@ -17,6 +17,9 @@ import ru.sbrf.dab2c.executor.library.audit.port.AuditEventSender
 @Configuration
 class GigaAgentAuditConfiguration {
 
+    /**
+     * Provides [AgentInteractionAuditor] bean for auditing Giga Voice Agent interactions.
+     */
     @Bean
     fun agentInteractionAuditor(
         auditEventSender: AuditEventSender

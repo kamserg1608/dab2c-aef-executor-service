@@ -9,7 +9,6 @@ import ru.sbrf.dab2c.executor.library.audit.port.AuditEventSender
  *
  * Registers:
  *  - [ExternalInteractionAuditor]
- *  - Audited [ChunkProcessingService] decorator
  *
  * Responsible for emitting:
  *  - DAB2C_EXTERNAL_INTERACTION
@@ -18,6 +17,10 @@ import ru.sbrf.dab2c.executor.library.audit.port.AuditEventSender
 @Configuration
 class ExternalInteractionAuditConfiguration {
 
+    /**
+     * Provides [ExternalInteractionAuditor] bean used
+     * for auditing external voice interaction events.
+     */
     @Bean
     fun externalInteractionAuditor(
         auditEventSender: AuditEventSender

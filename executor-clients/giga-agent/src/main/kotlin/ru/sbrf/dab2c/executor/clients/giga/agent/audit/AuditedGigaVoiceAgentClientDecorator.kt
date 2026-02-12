@@ -44,7 +44,13 @@ class AuditedGigaVoiceAgentClientDecorator(
         val cookie = context.auditCookie()
 
         return try {
-            val rs = delegate.getSettings(context, agentConfiguration, voiceSettings, daSessionInfo, contextData)
+            val rs = delegate.getSettings(
+                context = context,
+                agentConfiguration = agentConfiguration,
+                voiceSettings = voiceSettings,
+                daSessionInfo = daSessionInfo,
+                contextData = contextData
+            )
             auditSuccess(rqMessage, rs, cookie)
             rs
         } catch (e: Throwable) {
@@ -71,7 +77,13 @@ class AuditedGigaVoiceAgentClientDecorator(
         val cookie = context.auditCookie()
 
         return try {
-            val rs = delegate.executeFunctionCall(context, agentConfiguration, functionCalling, daSessionInfo, contextData)
+            val rs = delegate.executeFunctionCall(
+                context = context,
+                agentConfiguration = agentConfiguration,
+                functionCalling = functionCalling,
+                daSessionInfo = daSessionInfo,
+                contextData = contextData
+            )
             auditSuccess(rqMessage, rs, cookie)
             rs
         } catch (e: Throwable) {
@@ -90,48 +102,51 @@ class AuditedGigaVoiceAgentClientDecorator(
         agentConfiguration: AgentConfiguration,
         voiceSettings: VoiceSettings,
         contextData: ContextData
-    ): String = toJson(
-        baseRqMap(
-            endpoint = SETTINGS_ENDPOINT,
-            context = context,
-            agentConfiguration = agentConfiguration,
-            contextData = contextData
-        ) + mapOf(
-            AuditMessageSchema.KEY_VOICE_SETTINGS to voiceSettings
+    ): String =
+        toJson(
+            baseRqMap(
+                endpoint = SETTINGS_ENDPOINT,
+                context = context,
+                agentConfiguration = agentConfiguration,
+                contextData = contextData
+            ) + mapOf(
+                AuditMessageSchema.KEY_VOICE_SETTINGS to voiceSettings
+            )
         )
-    )
 
     private fun buildFunctionRqMessage(
         context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
         functionCalling: FunctionCallingData,
         contextData: ContextData
-    ): String = toJson(
-        baseRqMap(
-            endpoint = FUNCTIONS_ENDPOINT,
-            context = context,
-            agentConfiguration = agentConfiguration,
-            contextData = contextData
-        ) + mapOf(
-            AuditMessageSchema.KEY_FUNCTION_CALLING to functionCalling
+    ): String =
+        toJson(
+            baseRqMap(
+                endpoint = FUNCTIONS_ENDPOINT,
+                context = context,
+                agentConfiguration = agentConfiguration,
+                contextData = contextData
+            ) + mapOf(
+                AuditMessageSchema.KEY_FUNCTION_CALLING to functionCalling
+            )
         )
-    )
 
     private fun baseRqMap(
         endpoint: String,
         context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
         contextData: ContextData
-    ): Map<String, Any?> = mapOf(
-        AuditMessageSchema.KEY_ENDPOINT to endpoint,
-        AuditMessageSchema.KEY_RECEIVER to receiver,
-        AuditMessageSchema.KEY_CONVERSATION_ID to context.conversationId,
-        AuditMessageSchema.KEY_EDU_ID to context.eduId,
-        AuditMessageSchema.KEY_UFS_SESSION to context.ufsSession,
-        AuditMessageSchema.KEY_CHANNEL to context.channel,
-        AuditMessageSchema.KEY_AGENT_CONFIGURATION to agentConfiguration,
-        AuditMessageSchema.KEY_CONTEXT_DATA to contextData
-    )
+    ): Map<String, Any?> =
+        mapOf(
+            AuditMessageSchema.KEY_ENDPOINT to endpoint,
+            AuditMessageSchema.KEY_RECEIVER to receiver,
+            AuditMessageSchema.KEY_CONVERSATION_ID to context.conversationId,
+            AuditMessageSchema.KEY_EDU_ID to context.eduId,
+            AuditMessageSchema.KEY_UFS_SESSION to context.ufsSession,
+            AuditMessageSchema.KEY_CHANNEL to context.channel,
+            AuditMessageSchema.KEY_AGENT_CONFIGURATION to agentConfiguration,
+            AuditMessageSchema.KEY_CONTEXT_DATA to contextData
+        )
 
     private suspend fun auditSuccess(rqMessage: String, response: Any, cookie: String) {
         auditor.success(
@@ -144,7 +159,12 @@ class AuditedGigaVoiceAgentClientDecorator(
         )
     }
 
-    private suspend fun auditFailure(rqMessage: String, e: Throwable, errorCode: String, cookie: String) {
+    private suspend fun auditFailure(
+        rqMessage: String,
+        e: Throwable,
+        errorCode: String,
+        cookie: String
+    ) {
         auditor.failed(
             request = AgentInteractionAuditRequest(
                 answerCode = AuditMessageSchema.ANSWER_CODE_FAIL,
