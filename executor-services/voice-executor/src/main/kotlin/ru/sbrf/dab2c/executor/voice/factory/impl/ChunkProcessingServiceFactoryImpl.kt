@@ -84,7 +84,7 @@ class ChunkProcessingServiceFactoryImpl(
             downstream = Channel(capacity = Channel.BUFFERED),
             upstream = Channel(capacity = Channel.BUFFERED)
         )
-        val analyticsPublisher = KapAnalyticsPublisher(kapProducerClient)
+        val analyticsPublisher = KapAnalyticsPublisher(kapProducerClient, processingState)
 
         val contextService = ContextServiceImpl(processingState)
         val functionCallService = FunctionCallServiceImpl(

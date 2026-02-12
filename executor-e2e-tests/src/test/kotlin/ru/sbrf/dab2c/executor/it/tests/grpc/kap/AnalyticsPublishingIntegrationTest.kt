@@ -1,13 +1,16 @@
 package ru.sbrf.dab2c.executor.it.tests.grpc.kap
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import ru.sbrf.dab2c.executor.clients.kap.producer.model.AgentAnalyticsData
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.AgentAnalyticsEnvelope
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.audioRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.contextRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.settingsRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.functionCallingResponse
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.outputTranscriptionResponse
+import ru.sbrf.dab2c.executor.it.support.kafka.KafkaTestSupport
 import ru.sbrf.dab2c.executor.it.support.kafka.KafkaTestSupport.withConsumer
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
@@ -39,7 +42,7 @@ class AnalyticsPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
         val analyticsRecords = embeddedKafkaBroker.withConsumer<AgentAnalyticsEnvelope>(
             topic = AGENTS_TOPIC,
-            filter = { it.data == testAnalyticsData }
+            filter = { it.data != null && it.data!!.contains("test-value") }
         ) {
             runItTest {
                 withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
@@ -55,7 +58,15 @@ class AnalyticsPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
         val receivedAnalytics = analyticsRecords.first()
         assertThat(receivedAnalytics.version).isEqualTo("1.2.0")
-        assertThat(receivedAnalytics.data).isEqualTo(testAnalyticsData)
+
+        val enrichedData = KafkaTestSupport.objectMapper.readValue<AgentAnalyticsData>(receivedAnalytics.data!!)
+        assertThat(enrichedData.data).isEqualTo(testAnalyticsData)
+        assertThat(enrichedData.sessionId).isEqualTo("test-session-id")
+        assertThat(enrichedData.agentName).isEqualTo("test-agent")
+        assertThat(enrichedData.agentCi).isEqualTo("test-ci")
+        assertThat(enrichedData.dataVersion).isEqualTo("2.0.0")
+        assertThat(enrichedData.channel).isEqualTo("ivr")
+        assertThat(enrichedData.platform).isEqualTo("gsm")
     }
 
     @Test
@@ -77,7 +88,7 @@ class AnalyticsPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
         val analyticsRecords = embeddedKafkaBroker.withConsumer<AgentAnalyticsEnvelope>(
             topic = AGENTS_TOPIC,
-            filter = { it.data == testAnalyticsData }
+            filter = { it.data != null && it.data!!.contains("function-value") }
         ) {
             runItTest {
                 withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
@@ -103,6 +114,12 @@ class AnalyticsPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
         val receivedAnalytics = analyticsRecords.first()
         assertThat(receivedAnalytics.version).isEqualTo("1.2.0")
-        assertThat(receivedAnalytics.data).isEqualTo(testAnalyticsData)
+
+        val enrichedData = KafkaTestSupport.objectMapper.readValue<AgentAnalyticsData>(receivedAnalytics.data!!)
+        assertThat(enrichedData.data).isEqualTo(testAnalyticsData)
+        assertThat(enrichedData.sessionId).isEqualTo("test-session-id")
+        assertThat(enrichedData.agentName).isEqualTo("test-agent")
+        assertThat(enrichedData.agentCi).isEqualTo("test-ci")
+        assertThat(enrichedData.dataVersion).isEqualTo("3.0.0")
     }
 }

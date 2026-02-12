@@ -1,17 +1,23 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.flow.StateFlow
 import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.mapper.AgentAnalyticsEnvelopeMapper
+import ru.sbrf.dab2c.executor.clients.kap.producer.mapper.AnalyticsTurnData
 import ru.sbrf.dab2c.executor.domain.voice.AgentAnalytics
+import ru.sbrf.dab2c.executor.voice.model.ProcessingState
+import ru.sbrf.dab2c.executor.voice.model.RequestHeader
 import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
+import ru.sbrf.dab2c.executor.voice.util.extensions.currentRequestMetadata
 import java.util.UUID
 
 /**
  * Publishes agent analytics to KAP (Kafka Analytics Platform).
  */
 class KapAnalyticsPublisher(
-    private val kapProducerClient: KapProducerClient
+    private val kapProducerClient: KapProducerClient,
+    private val processingState: StateFlow<ProcessingState>
 ) : AnalyticsPublisher {
 
     override suspend fun publishAnalytics(analytics: List<AgentAnalytics>, requestId: String?) {
@@ -19,14 +25,30 @@ class KapAnalyticsPublisher(
             return
         }
 
+        val state = processingState.value
+        if (state !is ProcessingState.Serving) {
+            logger.warn { "Cannot publish analytics - not in Serving state, current state: ${state::class.simpleName}" }
+            return
+        }
+
         logger.info { "Publishing ${analytics.size} analytics event(s)" }
 
+        val metadata = currentRequestMetadata()
+
         analytics.forEach { analyticsItem ->
-            val envelope = AgentAnalyticsEnvelopeMapper.toAgentAnalyticsEnvelope(
+            val turnData = AnalyticsTurnData(
                 envelopeId = UUID.randomUUID().toString(),
                 timestamp = System.currentTimeMillis() / MILLIS_TO_SECONDS,
+                daSessionInfo = metadata.daSessionInfo,
+                conversationId = state.conversationId,
+                requestId = requestId ?: metadata.getHeaderOrNull(RequestHeader.X_REQUEST_ID),
+                agentName = state.agentConfiguration.name,
+                agentCi = state.agentConfiguration.functionalSubsystemCi,
+                dataVersion = analyticsItem.dataVersion,
                 data = analyticsItem.data
             )
+
+            val envelope = AgentAnalyticsEnvelopeMapper.toAgentAnalyticsEnvelope(turnData)
             logger.debug { "Publishing analytics: id=${envelope.id}" }
             kapProducerClient.publishAgentAnalytics(envelope)
         }
