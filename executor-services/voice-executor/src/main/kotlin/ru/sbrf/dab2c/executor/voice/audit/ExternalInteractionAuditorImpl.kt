@@ -1,6 +1,6 @@
 package ru.sbrf.dab2c.executor.voice.audit
 
-import ru.sbrf.dab2c.executor.domain.audit.AuditEvent
+import ru.sbrf.dab2c.executor.library.audit.model.AuditEvent
 import ru.sbrf.dab2c.executor.library.audit.model.AuditEventNames
 import ru.sbrf.dab2c.executor.library.audit.model.AuditParams
 import ru.sbrf.dab2c.executor.library.audit.port.AuditEventSender

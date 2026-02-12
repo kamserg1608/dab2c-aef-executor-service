@@ -3,6 +3,5 @@ plugins {
 }
 
 dependencies {
-    api(project(":executor-domain-model"))
     api(project(":executor-libraries:logging"))
 }
