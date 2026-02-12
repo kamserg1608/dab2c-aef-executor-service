@@ -70,6 +70,20 @@ class TestSession(
     }
 
     /**
+     * Waits for the response collection to finish naturally before forced cancellation.
+     */
+    suspend fun awaitCompletion(timeout: Duration = 2.seconds) {
+        @Suppress("TooGenericExceptionCaught")
+        try {
+            withTimeout(timeout) {
+                collectJob?.join()
+            }
+        } catch (_: Exception) {
+            // Timeout expired - caller will force cancel
+        }
+    }
+
+    /**
      * Cancels the session collection job.
      */
     fun cancel() {
