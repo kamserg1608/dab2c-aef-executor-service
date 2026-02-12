@@ -1,6 +1,6 @@
 spring:
   webflux:
-    base-path: /@server.context.path@
+    base-path: /
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:PROM}
 
@@ -12,7 +12,9 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,prometheus,metrics
+        include: health,prometheus
+      path-mapping:
+        prometheus: metrics
   prometheus:
     metrics:
       export:
