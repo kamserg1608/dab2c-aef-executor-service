@@ -43,7 +43,7 @@ class ProxyActiveConnectionsGaugeTest : BaseGigaVoiceIntegrationTest() {
     }
 
     private suspend fun fetchPrometheusMetrics(): String =
-        httpClient.get("$basePath/actuator/prometheus") {
+        httpClient.get("/actuator/metrics") {
             header("Accept", "text/plain; version=0.0.4; charset=utf-8")
         }.bodyAsText()
 

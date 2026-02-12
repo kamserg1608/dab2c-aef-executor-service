@@ -21,11 +21,10 @@
                 <totalSizeCap>1GB</totalSizeCap>
             </rollingPolicy>
             <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                <timestampPattern>yyyy-MM-dd HH:mm:ss,SSS</timestampPattern>
                 <includeMdc>true</includeMdc>
                 <includeCallerData>false</includeCallerData>
                 <fieldNames>
-                    <timestamp>time</timestamp>
+                    <timestamp>serverEventDatetime</timestamp>
                     <message>message</message>
                     <level>logLevel</level>
                     <version>[ignore]</version>
