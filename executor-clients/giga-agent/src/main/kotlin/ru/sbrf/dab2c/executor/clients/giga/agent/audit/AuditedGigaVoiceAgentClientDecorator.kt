@@ -51,18 +51,16 @@ class AuditedGigaVoiceAgentClientDecorator(
                 daSessionInfo = daSessionInfo,
                 contextData = contextData
             )
-            runCatching { auditSuccess(rqMessage, rs, cookie) }
 
+            auditSuccess(rqMessage, rs, cookie)
             return rs
         } catch (e: Throwable) {
-            runCatching {
-                auditFailure(
-                    rqMessage = rqMessage,
-                    e = e,
-                    errorCode = AuditMessageSchema.ERROR_CODE_GIGAVOICE_SETTINGS,
-                    cookie = cookie
-                )
-            }
+            auditFailure(
+                rqMessage = rqMessage,
+                e = e,
+                errorCode = AuditMessageSchema.ERROR_CODE_GIGAVOICE_SETTINGS,
+                cookie = cookie
+            )
             throw e
         }
     }
@@ -88,18 +86,15 @@ class AuditedGigaVoiceAgentClientDecorator(
                 contextData = contextData
             )
 
-            runCatching { auditSuccess(rqMessage, rs, cookie) }
-
+            auditSuccess(rqMessage, rs, cookie)
             return rs
         } catch (e: Throwable) {
-            runCatching {
-                auditFailure(
-                    rqMessage = rqMessage,
-                    e = e,
-                    errorCode = AuditMessageSchema.ERROR_CODE_GIGAVOICE_FUNCTION,
-                    cookie = cookie
-                )
-            }
+            auditFailure(
+                rqMessage = rqMessage,
+                e = e,
+                errorCode = AuditMessageSchema.ERROR_CODE_GIGAVOICE_FUNCTION,
+                cookie = cookie
+            )
             throw e
         }
     }

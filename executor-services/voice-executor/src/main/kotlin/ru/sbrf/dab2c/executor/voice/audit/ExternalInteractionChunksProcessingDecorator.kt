@@ -20,8 +20,6 @@ import ru.sbrf.dab2c.executor.voice.util.extensions.currentRequestMetadata
  * Emits:
  *  - DAB2C_EXTERNAL_INTERACTION
  *  - DAB2C_EXTERNAL_INTERACTION_FAILED
- *
- * Wraps request/response streams of [ChunkProcessingService].
  */
 class ExternalInteractionChunksProcessingDecorator(
     private val delegate: ChunkProcessingService,
@@ -43,16 +41,11 @@ class ExternalInteractionChunksProcessingDecorator(
             }
             .catch { e ->
                 val metadata = GrpcMetadataContext.fromGrpcThread()
-                val cookie = metadata.ufsCookie
-
-                runCatching {
-                    sendFailure(
-                        errorCode = AuditMessageSchema.ERROR_CODE_VOICE_REQUEST_STREAM,
-                        errorTitle = e.message,
-                        cookie = cookie
-                    )
-                }
-
+                sendFailure(
+                    errorCode = AuditMessageSchema.ERROR_CODE_VOICE_REQUEST_STREAM,
+                    errorTitle = e.message,
+                    cookie = metadata.ufsCookie
+                )
                 throw e
             }
 
@@ -76,26 +69,22 @@ class ExternalInteractionChunksProcessingDecorator(
         val cookie = metadata.ufsCookie
 
         if (cause == null) {
-            runCatching {
-                auditor.success(
-                    request = ExternalInteractionRequest(
-                        answerCode = AuditMessageSchema.ANSWER_CODE_OK,
-                        rqMessage = lastRqMessage,
-                        rsMessage = lastRsMessage
-                    ),
-                    cookie = cookie
-                )
-            }
+            auditor.success(
+                request = ExternalInteractionRequest(
+                    answerCode = AuditMessageSchema.ANSWER_CODE_OK,
+                    rqMessage = lastRqMessage,
+                    rsMessage = lastRsMessage
+                ),
+                cookie = cookie
+            )
             return
         }
 
-        runCatching {
-            sendFailure(
-                errorCode = AuditMessageSchema.ERROR_CODE_VOICE_RESPONSE_STREAM,
-                errorTitle = cause.message,
-                cookie = cookie
-            )
-        }
+        sendFailure(
+            errorCode = AuditMessageSchema.ERROR_CODE_VOICE_RESPONSE_STREAM,
+            errorTitle = cause.message,
+            cookie = cookie
+        )
     }
 
     private suspend fun sendFailure(
