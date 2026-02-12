@@ -24,7 +24,7 @@ class EfsAuditEventSender(
             auditClient.sendEvent(event, cookie)
         } catch (t: Throwable) {
             logger.error(t) {
-                "Failed to send audit event=${event.event}, cookie=$cookie"
+                "Failed to send audit event=${event.event}"
             }
         }
     }
