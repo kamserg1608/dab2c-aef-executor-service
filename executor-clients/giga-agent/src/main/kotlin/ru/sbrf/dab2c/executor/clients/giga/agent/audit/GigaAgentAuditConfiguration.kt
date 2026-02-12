@@ -2,7 +2,7 @@ package ru.sbrf.dab2c.executor.clients.giga.agent.audit
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import ru.sbrf.dab2c.executor.clients.efs.adapter.api.AuditClient
+import ru.sbrf.dab2c.executor.library.audit.port.AuditEventSender
 
 /**
  * Spring configuration for Giga Agent audit components.
@@ -17,16 +17,13 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.api.AuditClient
 @Configuration
 class GigaAgentAuditConfiguration {
 
-    /**
-     * Auditor bean for agent interactions.
-     */
     @Bean
     fun agentInteractionAuditor(
-        auditClient: AuditClient
+        auditEventSender: AuditEventSender
     ): AgentInteractionAuditor =
         AgentInteractionAuditorImpl(
             senderValue = "dab2c-aef-executor",
             receiver = "giga-voice-agent",
-            auditClient = auditClient
+            auditEventSender = auditEventSender
         )
 }

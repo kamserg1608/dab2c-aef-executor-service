@@ -1,14 +1,14 @@
 package ru.sbrf.dab2c.executor.voice.audit
 
-import ru.sbrf.dab2c.executor.clients.efs.adapter.api.AuditClient
 import ru.sbrf.dab2c.executor.domain.audit.AuditEvent
 import ru.sbrf.dab2c.executor.library.audit.model.AuditEventNames
 import ru.sbrf.dab2c.executor.library.audit.model.AuditParams
+import ru.sbrf.dab2c.executor.library.audit.port.AuditEventSender
 
 /**
  * Default implementation of [ExternalInteractionAuditor].
  *
- * Builds audit payload and sends it via [AuditClient].
+ * Builds audit payload and sends it via [AuditEventSender].
  *
  * Emits:
  *  - DAB2C_EXTERNAL_INTERACTION
@@ -17,33 +17,33 @@ import ru.sbrf.dab2c.executor.library.audit.model.AuditParams
 class ExternalInteractionAuditorImpl(
     private val senderValue: String,
     private val receiver: String,
-    private val auditClient: AuditClient,
+    private val auditEventSender: AuditEventSender,
 ) : ExternalInteractionAuditor {
 
     override suspend fun success(request: ExternalInteractionRequest, cookie: String) {
-        auditClient.sendEvent(
-            AuditEvent(
+        auditEventSender.sendEvent(
+            event = AuditEvent(
                 event = AuditEventNames.DAB2C_EXTERNAL_INTERACTION,
                 success = true,
                 params = interactionParams(request)
             ),
-            cookie
+            cookie = cookie
         )
     }
 
     override suspend fun failed(request: ExternalInteractionRequest, cookie: String) {
-        auditClient.sendEvent(
-            AuditEvent(
+        auditEventSender.sendEvent(
+            event = AuditEvent(
                 event = AuditEventNames.DAB2C_EXTERNAL_INTERACTION_FAILED,
                 success = false,
                 params = interactionParams(request)
             ),
-            cookie
+            cookie = cookie
         )
     }
 
     private fun interactionParams(request: ExternalInteractionRequest): Map<String, String> =
-        buildMap<String, String> {
+        buildMap {
             putIfNotBlank(AuditParams.SENDER, senderValue)
             putIfNotBlank(AuditParams.RECEIVER, receiver)
             putIfNotBlank(AuditParams.ANSWER_CODE, request.answerCode)
