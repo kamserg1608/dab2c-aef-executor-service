@@ -56,9 +56,17 @@ object GigaVoiceSettingsMapper {
         voiceCallId = source.voiceCallId,
         gigachat = toApiGigaChatSettings(source.gigachat),
         context = toApiInitialContext(source.context),
+        disableVad = source.disableVad,
+        enableTranscribeInput = source.enableTranscribeInput,
+        flags = source.flags.takeIf { it.isNotEmpty() },
         outputModalities = toApiOutputModalities(source.outputModalities),
         mode = toApiVoiceMode(source.mode),
-        firstSpeaker = toApiFirstSpeaker(source.firstSpeaker)
+        firstSpeaker = toApiFirstSpeaker(source.firstSpeaker),
+        enableDenoiser = source.enableDenoiser,
+        enablePrefetch = source.enablePrefetch,
+        enablePersonIdentity = source.enablePersonIdentity,
+        enableWhisper = source.enableWhisper,
+        enableEmotion = source.enableEmotion
     )
 
     // === SettingsOutput -> VoiceSettings ===
@@ -67,9 +75,17 @@ object GigaVoiceSettingsMapper {
         audio = toDomainAudioSettings(source.audio),
         gigachat = toDomainGigaChatSettings(source.gigachat),
         context = toDomainInitialContext(source.context),
+        disableVad = source.disableVad ?: false,
+        enableTranscribeInput = source.enableTranscribeInput ?: false,
+        flags = source.flags ?: emptyList(),
         outputModalities = toDomainOutputModalities(source.outputModalities),
         mode = toDomainVoiceMode(source.mode),
-        firstSpeaker = toDomainFirstSpeaker(source.firstSpeaker)
+        firstSpeaker = toDomainFirstSpeaker(source.firstSpeaker),
+        enableDenoiser = source.enableDenoiser ?: false,
+        enablePrefetch = source.enablePrefetch ?: false,
+        enablePersonIdentity = source.enablePersonIdentity ?: false,
+        enableWhisper = source.enableWhisper ?: false,
+        enableEmotion = source.enableEmotion ?: false
     )
 
     // === Performers -> FunctionPerformers ===

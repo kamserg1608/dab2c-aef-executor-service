@@ -34,7 +34,8 @@ suspend fun withSession(
         scope.block()
     } finally {
         session.closeRequests()
-        session.cancel()
         mock.completeResponses()
+        session.awaitCompletion()
+        session.cancel()
     }
 }
