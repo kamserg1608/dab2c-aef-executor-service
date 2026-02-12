@@ -60,9 +60,7 @@ class SdsClientImpl(
             response.body<BaseResponseListSdsSectionData>()
         }
 
-        logger.info { "Response from /session/readData: ${response.body}" }
-        // для отладки
-        logger.info { "Response to mapper: ${objectMapper.writeValueAsString(response)}" }
+        logger.debug { "SDS readData returned ${response.body?.size ?: 0} section(s)" }
 
         checkErrors(response.errors, "readData")
 

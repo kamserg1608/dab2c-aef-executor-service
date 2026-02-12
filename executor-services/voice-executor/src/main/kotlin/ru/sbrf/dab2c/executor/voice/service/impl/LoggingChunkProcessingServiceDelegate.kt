@@ -47,13 +47,13 @@ class LoggingChunkProcessingServiceDelegate(
         }
     }
 
-    @Suppress("MaximumLineLength", "MaxLineLength")
     private fun logResponse(response: VoiceResponse) {
         if (response is VoiceResponse.Output && response.content is ContentFromModel.Audio) {
             val content = response.content as ContentFromModel.Audio
-            logger.trace {
-                "${RESPONSE_PREFIX}Output(content=Audio(audio=AudioOutput(audioChunk=<omitted>, audioDuration=${content.audio.audioDuration}, isFinal=${content.audio.isFinal})))"
-            }
+            val sanitized = response.copy(
+                content = content.copy(audio = content.audio.copy(audioChunk = byteArrayOf()))
+            )
+            logger.trace { "$RESPONSE_PREFIX$sanitized" }
         } else {
             logger.debug { "$RESPONSE_PREFIX$response" }
         }
