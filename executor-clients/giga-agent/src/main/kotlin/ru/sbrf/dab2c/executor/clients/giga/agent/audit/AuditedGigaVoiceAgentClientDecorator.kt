@@ -43,7 +43,7 @@ class AuditedGigaVoiceAgentClientDecorator(
         val rqMessage = buildSettingsRqMessage(context, agentConfiguration, voiceSettings, contextData)
         val cookie = context.auditCookie()
 
-        return try {
+        try {
             val rs = delegate.getSettings(
                 context = context,
                 agentConfiguration = agentConfiguration,
@@ -51,15 +51,18 @@ class AuditedGigaVoiceAgentClientDecorator(
                 daSessionInfo = daSessionInfo,
                 contextData = contextData
             )
-            auditSuccess(rqMessage, rs, cookie)
-            rs
+            runCatching { auditSuccess(rqMessage, rs, cookie) }
+
+            return rs
         } catch (e: Throwable) {
-            auditFailure(
-                rqMessage = rqMessage,
-                e = e,
-                errorCode = AuditMessageSchema.ERROR_CODE_GIGAVOICE_SETTINGS,
-                cookie = cookie
-            )
+            runCatching {
+                auditFailure(
+                    rqMessage = rqMessage,
+                    e = e,
+                    errorCode = AuditMessageSchema.ERROR_CODE_GIGAVOICE_SETTINGS,
+                    cookie = cookie
+                )
+            }
             throw e
         }
     }
@@ -76,7 +79,7 @@ class AuditedGigaVoiceAgentClientDecorator(
         val rqMessage = buildFunctionRqMessage(context, agentConfiguration, functionCalling, contextData)
         val cookie = context.auditCookie()
 
-        return try {
+        try {
             val rs = delegate.executeFunctionCall(
                 context = context,
                 agentConfiguration = agentConfiguration,
@@ -84,15 +87,19 @@ class AuditedGigaVoiceAgentClientDecorator(
                 daSessionInfo = daSessionInfo,
                 contextData = contextData
             )
-            auditSuccess(rqMessage, rs, cookie)
-            rs
+
+            runCatching { auditSuccess(rqMessage, rs, cookie) }
+
+            return rs
         } catch (e: Throwable) {
-            auditFailure(
-                rqMessage = rqMessage,
-                e = e,
-                errorCode = AuditMessageSchema.ERROR_CODE_GIGAVOICE_FUNCTION,
-                cookie = cookie
-            )
+            runCatching {
+                auditFailure(
+                    rqMessage = rqMessage,
+                    e = e,
+                    errorCode = AuditMessageSchema.ERROR_CODE_GIGAVOICE_FUNCTION,
+                    cookie = cookie
+                )
+            }
             throw e
         }
     }

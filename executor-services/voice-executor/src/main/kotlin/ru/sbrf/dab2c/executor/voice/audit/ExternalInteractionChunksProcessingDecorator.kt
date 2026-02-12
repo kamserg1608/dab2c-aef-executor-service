@@ -2,7 +2,6 @@ package ru.sbrf.dab2c.executor.voice.audit
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onCompletion
@@ -14,8 +13,6 @@ import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
 import ru.sbrf.dab2c.executor.voice.model.ufsCookie
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.util.extensions.currentRequestMetadata
-
-private val logger = KotlinLogging.logger {}
 
 /**
  * Audit decorator for outer voice interaction.
@@ -46,11 +43,16 @@ class ExternalInteractionChunksProcessingDecorator(
             }
             .catch { e ->
                 val metadata = GrpcMetadataContext.fromGrpcThread()
-                sendFailure(
-                    errorCode = AuditMessageSchema.ERROR_CODE_VOICE_REQUEST_STREAM,
-                    errorTitle = e.message,
-                    cookie = metadata.ufsCookie
-                )
+                val cookie = metadata.ufsCookie
+
+                runCatching {
+                    sendFailure(
+                        errorCode = AuditMessageSchema.ERROR_CODE_VOICE_REQUEST_STREAM,
+                        errorTitle = e.message,
+                        cookie = cookie
+                    )
+                }
+
                 throw e
             }
 
@@ -74,24 +76,26 @@ class ExternalInteractionChunksProcessingDecorator(
         val cookie = metadata.ufsCookie
 
         if (cause == null) {
-            auditor.success(
-                request = ExternalInteractionRequest(
-                    answerCode = AuditMessageSchema.ANSWER_CODE_OK,
-                    rqMessage = lastRqMessage,
-                    rsMessage = lastRsMessage
-                ),
-                cookie = cookie
-            )
+            runCatching {
+                auditor.success(
+                    request = ExternalInteractionRequest(
+                        answerCode = AuditMessageSchema.ANSWER_CODE_OK,
+                        rqMessage = lastRqMessage,
+                        rsMessage = lastRsMessage
+                    ),
+                    cookie = cookie
+                )
+            }
             return
         }
 
-        logger.warn(cause) { "Voice response stream completed with error: ${cause.message}" }
-
-        sendFailure(
-            errorCode = AuditMessageSchema.ERROR_CODE_VOICE_RESPONSE_STREAM,
-            errorTitle = cause.message,
-            cookie = cookie
-        )
+        runCatching {
+            sendFailure(
+                errorCode = AuditMessageSchema.ERROR_CODE_VOICE_RESPONSE_STREAM,
+                errorTitle = cause.message,
+                cookie = cookie
+            )
+        }
     }
 
     private suspend fun sendFailure(
