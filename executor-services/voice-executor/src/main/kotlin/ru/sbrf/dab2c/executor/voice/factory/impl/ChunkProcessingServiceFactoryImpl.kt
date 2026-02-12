@@ -1,5 +1,6 @@
 package ru.sbrf.dab2c.executor.voice.factory.impl
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.springframework.stereotype.Service
@@ -41,10 +42,15 @@ class ChunkProcessingServiceFactoryImpl(
     private val externalInteractionAuditor: ExternalInteractionAuditor
 ) : ChunkProcessingServiceFactory {
 
+    private val logger = KotlinLogging.logger {}
+
     override fun create(): ChunkProcessingService {
         val requestMetadata = GrpcMetadataContext.fromGrpcThread()
-        val isProxyMode = requestMetadata.getHeaderOrNull(RequestHeader.PROXY)
-            ?.toBoolean() ?: voiceExecutorConfigurationProperties.proxyMode
+        val headerProxyMode = requestMetadata.getHeaderOrNull(RequestHeader.PROXY)?.toBoolean()
+        val isProxyMode = headerProxyMode ?: voiceExecutorConfigurationProperties.proxyMode
+
+        val modeSource = if (headerProxyMode != null) "grpc-header" else "config"
+        logger.info { "Operating mode: ${if (isProxyMode) "PROXY" else "FULL"} (source=$modeSource)" }
 
         val observingService = if (isProxyMode) {
             createProxyModeService()

@@ -16,10 +16,10 @@ class ContextServiceImpl(
     private val logger = KotlinLogging.logger {}
 
     override suspend fun processContext(contextData: ContextData) {
-        logger.debug { "Processing context chunk" }
+        logger.debug { "Processing context chunk: contentLength=${contextData.content.length}" }
 
         processingState.value = ProcessingState.AwaitingSettings(contextData)
 
-        logger.debug { "Context processed" }
+        logger.info { "Session state -> AwaitingSettings" }
     }
 }

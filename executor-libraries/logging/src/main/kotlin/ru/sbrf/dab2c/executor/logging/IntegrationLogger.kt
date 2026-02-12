@@ -52,11 +52,12 @@ object IntegrationLogger {
             result
         } catch (e: Exception) {
             val executionTime = System.currentTimeMillis() - startTime
+            val statusCode = (e as? io.ktor.client.plugins.ResponseException)?.response?.status?.value
             // Restore saved MDC first, then add integration fields
             MDC.setContextMap(savedMdc)
             setIntegrationErrorMdc(
                 serverEventDatetime, destinationSystem, destinationService,
-                rqMessage, executionTime, className
+                rqMessage, executionTime, className, statusCode
             )
             logger.error(e) { "HTTP $destinationService failed: ${e.message}" }
             throw e
@@ -125,7 +126,8 @@ object IntegrationLogger {
         destinationService: String,
         rqMessage: String,
         executionTime: Long,
-        className: String
+        className: String,
+        statusCode: Int? = null
     ) {
         MDC.put(MdcKeys.TYPE, INTEGRATION_TYPE)
         MDC.put(MdcKeys.SERVER_EVENT_DATETIME, serverEventDatetime)
@@ -135,5 +137,6 @@ object IntegrationLogger {
         MDC.put(MdcKeys.EXECUTION_TIME_LONG, executionTime.toString())
         MDC.put(MdcKeys.CLASS_NAME, className)
         MDC.put(MdcKeys.ERROR_CODE, ERROR_CODE_HTTP)
+        statusCode?.let { MDC.put(MdcKeys.STATUS_CODE, it.toString()) }
     }
 }

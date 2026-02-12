@@ -46,12 +46,15 @@ class FunctionCallServiceImpl(
         return null
     }
 
+    @Suppress("LongMethod")
     private suspend fun executeBackendFunctionAsync(
         state: ProcessingState.Serving,
         functionCalling: FunctionCallingData
     ) {
         val metadata = currentRequestMetadata()
         val context = metadata.toGigaAgentContext(state.conversationId)
+        val functionName = functionCalling.functionCall.name
+        val startTime = System.currentTimeMillis()
 
         launchAsync {
             try {
@@ -63,11 +66,15 @@ class FunctionCallServiceImpl(
                     contextData = state.contextData
                 )
 
+                val elapsed = System.currentTimeMillis() - startTime
+                logger.info { "Backend function '$functionName' completed in ${elapsed}ms" }
+
                 analyticsPublisher.publishAnalytics(functionCallResult.analytics, context.daRequestId)
 
                 callbackChannels.downstream.send(VoiceRequest.FunctionResult(functionCallResult.result))
             } catch (e: Exception) {
-                logger.error(e) { "Failed to execute backend function '${functionCalling.functionCall.name}'" }
+                val elapsed = System.currentTimeMillis() - startTime
+                logger.error { "Failed to execute backend function '$functionName' after ${elapsed}ms: ${e.message}" }
                 val escapedMessage = e.message?.replace("\"", "\\\"") ?: "Function execution failed"
                 val errorContent = """{"error":{"code":500,"message":"$escapedMessage"}}"""
                 callbackChannels.downstream.send(

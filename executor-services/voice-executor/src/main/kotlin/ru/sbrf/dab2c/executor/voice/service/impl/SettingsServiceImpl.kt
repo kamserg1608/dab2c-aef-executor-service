@@ -57,7 +57,7 @@ class SettingsServiceImpl(
                 updateStateAndPublish(settingsData, contextData)
                 callbackChannels.downstream.send(VoiceRequest.Settings(settingsData.settings))
             } catch (e: Exception) {
-                logger.error(e) { "Failed to calculate settings" }
+                logger.error { "Failed to calculate settings: ${e.message}" }
                 callbackChannels.upstream.send(
                     VoiceResponse.Error(ErrorData(status = 1501, message = e.message ?: "Settings calculation failed"))
                 )
@@ -65,6 +65,7 @@ class SettingsServiceImpl(
         }
     }
 
+    @Suppress("LongMethod")
     private suspend fun fetchSettingsData(
         settings: VoiceSettings,
         contextData: ContextData
@@ -89,7 +90,14 @@ class SettingsServiceImpl(
             contextData = contextData
         )
 
-        logger.debug { "Received settings response." }
+        val backendFuncs = settingsResult.performers.functions
+            .filter { it.value.isBackendFunction }.keys
+        val ivrFuncs = settingsResult.performers.functions
+            .filterNot { it.value.isBackendFunction }.keys
+        logger.debug {
+            "Settings resolved: voiceCallId=${settings.voiceCallId}, " +
+                "backendFunctions=$backendFuncs, ivrFunctions=$ivrFuncs"
+        }
 
         return SettingsData(
             settings = settingsResult.settings,
@@ -108,6 +116,11 @@ class SettingsServiceImpl(
             conversationId = settingsData.conversationId,
             functionRegistry = settingsData.functionRegistry
         )
+
+        logger.info {
+            "Session state -> Serving (conversationId=${settingsData.conversationId}, " +
+                "functions=${settingsData.functionRegistry.functions.size})"
+        }
 
         analyticsPublisher.publishAnalytics(settingsData.analytics, settingsData.requestId)
     }

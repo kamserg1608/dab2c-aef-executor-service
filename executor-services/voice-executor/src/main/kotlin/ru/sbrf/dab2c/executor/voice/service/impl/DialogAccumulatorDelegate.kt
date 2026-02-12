@@ -2,6 +2,7 @@ package ru.sbrf.dab2c.executor.voice.service.impl
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
@@ -30,14 +31,24 @@ class DialogAccumulatorDelegate(
         delegate.processRequestChunks(requestsChunks)
 
     override fun processResponseChunks(responsesChunks: Flow<VoiceResponse>): Flow<VoiceResponse> {
-        val accumulatedChunks = responsesChunks.onEach { response ->
-            when (response) {
-                is VoiceResponse.InputTranscription -> handleInputTranscription(response)
-                is VoiceResponse.OutputTranscription -> handleOutputTranscription(response)
-                else -> { /* pass through other response types */ }
+        val accumulatedChunks = responsesChunks
+            .onEach { response ->
+                when (response) {
+                    is VoiceResponse.InputTranscription -> handleInputTranscription(response)
+                    is VoiceResponse.OutputTranscription -> handleOutputTranscription(response)
+                    else -> { /* pass through other response types */ }
+                }
             }
-        }
+            .onCompletion { flushPendingDialogTurn() }
         return delegate.processResponseChunks(accumulatedChunks)
+    }
+
+    private suspend fun flushPendingDialogTurn() {
+        if (phase == Phase.ACCUMULATING_OUTPUT && inputChunks.isNotEmpty() && outputChunks.isNotEmpty()) {
+            logger.debug { "Flushing final dialog turn on session completion" }
+            publishDialogTurn()
+            reset()
+        }
     }
 
     private suspend fun handleInputTranscription(response: VoiceResponse.InputTranscription) {

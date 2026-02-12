@@ -63,7 +63,7 @@ class MonitoringChunksProcessingDecorator(
                     tagsMap = emptyMap()
                 ).start()
 
-                logger.debug { "gRPC connection opened. Total active: ${connectionsCounter.get()}" }
+                logger.info { "gRPC connection opened. Total active: ${connectionsCounter.get()}" }
             }
             .onCompletion { cause ->
                 if (cause == null) {
