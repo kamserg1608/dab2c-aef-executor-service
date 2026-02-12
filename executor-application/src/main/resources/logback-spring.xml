@@ -30,6 +30,7 @@
                     <version>[ignore]</version>
                     <levelValue>[ignore]</levelValue>
                 </fieldNames>
+                <timestampPattern>UNIX_MILLIS</timestampPattern>
                 <customFields>{"serviceName":"dab2c-executor","tenantCode":"DAB2C"}</customFields>
                 <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
                     <maxDepthPerThrowable>30</maxDepthPerThrowable>
