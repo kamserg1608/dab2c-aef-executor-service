@@ -9,7 +9,6 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MonitoringServiceFactory
 import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionAuditor
-import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionChunksProcessingDecorator
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
 import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
@@ -39,7 +38,7 @@ class ChunkProcessingServiceFactoryImpl(
     private val configuratorClient: ConfiguratorClient,
     private val monitoringServiceFactory: MonitoringServiceFactory,
     private val kapProducerClient: KapProducerClient,
-    private val externalInteractionAuditor: ExternalInteractionAuditor
+    private val auditor: ExternalInteractionAuditor
 ) : ChunkProcessingServiceFactory {
 
     private val logger = KotlinLogging.logger {}
@@ -58,21 +57,16 @@ class ChunkProcessingServiceFactoryImpl(
             createFullModeService()
         }
 
-        val monitored = MonitoringChunksProcessingDecorator(
+        return MonitoringChunksProcessingDecorator(
             observingService,
             monitoringServiceFactory
-        )
-
-        return ExternalInteractionChunksProcessingDecorator(
-            monitored,
-            externalInteractionAuditor
         )
     }
 
     private fun createProxyModeService(): ChunkProcessingService {
         val coreService = NoopChunkProcessingServiceImpl()
         return LoggingChunkProcessingServiceDelegate(
-            DialogAccumulatorDelegate(coreService, NoopDialogTurnPublisher)
+            DialogAccumulatorDelegate(coreService, NoopDialogTurnPublisher, auditor)
         )
     }
 
@@ -81,7 +75,7 @@ class ChunkProcessingServiceFactoryImpl(
         val coreService = createChunkProcessingServiceImpl(processingState)
         val dialogTurnPublisher = KapDialogTurnPublisher(kapProducerClient, processingState)
         return LoggingChunkProcessingServiceDelegate(
-            DialogAccumulatorDelegate(coreService, dialogTurnPublisher)
+            DialogAccumulatorDelegate(coreService, dialogTurnPublisher, auditor)
         )
     }
 
