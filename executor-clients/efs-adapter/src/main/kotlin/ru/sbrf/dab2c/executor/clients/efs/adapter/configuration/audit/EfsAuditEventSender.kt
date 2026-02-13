@@ -24,10 +24,11 @@ class EfsAuditEventSender(
         try {
             auditClient.sendEvent(event, cookie)
         } catch (e: CancellationException) {
-            if (e.message?.contains("client", ignoreCase = true) == true) {
-                throw e
+            if (e.message?.contains("client", ignoreCase = true) != true) {
+                logger.warn(e) {
+                    "Audit sending cancelled unexpectedly for event=${event.event}"
+                }
             }
-            throw e
         } catch (t: Throwable) {
             logger.error(t) {
                 "Failed to send audit event=${event.event}"
