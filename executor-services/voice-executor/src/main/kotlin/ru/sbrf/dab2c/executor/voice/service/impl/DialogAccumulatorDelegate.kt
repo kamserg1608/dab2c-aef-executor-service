@@ -42,9 +42,8 @@ class DialogAccumulatorDelegate(
 
     override fun processRequestChunks(requestsChunks: Flow<VoiceRequest>): Flow<VoiceRequest> {
         val accumulatedChunks = requestsChunks.onEach { request ->
-            when (request) {
-                is VoiceRequest.Settings -> handleVoiceSettings(request)
-                else -> Unit
+            if (request is VoiceRequest.Settings) {
+                handleVoiceSettings(request)
             }
         }
 
@@ -97,8 +96,7 @@ class DialogAccumulatorDelegate(
                 rqMessage = rqMessage,
                 rsMessage = rsMessage,
                 errorCode = AuditMessageSchema.ERROR_CODE_VOICE_RESPONSE_STREAM,
-                errorTitle = cause.message
-                    ?: AuditMessageSchema.ERROR_TITLE_VOICE_STREAM
+                errorTitle = cause.message ?: AuditMessageSchema.ERROR_TITLE_VOICE_STREAM
             ),
             cookie = cookie
         )
@@ -131,7 +129,7 @@ class DialogAccumulatorDelegate(
 
         phase = Phase.ACCUMULATING_INPUT
         inputChunks.add(text)
-        appendDialogLine("USER", text)
+        appendDialogLine(ROLE_USER, text)
 
         logger.debug { "Accumulated input chunk: '$text'" }
     }
@@ -141,33 +139,19 @@ class DialogAccumulatorDelegate(
     ) {
         val text = response.transcription.text
         appendAssistantChunk(text)
-        appendDialogLine("ASSISTANT", text)
-
-        logger.debug {
-            "Accumulated ASSISTANT chunk (transcription): '$text'"
-        }
+        appendDialogLine(ROLE_ASSISTANT, text)
     }
 
     private fun handleWarning(response: VoiceResponse.Warning) {
-        val text = "[WARNING] ${response.warning.message}"
+        val text = "$WARNING_PREFIX${response.warning.message}"
         appendAssistantChunk(text)
-        appendDialogLine("ASSISTANT", text)
-
-        logger.debug {
-            "Accumulated ASSISTANT chunk (warning): " +
-                    "'${response.warning.message}'"
-        }
+        appendDialogLine(ROLE_ASSISTANT, text)
     }
 
     private fun handleError(response: VoiceResponse.Error) {
-        val text = "[ERROR ${response.error.status}] ${response.error.message}"
+        val text = "$ERROR_PREFIX${response.error.status}] ${response.error.message}"
         appendAssistantChunk(text)
-        appendDialogLine("ASSISTANT", text)
-
-        logger.debug {
-            "Accumulated ASSISTANT chunk (error): status=${response.error.status}, " +
-                    "message='${response.error.message}'"
-        }
+        appendDialogLine(ROLE_ASSISTANT, text)
     }
 
     private fun appendAssistantChunk(text: String) {
@@ -178,6 +162,7 @@ class DialogAccumulatorDelegate(
         phase = Phase.ACCUMULATING_OUTPUT
         outputChunks.add(text)
         outputEndTimestamp = System.currentTimeMillis()
+
         logger.debug { "Accumulated output chunk: '$text'" }
     }
 
@@ -187,16 +172,11 @@ class DialogAccumulatorDelegate(
         val assistantResponseTime = outputEndTimestamp - outputStartTimestamp
 
         logger.info {
-            "Dialog turn completed: input='$inputPhrase', " +
-                    "output='$outputPhrase', " +
-                    "assistantResponseTime=${assistantResponseTime}ms"
+            "Dialog turn completed: input='$inputPhrase', output='$outputPhrase', " +
+                "assistantResponseTime=${assistantResponseTime}ms"
         }
 
-        dialogTurnPublisher.publishDialogTurn(
-            inputPhrase,
-            outputPhrase,
-            assistantResponseTime
-        )
+        dialogTurnPublisher.publishDialogTurn(inputPhrase, outputPhrase, assistantResponseTime)
     }
 
     private fun reset() {
@@ -228,5 +208,10 @@ class DialogAccumulatorDelegate(
 
     private companion object {
         private val logger = KotlinLogging.logger {}
+
+        private const val ROLE_USER = "USER"
+        private const val ROLE_ASSISTANT = "ASSISTANT"
+        private const val WARNING_PREFIX = "[WARNING] "
+        private const val ERROR_PREFIX = "[ERROR "
     }
 }
