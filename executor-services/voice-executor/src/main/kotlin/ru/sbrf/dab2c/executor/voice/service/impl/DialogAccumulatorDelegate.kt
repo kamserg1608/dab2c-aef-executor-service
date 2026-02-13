@@ -135,8 +135,8 @@ class DialogAccumulatorDelegate(
         val text = response.transcription.text
 
         if (phase == Phase.ACCUMULATING_OUTPUT) {
-            appendDialogLine(ROLE_USER, text)
             publishDialogTurn()
+            appendDialogTurnToHistory()
             reset()
         }
 
@@ -146,12 +146,19 @@ class DialogAccumulatorDelegate(
         logger.debug { "Accumulated input chunk: '$text'" }
     }
 
+    private fun appendDialogTurnToHistory() {
+        val inputPhrase = inputChunks.joinToString("")
+        val outputPhrase = outputChunks.joinToString("")
+
+        appendDialogLine(ROLE_USER, inputPhrase)
+        appendDialogLine(ROLE_ASSISTANT, outputPhrase)
+    }
+
     private fun handleOutputTranscription(
         response: VoiceResponse.OutputTranscription
     ) {
         val text = response.transcription.text
         appendAssistantChunk(text)
-        appendDialogLine(ROLE_ASSISTANT, text)
     }
 
     private fun handleWarning(response: VoiceResponse.Warning) {
