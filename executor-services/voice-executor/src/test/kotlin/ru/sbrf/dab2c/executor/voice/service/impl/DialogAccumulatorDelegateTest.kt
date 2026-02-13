@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.domain.voice.AudioContent
 import ru.sbrf.dab2c.executor.domain.voice.AudioSettings
+import ru.sbrf.dab2c.executor.domain.voice.ErrorData
 import ru.sbrf.dab2c.executor.domain.voice.InputTranscriptionData
 import ru.sbrf.dab2c.executor.domain.voice.OutputTranscriptionData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
@@ -23,6 +24,7 @@ import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.domain.voice.WarningData
 import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionAuditor
+import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionRequest
 import ru.sbrf.dab2c.executor.voice.grpc.context.MetadataElement
 import ru.sbrf.dab2c.executor.voice.model.RequestMetadata
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
@@ -69,13 +71,14 @@ class DialogAccumulatorDelegateTest {
         withContext(metadataContext) {
             val responses = flowOf(
                 createInputTranscription("hello"),
-                VoiceResponse.Warning(WarningData("test warning")),
-                createOutputTranscription("hi there")
+                createWarning("test warning"),
+                createOutputTranscription("hi there"),
+                createError(status = 499, message = "Cancellation received from client")
             )
 
             val result = accumulator.processResponseChunks(responses).toList()
 
-            assertEquals(3, result.size)
+            assertEquals(4, result.size)
         }
     }
 
@@ -130,16 +133,26 @@ class DialogAccumulatorDelegateTest {
             val responses = flowOf(
                 createInputTranscription("First question"),
                 createOutputTranscription("First answer"),
+                createWarning("Cancellation received from client"),
                 createInputTranscription("Second question"),
                 createOutputTranscription("Second answer"),
+                createError(status = 499, message = "Cancellation received from client"),
                 createInputTranscription("Third question")
             )
 
-            val result = accumulator.processResponseChunks(responses).toList()
+            accumulator.processResponseChunks(responses).toList()
 
-            assertEquals(5, result.size)
+            val successRequestSlot = slot<ExternalInteractionRequest>()
 
-            coVerify(exactly = 1) { auditor.success(any(), any()) }
+            coVerify(exactly = 1) {
+                auditor.success(capture(successRequestSlot), any())
+            }
+
+            val rq = requireNotNull(successRequestSlot.captured.rqMessage)
+
+            assertThat(rq).contains("First")
+            assertThat(rq).contains("Second")
+            assertThat(rq).contains("Cancellation")
         }
     }
 
@@ -196,9 +209,9 @@ class DialogAccumulatorDelegateTest {
         withContext(metadataContext) {
             val responses = flowOf(
                 createInputTranscription("hello"),
-                VoiceResponse.Warning(WarningData("warning1")),
+                createWarning("warning1"),
                 createOutputTranscription("hi"),
-                VoiceResponse.Warning(WarningData("warning2")),
+                createWarning("warning2"),
                 createInputTranscription("next")
             )
 
@@ -363,6 +376,19 @@ class DialogAccumulatorDelegateTest {
                 functionsStateId = "state-1",
                 finishReason = "stop",
                 timestamp = System.currentTimeMillis()
+            )
+        )
+
+    private fun createWarning(message: String): VoiceResponse.Warning =
+        VoiceResponse.Warning(
+            WarningData(message = message)
+        )
+
+    private fun createError(status: Int, message: String): VoiceResponse.Error =
+        VoiceResponse.Error(
+            ErrorData(
+                status = status,
+                message = message
             )
         )
 
