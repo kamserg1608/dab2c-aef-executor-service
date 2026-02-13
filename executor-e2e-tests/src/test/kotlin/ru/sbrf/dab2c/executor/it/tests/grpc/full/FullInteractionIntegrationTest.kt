@@ -33,9 +33,10 @@ class FullInteractionIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
             efsAdapterMock.verify(1, postRequestedFor(urlEqualTo("/configurator/rest-agent")))
             gigaVoiceAgentMock.verify(1, postRequestedFor(urlEqualTo("/settings")))
-            efsAdapterMock.verify(1, postRequestedFor(urlEqualTo("/audit/event")))
 
             assertThat(response).isNotNull()
         }
+
+        efsAdapterMock.verify(2, postRequestedFor(urlEqualTo("/audit/event")))
     }
 }
