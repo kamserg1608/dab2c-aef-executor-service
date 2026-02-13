@@ -41,15 +41,12 @@ class DialogAccumulatorDelegate(
     private var outputStartTimestamp: Long = 0L
     private var outputEndTimestamp: Long = 0L
 
-    override fun processRequestChunks(requestsChunks: Flow<VoiceRequest>): Flow<VoiceRequest> {
-        val accumulatedChunks = requestsChunks.onEach { request ->
+    override fun processRequestChunks(requestsChunks: Flow<VoiceRequest>): Flow<VoiceRequest> =
+        delegate.processRequestChunks(requestsChunks).onEach { request ->
             if (request is VoiceRequest.Settings) {
                 handleVoiceSettings(request)
             }
         }
-
-        return delegate.processRequestChunks(accumulatedChunks)
-    }
 
     override fun processResponseChunks(responsesChunks: Flow<VoiceResponse>): Flow<VoiceResponse> {
         val accumulatedChunks = responsesChunks
@@ -130,8 +127,6 @@ class DialogAccumulatorDelegate(
         }
 
         reset()
-        dialog.setLength(0)
-        settingsJson = null
     }
 
     private suspend fun handleInputTranscription(
