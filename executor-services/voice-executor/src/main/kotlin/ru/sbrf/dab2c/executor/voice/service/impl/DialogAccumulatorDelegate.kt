@@ -148,7 +148,7 @@ class DialogAccumulatorDelegate(
 
     private fun appendDialogTurnToHistory() {
         val inputPhrase = inputChunks.joinToString("")
-        val outputPhrase = outputChunks.joinToString("")
+        val outputPhrase = outputChunks.joinToString("\n")
 
         appendDialogLine(ROLE_USER, inputPhrase)
         appendDialogLine(ROLE_ASSISTANT, outputPhrase)
