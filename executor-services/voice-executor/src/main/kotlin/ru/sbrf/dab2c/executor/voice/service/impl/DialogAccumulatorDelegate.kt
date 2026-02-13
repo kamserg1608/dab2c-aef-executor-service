@@ -148,7 +148,6 @@ class DialogAccumulatorDelegate(
         phase = Phase.ACCUMULATING_INPUT
         inputChunks.add(text)
 
-
         logger.debug { "Accumulated input chunk: '$text'" }
     }
 
