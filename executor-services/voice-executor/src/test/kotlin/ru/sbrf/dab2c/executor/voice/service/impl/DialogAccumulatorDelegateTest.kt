@@ -138,6 +138,8 @@ class DialogAccumulatorDelegateTest {
             val result = accumulator.processResponseChunks(responses).toList()
 
             assertEquals(5, result.size)
+
+            coVerify(exactly = 1) { auditor.success(any(), any()) }
         }
     }
 
