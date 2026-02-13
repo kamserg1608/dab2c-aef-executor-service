@@ -2,6 +2,7 @@ package ru.sbrf.dab2c.executor.voice.service.impl
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
@@ -78,18 +79,34 @@ class DialogAccumulatorDelegate(
         val rqMessage = dialog.toString().ifBlank { null }
         val rsMessage = settingsJson
 
-        if (cause == null) {
-            auditor.success(
-                request = ExternalInteractionRequest(
-                    answerCode = AuditMessageSchema.ANSWER_CODE_OK,
-                    rqMessage = rqMessage,
-                    rsMessage = rsMessage
-                ),
-                cookie = cookie
-            )
+        if (cause == null || isClientCancellation(cause)) {
+            sendSuccessAudit(cookie, rqMessage, rsMessage)
             return
         }
 
+        sendFailedAudit(cookie, rqMessage, rsMessage, cause)
+    }
+
+    private fun isClientCancellation(cause: Throwable): Boolean =
+        cause is CancellationException && cause.message?.contains("client", ignoreCase = true) == true
+
+    private suspend fun sendSuccessAudit(cookie: String, rqMessage: String?, rsMessage: String?) {
+        auditor.success(
+            request = ExternalInteractionRequest(
+                answerCode = AuditMessageSchema.ANSWER_CODE_OK,
+                rqMessage = rqMessage,
+                rsMessage = rsMessage
+            ),
+            cookie = cookie
+        )
+    }
+
+    private suspend fun sendFailedAudit(
+        cookie: String,
+        rqMessage: String?,
+        rsMessage: String?,
+        cause: Throwable
+    ) {
         auditor.failed(
             request = ExternalInteractionRequest(
                 answerCode = AuditMessageSchema.ANSWER_CODE_FAIL,
@@ -123,13 +140,14 @@ class DialogAccumulatorDelegate(
         val text = response.transcription.text
 
         if (phase == Phase.ACCUMULATING_OUTPUT) {
+            appendDialogLine(ROLE_USER, text)
             publishDialogTurn()
             reset()
         }
 
         phase = Phase.ACCUMULATING_INPUT
         inputChunks.add(text)
-        appendDialogLine(ROLE_USER, text)
+
 
         logger.debug { "Accumulated input chunk: '$text'" }
     }
@@ -212,6 +230,6 @@ class DialogAccumulatorDelegate(
         private const val ROLE_USER = "USER"
         private const val ROLE_ASSISTANT = "ASSISTANT"
         private const val WARNING_PREFIX = "[WARNING] "
-        private const val ERROR_PREFIX = "[ERROR "
+        private const val ERROR_PREFIX = "[ERROR] "
     }
 }
