@@ -60,6 +60,7 @@ class DialogAccumulatorDelegate(
                 }
             }
             .onCompletion { cause ->
+                logger.warn { "onCompletion cause=${cause?.javaClass?.name} msg=${cause?.message} inner=${cause?.cause?.javaClass?.name}" }
                 sendAuditOnCompletion(cause)
                 flushPendingDialogTurn()
             }
