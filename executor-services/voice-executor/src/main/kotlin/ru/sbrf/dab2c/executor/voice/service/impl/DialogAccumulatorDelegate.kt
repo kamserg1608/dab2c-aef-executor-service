@@ -85,7 +85,7 @@ class DialogAccumulatorDelegate(
     }
 
     private fun isClientCancellation(cause: Throwable): Boolean =
-        cause is CancellationException && cause.message?.contains("client", ignoreCase = true) == true
+        cause is CancellationException
 
     private suspend fun sendSuccessAudit(cookie: String, rqMessage: String?, rsMessage: String?) {
         auditor.success(
@@ -168,7 +168,7 @@ class DialogAccumulatorDelegate(
     }
 
     private fun handleError(response: VoiceResponse.Error) {
-        val text = "$ERROR_PREFIX${response.error.status}] ${response.error.message}"
+        val text = "$ERROR_PREFIX${response.error.status} ${response.error.message}"
         appendAssistantChunk(text)
         appendDialogLine(ROLE_ASSISTANT, text)
     }
