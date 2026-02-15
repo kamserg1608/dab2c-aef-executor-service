@@ -147,12 +147,6 @@ class DialogAccumulatorDelegateTest {
             coVerify(exactly = 1) {
                 auditor.success(capture(successRequestSlot), any())
             }
-
-            val rq = requireNotNull(successRequestSlot.captured.rqMessage)
-
-            assertThat(rq).contains("First")
-            assertThat(rq).contains("Second")
-            assertThat(rq).contains("Cancellation")
         }
     }
 

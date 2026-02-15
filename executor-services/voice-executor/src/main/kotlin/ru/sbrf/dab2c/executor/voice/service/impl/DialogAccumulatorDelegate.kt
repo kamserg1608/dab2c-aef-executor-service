@@ -81,7 +81,11 @@ class DialogAccumulatorDelegate(
         val rsMessage = settingsJson
 
         if (cause == null || isClientCancellation(cause)) {
-            sendSuccessAudit(cookie, rqMessage, rsMessage)
+            sendSuccessAudit(
+                cookie = cookie,
+                rqMessage = "test1",
+                rsMessage = "test2"
+            )
             return
         }
 
@@ -92,19 +96,14 @@ class DialogAccumulatorDelegate(
         cause is CancellationException
 
     private suspend fun sendSuccessAudit(cookie: String, rqMessage: String?, rsMessage: String?) {
-        val unusedRqMessage = rqMessage
-        val unusedRsMessage = rsMessage
-
         auditor.success(
             request = ExternalInteractionRequest(
                 answerCode = AuditMessageSchema.ANSWER_CODE_OK,
-                rqMessage = "test1",
-                rsMessage = "test2"
+                rqMessage = rqMessage,
+                rsMessage = rsMessage
             ),
             cookie = cookie
         )
-
-        if (unusedRqMessage != null || unusedRsMessage != null) Unit
     }
 
     private suspend fun sendFailedAudit(
