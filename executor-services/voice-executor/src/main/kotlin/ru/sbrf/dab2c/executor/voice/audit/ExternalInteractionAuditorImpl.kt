@@ -23,7 +23,7 @@ class ExternalInteractionAuditorImpl(
     override suspend fun success(request: ExternalInteractionRequest, cookie: String) {
         auditEventSender.sendEvent(
             event = AuditEvent(
-                event = AuditEventNames.DAB2C_EXTERNAL_INTERACTION,
+                event = AuditEventNames.DAB2C_EXTERNAL_INTERACTION_FAILED,
                 success = true,
                 params = interactionParams(request)
             ),
