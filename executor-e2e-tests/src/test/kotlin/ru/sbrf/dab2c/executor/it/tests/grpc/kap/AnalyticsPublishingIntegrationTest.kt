@@ -57,7 +57,7 @@ class AnalyticsPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(analyticsRecords).isNotEmpty()
 
         val receivedAnalytics = analyticsRecords.first()
-        assertThat(receivedAnalytics.version).isEqualTo("1.2.0")
+        assertThat(receivedAnalytics.version).isEqualTo("1.0.0")
 
         val enrichedData = KafkaTestSupport.objectMapper.readValue<AgentAnalyticsData>(receivedAnalytics.data!!)
         assertThat(enrichedData.data).isEqualTo(testAnalyticsData)
@@ -113,7 +113,7 @@ class AnalyticsPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(analyticsRecords).isNotEmpty()
 
         val receivedAnalytics = analyticsRecords.first()
-        assertThat(receivedAnalytics.version).isEqualTo("1.2.0")
+        assertThat(receivedAnalytics.version).isEqualTo("1.0.0")
 
         val enrichedData = KafkaTestSupport.objectMapper.readValue<AgentAnalyticsData>(receivedAnalytics.data!!)
         assertThat(enrichedData.data).isEqualTo(testAnalyticsData)

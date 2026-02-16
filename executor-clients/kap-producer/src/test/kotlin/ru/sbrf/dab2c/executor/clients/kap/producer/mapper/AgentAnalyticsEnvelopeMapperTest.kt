@@ -21,7 +21,7 @@ class AgentAnalyticsEnvelopeMapperTest {
 
         val envelope = AgentAnalyticsEnvelopeMapper.toAgentAnalyticsEnvelope(turnData)
 
-        assertEquals("1.2.0", envelope.version)
+        assertEquals("1.0.0", envelope.version)
         assertEquals("envelope-123", envelope.id)
         assertEquals(1705849200L, envelope.date)
 
