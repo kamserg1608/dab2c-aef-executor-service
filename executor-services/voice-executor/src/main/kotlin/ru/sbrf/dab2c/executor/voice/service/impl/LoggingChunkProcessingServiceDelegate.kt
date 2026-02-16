@@ -28,34 +28,38 @@ class LoggingChunkProcessingServiceDelegate(
     override fun processRequestChunks(requestsChunks: Flow<VoiceRequest>): Flow<VoiceRequest> {
         val observedChunks = requestsChunks
             .onStart { logSessionStart() }
-            .onEach { request -> logRequest(request) }
-            .onCompletion { error -> logSessionEnd(error) }
+            .onEach { request -> logRequest(DIRECTION_IN, request) }
         return delegate.processRequestChunks(observedChunks)
+            .onEach { request -> logRequest(DIRECTION_OUT, request) }
     }
 
     override fun processResponseChunks(responsesChunks: Flow<VoiceResponse>): Flow<VoiceResponse> {
         val observedChunks = responsesChunks
-            .onEach { response -> logResponse(response) }
+            .onEach { response -> logResponse(DIRECTION_IN, response) }
         return delegate.processResponseChunks(observedChunks)
+            .onEach { response -> logResponse(DIRECTION_OUT, response) }
+            .onCompletion { error -> logSessionEnd(error) }
     }
 
-    private fun logRequest(request: VoiceRequest) {
+    private fun logRequest(direction: String, request: VoiceRequest) {
         if (request is VoiceRequest.Audio) {
-            logger.trace { "$REQUEST_PREFIX${request.copy(content = request.content.copy(audioChunk = null))}" }
+            logger.debug {
+                "$direction$REQUEST_PREFIX${request.copy(content = request.content.copy(audioChunk = null))}"
+            }
         } else {
-            logger.debug { "$REQUEST_PREFIX$request" }
+            logger.debug { "$direction$REQUEST_PREFIX$request" }
         }
     }
 
-    private fun logResponse(response: VoiceResponse) {
+    private fun logResponse(direction: String, response: VoiceResponse) {
         if (response is VoiceResponse.Output && response.content is ContentFromModel.Audio) {
             val content = response.content as ContentFromModel.Audio
             val sanitized = response.copy(
                 content = content.copy(audio = content.audio.copy(audioChunk = byteArrayOf()))
             )
-            logger.trace { "$RESPONSE_PREFIX$sanitized" }
+            logger.debug { "$direction$RESPONSE_PREFIX$sanitized" }
         } else {
-            logger.debug { "$RESPONSE_PREFIX$response" }
+            logger.debug { "$direction$RESPONSE_PREFIX$response" }
         }
     }
 
@@ -86,7 +90,9 @@ class LoggingChunkProcessingServiceDelegate(
     }
 
     private companion object {
-        private const val REQUEST_PREFIX = "Request: "
-        private const val RESPONSE_PREFIX = "Response: "
+        private const val REQUEST_PREFIX = "Request] -> "
+        private const val RESPONSE_PREFIX = "Response] -> "
+        private const val DIRECTION_IN = "[IN:"
+        private const val DIRECTION_OUT = "[OUT:"
     }
 }
