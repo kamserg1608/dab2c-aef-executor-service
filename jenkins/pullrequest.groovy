@@ -27,7 +27,7 @@ void check() {
 }
 
 void gradlew(String task, String options) {
-    withPreparedEnv("openjdk-21") {
+    withPreparedEnv("sberjdk-21") {
         withCredentials([usernamePassword(
                 credentialsId: 'nexus_ci_cred',
                 passwordVariable: 'wrappedPassword',
