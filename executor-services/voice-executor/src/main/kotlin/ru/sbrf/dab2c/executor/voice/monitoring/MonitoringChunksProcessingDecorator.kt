@@ -61,7 +61,7 @@ class MonitoringChunksProcessingDecorator(
                 ).increment()
 
                 timerSample = monitoringServiceFactory.createTimerSample(
-                    ExecutorVoiceMetric.GRPC_CONNECTIONS_DURATION,
+                    ExecutorVoiceMetric.GRPC_CONNECTIONS_DURATION_SECONDS,
                     platform = platform,
                     channel = channel,
                     tagsMap = emptyMap()
@@ -123,7 +123,7 @@ class MonitoringChunksProcessingDecorator(
 
                     trackChunk(
                         response,
-                        ExecutorVoiceMetric.GRPC_RESPONSE_TOTAL_TOKENS,
+                        ExecutorVoiceMetric.GRPC_RESPONSE_TOKENS_TOTAL,
                         mapOf(
                             "model" to (modelInfo?.data?.gigachatModelInfo?.name ?: UNKNOWN),
                             "version" to (modelInfo?.data?.gigachatModelInfo?.version ?: UNKNOWN)

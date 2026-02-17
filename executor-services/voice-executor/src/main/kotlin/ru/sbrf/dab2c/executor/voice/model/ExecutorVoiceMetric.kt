@@ -12,9 +12,9 @@ enum class ExecutorVoiceMetric(
     GRPC_OUTGOING_FROM_INITIATOR_CHUNKS_TOTAL("grpc_outgoing_to_initiator_chunks_total"),
     GRPC_OUTGOING_FROM_GIGAVOICE_CHUNKS_TOTAL("grpc_outgoing_to_gigavoice_chunks_total"),
     GRPC_INCOMING_FROM_GIGAVOICE_CHUNKS_TOTAL("grpc_incoming_from_gigavoice_chunks_total"),
-    GRPC_RESPONSE_TOTAL_TOKENS("grpc_response_total_tokens"),
+    GRPC_RESPONSE_TOKENS_TOTAL("grpc_response_tokens_total"),
     GRPC_CONNECTIONS_TOTAL("grpc_connections_total"),
     GRPC_CONNECTIONS_ACTIVE("grpc_connections_active"),
-    GRPC_CONNECTIONS_DURATION("grpc_connections_duration"),
+    GRPC_CONNECTIONS_DURATION_SECONDS("grpc_connections_duration_seconds"),
     GRPC_CONNECTIONS_TTFB_SECONDS("grpc_connections_ttfb_seconds")
 }
