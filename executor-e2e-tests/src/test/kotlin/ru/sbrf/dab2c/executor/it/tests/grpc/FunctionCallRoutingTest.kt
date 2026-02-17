@@ -1,4 +1,4 @@
-package ru.sbrf.dab2c.executor.it.tests.grpc.full
+package ru.sbrf.dab2c.executor.it.tests.grpc
 
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.post
@@ -13,7 +13,7 @@ import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.func
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.outputTranscriptionResponse
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
-import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupFullModeStubs
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubs
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubGigaAgentFunctions
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 
@@ -21,13 +21,13 @@ import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
  * Full Mode - Function Call Routing Tests.
  * Verifies routing of FunctionCalling between IVR and backend execution.
  */
-class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
+class FunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should proxy IVR function to client when isBackendFunction is false`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("ivr-function-test"))
             mock.awaitRequest { it.hasSettings() }
@@ -51,9 +51,9 @@ class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should proxy unknown function to IVR client by default`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("unknown-function-test"))
             mock.awaitRequest { it.hasSettings() }
@@ -76,10 +76,10 @@ class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should execute backend function via GigaAgent when isBackendFunction is true`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
         gigaVoiceAgentMock.stubGigaAgentFunctions("get_account_balance", """{"balance": 1000}""")
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("backend-function-test"))
             mock.awaitRequest { it.hasSettings() }
@@ -102,7 +102,7 @@ class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should send error function result to downstream when GigaAgent functions endpoint returns 500`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
 
         gigaVoiceAgentMock.stubFor(
             post(urlEqualTo("/functions"))
@@ -113,7 +113,7 @@ class FullFunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
                 )
         )
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("functions-error-test"))
             mock.awaitRequest { it.hasSettings() }

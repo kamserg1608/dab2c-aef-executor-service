@@ -172,7 +172,7 @@ object WireMockSetup {
         )
     }
 
-    fun setupFullModeStubs(
+    fun setupStubs(
         efsAdapter: WireMockServer,
         gigaAgent: WireMockServer,
         withFunctions: Boolean = false,
@@ -186,7 +186,7 @@ object WireMockSetup {
         gigaAgent.stubGigaAgentSettings(withFunctions)
     }
 
-    fun setupFullModeStubsWithAnalytics(
+    fun setupStubsWithAnalytics(
         efsAdapter: WireMockServer,
         gigaAgent: WireMockServer,
         dataVersion: String,

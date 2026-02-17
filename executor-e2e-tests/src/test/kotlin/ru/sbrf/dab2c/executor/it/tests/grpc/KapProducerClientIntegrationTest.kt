@@ -1,4 +1,4 @@
-package ru.sbrf.dab2c.executor.it.tests.grpc.kap
+package ru.sbrf.dab2c.executor.it.tests.grpc
 
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals

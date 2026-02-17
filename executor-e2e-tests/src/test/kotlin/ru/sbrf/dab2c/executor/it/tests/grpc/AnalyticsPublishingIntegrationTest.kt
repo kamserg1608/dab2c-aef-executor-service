@@ -1,4 +1,4 @@
-package ru.sbrf.dab2c.executor.it.tests.grpc.kap
+package ru.sbrf.dab2c.executor.it.tests.grpc
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
@@ -14,7 +14,7 @@ import ru.sbrf.dab2c.executor.it.support.kafka.KafkaTestSupport
 import ru.sbrf.dab2c.executor.it.support.kafka.KafkaTestSupport.withConsumer
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
-import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupFullModeStubsWithAnalytics
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubsWithAnalytics
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubConfiguratorSession
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubEfsRestAgent
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubGigaAgentFunctionsWithAnalytics
@@ -33,7 +33,7 @@ class AnalyticsPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
     fun `should publish analytics to KAP when settings response contains analytics`() = runItTest {
         val testAnalyticsData = """{"metric":"test-value","count":123}"""
 
-        setupFullModeStubsWithAnalytics(
+        setupStubsWithAnalytics(
             efsAdapterMock,
             gigaVoiceAgentMock,
             "2.0.0",
@@ -45,7 +45,7 @@ class AnalyticsPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
             filter = { it.data != null && it.data!!.contains("test-value") }
         ) {
             runItTest {
-                withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+                withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
                     session.sendRequest(contextRequest())
                     session.sendRequest(settingsRequest())
 
@@ -91,7 +91,7 @@ class AnalyticsPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
             filter = { it.data != null && it.data!!.contains("function-value") }
         ) {
             runItTest {
-                withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+                withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
                     session.sendRequest(contextRequest())
                     session.sendRequest(settingsRequest())
 

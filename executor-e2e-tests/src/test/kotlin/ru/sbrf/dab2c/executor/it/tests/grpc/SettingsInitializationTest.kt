@@ -1,4 +1,4 @@
-package ru.sbrf.dab2c.executor.it.tests.grpc.full
+package ru.sbrf.dab2c.executor.it.tests.grpc
 
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.post
@@ -17,20 +17,20 @@ import ru.sbrf.dab2c.executor.it.support.grpc.MetadataInterceptor
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockResponses
-import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupFullModeStubs
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubs
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 
 /**
  * Full Mode - Settings Initialization Tests.
  * Verifies settings resolution via HTTP APIs and error handling.
  */
-class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
+class SettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should call EFS and GigaAgent when processing settings`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock)
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("test-call-123"))
             wireMock.awaitPostCall("/settings")
@@ -38,15 +38,13 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
             efsAdapterMock.verify(1, postRequestedFor(urlEqualTo("/configurator/rest-agent")))
             gigaVoiceAgentMock.verify(1, postRequestedFor(urlEqualTo("/settings")))
         }
-
-//        efsAdapterMock.verify(2, postRequestedFor(urlEqualTo("/audit/event")))
     }
 
     @Test
     fun `should forward settings to downstream after initialization`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock)
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("forwarded-call-456"))
 
@@ -61,9 +59,9 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should process audio after settings initialization`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock)
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("audio-flow-test"))
             mock.awaitRequest { it.hasSettings() }
@@ -100,7 +98,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
                 )
         )
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("efs-error-test"))
 
@@ -143,7 +141,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
                 )
         )
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("agent-error-test"))
 
@@ -158,7 +156,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should fail when session header is missing`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock)
 
         val stubWithoutSession = clientStub.withInterceptors(
             MetadataInterceptor(
@@ -183,7 +181,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should fail when token header is missing`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock)
 
         val stubWithoutToken = clientStub.withInterceptors(
             MetadataInterceptor(
@@ -208,7 +206,7 @@ class FullSettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should fail when edu_id header is missing`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock)
 
         val stubWithoutEduId = clientStub.withInterceptors(
             MetadataInterceptor(

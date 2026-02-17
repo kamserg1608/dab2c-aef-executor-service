@@ -1,4 +1,4 @@
-package ru.sbrf.dab2c.executor.it.tests.grpc.full
+package ru.sbrf.dab2c.executor.it.tests.grpc
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -19,7 +19,7 @@ import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.warn
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockAwaiter
-import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupFullModeStubs
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubs
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubGigaAgentFunctions
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 
@@ -34,10 +34,10 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should emit external interaction audit with dialog transcript on multi-turn conversation`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock)
         val auditAwaiter = WireMockAwaiter(efsAdapterMock)
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("audit-multi-turn"))
             mock.awaitRequest { it.hasSettings() }
@@ -67,16 +67,17 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(params["ANSWER_CODE"]).isEqualTo("200")
         assertThat(params["SENDER"]).isEqualTo("dab2c-aef-executor")
         assertThat(params["RECEIVER"]).isEqualTo("voice-external")
-        assertThat(params["RQ_MESSAGE"]).isEqualTo("USER: Hello\nASSISTANT: World\nUSER: Next\nASSISTANT: Response")
+        val expectedDialog = "USER: Hello\nASSISTANT: World\nUSER: Next\nASSISTANT: Response\nUSER: Third"
+        assertThat(params["RQ_MESSAGE"]).isEqualTo(expectedDialog)
         assertThat(params["RS_MESSAGE"]).isNotNull()
     }
 
     @Test
     fun `should include warning in external audit dialog transcript`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock)
         val auditAwaiter = WireMockAwaiter(efsAdapterMock)
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("audit-warning"))
             mock.awaitRequest { it.hasSettings() }
@@ -89,15 +90,15 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
         val externalAudit = findAuditEvent(auditRequests, "DAB2C_EXTERNAL_INTERACTION")
 
         assertThat(externalAudit).isNotNull
-        assertThat(externalAudit!!.params()["RQ_MESSAGE"]).isEqualTo("ASSISTANT: [WARNING] High latency")
+        assertThat(externalAudit!!.params()["RQ_MESSAGE"]).isEqualTo("[WARNING] High latency")
     }
 
     @Test
     fun `should include error in external audit dialog transcript`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock)
         val auditAwaiter = WireMockAwaiter(efsAdapterMock)
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("audit-error"))
             mock.awaitRequest { it.hasSettings() }
@@ -110,15 +111,15 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
         val externalAudit = findAuditEvent(auditRequests, "DAB2C_EXTERNAL_INTERACTION")
 
         assertThat(externalAudit).isNotNull
-        assertThat(externalAudit!!.params()["RQ_MESSAGE"]).isEqualTo("ASSISTANT: [ERROR] 503 unavailable")
+        assertThat(externalAudit!!.params()["RQ_MESSAGE"]).isEqualTo("[ERROR] 503 unavailable")
     }
 
     @Test
     fun `should emit failed external interaction audit when downstream stream errors`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock)
         val auditAwaiter = WireMockAwaiter(efsAdapterMock)
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("audit-stream-error"))
             mock.awaitRequest { it.hasSettings() }
@@ -141,16 +142,19 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(params["ANSWER_CODE"]).isEqualTo("500")
         assertThat(params["ERROR_CODE"]).isEqualTo("VOICE_RESPONSE_STREAM_ERROR")
         assertThat(params["ERROR_TITLE"]).isNotBlank()
+        assertThat(params["RQ_MESSAGE"]).contains("USER: Hello")
+        assertThat(params["RQ_MESSAGE"]).contains("ASSISTANT: World")
+        assertThat(params["RQ_MESSAGE"]).contains("[EXCEPTION]")
     }
 
     // --- Agent Interaction Audit Tests ---
 
     @Test
     fun `should emit agent interaction audit with request and response content on settings call`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock)
         val auditAwaiter = WireMockAwaiter(efsAdapterMock)
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("audit-agent-settings"))
             mock.awaitRequest { it.hasSettings() }
@@ -195,7 +199,7 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
         val auditAwaiter = WireMockAwaiter(efsAdapterMock)
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("audit-agent-error"))
 
@@ -216,11 +220,11 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should emit agent interaction audit for backend function execution`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
         gigaVoiceAgentMock.stubGigaAgentFunctions("get_account_balance", """{"balance": 1000}""")
         val auditAwaiter = WireMockAwaiter(efsAdapterMock)
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("audit-function-call"))
             mock.awaitRequest { it.hasSettings() }
@@ -252,7 +256,7 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should emit failed agent interaction audit when GigaAgent functions returns 500`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
 
         gigaVoiceAgentMock.stubFor(
             post(urlEqualTo("/functions"))
@@ -265,7 +269,7 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
         val auditAwaiter = WireMockAwaiter(efsAdapterMock)
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("audit-function-error"))
             mock.awaitRequest { it.hasSettings() }
@@ -298,10 +302,10 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should include UFS session and token cookies on audit requests`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock)
         val auditAwaiter = WireMockAwaiter(efsAdapterMock)
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("audit-cookies"))
             mock.awaitRequest { it.hasSettings() }
@@ -329,9 +333,9 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
                 )
         )
 
-        setupFullModeStubsWithoutAudit()
+        setupStubsWithoutAudit()
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("audit-resilience"))
             mock.awaitRequest { it.hasSettings() }
@@ -354,7 +358,7 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
     private fun parseAuditEvent(request: LoggedRequest): AuditEventBody =
         AuditEventBody(objectMapper.readValue(request.bodyAsString))
 
-    private fun setupFullModeStubsWithoutAudit() {
+    private fun setupStubsWithoutAudit() {
         efsAdapterMock.stubFor(
             post(urlEqualTo("/configurator/rest-agent"))
                 .willReturn(

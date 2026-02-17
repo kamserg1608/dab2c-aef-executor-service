@@ -5,6 +5,8 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
@@ -218,6 +220,145 @@ class DialogAccumulatorDelegateTest {
             val result = accumulator.processResponseChunks(responses).toList()
 
             assertEquals(5, result.size)
+        }
+    }
+
+    @Nested
+    inner class AuditOnCompletionTest {
+
+        @Test
+        fun `should flush trailing turn and send success audit on normal completion`() = runTest {
+            withContext(metadataContext) {
+                val responses = flowOf(
+                    createInputTranscription("Hello"),
+                    createOutputTranscription("World")
+                )
+
+                accumulator.processResponseChunks(responses).toList()
+
+                val requestSlot = slot<ExternalInteractionRequest>()
+                coVerify(exactly = 1) { auditor.success(capture(requestSlot), any()) }
+                coVerify(exactly = 0) { auditor.failed(any(), any()) }
+
+                assertThat(requestSlot.captured.rqMessage)
+                    .isEqualTo("USER: Hello\nASSISTANT: World")
+            }
+        }
+
+        @Test
+        fun `should flush trailing turn and append exception on CancellationException`() = runTest {
+            withContext(metadataContext) {
+                val responses = flow {
+                    emit(createInputTranscription("Hello"))
+                    emit(createOutputTranscription("World"))
+                    throw CancellationException("client cancelled")
+                }
+
+                runCatching { accumulator.processResponseChunks(responses).toList() }
+
+                val requestSlot = slot<ExternalInteractionRequest>()
+                coVerify(exactly = 1) { auditor.success(capture(requestSlot), any()) }
+                coVerify(exactly = 0) { auditor.failed(any(), any()) }
+
+                val expectedDialog = "USER: Hello\nASSISTANT: World\n" +
+                    "[EXCEPTION] CancellationException client cancelled"
+                assertThat(requestSlot.captured.rqMessage).isEqualTo(expectedDialog)
+            }
+        }
+
+        @Test
+        fun `should flush trailing turn and append exception on RuntimeException`() = runTest {
+            withContext(metadataContext) {
+                val responses = flow {
+                    emit(createInputTranscription("Hello"))
+                    emit(createOutputTranscription("World"))
+                    throw RuntimeException("stream failure")
+                }
+
+                runCatching { accumulator.processResponseChunks(responses).toList() }
+
+                val requestSlot = slot<ExternalInteractionRequest>()
+                coVerify(exactly = 0) { auditor.success(any(), any()) }
+                coVerify(exactly = 1) { auditor.failed(capture(requestSlot), any()) }
+
+                assertThat(requestSlot.captured.rqMessage)
+                    .isEqualTo("USER: Hello\nASSISTANT: World\n[EXCEPTION] RuntimeException stream failure")
+            }
+        }
+
+        @Test
+        fun `should flush trailing turn in multi-turn dialog with exception`() = runTest {
+            withContext(metadataContext) {
+                val responses = flow {
+                    emit(createInputTranscription("Hello"))
+                    emit(createOutputTranscription("World"))
+                    emit(createInputTranscription("Next"))
+                    emit(createOutputTranscription("Response"))
+                    throw RuntimeException("stream failure")
+                }
+
+                runCatching { accumulator.processResponseChunks(responses).toList() }
+
+                val requestSlot = slot<ExternalInteractionRequest>()
+                coVerify(exactly = 1) { auditor.failed(capture(requestSlot), any()) }
+
+                val expectedDialog = "USER: Hello\nASSISTANT: World\nUSER: Next\n" +
+                    "ASSISTANT: Response\n[EXCEPTION] RuntimeException stream failure"
+                assertThat(requestSlot.captured.rqMessage).isEqualTo(expectedDialog)
+            }
+        }
+
+        @Test
+        fun `should flush input-only trailing buffer on completion`() = runTest {
+            withContext(metadataContext) {
+                val responses = flowOf(
+                    createInputTranscription("Hello")
+                )
+
+                accumulator.processResponseChunks(responses).toList()
+
+                val requestSlot = slot<ExternalInteractionRequest>()
+                coVerify(exactly = 1) { auditor.success(capture(requestSlot), any()) }
+
+                assertThat(requestSlot.captured.rqMessage)
+                    .isEqualTo("USER: Hello")
+            }
+        }
+
+        @Test
+        fun `should flush input and warning trailing buffer on completion`() = runTest {
+            withContext(metadataContext) {
+                val responses = flowOf(
+                    createInputTranscription("Hello"),
+                    createWarning("warn")
+                )
+
+                accumulator.processResponseChunks(responses).toList()
+
+                val requestSlot = slot<ExternalInteractionRequest>()
+                coVerify(exactly = 1) { auditor.success(capture(requestSlot), any()) }
+
+                assertThat(requestSlot.captured.rqMessage)
+                    .isEqualTo("[WARNING] warn\nUSER: Hello")
+            }
+        }
+
+        @Test
+        fun `should flush input and error trailing buffer on completion`() = runTest {
+            withContext(metadataContext) {
+                val responses = flowOf(
+                    createInputTranscription("Hello"),
+                    createError(503, "fail")
+                )
+
+                accumulator.processResponseChunks(responses).toList()
+
+                val requestSlot = slot<ExternalInteractionRequest>()
+                coVerify(exactly = 1) { auditor.success(capture(requestSlot), any()) }
+
+                assertThat(requestSlot.captured.rqMessage)
+                    .isEqualTo("[ERROR] 503 fail\nUSER: Hello")
+            }
         }
     }
 

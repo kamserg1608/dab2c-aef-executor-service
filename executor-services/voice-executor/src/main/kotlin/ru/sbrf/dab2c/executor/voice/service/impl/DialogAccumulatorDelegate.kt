@@ -15,6 +15,7 @@ import ru.sbrf.dab2c.executor.voice.model.ufsCookie
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.service.api.DialogTurnPublisher
 import ru.sbrf.dab2c.executor.voice.util.extensions.currentRequestMetadata
+import kotlin.reflect.KClass
 
 /**
  * ChunkProcessingService decorator that accumulates dialog transcriptions and publishes them.
@@ -71,21 +72,84 @@ class DialogAccumulatorDelegate(
         settingsJson = objectMapper.writeValueAsString(request.settings)
     }
 
-    private suspend fun sendAuditOnCompletion(cause: Throwable?) {
-        val cookie = currentRequestMetadata().ufsCookie
-        val rqMessage = dialog.toString().ifBlank { null }
-        val rsMessage = settingsJson
+    private suspend fun handleInputTranscription(
+        response: VoiceResponse.InputTranscription
+    ) {
+        val text = response.transcription.text
 
-        if (cause == null || isClientCancellation(cause)) {
-            sendSuccessAudit(cookie, rqMessage, rsMessage)
-            return
+        if (phase == Phase.ACCUMULATING_OUTPUT) {
+            publishDialogTurn()
+            appendDialogTurnToHistory()
+            reset()
         }
 
-        sendFailedAudit(cookie, rqMessage, rsMessage, cause)
+        phase = Phase.ACCUMULATING_INPUT
+        inputChunks.add(text)
+
+        logger.debug { "Accumulated input chunk: '$text'" }
     }
 
-    private fun isClientCancellation(cause: Throwable): Boolean =
-        cause is CancellationException
+    private fun handleOutputTranscription(
+        response: VoiceResponse.OutputTranscription
+    ) {
+        if (outputChunks.isEmpty()) {
+            outputStartTimestamp = System.currentTimeMillis()
+        }
+
+        phase = Phase.ACCUMULATING_OUTPUT
+        outputChunks.add(response.transcription.text)
+        outputEndTimestamp = System.currentTimeMillis()
+
+        logger.debug { "Accumulated output chunk: '${response.transcription.text}'" }
+    }
+
+    private suspend fun flushPendingDialogTurn() {
+        if (
+            phase == Phase.ACCUMULATING_OUTPUT &&
+            inputChunks.isNotEmpty() &&
+            outputChunks.isNotEmpty()
+        ) {
+            logger.debug { "Flushing final dialog turn on session completion" }
+            publishDialogTurn()
+        }
+    }
+
+    private fun appendDialogTurnToHistory() {
+        val inputPhrase = inputChunks.joinToString("")
+        val outputPhrase = outputChunks.joinToString("\n")
+
+        appendDialogLine(ROLE_USER, inputPhrase)
+        appendDialogLine(ROLE_ASSISTANT, outputPhrase)
+    }
+
+    private fun handleWarning(response: VoiceResponse.Warning) {
+        appendDialogLine(WARNING_PREFIX, response.warning.message)
+    }
+
+    private fun handleException(cause: Throwable) {
+        appendDialogLine(EXCEPTION_PREFIX, "${cause::class.simpleName} ${cause.message}")
+    }
+
+    private fun handleError(response: VoiceResponse.Error) {
+        appendDialogLine(ERROR_PREFIX, "${response.error.status} ${response.error.message}")
+    }
+
+    private fun appendDialogLine(prefix: String, text: String) {
+        if (text.isNotBlank()) dialog.append("$prefix${text.trim()}\n")
+    }
+
+    private suspend fun publishDialogTurn() {
+        val inputPhrase = inputChunks.joinToString("")
+        val outputPhrase = outputChunks.joinToString("")
+        val assistantResponseTime = outputEndTimestamp - outputStartTimestamp
+
+        logger.info {
+            "Dialog turn completed: input='$inputPhrase', output='$outputPhrase', " +
+                "assistantResponseTime=${assistantResponseTime}ms"
+        }
+
+        dialogTurnPublisher.publishDialogTurn(inputPhrase, outputPhrase, assistantResponseTime)
+    }
 
     private suspend fun sendSuccessAudit(cookie: String, rqMessage: String?, rsMessage: String?) {
         auditor.success(
@@ -116,87 +180,28 @@ class DialogAccumulatorDelegate(
         )
     }
 
-    private suspend fun flushPendingDialogTurn() {
-        if (
-            phase == Phase.ACCUMULATING_OUTPUT &&
-            inputChunks.isNotEmpty() &&
-            outputChunks.isNotEmpty()
-        ) {
-            logger.debug { "Flushing final dialog turn on session completion" }
-            publishDialogTurn()
+    private suspend fun sendAuditOnCompletion(cause: Throwable?) {
+        val cookie = currentRequestMetadata().ufsCookie
+        val rsMessage = settingsJson
+
+        appendDialogTurnToHistory()
+
+        if (cause != null) {
+            handleException(cause)
         }
 
-        reset()
-    }
+        val rqMessage = dialog.toString().trim().ifBlank { null }
 
-    private suspend fun handleInputTranscription(
-        response: VoiceResponse.InputTranscription
-    ) {
-        val text = response.transcription.text
-
-        if (phase == Phase.ACCUMULATING_OUTPUT) {
-            publishDialogTurn()
-            appendDialogTurnToHistory()
-            reset()
+        if (cause == null || isNonFailureException(cause)) {
+            sendSuccessAudit(cookie, rqMessage, rsMessage)
+            return
         }
 
-        phase = Phase.ACCUMULATING_INPUT
-        inputChunks.add(text)
-
-        logger.debug { "Accumulated input chunk: '$text'" }
+        sendFailedAudit(cookie, rqMessage, rsMessage, cause)
     }
 
-    private fun appendDialogTurnToHistory() {
-        val inputPhrase = inputChunks.joinToString("")
-        val outputPhrase = outputChunks.joinToString("\n")
-
-        appendDialogLine(ROLE_USER, inputPhrase)
-        appendDialogLine(ROLE_ASSISTANT, outputPhrase)
-    }
-
-    private fun handleOutputTranscription(
-        response: VoiceResponse.OutputTranscription
-    ) {
-        val text = response.transcription.text
-        appendAssistantChunk(text)
-    }
-
-    private fun handleWarning(response: VoiceResponse.Warning) {
-        val text = "$WARNING_PREFIX${response.warning.message}"
-        appendAssistantChunk(text)
-        appendDialogLine(ROLE_ASSISTANT, text)
-    }
-
-    private fun handleError(response: VoiceResponse.Error) {
-        val text = "$ERROR_PREFIX${response.error.status} ${response.error.message}"
-        appendAssistantChunk(text)
-        appendDialogLine(ROLE_ASSISTANT, text)
-    }
-
-    private fun appendAssistantChunk(text: String) {
-        if (outputChunks.isEmpty()) {
-            outputStartTimestamp = System.currentTimeMillis()
-        }
-
-        phase = Phase.ACCUMULATING_OUTPUT
-        outputChunks.add(text)
-        outputEndTimestamp = System.currentTimeMillis()
-
-        logger.debug { "Accumulated output chunk: '$text'" }
-    }
-
-    private suspend fun publishDialogTurn() {
-        val inputPhrase = inputChunks.joinToString("")
-        val outputPhrase = outputChunks.joinToString("")
-        val assistantResponseTime = outputEndTimestamp - outputStartTimestamp
-
-        logger.info {
-            "Dialog turn completed: input='$inputPhrase', output='$outputPhrase', " +
-                "assistantResponseTime=${assistantResponseTime}ms"
-        }
-
-        dialogTurnPublisher.publishDialogTurn(inputPhrase, outputPhrase, assistantResponseTime)
-    }
+    private fun isNonFailureException(cause: Throwable): Boolean =
+        NON_FAILURE_EXCEPTIONS.any { it.isInstance(cause) }
 
     private fun reset() {
         inputChunks.clear()
@@ -204,19 +209,6 @@ class DialogAccumulatorDelegate(
         outputStartTimestamp = 0L
         outputEndTimestamp = 0L
         phase = Phase.AWAITING_INPUT
-    }
-
-    private fun appendDialogLine(prefix: String, text: String) {
-        val trimmed = text.trim()
-        if (trimmed.isBlank()) return
-
-        if (dialog.isNotEmpty()) {
-            dialog.append('\n')
-        }
-
-        dialog.append(prefix)
-            .append(": ")
-            .append(trimmed)
     }
 
     private enum class Phase {
@@ -228,9 +220,14 @@ class DialogAccumulatorDelegate(
     private companion object {
         private val logger = KotlinLogging.logger {}
 
-        private const val ROLE_USER = "USER"
-        private const val ROLE_ASSISTANT = "ASSISTANT"
+        private const val ROLE_USER = "USER: "
+        private const val ROLE_ASSISTANT = "ASSISTANT: "
         private const val WARNING_PREFIX = "[WARNING] "
         private const val ERROR_PREFIX = "[ERROR] "
+        private const val EXCEPTION_PREFIX = "[EXCEPTION] "
+
+        private val NON_FAILURE_EXCEPTIONS: List<KClass<out Throwable>> = listOf(
+            CancellationException::class
+        )
     }
 }

@@ -1,7 +1,6 @@
 package ru.sbrf.dab2c.executor.clients.efs.adapter.configuration.audit
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.CancellationException
 import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.AuditClient
 import ru.sbrf.dab2c.executor.library.audit.model.AuditEvent
@@ -22,10 +21,10 @@ class EfsAuditEventSender(
      */
     @Suppress("SwallowedException")
     override suspend fun sendEvent(event: AuditEvent, cookie: String) {
+        logger.trace { "Sending audit event=${event.event}, success=${event.success}" }
         try {
             auditClient.sendEvent(event, cookie)
-        } catch (_: CancellationException) {
-            return
+            logger.trace { "Audit event sent successfully: ${event.event}" }
         } catch (t: Throwable) {
             logger.error(t) { "Failed to send audit event=${event.event}" }
         }

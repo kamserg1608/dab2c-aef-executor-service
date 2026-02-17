@@ -21,7 +21,6 @@ grpc:
 # Voice Executor
 executor:
   voice:
-    proxyMode: true
     agentName: voice-executor-stub
     channel: voice
 

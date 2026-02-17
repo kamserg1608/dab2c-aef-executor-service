@@ -125,22 +125,8 @@ abstract class BaseGigaVoiceIntegrationTest {
         clientChannel.shutdown()
     }
 
-    /** Creates a stub configured for proxy mode (pass-through). */
-    protected fun proxyStub(): GigaVoiceServiceCoroutineStub =
-        clientStub.withInterceptors(
-            MetadataInterceptor(
-                mapOf(
-                    "proxy" to "true",
-                    "x-channel" to "MOB_BANK",
-                    "x-token" to "proxy-token",
-                    "x-session" to "proxy-session",
-                    "x-platform" to "proxy-platform"
-                )
-            )
-        )
-
-    /** Creates a stub configured for non-proxy mode (full processing). */
-    protected fun nonProxyStub(
+    /** Creates a stub with standard test metadata headers. */
+    protected fun testStub(
         session: String = "test-session",
         token: String = "test-token",
         eduId: String = "test-edu-id",
@@ -149,7 +135,6 @@ abstract class BaseGigaVoiceIntegrationTest {
     ): GigaVoiceServiceCoroutineStub = clientStub.withInterceptors(
         MetadataInterceptor(
             mapOf(
-                "proxy" to "false",
                 "x-session" to session,
                 "x-token" to token,
                 "x-eduid" to eduId,
