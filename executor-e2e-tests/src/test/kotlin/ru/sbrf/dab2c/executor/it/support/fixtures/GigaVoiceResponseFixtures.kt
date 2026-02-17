@@ -4,11 +4,13 @@ import com.google.protobuf.ByteString
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audio
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.contentFromModel
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.error
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionCall
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionCalling
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceResponse
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.inputTranscription
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.outputTranscription
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.warning
 
 object GigaVoiceResponseFixtures {
 
@@ -49,6 +51,22 @@ object GigaVoiceResponseFixtures {
             audio = audio {
                 audioChunk = ByteString.copyFrom(byteArrayOf(chunkId.toByte()))
             }
+        }
+    }
+
+    fun warningResponse(
+        message: String = "test warning",
+    ): GigaVoiceResponse = gigaVoiceResponse {
+        warning = warning { this.message = message }
+    }
+
+    fun errorResponse(
+        status: Int = 503,
+        message: String = "test error",
+    ): GigaVoiceResponse = gigaVoiceResponse {
+        error = error {
+            this.status = status
+            this.message = message
         }
     }
 }

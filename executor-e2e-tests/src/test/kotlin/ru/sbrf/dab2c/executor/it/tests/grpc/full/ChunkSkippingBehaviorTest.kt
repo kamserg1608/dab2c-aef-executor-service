@@ -122,7 +122,31 @@ class ChunkSkippingBehaviorTest : BaseGigaVoiceIntegrationTest() {
         }
     }
 
+    @Test
+    fun `settings chunk is always the first chunk received by downstream`() = runItTest {
+        efsAdapterMock.stubEfsRestAgent()
+        gigaVoiceAgentMock.stubGigaAgentSettingsWithDelay(SETTINGS_DELAY_MS)
+
+        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(contextRequest())
+            session.sendRequest(settingsRequest("test"))
+
+            repeat(AUDIO_BURST_COUNT) {
+                delay(AUDIO_SEND_INTERVAL_MS.milliseconds)
+                session.sendRequest(audioRequest(speechStart = true))
+            }
+
+            mock.awaitRequest { it.hasSettings() }
+            delay(COLLECTION_GRACE_PERIOD_MS.milliseconds)
+
+            assertThat(mock.receivedRequests.first().hasSettings()).isTrue()
+        }
+    }
+
     companion object {
         private const val SETTINGS_DELAY_MS = 500
+        private const val AUDIO_SEND_INTERVAL_MS = 50
+        private const val AUDIO_BURST_COUNT = 20
+        private const val COLLECTION_GRACE_PERIOD_MS = 300
     }
 }

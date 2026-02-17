@@ -74,4 +74,4 @@ logging:
     root: INFO
     ru.sbrf.dab2c: DEBUG
     net.devh.boot.grpc: INFO
-    io.ktor: INFO
+    io.ktor: DEBUG

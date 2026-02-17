@@ -80,4 +80,11 @@ class MockGigaVoiceService : GigaVoiceServiceCoroutineImplBase() {
     fun completeResponses() {
         responseChannel.close()
     }
+
+    /**
+     * Completes the response stream with an error.
+     */
+    fun completeResponsesWithError(cause: Throwable) {
+        responseChannel.close(cause)
+    }
 }

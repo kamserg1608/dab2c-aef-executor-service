@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
@@ -30,15 +29,16 @@ class ChunkProcessingServiceImpl(
 
     override fun processRequestChunks(
         requestsChunks: Flow<VoiceRequest>
-    ): Flow<VoiceRequest> = merge(
-        callbackChannels.downstream.receiveAsFlow(),
-        processIncomingChunks(requestsChunks)
-    )
-        .onEach {
-            if (it is VoiceRequest.Settings && processingState.value is ProcessingState.Serving) {
-                processingState.value = (processingState.value as ProcessingState.Serving).copy(settingsSent = true)
-            }
+    ): Flow<VoiceRequest> {
+        var settingsPassed = false
+        return merge(
+            callbackChannels.downstream.receiveAsFlow(),
+            processIncomingChunks(requestsChunks)
+        ).filter { chunk ->
+            if (chunk is VoiceRequest.Settings) settingsPassed = true
+            settingsPassed
         }
+    }
 
     private fun processIncomingChunks(requestsChunks: Flow<VoiceRequest>) = requestsChunks
         .filter { isChunkAllowed(it) }
@@ -54,7 +54,7 @@ class ChunkProcessingServiceImpl(
         return when (chunk) {
             is VoiceRequest.Context -> state is ProcessingState.AwaitingContext
             is VoiceRequest.Settings -> state is ProcessingState.AwaitingSettings
-            else -> state is ProcessingState.Serving && state.settingsSent
+            else -> state is ProcessingState.Serving
         }
     }
 

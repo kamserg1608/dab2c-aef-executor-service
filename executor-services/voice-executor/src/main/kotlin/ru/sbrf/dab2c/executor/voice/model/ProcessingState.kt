@@ -26,7 +26,6 @@ sealed class ProcessingState {
      * Fully initialized and serving requests.
      */
     data class Serving(
-        val settingsSent: Boolean = false,
         val contextData: ContextData,
         val agentConfiguration: AgentConfiguration,
         val conversationId: String,

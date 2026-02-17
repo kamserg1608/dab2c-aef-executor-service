@@ -54,8 +54,8 @@ class SettingsServiceImpl(
         launchAsync {
             try {
                 val settingsData = fetchSettingsData(settings, contextData)
-                updateStateAndPublish(settingsData, contextData)
                 callbackChannels.downstream.send(VoiceRequest.Settings(settingsData.settings))
+                updateStateAndPublish(settingsData, contextData)
             } catch (e: Exception) {
                 logger.error { "Failed to calculate settings: ${e.message}" }
                 callbackChannels.upstream.send(
