@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.receiveAsFlow
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
@@ -67,5 +68,7 @@ class ChunkProcessingServiceImpl(
                 functionCallService.callFunction((it as VoiceResponse.FunctionCalling).data)
                     ?.let { data -> VoiceResponse.FunctionCalling(data) }
             }
-    )
+    ).onCompletion {
+        callbackChannels.close()
+    }
 }

@@ -1,6 +1,7 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.flow.MutableStateFlow
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
@@ -72,19 +73,25 @@ class FunctionCallServiceImpl(
                 analyticsPublisher.publishAnalytics(functionCallResult.analytics, context.daRequestId)
 
                 callbackChannels.downstream.send(VoiceRequest.FunctionResult(functionCallResult.result))
+            } catch (e: ClosedSendChannelException) {
+                logger.debug(e) { "Channel closed, session ended before function '$functionName' completed" }
             } catch (e: Exception) {
                 val elapsed = System.currentTimeMillis() - startTime
                 logger.error { "Failed to execute backend function '$functionName' after ${elapsed}ms: ${e.message}" }
                 val escapedMessage = e.message?.replace("\"", "\\\"") ?: "Function execution failed"
                 val errorContent = """{"error":{"code":500,"message":"$escapedMessage"}}"""
-                callbackChannels.downstream.send(
-                    VoiceRequest.FunctionResult(
-                        FunctionResultData(
-                            content = errorContent,
-                            functionName = functionCalling.functionCall.name
+                try {
+                    callbackChannels.downstream.send(
+                        VoiceRequest.FunctionResult(
+                            FunctionResultData(
+                                content = errorContent,
+                                functionName = functionCalling.functionCall.name
+                            )
                         )
                     )
-                )
+                } catch (ex: ClosedSendChannelException) {
+                    logger.debug(ex) { "Channel closed, session ended before error for '$functionName' could be sent" }
+                }
             }
         }
     }

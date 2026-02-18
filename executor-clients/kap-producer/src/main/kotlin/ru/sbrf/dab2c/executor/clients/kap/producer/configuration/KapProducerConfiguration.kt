@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Qualifier
@@ -21,6 +22,7 @@ import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.configuration.properties.KapProducerConfigurationProperties
 import ru.sbrf.dab2c.executor.clients.kap.producer.impl.AsyncKapProducerClientDecorator
 import ru.sbrf.dab2c.executor.clients.kap.producer.impl.KapProducerClientImpl
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Spring configuration for KAP Kafka producer client.
@@ -60,8 +62,8 @@ class KapProducerConfiguration {
         @Qualifier(KAP_PRODUCER_FACTORY_BEAN_NAME) producerFactory: ProducerFactory<String, Any>
     ): KafkaTemplate<String, Any> = KafkaTemplate(producerFactory)
 
-    @Bean(KAP_PRODUCER_SCOPE_BEAN_NAME)
-    internal fun kapProducerScope(): CoroutineScope = CoroutineScope(SupervisorJob())
+    @Bean(KAP_PRODUCER_SCOPE_BEAN_NAME, destroyMethod = "cancel")
+    internal fun kapProducerScope(): CloseableCoroutineScope = CloseableCoroutineScope(SupervisorJob())
 
     @Bean
     internal fun kapProducerClient(
@@ -79,4 +81,9 @@ class KapProducerConfiguration {
         internal const val KAP_KAFKA_TEMPLATE_BEAN_NAME = "kapKafkaTemplate"
         internal const val KAP_PRODUCER_SCOPE_BEAN_NAME = "kapProducerScope"
     }
+}
+
+internal class CloseableCoroutineScope(context: CoroutineContext) : CoroutineScope {
+    override val coroutineContext: CoroutineContext = context
+    fun cancel() = coroutineContext.cancel()
 }
