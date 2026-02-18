@@ -26,45 +26,49 @@ internal class PrometheusMetricsParser(private val rawBody: String) {
     }
 
     private fun parseLine(line: String): MetricLine? {
-        // Формат: metric_name{tag1="val1",tag2="val2"} value
-        if (!line.contains(' ')) return null
+        return line.lastIndexOf(' ').takeIf { it != -1 }?.let { lastSpaceIndex ->
+            val value = line.substring(lastSpaceIndex + 1).trim().toDoubleOrNull()
+            val nameAndTags = line.substring(0, lastSpaceIndex).trim()
 
-        val lastSpaceIndex = line.lastIndexOf(' ')
-        if (lastSpaceIndex == -1) return null
-
-        val valueStr = line.substring(lastSpaceIndex + 1).trim()
-        val value = valueStr.toDoubleOrNull() ?: return null
-
-        val nameAndTags = line.substring(0, lastSpaceIndex).trim()
-
-        if (!nameAndTags.contains('{')) {
-            // Метрика без тегов: metric_name value
-            return MetricLine(nameAndTags, emptyMap(), value)
+            value?.let { v ->
+                parseMetricNameAndTags(nameAndTags)?.let { (name, tags) ->
+                    MetricLine(name, tags, v)
+                }
+            }
         }
+    }
 
-        val openBrace = nameAndTags.indexOf('{')
-        val closeBrace = nameAndTags.indexOf('}')
+    private fun parseMetricNameAndTags(nameAndTags: String): Pair<String, Map<String, String>>? {
+        return if (!nameAndTags.contains('{')) {
+            nameAndTags to emptyMap()
+        } else {
+            val openBrace = nameAndTags.indexOf('{')
+            val closeBrace = nameAndTags.indexOf('}')
+            if (openBrace != -1 && closeBrace != -1) {
+                val name = nameAndTags.substring(0, openBrace)
+                val tagsContent = nameAndTags.substring(openBrace + 1, closeBrace)
+                name to parseTags(tagsContent)
+            } else {
+                null
+            }
+        }
+    }
 
-        if (closeBrace == -1 || openBrace == -1) return null
-
-        val name = nameAndTags.substring(0, openBrace)
-        val tagsContent = nameAndTags.substring(openBrace + 1, closeBrace)
-
-        val tags = if (tagsContent.isBlank()) {
+    private fun parseTags(tagsContent: String): Map<String, String> {
+        return if (tagsContent.isBlank()) {
             emptyMap()
         } else {
             tagsContent.split(",").associate { tagPart ->
                 val eqIndex = tagPart.indexOf('=')
-                if (eqIndex == -1) return@associate "" to ""
-
-                val key = tagPart.substring(0, eqIndex).trim()
-                val rawValue = tagPart.substring(eqIndex + 1).trim()
-                val valueClean = rawValue.removeSurrounding("\"")
-                key to valueClean
+                if (eqIndex == -1) {
+                    "" to ""
+                } else {
+                    val key = tagPart.substring(0, eqIndex).trim()
+                    val rawValue = tagPart.substring(eqIndex + 1).trim()
+                    key to rawValue.removeSurrounding("\"")
+                }
             }
         }
-
-        return MetricLine(name, tags, value)
     }
 
     fun findMetric(
