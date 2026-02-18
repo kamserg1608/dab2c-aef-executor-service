@@ -7,7 +7,7 @@ object MdcKeys {
     // Common fields (set at request start, propagated everywhere)
     const val TYPE = "type"
     const val TRACE_ID = "traceId"
-    const val RQ_UID = "rqUid"
+    const val RQ_UID = "requestId"
     const val SESSION_ID = "sessionId"
     const val CHANNEL = "channel"
     const val PLATFORM = "platform"

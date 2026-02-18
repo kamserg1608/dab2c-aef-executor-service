@@ -1,6 +1,7 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.flow.MutableStateFlow
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
@@ -54,8 +55,10 @@ class SettingsServiceImpl(
         launchAsync {
             try {
                 val settingsData = fetchSettingsData(settings, contextData)
-                updateStateAndPublish(settingsData, contextData)
                 callbackChannels.downstream.send(VoiceRequest.Settings(settingsData.settings))
+                updateStateAndPublish(settingsData, contextData)
+            } catch (e: ClosedSendChannelException) {
+                logger.debug(e) { "Channel closed, session ended before settings completed" }
             } catch (e: Exception) {
                 logger.error { "Failed to calculate settings: ${e.message}" }
                 callbackChannels.upstream.send(

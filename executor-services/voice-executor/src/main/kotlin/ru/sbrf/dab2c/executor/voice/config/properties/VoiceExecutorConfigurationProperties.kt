@@ -7,6 +7,5 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  */
 @ConfigurationProperties(prefix = "executor.voice")
 data class VoiceExecutorConfigurationProperties(
-    val proxyMode: Boolean = true,
     val agentName: String = "voice-executor"
 )

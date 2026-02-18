@@ -19,7 +19,6 @@ grpc:
 # Voice Executor
 executor:
   voice:
-    proxyMode: ${EXECUTOR_VOICE_PROXY_MODE}
     agentName: ${EXECUTOR_VOICE_AGENT_NAME}
     channel: ${EXECUTOR_VOICE_CHANNEL}
 

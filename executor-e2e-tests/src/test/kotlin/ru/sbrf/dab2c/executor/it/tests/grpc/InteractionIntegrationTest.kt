@@ -1,4 +1,4 @@
-package ru.sbrf.dab2c.executor.it.tests.grpc.full
+package ru.sbrf.dab2c.executor.it.tests.grpc
 
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
@@ -9,20 +9,20 @@ import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.setti
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.outputTranscriptionResponse
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
-import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupFullModeStubs
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubs
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 
 /**
  * Integration tests for voice executor in non-proxy mode.
  * Uses WireMock to stub HTTP clients.
  */
-class FullInteractionIntegrationTest : BaseGigaVoiceIntegrationTest() {
+class InteractionIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should process settings through non-proxy flow with HTTP clients`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock)
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("test-call-123"))
 

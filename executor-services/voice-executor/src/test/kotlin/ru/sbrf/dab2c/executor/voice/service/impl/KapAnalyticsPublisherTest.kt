@@ -100,7 +100,7 @@ class KapAnalyticsPublisherTest {
 
             publisher.publishAnalytics(listOf(createTestAnalytics()), "request-123")
 
-            assertEquals("1.2.0", envelopeSlot.captured.version)
+            assertEquals("1.0.0", envelopeSlot.captured.version)
         }
     }
 

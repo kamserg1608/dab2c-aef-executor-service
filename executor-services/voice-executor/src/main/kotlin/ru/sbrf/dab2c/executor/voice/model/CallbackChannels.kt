@@ -10,4 +10,10 @@ import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 data class CallbackChannels(
     val downstream: Channel<VoiceRequest>,
     val upstream: Channel<VoiceResponse>
-)
+) {
+    /** Closes both channels, unblocking any suspended senders. */
+    fun close() {
+        downstream.close()
+        upstream.close()
+    }
+}

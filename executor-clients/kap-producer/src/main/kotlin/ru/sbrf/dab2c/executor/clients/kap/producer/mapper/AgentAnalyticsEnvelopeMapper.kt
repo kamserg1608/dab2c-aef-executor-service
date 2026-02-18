@@ -28,7 +28,7 @@ data class AnalyticsTurnData(
  */
 object AgentAnalyticsEnvelopeMapper {
 
-    private const val ANALYTICS_VERSION = "1.2.0"
+    private const val ANALYTICS_VERSION = "1.0.0"
 
     private val objectMapper = ObjectMapper().apply {
         registerModule(kotlinModule())

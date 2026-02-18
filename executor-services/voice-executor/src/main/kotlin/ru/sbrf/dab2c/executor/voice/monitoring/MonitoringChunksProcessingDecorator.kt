@@ -35,14 +35,15 @@ class MonitoringChunksProcessingDecorator(
 
         var timerSample: TimerSampleMetric.TimerSample? = null
         var counter: AtomicInteger? = null
+        var connectionKey: String? = null
 
         val monitoredChunks = requestsChunks
             .onStart {
                 val platform = getPlatformHeader()
                 val channel = getChannelHeader()
-                val key = "$platform:$channel"
+                val connectionKey = "$platform:$channel"
 
-                counter = activeConnectionCounters.computeIfAbsent(key) { AtomicInteger(0) }
+                counter = activeConnectionCounters.computeIfAbsent(connectionKey!!) { AtomicInteger(0) }
 
                 monitoringServiceFactory.createGauge(
                     ExecutorVoiceMetric.GRPC_CONNECTIONS_ACTIVE,
@@ -67,7 +68,7 @@ class MonitoringChunksProcessingDecorator(
                     tagsMap = emptyMap()
                 ).start()
 
-                logger.info { "gRPC connection opened. Active connections ($key): ${counter!!.get()}" }
+                logger.info { "gRPC connection opened. Active connections ($connectionKey): ${counter!!.get()}" }
             }
             .onCompletion { cause ->
                 if (cause == null) {
@@ -76,7 +77,10 @@ class MonitoringChunksProcessingDecorator(
                     logger.warn(cause) { "gRPC connection closed with error" }
                 }
 
-                counter?.decrementAndGet()
+                val count = counter?.decrementAndGet()
+                if (count != null && count <= 0) {
+                    connectionKey?.let { activeConnectionCounters.remove(it) }
+                }
                 timerSample?.stop()
             }
             .onEach {

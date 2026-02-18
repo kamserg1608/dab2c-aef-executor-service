@@ -21,7 +21,6 @@ grpc:
 # Voice Executor
 executor:
   voice:
-    proxyMode: true
     agentName: voice-executor-stub
     channel: voice
 
@@ -74,4 +73,4 @@ logging:
     root: INFO
     ru.sbrf.dab2c: DEBUG
     net.devh.boot.grpc: INFO
-    io.ktor: INFO
+    io.ktor: DEBUG

@@ -1,4 +1,4 @@
-package ru.sbrf.dab2c.executor.it.tests.grpc.kap
+package ru.sbrf.dab2c.executor.it.tests.grpc
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -10,7 +10,7 @@ import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.outp
 import ru.sbrf.dab2c.executor.it.support.kafka.KafkaTestSupport.withConsumer
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
-import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupFullModeStubs
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubs
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 
 private const val DIALOGS_TOPIC = "dab2c-core-dialogs"
@@ -22,7 +22,7 @@ class DialogPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should publish dialog to KAP when dialog turn completes`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock)
 
         val testChatId = "single-turn-test-${System.currentTimeMillis()}"
 
@@ -31,7 +31,7 @@ class DialogPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
             filter = { it.data.userMessage.chatId == testChatId }
         ) {
             runItTest {
-                withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+                withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
                     session.sendRequest(contextRequest())
                     session.sendRequest(settingsRequest(testChatId))
 
@@ -67,7 +67,7 @@ class DialogPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `should publish multiple dialogs for multiple turns`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock)
 
         val testChatId = "multi-turn-test-${System.currentTimeMillis()}"
 
@@ -76,7 +76,7 @@ class DialogPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
             filter = { it.data.userMessage.chatId == testChatId }
         ) {
             runItTest {
-                withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+                withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
                     session.sendRequest(contextRequest())
                     session.sendRequest(settingsRequest(testChatId))
 

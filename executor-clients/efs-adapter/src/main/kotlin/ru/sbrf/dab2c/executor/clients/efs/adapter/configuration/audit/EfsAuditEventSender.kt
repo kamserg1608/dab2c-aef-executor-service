@@ -19,13 +19,14 @@ class EfsAuditEventSender(
     /**
      * Sends the given [AuditEvent] to EFS using [AuditClient].
      */
+    @Suppress("SwallowedException")
     override suspend fun sendEvent(event: AuditEvent, cookie: String) {
+        logger.trace { "Sending audit event=${event.event}, success=${event.success}" }
         try {
             auditClient.sendEvent(event, cookie)
+            logger.trace { "Audit event sent successfully: ${event.event}" }
         } catch (t: Throwable) {
-            logger.error(t) {
-                "Failed to send audit event=${event.event}"
-            }
+            logger.error(t) { "Failed to send audit event=${event.event}" }
         }
     }
 }

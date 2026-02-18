@@ -1,4 +1,4 @@
-package ru.sbrf.dab2c.executor.it.tests.grpc.full
+package ru.sbrf.dab2c.executor.it.tests.grpc
 
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
@@ -13,7 +13,7 @@ import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.func
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.outputTranscriptionResponse
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
-import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupFullModeStubs
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubs
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubGigaAgentFunctionsWithDelay
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 import kotlin.time.Duration.Companion.seconds
@@ -23,14 +23,14 @@ class FunctionCallBlockingBehaviorTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `backend function call is async - audio flows immediately while function executes`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
         gigaVoiceAgentMock.stubGigaAgentFunctionsWithDelay(
             "get_account_balance",
             """{"balance": 1000}""",
             FUNCTION_DELAY_MS
         )
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("blocking-test-call"))
             mock.awaitRequest { it.hasSettings() }
@@ -66,14 +66,14 @@ class FunctionCallBlockingBehaviorTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `backend function result arrives at downstream after async execution completes`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
         gigaVoiceAgentMock.stubGigaAgentFunctionsWithDelay(
             "get_account_balance",
             """{"balance": 1000}""",
             FUNCTION_DELAY_MS
         )
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("blocking-test-call"))
             mock.awaitRequest { it.hasSettings() }
@@ -102,9 +102,9 @@ class FunctionCallBlockingBehaviorTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
     fun `IVR function is proxied to client - no backend call made`() = runItTest {
-        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
 
-        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("blocking-test-call"))
             mock.awaitRequest { it.hasSettings() }
