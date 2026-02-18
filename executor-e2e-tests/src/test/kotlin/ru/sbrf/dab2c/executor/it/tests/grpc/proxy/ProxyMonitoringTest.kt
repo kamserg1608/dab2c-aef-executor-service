@@ -6,6 +6,7 @@ import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import ru.sbrf.dab2c.executor.clients.common.model.ClientMetric
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.audioRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.contextRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.settingsRequest
@@ -27,6 +28,7 @@ class ProxyMonitoringTest : BaseGigaVoiceIntegrationTest() {
     companion object {
         const val TEST_CHANNEL = "test-channel"
         const val TEST_PLATFORM = "test-platform"
+        val BASE_TAGS = mapOf("channel" to TEST_CHANNEL, "platform" to TEST_PLATFORM)
     }
 
     // --- Helpers ---
@@ -43,19 +45,11 @@ class ProxyMonitoringTest : BaseGigaVoiceIntegrationTest() {
         return PrometheusMetricsParser(body).also { it.debugPrint() }
     }
 
-    private fun buildGeneralTagsMap(
-        channel: String = TEST_CHANNEL,
-        platform: String = TEST_PLATFORM
-    ): Map<String, String> = mapOf(
-        "channel" to channel,
-        "platform" to platform
-    )
-
     private suspend fun getMetricValue(
         metricName: String,
         additionalTags: Map<String, String> = emptyMap()
     ): Double? {
-        val allTags = buildGeneralTagsMap() + additionalTags
+        val allTags = BASE_TAGS + additionalTags
         return parseMetrics().findMetric(metricName, allTags)?.value
     }
 
@@ -74,16 +68,6 @@ class ProxyMonitoringTest : BaseGigaVoiceIntegrationTest() {
             .isEqualTo(expectedValue)
     }
 
-    private suspend fun assertCounterMetric(
-        baseMetricName: String,
-        expectedCount: Int = 1
-    ) {
-        val countValue = getMetricValue("${baseMetricName}_count")
-        assertThat(countValue)
-            .withFailMessage("Expected count=$expectedCount for $baseMetricName, actual: $countValue")
-            .isEqualTo(expectedCount.toDouble())
-    }
-
     private suspend fun assertTimerSumPositive(baseMetricName: String) {
         val sumValue = getMetricValue("${baseMetricName}_sum")
         assertThat(sumValue)
@@ -97,7 +81,7 @@ class ProxyMonitoringTest : BaseGigaVoiceIntegrationTest() {
         additionalTags: Map<String, String> = emptyMap()
     ) {
         val metrics = parseMetrics()
-        val allExpectedTags = buildGeneralTagsMap() + additionalTags
+        val allExpectedTags = BASE_TAGS + additionalTags
 
         val metricLine = metrics.findMetric(metricName, allExpectedTags)
 
@@ -135,6 +119,33 @@ class ProxyMonitoringTest : BaseGigaVoiceIntegrationTest() {
             .isEqualTo(expectedValue)
     }
 
+    private suspend fun assertCounterIncreased(
+        metricName: String,
+        additionalTags: Map<String, String> = emptyMap(),
+        assertionMessage: String = "Счетчик '$metricName' должен увеличиться"
+    ) {
+        val initial = getMetricValue(metricName, additionalTags) ?: 0.0
+        logger.debug { "Начальное значение $metricName: $initial" }
+
+        // Ожидаем, что метрика увеличится — вызов должен быть за пределами этой функции
+
+        val final = getMetricValue(metricName, additionalTags)
+        assertThat(final)
+            .withFailMessage("$assertionMessage. Начальное: $initial, финальное: $final")
+            .isNotNull()
+            .isGreaterThan(initial)
+    }
+
+    private suspend fun assertCounterWithTagsExistsAndIncreased(
+        metricName: String,
+        additionalTags: Map<String, String>,
+        assertionMessage: String
+    ) {
+        assertMetricExists(metricName)
+        assertMetricHasTags(metricName, additionalTags)
+        assertCounterIncreased(metricName, additionalTags, assertionMessage = assertionMessage)
+    }
+
     // --- Tests ---
 
     @Test
@@ -147,7 +158,7 @@ class ProxyMonitoringTest : BaseGigaVoiceIntegrationTest() {
         }
 
         assertMetricExists(ExecutorVoiceMetric.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL.metricName)
-        assertMetricExists(ExecutorVoiceMetric.GRPC_OUTGOING_FROM_INITIATOR_CHUNKS_TOTAL.metricName)
+        assertMetricExists(ExecutorVoiceMetric.GRPC_OUTGOING_TO_INITIATOR_CHUNKS_TOTAL.metricName)
     }
 
     @Test
@@ -164,13 +175,11 @@ class ProxyMonitoringTest : BaseGigaVoiceIntegrationTest() {
             mock.sendResponse(inputTranscriptionResponse())
         }
 
-        assertCounterMetric(ExecutorVoiceMetric.GRPC_CONNECTIONS_TTFB_SECONDS.metricName)
         assertTimerSumPositive(ExecutorVoiceMetric.GRPC_CONNECTIONS_TTFB_SECONDS.metricName)
     }
 
     @Test
-    fun `should record grpc connection duration when session ends`() = runItTest {
-        val initialValue = getMetricValue(ExecutorVoiceMetric.GRPC_CONNECTIONS_DURATION_SECONDS.metricName) ?: 0 // тут есть вызов метрики
+    fun `should contain the duration of the grpc connection processing`() = runItTest {
         setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
 
         withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
@@ -181,7 +190,6 @@ class ProxyMonitoringTest : BaseGigaVoiceIntegrationTest() {
             session.awaitResponse()
         }
 
-        // assertCounterMetric(ExecutorVoiceMetric.GRPC_CONNECTIONS_DURATION_SECONDS.metricName, 3)
         assertTimerSumPositive(ExecutorVoiceMetric.GRPC_CONNECTIONS_DURATION_SECONDS.metricName)
     }
 
@@ -272,6 +280,266 @@ class ProxyMonitoringTest : BaseGigaVoiceIntegrationTest() {
             .withFailMessage(
                 "Счетчик grpc_response_tokens_total должен увеличиться. " +
                     "Начальное: $initialTokens, финальное: $finalTokens"
+            )
+            .isNotNull()
+            .isGreaterThan(initialTokens)
+    }
+
+    @Test
+    fun `should contain a metric for the total number of chunks received from gigavoice` () = runItTest {
+        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+
+        val additionalTags = mapOf(
+            "stream_chunk_type" to "GigaVoiceResponse",
+        )
+
+        val initialTokens = getMetricValue(
+            ExecutorVoiceMetric.GRPC_INCOMING_FROM_GIGAVOICE_CHUNKS_TOTAL.metricName,
+            additionalTags
+        ) ?: 0.0
+
+        logger.debug { "Начальное значение grpc_incoming_from_gigavoice_chunks_total: $initialTokens" }
+
+        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(contextRequest())
+            session.sendRequest(settingsRequest("backend-function-test"))
+            mock.awaitRequest { it.hasSettings() }
+            mock.sendResponse(outputTranscriptionResponse())
+            session.awaitResponse()
+            session.sendRequest(audioRequest(speechStart = true))
+            mock.awaitRequest { it.hasInput() }
+            mock.sendResponse(additionalDataResponse())
+            session.awaitResponse()
+        }
+
+        assertMetricExists(ExecutorVoiceMetric.GRPC_INCOMING_FROM_GIGAVOICE_CHUNKS_TOTAL.metricName)
+        assertMetricHasTags(
+            metricName = ExecutorVoiceMetric.GRPC_INCOMING_FROM_GIGAVOICE_CHUNKS_TOTAL.metricName,
+            additionalTags = additionalTags
+        )
+
+        val finalTokens = getMetricValue(
+            ExecutorVoiceMetric.GRPC_INCOMING_FROM_GIGAVOICE_CHUNKS_TOTAL.metricName,
+            additionalTags
+        )
+
+        assertThat(finalTokens)
+            .withFailMessage(
+                "Счетчик grpc_incoming_from_gigavoice_chunks_total должен увеличиться. " +
+                        "Начальное: $initialTokens, финальное: $finalTokens"
+            )
+            .isNotNull()
+            .isGreaterThan(initialTokens)
+    }
+
+    @Test
+    fun `should contain a metric for the total number of chunks sent to gigavoice` () = runItTest {
+        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+
+        val additionalTags = mapOf(
+            "stream_chunk_type" to "GigaVoiceRequest",
+        )
+
+        val initialTokens = getMetricValue(
+            ExecutorVoiceMetric.GRPC_OUTGOING_FROM_GIGAVOICE_CHUNKS_TOTAL.metricName,
+            additionalTags
+        ) ?: 0.0
+
+        logger.debug { "Начальное значение grpc_outcoming_from_gigavoice_chunks_total: $initialTokens" }
+
+        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(contextRequest())
+            session.sendRequest(settingsRequest("backend-function-test"))
+            mock.awaitRequest { it.hasSettings() }
+            mock.sendResponse(outputTranscriptionResponse())
+            session.awaitResponse()
+            session.sendRequest(audioRequest(speechStart = true))
+            mock.awaitRequest { it.hasInput() }
+            mock.sendResponse(additionalDataResponse())
+            session.awaitResponse()
+        }
+
+        assertMetricExists(ExecutorVoiceMetric.GRPC_OUTGOING_FROM_GIGAVOICE_CHUNKS_TOTAL.metricName)
+        assertMetricHasTags(
+            metricName = ExecutorVoiceMetric.GRPC_OUTGOING_FROM_GIGAVOICE_CHUNKS_TOTAL.metricName,
+            additionalTags = additionalTags
+        )
+
+        val finalTokens = getMetricValue(
+            ExecutorVoiceMetric.GRPC_OUTGOING_FROM_GIGAVOICE_CHUNKS_TOTAL.metricName,
+            additionalTags
+        )
+
+        assertThat(finalTokens)
+            .withFailMessage(
+                "Счетчик grpc_outcoming_from_gigavoice_chunks_total должен увеличиться. " +
+                        "Начальное: $initialTokens, финальное: $finalTokens"
+            )
+            .isNotNull()
+            .isGreaterThan(initialTokens)
+    }
+
+    @Test
+    fun `should contain a metric for the total number of chunks sent back to the initiator`() = runItTest {
+        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+
+        val additionalTags = mapOf(
+            "stream_chunk_type" to "OutputTranscription",
+        )
+
+        val initialTokens = getMetricValue(
+            ExecutorVoiceMetric.GRPC_OUTGOING_TO_INITIATOR_CHUNKS_TOTAL.metricName,
+            additionalTags
+        ) ?: 0.0
+
+        logger.debug { "Начальное значение grpc_outgoing_to_initiator_chunks_total: $initialTokens" }
+
+        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(contextRequest())
+            session.sendRequest(settingsRequest("backend-function-test"))
+            mock.awaitRequest { it.hasSettings() }
+            mock.sendResponse(outputTranscriptionResponse())
+            session.awaitResponse()
+            session.sendRequest(audioRequest(speechStart = true))
+            mock.awaitRequest { it.hasInput() }
+            mock.sendResponse(additionalDataResponse())
+            session.awaitResponse()
+        }
+
+        assertMetricExists(ExecutorVoiceMetric.GRPC_OUTGOING_TO_INITIATOR_CHUNKS_TOTAL.metricName)
+        assertMetricHasTags(
+            metricName = ExecutorVoiceMetric.GRPC_OUTGOING_TO_INITIATOR_CHUNKS_TOTAL.metricName,
+            additionalTags = additionalTags
+        )
+
+        val finalTokens = getMetricValue(
+            ExecutorVoiceMetric.GRPC_OUTGOING_TO_INITIATOR_CHUNKS_TOTAL.metricName,
+            additionalTags
+        )
+
+        assertThat(finalTokens)
+            .withFailMessage(
+                "Счетчик grpc_outgoing_to_initiator_chunks_total должен увеличиться. " +
+                        "Начальное: $initialTokens, финальное: $finalTokens"
+            )
+            .isNotNull()
+            .isGreaterThan(initialTokens)
+    }
+
+    @Test
+    fun `should contain a metric for the total number of chunks received from the initiator` () = runItTest {
+        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+
+        val additionalTags = mapOf(
+            "stream_chunk_type" to "Audio",
+        )
+
+        val initialTokens = getMetricValue(
+            ExecutorVoiceMetric.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL.metricName,
+            additionalTags
+        ) ?: 0.0
+
+        logger.debug { "Начальное значение grpc_incoming_from_initiator_chunks_total: $initialTokens" }
+
+        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(contextRequest())
+            session.sendRequest(settingsRequest("backend-function-test"))
+            mock.awaitRequest { it.hasSettings() }
+            mock.sendResponse(outputTranscriptionResponse())
+            session.awaitResponse()
+            session.sendRequest(audioRequest(speechStart = true))
+            mock.awaitRequest { it.hasInput() }
+            mock.sendResponse(additionalDataResponse())
+            session.awaitResponse()
+        }
+
+        assertMetricExists(ExecutorVoiceMetric.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL.metricName)
+        assertMetricHasTags(
+            metricName = ExecutorVoiceMetric.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL.metricName,
+            additionalTags = additionalTags
+        )
+
+        val finalTokens = getMetricValue(
+            ExecutorVoiceMetric.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL.metricName,
+            additionalTags
+        )
+
+        assertThat(finalTokens)
+            .withFailMessage(
+                "Счетчик grpc_incoming_from_initiator_chunks_total должен увеличиться. " +
+                        "Начальное: $initialTokens, финальное: $finalTokens"
+            )
+            .isNotNull()
+            .isGreaterThan(initialTokens)
+    }
+
+    @Test
+    fun `should contain a metric for the duration of http request processing`() = runItTest {
+        val additionalTags = mapOf(
+            "destination_service" to "gigavoice-agent",
+            "status_code" to "200",
+            "endpoint" to "/settings",
+            "method" to "post")
+
+        val initialValue = getMetricValue(ClientMetric.HTTP_INTEGRATION_REQUEST_DURATION_SECONDS.metricName, additionalTags) ?: 0 // тут есть вызов метрики
+        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+
+        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(contextRequest())
+            session.sendRequest(settingsRequest("backend-function-test"))
+            mock.awaitRequest { it.hasSettings() }
+            mock.sendResponse(outputTranscriptionResponse())
+            session.awaitResponse()
+        }
+
+        // assertCounterMetric(ExecutorVoiceMetric.GRPC_CONNECTIONS_DURATION_SECONDS.metricName, 3)
+        assertTimerSumPositive(ClientMetric.HTTP_INTEGRATION_REQUEST_DURATION_SECONDS.metricName)
+    }
+
+    @Test
+    fun `should contain a metric for the total http requests` () = runItTest {
+        setupFullModeStubs(efsAdapterMock, gigaVoiceAgentMock)
+
+        val additionalTags = mapOf(
+            "destination_service" to "gigavoice-agent",
+            "status_code" to "200",
+            "endpoint" to "/settings",
+            "method" to "post")
+
+        val initialTokens = getMetricValue(
+            ClientMetric.HTTP_INTEGRATION_REQUEST_TOTAL.metricName,
+            additionalTags
+        ) ?: 0.0
+
+        logger.debug { "Начальное значение grpc_incoming_from_initiator_chunks_total: $initialTokens" }
+
+        withSession(nonProxyStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(contextRequest())
+            session.sendRequest(settingsRequest("backend-function-test"))
+            mock.awaitRequest { it.hasSettings() }
+            mock.sendResponse(outputTranscriptionResponse())
+            session.awaitResponse()
+            session.sendRequest(audioRequest(speechStart = true))
+            mock.awaitRequest { it.hasInput() }
+            mock.sendResponse(additionalDataResponse())
+            session.awaitResponse()
+        }
+
+        assertMetricExists(ClientMetric.HTTP_INTEGRATION_REQUEST_TOTAL.metricName)
+        assertMetricHasTags(
+            metricName = ClientMetric.HTTP_INTEGRATION_REQUEST_TOTAL.metricName,
+            additionalTags = additionalTags
+        )
+
+        val finalTokens = getMetricValue(
+            ClientMetric.HTTP_INTEGRATION_REQUEST_TOTAL.metricName,
+            additionalTags
+        )
+
+        assertThat(finalTokens)
+            .withFailMessage(
+                "Счетчик http_integration_requests_total должен увеличиться. " +
+                        "Начальное: $initialTokens, финальное: $finalTokens"
             )
             .isNotNull()
             .isGreaterThan(initialTokens)

@@ -9,7 +9,7 @@ enum class ExecutorVoiceMetric(
     override val metricName: String
 ) : Metric {
     GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL("grpc_incoming_from_initiator_chunks_total"),
-    GRPC_OUTGOING_FROM_INITIATOR_CHUNKS_TOTAL("grpc_outgoing_to_initiator_chunks_total"),
+    GRPC_OUTGOING_TO_INITIATOR_CHUNKS_TOTAL("grpc_outgoing_to_initiator_chunks_total"),
     GRPC_OUTGOING_FROM_GIGAVOICE_CHUNKS_TOTAL("grpc_outgoing_to_gigavoice_chunks_total"),
     GRPC_INCOMING_FROM_GIGAVOICE_CHUNKS_TOTAL("grpc_incoming_from_gigavoice_chunks_total"),
     GRPC_RESPONSE_TOKENS_TOTAL("grpc_response_tokens_total"),

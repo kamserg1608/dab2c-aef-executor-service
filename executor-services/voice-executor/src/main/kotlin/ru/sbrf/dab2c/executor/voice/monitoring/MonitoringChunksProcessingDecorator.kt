@@ -110,7 +110,7 @@ class MonitoringChunksProcessingDecorator(
                 ).start()
             }
             .onEach { response ->
-                trackChunk(response, ExecutorVoiceMetric.GRPC_OUTGOING_FROM_INITIATOR_CHUNKS_TOTAL)
+                trackChunk(response, ExecutorVoiceMetric.GRPC_OUTGOING_TO_INITIATOR_CHUNKS_TOTAL)
 
                 if (!firstTranscriptionReceived && response is VoiceResponse.InputTranscription) {
                     timeToFirstTranscriptionSample?.stop()
