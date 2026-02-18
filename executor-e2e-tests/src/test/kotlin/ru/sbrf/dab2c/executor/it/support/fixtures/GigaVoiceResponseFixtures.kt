@@ -49,17 +49,6 @@ object GigaVoiceResponseFixtures {
         chunkId: Int,
     ): GigaVoiceResponse = gigaVoiceResponse {
         output = contentFromModel {
-            additionalData = additionalData {
-                usage = usage {
-                    promptTokens = 100
-                    completionTokens = 200
-                    totalTokens = 300
-                }
-                gigachatModelInfo = gigaChatModelInfo {
-                    name = "test-model"
-                    version = "1.2.0"
-                }
-            }
             audio = audio {
                 audioChunk = ByteString.copyFrom(byteArrayOf(chunkId.toByte()))
             }
