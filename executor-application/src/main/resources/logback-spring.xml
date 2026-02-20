@@ -2,10 +2,13 @@
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
+    <conversionRule conversionWord="presentMdc"
+                    converterClass="ru.sbrf.dab2c.executor.application.logging.PresentMdcConverter"/>
+
     <!-- Text console appender - used by ALL profiles -->
     <appender name="CONSOLE_TEXT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} -%replace( [type=%X{type}]){'^ \[type=\]', ''}%replace( [traceId=%X{traceId}]){'^ \[traceId=\]', ''}%replace( [sessionId=%X{sessionId}]){'^ \[sessionId=\]', ''}%replace( [channel=%X{channel}]){'^ \[channel=\]', ''}%replace( [platform=%X{platform}]){'^ \[platform=\]', ''}%replace( [requestId=%X{requestId}]){'^ \[requestId=\]', ''}%replace( [dest=%X{destinationSystem}%X{destinationService}]){'^ \[dest=\]', ''}%replace( [time=%X{executionTimeLong}ms]){'^ \[time=ms\]', ''}%replace( [status=%X{statusCode}]){'^ \[status=\]', ''}%replace( [error=%X{errorCode}]){'^ \[error=\]', ''}%replace( [rqMessage=%X{rqMessage}]){'^ \[rqMessage=\]', ''}%replace( [rsMessage=%X{rsMessage}]){'^ \[rsMessage=\]', ''} %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}%presentMdc %msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
     </appender>
@@ -39,9 +42,12 @@
                 </throwableConverter>
             </encoder>
         </appender>
+        <appender name="ASYNC_FILE_JSON" class="ch.qos.logback.classic.AsyncAppender">
+            <appender-ref ref="FILE_JSON"/>
+        </appender>
         <root level="INFO">
             <appender-ref ref="CONSOLE_TEXT"/>
-            <appender-ref ref="FILE_JSON"/>
+            <appender-ref ref="ASYNC_FILE_JSON"/>
         </root>
     </springProfile>
 
