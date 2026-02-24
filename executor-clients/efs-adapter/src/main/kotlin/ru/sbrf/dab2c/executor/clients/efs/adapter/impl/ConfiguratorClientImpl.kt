@@ -19,6 +19,7 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseMapStringAge
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseSessionConfig
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.session.DaSessionCommon
+import ru.sbrf.dab2c.executor.library.context.currentUfsCookie
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
 
 private val logger = KotlinLogging.logger {}
@@ -41,7 +42,8 @@ class ConfiguratorClientImpl(
     private val mapper = AgentConfigurationMapper.INSTANCE
     private val configuratorMapper = ConfiguratorMapper.INSTANCE
 
-    override suspend fun getRestAgentConfig(agentName: String, cookie: String): AgentConfiguration {
+    override suspend fun getRestAgentConfig(agentName: String): AgentConfiguration {
+        val cookie = currentUfsCookie()
         logger.debug { "Getting REST agent config for agent: $agentName" }
 
         val request = AppSourceRequest(appSource = DEFAULT_APP_SOURCE)
@@ -69,8 +71,8 @@ class ConfiguratorClientImpl(
         return mapper.toDomain(agentConfig)
     }
 
-    override suspend fun getDaSessionCommon(cookie: String): DaSessionCommon {
-
+    override suspend fun getDaSessionCommon(): DaSessionCommon {
+        val cookie = currentUfsCookie()
         val request = AppSourceRequest(appSource = DEFAULT_APP_SOURCE)
         val requestJson = objectMapper.writeValueAsString(request)
 

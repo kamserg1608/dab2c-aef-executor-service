@@ -14,6 +14,7 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ProfileClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.PersonInfoMapper
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseProfile
 import ru.sbrf.dab2c.executor.domain.session.DaSessionUserInfo
+import ru.sbrf.dab2c.executor.library.context.currentUfsCookie
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
 
 private const val HTTP_OK = 200
@@ -31,8 +32,8 @@ class ProfileClientImpl(
 
     private val personInfoMapper = PersonInfoMapper.INSTANCE
 
-    override suspend fun getPersonInfo(cookie: String): DaSessionUserInfo {
-
+    override suspend fun getPersonInfo(): DaSessionUserInfo {
+        val cookie = currentUfsCookie()
         val request = "[\"PERSON\"]"
         val requestJson = objectMapper.writeValueAsString(request)
 

@@ -1,6 +1,8 @@
-package ru.sbrf.dab2c.executor.voice.model
+package ru.sbrf.dab2c.executor.library.context
 
-/** Known request headers for gRPC metadata access. */
+/**
+ * Standard request header names propagated through the coroutine context.
+ */
 enum class RequestHeader(val headerName: String) {
     SESSION("x-session"),
     TOKEN("x-token"),

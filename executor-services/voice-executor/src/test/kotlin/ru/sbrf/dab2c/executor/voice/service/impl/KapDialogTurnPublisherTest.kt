@@ -19,16 +19,18 @@ import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.domain.session.DaSessionMeta
 import ru.sbrf.dab2c.executor.domain.session.DaSessionUserInfo
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
-import ru.sbrf.dab2c.executor.voice.grpc.context.MetadataElement
+import ru.sbrf.dab2c.executor.library.context.Headers
+import ru.sbrf.dab2c.executor.library.context.HeadersElement
+import ru.sbrf.dab2c.executor.library.context.SessionInfoElement
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
-import ru.sbrf.dab2c.executor.voice.model.RequestMetadata
 
 class KapDialogTurnPublisherTest {
 
     private lateinit var kapProducerClient: KapProducerClient
     private lateinit var processingState: MutableStateFlow<ProcessingState>
     private lateinit var publisher: KapDialogTurnPublisher
-    private lateinit var metadataContext: MetadataElement
+    private lateinit var headersElement: HeadersElement
+    private lateinit var sessionInfoElement: SessionInfoElement
 
     @BeforeEach
     fun setUp() {
@@ -37,14 +39,13 @@ class KapDialogTurnPublisherTest {
         processingState = MutableStateFlow(createServingState())
         publisher = KapDialogTurnPublisher(kapProducerClient, processingState)
 
-        val metadata = RequestMetadata(emptyMap())
-        metadata._daSessionInfo = createDaSessionInfo()
-        metadataContext = MetadataElement(metadata)
+        headersElement = HeadersElement(Headers(emptyMap()))
+        sessionInfoElement = SessionInfoElement(createDaSessionInfo())
     }
 
     @Test
     fun `should publish dialog to KAP`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement + sessionInfoElement) {
             publisher.publishDialogTurn("Hello", "Hi there", 1000L)
 
             coVerify(exactly = 1) { kapProducerClient.publishDialog(any()) }
@@ -53,7 +54,7 @@ class KapDialogTurnPublisherTest {
 
     @Test
     fun `should publish dialog with correct text`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement + sessionInfoElement) {
             val dialogSlot = slot<DialogEnvelope>()
             coEvery { kapProducerClient.publishDialog(capture(dialogSlot)) } returns Unit
 
@@ -67,7 +68,7 @@ class KapDialogTurnPublisherTest {
 
     @Test
     fun `should set correct chatId from conversationId`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement + sessionInfoElement) {
             val dialogSlot = slot<DialogEnvelope>()
             coEvery { kapProducerClient.publishDialog(capture(dialogSlot)) } returns Unit
 
@@ -81,7 +82,7 @@ class KapDialogTurnPublisherTest {
 
     @Test
     fun `should set session info fields from context`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement + sessionInfoElement) {
             val dialogSlot = slot<DialogEnvelope>()
             coEvery { kapProducerClient.publishDialog(capture(dialogSlot)) } returns Unit
 
@@ -100,7 +101,7 @@ class KapDialogTurnPublisherTest {
 
     @Test
     fun `should not publish when not in Serving state`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement + sessionInfoElement) {
             processingState.value = ProcessingState.AwaitingContext
 
             publisher.publishDialogTurn("Hello", "Hi", 1000L)
@@ -111,7 +112,7 @@ class KapDialogTurnPublisherTest {
 
     @Test
     fun `should link messages with previousMessageId`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement + sessionInfoElement) {
             val dialogs = mutableListOf<DialogEnvelope>()
             coEvery { kapProducerClient.publishDialog(capture(dialogs)) } returns Unit
 
@@ -135,7 +136,7 @@ class KapDialogTurnPublisherTest {
 
     @Test
     fun `should set inputType to voice`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement + sessionInfoElement) {
             val dialogSlot = slot<DialogEnvelope>()
             coEvery { kapProducerClient.publishDialog(capture(dialogSlot)) } returns Unit
 
@@ -147,7 +148,7 @@ class KapDialogTurnPublisherTest {
 
     @Test
     fun `should set streamStatus to completed`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement + sessionInfoElement) {
             val dialogSlot = slot<DialogEnvelope>()
             coEvery { kapProducerClient.publishDialog(capture(dialogSlot)) } returns Unit
 
@@ -159,7 +160,7 @@ class KapDialogTurnPublisherTest {
 
     @Test
     fun `should set agentId with CI from agent configuration`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement + sessionInfoElement) {
             val dialogSlot = slot<DialogEnvelope>()
             coEvery { kapProducerClient.publishDialog(capture(dialogSlot)) } returns Unit
 
@@ -173,7 +174,7 @@ class KapDialogTurnPublisherTest {
 
     @Test
     fun `should set assistantResponseTime from parameter`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement + sessionInfoElement) {
             val dialogSlot = slot<DialogEnvelope>()
             coEvery { kapProducerClient.publishDialog(capture(dialogSlot)) } returns Unit
 

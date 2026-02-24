@@ -24,9 +24,10 @@ import ru.sbrf.dab2c.executor.domain.session.DaSessionMeta
 import ru.sbrf.dab2c.executor.domain.session.DaSessionUserInfo
 import ru.sbrf.dab2c.executor.domain.voice.AgentAnalytics
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
-import ru.sbrf.dab2c.executor.voice.grpc.context.MetadataElement
+import ru.sbrf.dab2c.executor.library.context.Headers
+import ru.sbrf.dab2c.executor.library.context.HeadersElement
+import ru.sbrf.dab2c.executor.library.context.SessionInfoElement
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
-import ru.sbrf.dab2c.executor.voice.model.RequestMetadata
 
 class KapAnalyticsPublisherTest {
 
@@ -35,7 +36,8 @@ class KapAnalyticsPublisherTest {
     private lateinit var kapProducerClient: KapProducerClient
     private lateinit var processingState: MutableStateFlow<ProcessingState>
     private lateinit var publisher: KapAnalyticsPublisher
-    private lateinit var metadataContext: MetadataElement
+    private lateinit var headersElement: HeadersElement
+    private lateinit var sessionInfoElement: SessionInfoElement
 
     @BeforeEach
     fun setUp() {
@@ -44,14 +46,13 @@ class KapAnalyticsPublisherTest {
         processingState = MutableStateFlow(createServingState())
         publisher = KapAnalyticsPublisher(kapProducerClient, processingState)
 
-        val metadata = RequestMetadata(emptyMap())
-        metadata._daSessionInfo = createDaSessionInfo()
-        metadataContext = MetadataElement(metadata)
+        headersElement = HeadersElement(Headers(emptyMap()))
+        sessionInfoElement = SessionInfoElement(createDaSessionInfo())
     }
 
     @Test
     fun `should publish analytics to KAP`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement + sessionInfoElement) {
             publisher.publishAnalytics(listOf(createTestAnalytics()), "request-123")
 
             coVerify(exactly = 1) { kapProducerClient.publishAgentAnalytics(any()) }
@@ -60,7 +61,7 @@ class KapAnalyticsPublisherTest {
 
     @Test
     fun `should publish each analytics item separately`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement + sessionInfoElement) {
             val analytics = listOf(
                 createTestAnalytics(dataVersion = "1.0"),
                 createTestAnalytics(dataVersion = "2.0")
@@ -74,7 +75,7 @@ class KapAnalyticsPublisherTest {
 
     @Test
     fun `should not publish when analytics list is empty`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement + sessionInfoElement) {
             publisher.publishAnalytics(emptyList(), "request-123")
 
             coVerify(exactly = 0) { kapProducerClient.publishAgentAnalytics(any()) }
@@ -83,7 +84,7 @@ class KapAnalyticsPublisherTest {
 
     @Test
     fun `should not publish when not in Serving state`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement + sessionInfoElement) {
             processingState.value = ProcessingState.AwaitingContext
 
             publisher.publishAnalytics(listOf(createTestAnalytics()), "request-123")
@@ -94,7 +95,7 @@ class KapAnalyticsPublisherTest {
 
     @Test
     fun `should set correct version`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement + sessionInfoElement) {
             val envelopeSlot = slot<AgentAnalyticsEnvelope>()
             coEvery { kapProducerClient.publishAgentAnalytics(capture(envelopeSlot)) } returns Unit
 
@@ -106,7 +107,7 @@ class KapAnalyticsPublisherTest {
 
     @Test
     fun `should enrich data with session context`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement + sessionInfoElement) {
             val envelopeSlot = slot<AgentAnalyticsEnvelope>()
             coEvery { kapProducerClient.publishAgentAnalytics(capture(envelopeSlot)) } returns Unit
             val analyticsData = """{"metric":"value","count":42}"""
@@ -132,7 +133,7 @@ class KapAnalyticsPublisherTest {
 
     @Test
     fun `should generate unique envelope id`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement + sessionInfoElement) {
             val envelopes = mutableListOf<AgentAnalyticsEnvelope>()
             coEvery { kapProducerClient.publishAgentAnalytics(capture(envelopes)) } returns Unit
 

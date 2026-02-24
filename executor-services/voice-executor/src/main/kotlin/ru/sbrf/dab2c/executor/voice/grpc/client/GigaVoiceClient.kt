@@ -9,14 +9,12 @@ import org.springframework.stereotype.Component
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceServiceGrpcKt
+import ru.sbrf.dab2c.executor.library.context.RequestHeader
+import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MonitoringServiceFactory
 import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
-import ru.sbrf.dab2c.executor.voice.model.RequestHeader
-import ru.sbrf.dab2c.executor.voice.util.extensions.currentRequestMetadata
 
-/**
- * gRPC client for GigaVoice service.
- */
+/** gRPC client for bidirectional streaming communication with the downstream GigaVoice service. */
 @Component
 class GigaVoiceClient(
     private val monitoringServiceFactory: MonitoringServiceFactory
@@ -31,7 +29,7 @@ class GigaVoiceClient(
         GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineStub(channel)
     }
 
-    /** Starts a bidirectional streaming session with GigaVoice service. */
+    /** Opens a bidirectional streaming session with the downstream GigaVoice service. */
     @Suppress("LongMethod")
     fun session(requests: Flow<GigaVoiceRequest>): Flow<GigaVoiceResponse> {
         logger.debug { "Starting bidirectional session with GigaVoice" }
@@ -73,16 +71,16 @@ class GigaVoiceClient(
     }
 
     private suspend fun getPlatformHeader(): String {
-        val metadata = currentRequestMetadata()
-        return metadata.getHeader(RequestHeader.PLATFORM)
+        val headers = currentHeaders()
+        return headers.getHeader(RequestHeader.PLATFORM)
     }
 
     private suspend fun getChannelHeader(): String {
-        val metadata = currentRequestMetadata()
-        return metadata.getHeader(RequestHeader.CHANNEL)
+        val headers = currentHeaders()
+        return headers.getHeader(RequestHeader.CHANNEL)
     }
 
-    /** Constants for metric tags. */
+    /** Metric tag constants for monitoring stream chunks. */
     companion object {
         const val STREAM_CHUNK_TYPE = "stream_chunk_type"
         const val PROFANITY_CHECK = "profanity_check"

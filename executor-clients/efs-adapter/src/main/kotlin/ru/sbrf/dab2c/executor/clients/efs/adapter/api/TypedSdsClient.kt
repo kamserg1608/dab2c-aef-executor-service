@@ -11,7 +11,6 @@ interface TypedSdsClient {
     suspend fun <T : Any> read(
         sectionName: String,
         attributeName: String,
-        cookie: String,
         type: Class<T>
     ): T?
 
@@ -21,15 +20,13 @@ interface TypedSdsClient {
     suspend fun <T : Any> write(
         sectionName: String,
         attributeName: String,
-        data: T,
-        cookie: String
+        data: T
     )
 
     /**
      * Write multiple values to SDS in a single call.
      */
     suspend fun writeAll(
-        sections: List<Triple<String, String, Any>>,
-        cookie: String
+        sections: List<Triple<String, String, Any>>
     )
 }

@@ -13,12 +13,12 @@ interface AgentInteractionAuditor {
     /**
      * Emits successful agent interaction audit event.
      */
-    suspend fun success(request: AgentInteractionAuditRequest, cookie: String)
+    suspend fun success(request: AgentInteractionAuditRequest)
 
     /**
      * Emits failed agent interaction audit event.
      */
-    suspend fun failed(request: AgentInteractionAuditRequest, cookie: String)
+    suspend fun failed(request: AgentInteractionAuditRequest)
 }
 
 /**

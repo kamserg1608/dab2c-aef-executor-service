@@ -11,10 +11,10 @@ interface ConfiguratorClient {
     /**
      * Get REST agent configuration by agent name.
      */
-    suspend fun getRestAgentConfig(agentName: String, cookie: String): AgentConfiguration
+    suspend fun getRestAgentConfig(agentName: String): AgentConfiguration
 
     /**
      * Get DaSessionCommon.
      */
-    suspend fun getDaSessionCommon(cookie: String): DaSessionCommon
+    suspend fun getDaSessionCommon(): DaSessionCommon
 }

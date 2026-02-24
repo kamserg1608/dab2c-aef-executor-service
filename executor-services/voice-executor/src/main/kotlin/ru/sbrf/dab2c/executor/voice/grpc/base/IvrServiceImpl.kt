@@ -1,9 +1,7 @@
 package ru.sbrf.dab2c.executor.voice.grpc.base
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.slf4j.MDCContext
 import net.devh.boot.grpc.server.service.GrpcService
 import ru.sbrf.dab2c.executor.clients.gigavoice.mapper.GigaVoiceDomainMapper
@@ -11,17 +9,15 @@ import ru.sbrf.dab2c.executor.clients.ivr.mapper.IvrDomainMapper
 import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceRequest
 import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceServiceGrpcKt
+import ru.sbrf.dab2c.executor.library.context.HeadersElement
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
 import ru.sbrf.dab2c.executor.voice.grpc.client.GigaVoiceClient
 import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
-import ru.sbrf.dab2c.executor.voice.grpc.context.MetadataElement
 import ru.sbrf.dab2c.executor.voice.logging.VoiceMdcInitializer
 import ru.sbrf.dab2c.executor.voice.service.api.SessionInitService
+import ru.sbrf.dab2c.executor.voice.util.extensions.withSessionContext
 
-/**
- * gRPC service implementation for IVR protocol.
- * Receives IVR requests, converts to domain model, forwards to GigaVoice.
- */
+/** gRPC service implementation that handles IVR voice requests and orchestrates the processing pipeline. */
 @GrpcService
 class IvrServiceImpl(
     private val gigaVoiceClient: GigaVoiceClient,
@@ -29,13 +25,12 @@ class IvrServiceImpl(
     private val sessionInitService: SessionInitService,
 ) : GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineImplBase() {
     override fun gigaVoice(requests: Flow<GigaVoiceRequest>): Flow<GigaVoiceResponse> {
-        val metadata = GrpcMetadataContext.fromGrpcThread()
+        val headers = GrpcMetadataContext.fromGrpcThread()
         val chunkProcessingService = chunkProcessingServiceFactory.create()
 
-        VoiceMdcInitializer.initializeForRequest(metadata)
+        VoiceMdcInitializer.initializeForRequest(headers)
 
         return requests
-            .onStart { sessionInitService.initialize() }
             .map { IvrDomainMapper.toDomainRequest(it) }
             .let { chunkProcessingService.processRequestChunks(it) }
             .map { GigaVoiceDomainMapper.toProtoRequest(it) }
@@ -43,6 +38,8 @@ class IvrServiceImpl(
             .map { GigaVoiceDomainMapper.toDomainResponse(it) }
             .let { chunkProcessingService.processResponseChunks(it) }
             .map { IvrDomainMapper.toProtoResponse(it) }
-            .flowOn(MetadataElement(metadata) + MDCContext())
+            .withSessionContext(HeadersElement(headers) + MDCContext()) {
+                sessionInitService.initialize()
+            }
     }
 }

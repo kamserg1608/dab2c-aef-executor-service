@@ -10,5 +10,5 @@ interface ProfileClient {
     /**
      * Gets person info.
      */
-    suspend fun getPersonInfo(cookie: String): DaSessionUserInfo
+    suspend fun getPersonInfo(): DaSessionUserInfo
 }

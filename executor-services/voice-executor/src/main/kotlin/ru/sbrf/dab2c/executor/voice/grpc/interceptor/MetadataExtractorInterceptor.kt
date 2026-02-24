@@ -8,14 +8,11 @@ import io.grpc.ServerCall
 import io.grpc.ServerCallHandler
 import io.grpc.ServerInterceptor
 import net.devh.boot.grpc.server.interceptor.GrpcGlobalServerInterceptor
+import ru.sbrf.dab2c.executor.library.context.Headers
 import ru.sbrf.dab2c.executor.voice.grpc.context.GrpcMetadataContext
-import ru.sbrf.dab2c.executor.voice.model.RequestMetadata
-import ru.sbrf.dab2c.executor.voice.util.extensions.toRequestMetadata
+import ru.sbrf.dab2c.executor.voice.util.extensions.toHeaders
 
-/**
- * gRPC server interceptor that extracts all request metadata (headers)
- * and stores them in the gRPC Context for downstream access.
- */
+/** Server interceptor that extracts gRPC metadata into the request context. */
 @GrpcGlobalServerInterceptor
 class MetadataExtractorInterceptor : ServerInterceptor {
 
@@ -26,19 +23,19 @@ class MetadataExtractorInterceptor : ServerInterceptor {
         headers: Metadata,
         next: ServerCallHandler<ReqT, RespT>
     ): ServerCall.Listener<ReqT> {
-        val requestMetadata = headers.toRequestMetadata()
+        val requestHeaders = headers.toHeaders()
 
         logger.debug {
-            "Extracted ${requestMetadata.size} metadata entries for ${call.methodDescriptor.fullMethodName}"
+            "Extracted ${requestHeaders.size} metadata entries for ${call.methodDescriptor.fullMethodName}"
         }
 
-        logger.trace { "Metadata: ${requestMetadata.asString()}" }
+        logger.trace { "Metadata: ${requestHeaders.asString()}" }
 
         val contextWithMetadata = Context.current()
-            .withValue(GrpcMetadataContext.METADATA_KEY, requestMetadata)
+            .withValue(GrpcMetadataContext.METADATA_KEY, requestHeaders)
 
         return Contexts.interceptCall(contextWithMetadata, call, headers, next)
     }
 }
 
-private fun RequestMetadata.asString() = this.headers.entries.joinToString("; ") { "${it.key}=${it.value}" }
+private fun Headers.asString() = this.headers.entries.joinToString("; ") { "${it.key}=${it.value}" }

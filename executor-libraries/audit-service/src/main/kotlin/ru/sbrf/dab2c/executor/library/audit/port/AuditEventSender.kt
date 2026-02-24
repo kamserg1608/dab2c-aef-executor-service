@@ -10,5 +10,5 @@ fun interface AuditEventSender {
     /**
      * Sends the given [AuditEvent] to the external audit system.
      */
-    suspend fun sendEvent(event: AuditEvent, cookie: String)
+    suspend fun sendEvent(event: AuditEvent)
 }

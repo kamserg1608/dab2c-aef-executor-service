@@ -5,40 +5,30 @@ import ru.sbrf.dab2c.executor.library.audit.model.AuditEventNames
 import ru.sbrf.dab2c.executor.library.audit.model.AuditParams
 import ru.sbrf.dab2c.executor.library.audit.port.AuditEventSender
 
-/**
- * Default implementation of [ExternalInteractionAuditor].
- *
- * Builds audit payload and sends it via [AuditEventSender].
- *
- * Emits:
- *  - DAB2C_EXTERNAL_INTERACTION
- *  - DAB2C_EXTERNAL_INTERACTION_FAILED
- */
+/** Implementation of [ExternalInteractionAuditor] that sends audit events via [AuditEventSender]. */
 class ExternalInteractionAuditorImpl(
     private val senderValue: String,
     private val receiver: String,
     private val auditEventSender: AuditEventSender,
 ) : ExternalInteractionAuditor {
 
-    override suspend fun success(request: ExternalInteractionRequest, cookie: String) {
+    override suspend fun success(request: ExternalInteractionRequest) {
         auditEventSender.sendEvent(
             event = AuditEvent(
                 event = AuditEventNames.DAB2C_EXTERNAL_INTERACTION,
                 success = true,
                 params = interactionParams(request)
-            ),
-            cookie = cookie
+            )
         )
     }
 
-    override suspend fun failed(request: ExternalInteractionRequest, cookie: String) {
+    override suspend fun failed(request: ExternalInteractionRequest) {
         auditEventSender.sendEvent(
             event = AuditEvent(
                 event = AuditEventNames.DAB2C_EXTERNAL_INTERACTION_FAILED,
                 success = false,
                 params = interactionParams(request)
-            ),
-            cookie = cookie
+            )
         )
     }
 
