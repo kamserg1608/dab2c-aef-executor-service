@@ -1,24 +1,15 @@
 package ru.sbrf.dab2c.executor.voice.grpc.context
 
 import io.grpc.Context
-import ru.sbrf.dab2c.executor.voice.model.RequestMetadata
+import ru.sbrf.dab2c.executor.library.context.Headers
 
-/**
- * gRPC context key for storing request metadata.
- * Used to pass metadata from interceptor to service methods.
- */
+/** Holds gRPC request metadata in a thread-local gRPC context. */
 object GrpcMetadataContext {
 
-    /**
-     * Context key for storing extracted metadata.
-     */
-    val METADATA_KEY: Context.Key<RequestMetadata> =
+    val METADATA_KEY: Context.Key<Headers> =
         Context.key("grpc-request-metadata")
 
-    /**
-     * Reads metadata directly from gRPC thread-local context.
-     * Use only in non-suspend contexts that run on the gRPC thread.
-     */
-    fun fromGrpcThread(): RequestMetadata =
-        METADATA_KEY.get() ?: RequestMetadata.EMPTY
+    /** Retrieves request headers from the current gRPC context. */
+    fun fromGrpcThread(): Headers =
+        METADATA_KEY.get() ?: Headers.EMPTY
 }

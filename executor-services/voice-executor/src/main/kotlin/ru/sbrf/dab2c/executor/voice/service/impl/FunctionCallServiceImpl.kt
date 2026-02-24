@@ -7,18 +7,15 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
+import ru.sbrf.dab2c.executor.library.context.RequestHeader
+import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.voice.model.CallbackChannels
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
-import ru.sbrf.dab2c.executor.voice.model.toGigaAgentContext
 import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
 import ru.sbrf.dab2c.executor.voice.service.api.FunctionCallService
-import ru.sbrf.dab2c.executor.voice.util.extensions.currentRequestMetadata
 import ru.sbrf.dab2c.executor.voice.util.extensions.launchAsync
 
-/**
- * Default implementation of FunctionCallService.
- * Backend function calls are executed asynchronously to avoid blocking the response flow.
- */
+/** Implementation of [FunctionCallService] that routes function calls to IVR or backend execution. */
 class FunctionCallServiceImpl(
     private val processingState: MutableStateFlow<ProcessingState>,
     private val callbackChannels: CallbackChannels,
@@ -52,25 +49,26 @@ class FunctionCallServiceImpl(
         state: ProcessingState.Serving,
         functionCalling: FunctionCallingData
     ) {
-        val metadata = currentRequestMetadata()
-        val context = metadata.toGigaAgentContext(state.conversationId)
+        val headers = currentHeaders()
         val functionName = functionCalling.functionCall.name
         val startTime = System.currentTimeMillis()
 
         launchAsync {
             try {
                 val functionCallResult = gigaVoiceAgentClient.executeFunctionCall(
-                    context = context,
+                    conversationId = state.conversationId,
                     agentConfiguration = state.agentConfiguration,
                     functionCalling = functionCalling,
-                    daSessionInfo = metadata.daSessionInfo,
                     contextData = state.contextData
                 )
 
                 val elapsed = System.currentTimeMillis() - startTime
                 logger.info { "Backend function '$functionName' completed in ${elapsed}ms" }
 
-                analyticsPublisher.publishAnalytics(functionCallResult.analytics, context.daRequestId)
+                analyticsPublisher.publishAnalytics(
+                    functionCallResult.analytics,
+                    headers.getHeaderOrNull(RequestHeader.X_REQUEST_ID)
+                )
 
                 callbackChannels.downstream.send(VoiceRequest.FunctionResult(functionCallResult.result))
             } catch (e: ClosedSendChannelException) {

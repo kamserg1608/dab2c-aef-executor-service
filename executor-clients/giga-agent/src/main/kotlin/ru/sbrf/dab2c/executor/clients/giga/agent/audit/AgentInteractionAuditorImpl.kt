@@ -16,25 +16,23 @@ class AgentInteractionAuditorImpl(
     private val auditEventSender: AuditEventSender,
 ) : AgentInteractionAuditor {
 
-    override suspend fun success(request: AgentInteractionAuditRequest, cookie: String) {
+    override suspend fun success(request: AgentInteractionAuditRequest) {
         auditEventSender.sendEvent(
             event = AuditEvent(
                 event = AuditEventNames.DAB2C_AGENT_INTERACTION,
                 success = true,
                 params = interactionParams(request)
-            ),
-            cookie = cookie
+            )
         )
     }
 
-    override suspend fun failed(request: AgentInteractionAuditRequest, cookie: String) {
+    override suspend fun failed(request: AgentInteractionAuditRequest) {
         auditEventSender.sendEvent(
             event = AuditEvent(
                 event = AuditEventNames.DAB2C_AGENT_INTERACTION_FAILED,
                 success = false,
                 params = interactionParams(request)
-            ),
-            cookie = cookie
+            )
         )
     }
 

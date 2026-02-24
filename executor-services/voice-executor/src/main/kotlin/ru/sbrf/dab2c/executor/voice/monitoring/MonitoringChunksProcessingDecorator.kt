@@ -9,19 +9,16 @@ import kotlinx.coroutines.flow.onStart
 import ru.sbrf.dab2c.executor.domain.voice.ContentFromModel
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
+import ru.sbrf.dab2c.executor.library.context.RequestHeader
+import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MonitoringServiceFactory
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.TimerSampleMetric
 import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
-import ru.sbrf.dab2c.executor.voice.model.RequestHeader
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
-import ru.sbrf.dab2c.executor.voice.util.extensions.currentRequestMetadata
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
-/**
- * Decorator for monitoring voice chunk processing.
- * Tracks incoming and outgoing chunks with metrics and logging.
- */
+/** Decorator that adds monitoring metrics to chunk processing flows. */
 class MonitoringChunksProcessingDecorator(
     private val delegate: ChunkProcessingService,
     private val monitoringServiceFactory: MonitoringServiceFactory
@@ -161,18 +158,16 @@ class MonitoringChunksProcessingDecorator(
     }
 
     private suspend fun getPlatformHeader(): String {
-        val metadata = currentRequestMetadata()
-        return metadata.getHeader(RequestHeader.PLATFORM)
+        val headers = currentHeaders()
+        return headers.getHeader(RequestHeader.PLATFORM)
     }
 
     private suspend fun getChannelHeader(): String {
-        val metadata = currentRequestMetadata()
-        return metadata.getHeader(RequestHeader.CHANNEL)
+        val headers = currentHeaders()
+        return headers.getHeader(RequestHeader.CHANNEL)
     }
 
-    /**
-     * Chunk type key.
-     */
+    /** Shared state and constants for monitoring chunk processing. */
     companion object {
         private const val STREAM_CHUNK_TYPE_TAG = "stream_chunk_type"
         private const val UNKNOWN = "unknown"

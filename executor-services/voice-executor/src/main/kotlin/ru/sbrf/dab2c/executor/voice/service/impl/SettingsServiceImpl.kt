@@ -13,19 +13,16 @@ import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
+import ru.sbrf.dab2c.executor.library.context.RequestHeader
+import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
 import ru.sbrf.dab2c.executor.voice.model.CallbackChannels
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
-import ru.sbrf.dab2c.executor.voice.model.toGigaAgentContext
-import ru.sbrf.dab2c.executor.voice.model.ufsCookie
 import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
 import ru.sbrf.dab2c.executor.voice.service.api.SettingsService
-import ru.sbrf.dab2c.executor.voice.util.extensions.currentRequestMetadata
 import ru.sbrf.dab2c.executor.voice.util.extensions.launchAsync
 
-/**
- * Default implementation of SettingsService.
- */
+/** Implementation of [SettingsService] that resolves voice settings via EFS and GigaAgent. */
 class SettingsServiceImpl(
     private val processingState: MutableStateFlow<ProcessingState>,
     private val callbackChannels: CallbackChannels,
@@ -73,23 +70,17 @@ class SettingsServiceImpl(
         settings: VoiceSettings,
         contextData: ContextData
     ): SettingsData {
-        val metadata = currentRequestMetadata()
-        val daSessionInfo = metadata.daSessionInfo
-        val agentConfiguration = configuratorClient.getRestAgentConfig(
-            configProperties.agentName,
-            metadata.ufsCookie
-        )
+        val headers = currentHeaders()
+        val agentConfiguration = configuratorClient.getRestAgentConfig(configProperties.agentName)
 
         logger.debug { "Fetched agent configuration: ${agentConfiguration.name}" }
 
         val conversationId = settings.voiceCallId
-        val context = metadata.toGigaAgentContext(conversationId)
 
         val settingsResult = gigaVoiceAgentClient.getSettings(
-            context = context,
+            conversationId = conversationId,
             agentConfiguration = agentConfiguration,
             voiceSettings = settings,
-            daSessionInfo = daSessionInfo,
             contextData = contextData
         )
 
@@ -108,7 +99,7 @@ class SettingsServiceImpl(
             conversationId = conversationId,
             functionRegistry = settingsResult.performers,
             analytics = settingsResult.analytics,
-            requestId = context.daRequestId
+            requestId = headers.getHeaderOrNull(RequestHeader.X_REQUEST_ID)
         )
     }
 

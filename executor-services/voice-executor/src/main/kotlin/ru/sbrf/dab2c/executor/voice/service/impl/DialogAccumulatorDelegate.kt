@@ -11,10 +11,8 @@ import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.library.audit.model.AuditMessageSchema
 import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionAuditor
 import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionRequest
-import ru.sbrf.dab2c.executor.voice.model.ufsCookie
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.service.api.DialogTurnPublisher
-import ru.sbrf.dab2c.executor.voice.util.extensions.currentRequestMetadata
 import kotlin.reflect.KClass
 
 /**
@@ -151,19 +149,17 @@ class DialogAccumulatorDelegate(
         dialogTurnPublisher.publishDialogTurn(inputPhrase, outputPhrase, assistantResponseTime)
     }
 
-    private suspend fun sendSuccessAudit(cookie: String, rqMessage: String?, rsMessage: String?) {
+    private suspend fun sendSuccessAudit(rqMessage: String?, rsMessage: String?) {
         auditor.success(
             request = ExternalInteractionRequest(
                 answerCode = AuditMessageSchema.ANSWER_CODE_OK,
                 rqMessage = rqMessage,
                 rsMessage = rsMessage
-            ),
-            cookie = cookie
+            )
         )
     }
 
     private suspend fun sendFailedAudit(
-        cookie: String,
         rqMessage: String?,
         rsMessage: String?,
         cause: Throwable
@@ -175,13 +171,11 @@ class DialogAccumulatorDelegate(
                 rsMessage = rsMessage,
                 errorCode = AuditMessageSchema.ERROR_CODE_VOICE_RESPONSE_STREAM,
                 errorTitle = cause.message ?: AuditMessageSchema.ERROR_TITLE_VOICE_STREAM
-            ),
-            cookie = cookie
+            )
         )
     }
 
     private suspend fun sendAuditOnCompletion(cause: Throwable?) {
-        val cookie = currentRequestMetadata().ufsCookie
         val rsMessage = settingsJson
 
         appendDialogTurnToHistory()
@@ -193,11 +187,11 @@ class DialogAccumulatorDelegate(
         val rqMessage = dialog.toString().trim().ifBlank { null }
 
         if (cause == null || isNonFailureException(cause)) {
-            sendSuccessAudit(cookie, rqMessage, rsMessage)
+            sendSuccessAudit(rqMessage, rsMessage)
             return
         }
 
-        sendFailedAudit(cookie, rqMessage, rsMessage, cause)
+        sendFailedAudit(rqMessage, rsMessage, cause)
     }
 
     private fun isNonFailureException(cause: Throwable): Boolean =

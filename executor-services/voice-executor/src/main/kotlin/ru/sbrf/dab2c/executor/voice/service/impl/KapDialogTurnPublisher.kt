@@ -5,15 +5,14 @@ import kotlinx.coroutines.flow.StateFlow
 import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.mapper.DialogEnvelopeMapper
 import ru.sbrf.dab2c.executor.clients.kap.producer.mapper.DialogTurnData
+import ru.sbrf.dab2c.executor.library.context.RequestHeader
+import ru.sbrf.dab2c.executor.library.context.currentHeaders
+import ru.sbrf.dab2c.executor.library.context.currentSessionInfo
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
-import ru.sbrf.dab2c.executor.voice.model.RequestHeader
 import ru.sbrf.dab2c.executor.voice.service.api.DialogTurnPublisher
-import ru.sbrf.dab2c.executor.voice.util.extensions.currentRequestMetadata
 import java.util.UUID
 
-/**
- * Publishes dialog turns to KAP (Kafka Analytics Platform).
- */
+/** Publishes dialog turn events to KAP. */
 class KapDialogTurnPublisher(
     private val kapProducerClient: KapProducerClient,
     private val processingState: StateFlow<ProcessingState>
@@ -32,7 +31,8 @@ class KapDialogTurnPublisher(
             "Publishing dialog turn: input='$inputText', output='$outputText', responseTime=${assistantResponseTime}ms"
         }
 
-        val metadata = currentRequestMetadata()
+        val headers = currentHeaders()
+        val daSessionInfo = currentSessionInfo()
         val assistantMessageId = UUID.randomUUID().toString()
 
         val dialogTurnData = DialogTurnData(
@@ -44,16 +44,18 @@ class KapDialogTurnPublisher(
             chatId = state.conversationId,
             timestamp = System.currentTimeMillis() / MILLIS_TO_SECONDS,
             previousMessageId = previousMessageId,
-            daSessionInfo = metadata.daSessionInfo,
+            daSessionInfo = daSessionInfo,
             agentCi = state.agentConfiguration.functionalSubsystemCi,
             assistantResponseTime = assistantResponseTime,
-            requestId = metadata.getHeaderOrNull(RequestHeader.X_REQUEST_ID)
+            requestId = headers.getHeaderOrNull(RequestHeader.X_REQUEST_ID)
         )
 
+        publishTurnData(dialogTurnData, assistantMessageId)
+    }
+
+    private suspend fun publishTurnData(dialogTurnData: DialogTurnData, assistantMessageId: String) {
         val dialogEnvelope = DialogEnvelopeMapper.toDialogEnvelope(dialogTurnData)
-
         previousMessageId = assistantMessageId
-
         kapProducerClient.publishDialog(dialogEnvelope)
     }
 

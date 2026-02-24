@@ -19,12 +19,10 @@ class TypedSdsClientImpl(
     override suspend fun <T : Any> read(
         sectionName: String,
         attributeName: String,
-        cookie: String,
         type: Class<T>
     ): T? {
         val result = sdsClient.readData(
-            listOf(SdsSection(sectionName, attributeName)),
-            cookie
+            listOf(SdsSection(sectionName, attributeName))
         )
         val data = result.firstOrNull()?.data ?: return null
         return objectMapper.readValue(data, type)
@@ -33,24 +31,21 @@ class TypedSdsClientImpl(
     override suspend fun <T : Any> write(
         sectionName: String,
         attributeName: String,
-        data: T,
-        cookie: String
+        data: T
     ) {
         val serialized = objectMapper.writeValueAsString(data)
         sdsClient.writeData(
-            listOf(SdsSection(sectionName, attributeName, serialized)),
-            cookie
+            listOf(SdsSection(sectionName, attributeName, serialized))
         )
     }
 
     override suspend fun writeAll(
-        sections: List<Triple<String, String, Any>>,
-        cookie: String
+        sections: List<Triple<String, String, Any>>
     ) {
         val sdsSections = sections.map { (sectionName, attributeName, data) ->
             SdsSection(sectionName, attributeName, objectMapper.writeValueAsString(data))
         }
-        sdsClient.writeData(sdsSections, cookie)
+        sdsClient.writeData(sdsSections)
     }
 }
 
@@ -59,9 +54,8 @@ class TypedSdsClientImpl(
  */
 suspend inline fun <reified T : Any> TypedSdsClient.read(
     sectionName: String,
-    attributeName: String,
-    cookie: String
-): T? = read(sectionName, attributeName, cookie, T::class.java)
+    attributeName: String
+): T? = read(sectionName, attributeName, T::class.java)
 
 private const val DA_SESSION_SECTION_NAME = "DA_SESSION"
 private const val SESSION_INFO_KEY_PREFIX = "SESSION_INFO"
@@ -70,12 +64,11 @@ private const val SESSION_INFO_KEY_PREFIX = "SESSION_INFO"
  * Read DA session info from SDS.
  * @throws IllegalStateException if session info is not found (invalid session)
  */
-suspend fun TypedSdsClient.readDaSessionMeta(channel: String, cookie: String): DaSessionMeta {
+suspend fun TypedSdsClient.readDaSessionMeta(channel: String): DaSessionMeta {
     val attributeName = "${SESSION_INFO_KEY_PREFIX}_${channel.uppercase()}"
     val sdsSessionMeta = read<SdsSessionMeta>(
         sectionName = DA_SESSION_SECTION_NAME,
-        attributeName = attributeName,
-        cookie = cookie
+        attributeName = attributeName
     ) ?: error("Failed to fetch DA session info: session is invalid or not found")
     return DaSessionInfoMapper.INSTANCE.toDomain(sdsSessionMeta)
 }

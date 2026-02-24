@@ -10,10 +10,10 @@ interface SdsClient {
     /**
      * Read session data from SDS.
      */
-    suspend fun readData(sections: List<SdsSection>, cookie: String): List<SdsSection>
+    suspend fun readData(sections: List<SdsSection>): List<SdsSection>
 
     /**
      * Write session data to SDS.
      */
-    suspend fun writeData(sections: List<SdsSection>, cookie: String)
+    suspend fun writeData(sections: List<SdsSection>)
 }

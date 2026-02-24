@@ -10,5 +10,5 @@ interface AuditClient {
     /**
      * Send an audit event.
      */
-    suspend fun sendEvent(event: AuditEvent, cookie: String)
+    suspend fun sendEvent(event: AuditEvent)
 }

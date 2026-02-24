@@ -1,28 +1,16 @@
 package ru.sbrf.dab2c.executor.voice.audit
 
-/**
- * Auditor for external system interactions.
- *
- * Emits:
- *  - DAB2C_EXTERNAL_INTERACTION
- *  - DAB2C_EXTERNAL_INTERACTION_FAILED
- */
+/** Auditor for external service interaction events. */
 interface ExternalInteractionAuditor {
 
-    /**
-     * Emits successful voice interaction audit event.
-     */
-    suspend fun success(request: ExternalInteractionRequest, cookie: String)
+    /** Records a successful external interaction. */
+    suspend fun success(request: ExternalInteractionRequest)
 
-    /**
-     * Emits failed voice interaction audit event.
-     */
-    suspend fun failed(request: ExternalInteractionRequest, cookie: String)
+    /** Records a failed external interaction. */
+    suspend fun failed(request: ExternalInteractionRequest)
 }
 
-/**
- * Request object to avoid long parameter lists (Detekt LongParameterList).
- */
+/** Data describing an external interaction for audit purposes. */
 data class ExternalInteractionRequest(
     val answerCode: String,
     val rqMessage: String? = null,

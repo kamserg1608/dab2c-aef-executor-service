@@ -17,16 +17,16 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsMapper
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsRequestBuilder
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.ACLAgentAnalytics
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCallResult
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaAgentRequestContext
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsResponseSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceSettingsResponseSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.SettingsResult
+import ru.sbrf.dab2c.executor.clients.giga.agent.util.GigaAgentContextBuilder
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
-import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.domain.voice.AgentAnalytics
 import ru.sbrf.dab2c.executor.domain.voice.ContextData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
+import ru.sbrf.dab2c.executor.library.context.currentSessionInfo
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
 
 private val logger = KotlinLogging.logger {}
@@ -35,7 +35,7 @@ private const val HTTP_OK = 200
 private const val CLASS_NAME = "GigaVoiceAgentClient"
 
 /**
- * Implementation of GigaVoice Agent API client using Ktor HTTP client.
+ * HTTP implementation of [GigaVoiceAgentClient] using Ktor.
  */
 class GigaVoiceAgentClientImpl(
     private val httpClient: HttpClient,
@@ -47,23 +47,23 @@ class GigaVoiceAgentClientImpl(
 ) : GigaVoiceAgentClient {
 
     override suspend fun getSettings(
-        context: GigaAgentRequestContext,
+        conversationId: String,
         agentConfiguration: AgentConfiguration,
         voiceSettings: VoiceSettings,
-        daSessionInfo: DaSessionInfo,
         contextData: ContextData,
     ): SettingsResult {
+        val context = GigaAgentContextBuilder.buildRequestContext(conversationId)
+        val daSessionInfo = currentSessionInfo()
         logger.debug { "Getting settings for session: ${context.ufsSession}" }
 
         val request = settingsRequestBuilder.build(
             context, agentConfiguration, voiceSettings, daSessionInfo, contextData
         )
-        val requestJson = objectMapper.writeValueAsString(request)
 
         val apiResponse = IntegrationLogger.logHttpCallSuspend(
             destinationSystem = baseUrl,
             destinationService = SETTINGS_ENDPOINT,
-            rqMessage = requestJson,
+            rqMessage = objectMapper.writeValueAsString(request),
             className = CLASS_NAME,
             responseExtractor = { response: GigaVoiceSettingsResponseSchema ->
                 objectMapper.writeValueAsString(response) to HTTP_OK
@@ -85,12 +85,13 @@ class GigaVoiceAgentClientImpl(
     }
 
     override suspend fun executeFunctionCall(
-        context: GigaAgentRequestContext,
+        conversationId: String,
         agentConfiguration: AgentConfiguration,
         functionCalling: FunctionCallingData,
-        daSessionInfo: DaSessionInfo,
         contextData: ContextData
     ): FunctionCallResult {
+        val context = GigaAgentContextBuilder.buildRequestContext(conversationId)
+        val daSessionInfo = currentSessionInfo()
         logger.debug { "Executing function call for session: ${context.ufsSession}" }
 
         val request = functionCallRequestBuilder.build(

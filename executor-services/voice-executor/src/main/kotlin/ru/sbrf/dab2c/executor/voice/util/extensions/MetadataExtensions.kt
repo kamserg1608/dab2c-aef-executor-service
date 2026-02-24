@@ -1,15 +1,10 @@
 package ru.sbrf.dab2c.executor.voice.util.extensions
 
 import io.grpc.Metadata
-import ru.sbrf.dab2c.executor.voice.model.RequestMetadata
+import ru.sbrf.dab2c.executor.library.context.Headers
 
-/**
- * Converts gRPC [Metadata] to [RequestMetadata].
- * Keys are normalized to lowercase for case-insensitive access.
- * For keys with multiple values, the last value is used.
- * Binary keys (ending with "-bin") are skipped.
- */
-fun Metadata.toRequestMetadata(): RequestMetadata {
+/** Converts gRPC metadata to domain headers, keeping only ASCII entries. */
+fun Metadata.toHeaders(): Headers {
     val result = mutableMapOf<String, String>()
     for (key in keys()) {
         if (key.endsWith(Metadata.BINARY_HEADER_SUFFIX)) continue
@@ -19,5 +14,5 @@ fun Metadata.toRequestMetadata(): RequestMetadata {
             result[key.lowercase()] = value
         }
     }
-    return RequestMetadata(result.toMap())
+    return Headers(result.toMap())
 }

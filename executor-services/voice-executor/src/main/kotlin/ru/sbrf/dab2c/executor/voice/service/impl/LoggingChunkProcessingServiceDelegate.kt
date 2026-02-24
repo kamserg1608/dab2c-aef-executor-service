@@ -8,16 +8,12 @@ import kotlinx.coroutines.flow.onStart
 import ru.sbrf.dab2c.executor.domain.voice.ContentFromModel
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
+import ru.sbrf.dab2c.executor.library.context.RequestHeader
+import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
-import ru.sbrf.dab2c.executor.voice.model.RequestHeader
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
-import ru.sbrf.dab2c.executor.voice.util.extensions.currentRequestMetadata
 
-/**
- * ChunkProcessingService decorator that logs request/response chunks and session lifecycle.
- * Non-audio chunks are logged at DEBUG level with full content.
- * Audio chunks are logged at TRACE level with binary content omitted.
- */
+/** Decorator that adds request/response logging to chunk processing. */
 class LoggingChunkProcessingServiceDelegate(
     private val delegate: ChunkProcessingService
 ) : ChunkProcessingService {
@@ -81,11 +77,11 @@ class LoggingChunkProcessingServiceDelegate(
     }
 
     private suspend fun buildMetadataString(): String {
-        val metadata = currentRequestMetadata()
+        val headers = currentHeaders()
         return buildString {
-            append("channel=").append(metadata.getHeaderOrNull(RequestHeader.CHANNEL) ?: "")
-            append(", platform=").append(metadata.getHeaderOrNull(RequestHeader.PLATFORM) ?: "")
-            append(", x-request-id=").append(metadata.getHeaderOrNull(RequestHeader.X_REQUEST_ID) ?: "")
+            append("channel=").append(headers.getHeaderOrNull(RequestHeader.CHANNEL) ?: "")
+            append(", platform=").append(headers.getHeaderOrNull(RequestHeader.PLATFORM) ?: "")
+            append(", x-request-id=").append(headers.getHeaderOrNull(RequestHeader.X_REQUEST_ID) ?: "")
         }
     }
 

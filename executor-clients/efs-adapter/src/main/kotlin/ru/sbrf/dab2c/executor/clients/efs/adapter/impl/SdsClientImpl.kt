@@ -16,6 +16,7 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.SdsSectionMapper
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseListSdsSectionData
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseVoid
 import ru.sbrf.dab2c.executor.domain.session.SdsSection
+import ru.sbrf.dab2c.executor.library.context.currentUfsCookie
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
 
 private val logger = KotlinLogging.logger {}
@@ -36,7 +37,8 @@ class SdsClientImpl(
 
     private val mapper = SdsSectionMapper.INSTANCE
 
-    override suspend fun readData(sections: List<SdsSection>, cookie: String): List<SdsSection> {
+    override suspend fun readData(sections: List<SdsSection>): List<SdsSection> {
+        val cookie = currentUfsCookie()
         logger.debug { "Reading SDS data for ${sections.size} section(s)" }
 
         val requestBody = sections.map { mapper.toSectionInfo(it) }
@@ -67,7 +69,8 @@ class SdsClientImpl(
         return response.body?.map { mapper.toDomain(it) } ?: emptyList()
     }
 
-    override suspend fun writeData(sections: List<SdsSection>, cookie: String) {
+    override suspend fun writeData(sections: List<SdsSection>) {
+        val cookie = currentUfsCookie()
         logger.debug { "Writing SDS data for ${sections.size} section(s)" }
 
         val requestBody = sections.map { mapper.toSectionData(it) }

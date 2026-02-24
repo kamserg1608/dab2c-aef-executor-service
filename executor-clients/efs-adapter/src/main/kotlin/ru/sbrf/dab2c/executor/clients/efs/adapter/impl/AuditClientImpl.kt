@@ -15,6 +15,7 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.api.AuditClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.AuditEventServiceEvent
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseVoid
 import ru.sbrf.dab2c.executor.library.audit.model.AuditEvent
+import ru.sbrf.dab2c.executor.library.context.currentUfsCookie
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
 
 private val logger = KotlinLogging.logger {}
@@ -32,7 +33,8 @@ class AuditClientImpl(
     private val baseUrl: String
 ) : AuditClient {
 
-    override suspend fun sendEvent(event: AuditEvent, cookie: String) {
+    override suspend fun sendEvent(event: AuditEvent) {
+        val cookie = currentUfsCookie()
         logger.debug { "Sending audit event: ${event.event} params: ${event.params}" }
 
         val request = AuditEventServiceEvent(
@@ -40,12 +42,11 @@ class AuditClientImpl(
             success = event.success,
             params = event.params.ifEmpty { null }
         )
-        val requestJson = objectMapper.writeValueAsString(request)
 
         val response = IntegrationLogger.logHttpCallSuspend(
             destinationSystem = baseUrl,
             destinationService = AUDIT_EVENT_ENDPOINT,
-            rqMessage = requestJson,
+            rqMessage = objectMapper.writeValueAsString(request),
             className = CLASS_NAME,
             responseExtractor = { resp: BaseResponseVoid ->
                 objectMapper.writeValueAsString(resp) to HTTP_OK
@@ -58,6 +59,10 @@ class AuditClientImpl(
             }.body<BaseResponseVoid>()
         }
 
+        logErrors(event, response)
+    }
+
+    private fun logErrors(event: AuditEvent, response: BaseResponseVoid) {
         val errors = response.errors
         if (!errors.isNullOrEmpty()) {
             val errorMessages = errors.joinToString { it.message ?: it.code ?: "Unknown error" }

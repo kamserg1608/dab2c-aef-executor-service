@@ -25,10 +25,10 @@ import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.domain.voice.WarningData
+import ru.sbrf.dab2c.executor.library.context.Headers
+import ru.sbrf.dab2c.executor.library.context.HeadersElement
 import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionAuditor
 import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionRequest
-import ru.sbrf.dab2c.executor.voice.grpc.context.MetadataElement
-import ru.sbrf.dab2c.executor.voice.model.RequestMetadata
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.service.api.DialogTurnPublisher
 
@@ -38,7 +38,7 @@ class DialogAccumulatorDelegateTest {
     private lateinit var dialogTurnPublisher: DialogTurnPublisher
     private lateinit var accumulator: DialogAccumulatorDelegate
     private lateinit var auditor: ExternalInteractionAuditor
-    private lateinit var metadataContext: MetadataElement
+    private lateinit var headersElement: HeadersElement
 
     @BeforeEach
     fun setUp() {
@@ -51,12 +51,12 @@ class DialogAccumulatorDelegateTest {
         coEvery { dialogTurnPublisher.publishDialogTurn(any(), any(), any()) } returns Unit
 
         accumulator = DialogAccumulatorDelegate(delegate, dialogTurnPublisher, auditor)
-        metadataContext = createMetadataContext()
+        headersElement = HeadersElement(Headers(mapOf("x-token" to "token-456", "x-session" to "session-123")))
     }
 
     @Test
     fun `processRequestChunks should pass through unchanged`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement) {
             val requests = flowOf(
                 VoiceRequest.Settings(createVoiceSettings()),
                 VoiceRequest.Audio(AudioContent(audioChunk = byteArrayOf(1, 2, 3)))
@@ -70,7 +70,7 @@ class DialogAccumulatorDelegateTest {
 
     @Test
     fun `processResponseChunks should pass through all response types`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement) {
             val responses = flowOf(
                 createInputTranscription("hello"),
                 createWarning("test warning"),
@@ -86,7 +86,7 @@ class DialogAccumulatorDelegateTest {
 
     @Test
     fun `should accumulate multiple input transcription chunks`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement) {
             val responses = flowOf(
                 createInputTranscription("Hel"),
                 createInputTranscription("lo "),
@@ -101,7 +101,7 @@ class DialogAccumulatorDelegateTest {
 
     @Test
     fun `should accumulate multiple output transcription chunks`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement) {
             val responses = flowOf(
                 createInputTranscription("question"),
                 createOutputTranscription("ans"),
@@ -116,7 +116,7 @@ class DialogAccumulatorDelegateTest {
 
     @Test
     fun `should complete dialog turn when input arrives after output`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement) {
             val responses = flowOf(
                 createInputTranscription("Hello"),
                 createOutputTranscription("Hi"),
@@ -131,7 +131,7 @@ class DialogAccumulatorDelegateTest {
 
     @Test
     fun `should handle multiple dialog turns`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement) {
             val responses = flowOf(
                 createInputTranscription("First question"),
                 createOutputTranscription("First answer"),
@@ -147,7 +147,7 @@ class DialogAccumulatorDelegateTest {
             val successRequestSlot = slot<ExternalInteractionRequest>()
 
             coVerify(exactly = 1) {
-                auditor.success(capture(successRequestSlot), any())
+                auditor.success(capture(successRequestSlot))
             }
 
             val rq = requireNotNull(successRequestSlot.captured.rqMessage)
@@ -160,7 +160,7 @@ class DialogAccumulatorDelegateTest {
 
     @Test
     fun `should handle chunked transcriptions in dialog turn`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement) {
             val responses = flowOf(
                 createInputTranscription("How "),
                 createInputTranscription("are "),
@@ -178,7 +178,7 @@ class DialogAccumulatorDelegateTest {
 
     @Test
     fun `should handle empty transcription text`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement) {
             val responses = flowOf(
                 createInputTranscription(""),
                 createInputTranscription("hello"),
@@ -193,7 +193,7 @@ class DialogAccumulatorDelegateTest {
 
     @Test
     fun `should handle only input transcriptions without output`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement) {
             val responses = flowOf(
                 createInputTranscription("input1"),
                 createInputTranscription("input2"),
@@ -208,7 +208,7 @@ class DialogAccumulatorDelegateTest {
 
     @Test
     fun `should handle mixed response types between transcriptions`() = runTest {
-        withContext(metadataContext) {
+        withContext(headersElement) {
             val responses = flowOf(
                 createInputTranscription("hello"),
                 createWarning("warning1"),
@@ -228,7 +228,7 @@ class DialogAccumulatorDelegateTest {
 
         @Test
         fun `should flush trailing turn and send success audit on normal completion`() = runTest {
-            withContext(metadataContext) {
+            withContext(headersElement) {
                 val responses = flowOf(
                     createInputTranscription("Hello"),
                     createOutputTranscription("World")
@@ -237,8 +237,8 @@ class DialogAccumulatorDelegateTest {
                 accumulator.processResponseChunks(responses).toList()
 
                 val requestSlot = slot<ExternalInteractionRequest>()
-                coVerify(exactly = 1) { auditor.success(capture(requestSlot), any()) }
-                coVerify(exactly = 0) { auditor.failed(any(), any()) }
+                coVerify(exactly = 1) { auditor.success(capture(requestSlot)) }
+                coVerify(exactly = 0) { auditor.failed(any()) }
 
                 assertThat(requestSlot.captured.rqMessage)
                     .isEqualTo("USER: Hello\nASSISTANT: World")
@@ -247,7 +247,7 @@ class DialogAccumulatorDelegateTest {
 
         @Test
         fun `should flush trailing turn and append exception on CancellationException`() = runTest {
-            withContext(metadataContext) {
+            withContext(headersElement) {
                 val responses = flow {
                     emit(createInputTranscription("Hello"))
                     emit(createOutputTranscription("World"))
@@ -257,8 +257,8 @@ class DialogAccumulatorDelegateTest {
                 runCatching { accumulator.processResponseChunks(responses).toList() }
 
                 val requestSlot = slot<ExternalInteractionRequest>()
-                coVerify(exactly = 1) { auditor.success(capture(requestSlot), any()) }
-                coVerify(exactly = 0) { auditor.failed(any(), any()) }
+                coVerify(exactly = 1) { auditor.success(capture(requestSlot)) }
+                coVerify(exactly = 0) { auditor.failed(any()) }
 
                 val expectedDialog = "USER: Hello\nASSISTANT: World\n" +
                     "[EXCEPTION] CancellationException client cancelled"
@@ -268,7 +268,7 @@ class DialogAccumulatorDelegateTest {
 
         @Test
         fun `should flush trailing turn and append exception on RuntimeException`() = runTest {
-            withContext(metadataContext) {
+            withContext(headersElement) {
                 val responses = flow {
                     emit(createInputTranscription("Hello"))
                     emit(createOutputTranscription("World"))
@@ -278,8 +278,8 @@ class DialogAccumulatorDelegateTest {
                 runCatching { accumulator.processResponseChunks(responses).toList() }
 
                 val requestSlot = slot<ExternalInteractionRequest>()
-                coVerify(exactly = 0) { auditor.success(any(), any()) }
-                coVerify(exactly = 1) { auditor.failed(capture(requestSlot), any()) }
+                coVerify(exactly = 0) { auditor.success(any()) }
+                coVerify(exactly = 1) { auditor.failed(capture(requestSlot)) }
 
                 assertThat(requestSlot.captured.rqMessage)
                     .isEqualTo("USER: Hello\nASSISTANT: World\n[EXCEPTION] RuntimeException stream failure")
@@ -288,7 +288,7 @@ class DialogAccumulatorDelegateTest {
 
         @Test
         fun `should flush trailing turn in multi-turn dialog with exception`() = runTest {
-            withContext(metadataContext) {
+            withContext(headersElement) {
                 val responses = flow {
                     emit(createInputTranscription("Hello"))
                     emit(createOutputTranscription("World"))
@@ -300,7 +300,7 @@ class DialogAccumulatorDelegateTest {
                 runCatching { accumulator.processResponseChunks(responses).toList() }
 
                 val requestSlot = slot<ExternalInteractionRequest>()
-                coVerify(exactly = 1) { auditor.failed(capture(requestSlot), any()) }
+                coVerify(exactly = 1) { auditor.failed(capture(requestSlot)) }
 
                 val expectedDialog = "USER: Hello\nASSISTANT: World\nUSER: Next\n" +
                     "ASSISTANT: Response\n[EXCEPTION] RuntimeException stream failure"
@@ -310,7 +310,7 @@ class DialogAccumulatorDelegateTest {
 
         @Test
         fun `should flush input-only trailing buffer on completion`() = runTest {
-            withContext(metadataContext) {
+            withContext(headersElement) {
                 val responses = flowOf(
                     createInputTranscription("Hello")
                 )
@@ -318,7 +318,7 @@ class DialogAccumulatorDelegateTest {
                 accumulator.processResponseChunks(responses).toList()
 
                 val requestSlot = slot<ExternalInteractionRequest>()
-                coVerify(exactly = 1) { auditor.success(capture(requestSlot), any()) }
+                coVerify(exactly = 1) { auditor.success(capture(requestSlot)) }
 
                 assertThat(requestSlot.captured.rqMessage)
                     .isEqualTo("USER: Hello")
@@ -327,7 +327,7 @@ class DialogAccumulatorDelegateTest {
 
         @Test
         fun `should flush input and warning trailing buffer on completion`() = runTest {
-            withContext(metadataContext) {
+            withContext(headersElement) {
                 val responses = flowOf(
                     createInputTranscription("Hello"),
                     createWarning("warn")
@@ -336,7 +336,7 @@ class DialogAccumulatorDelegateTest {
                 accumulator.processResponseChunks(responses).toList()
 
                 val requestSlot = slot<ExternalInteractionRequest>()
-                coVerify(exactly = 1) { auditor.success(capture(requestSlot), any()) }
+                coVerify(exactly = 1) { auditor.success(capture(requestSlot)) }
 
                 assertThat(requestSlot.captured.rqMessage)
                     .isEqualTo("[WARNING] warn\nUSER: Hello")
@@ -345,7 +345,7 @@ class DialogAccumulatorDelegateTest {
 
         @Test
         fun `should flush input and error trailing buffer on completion`() = runTest {
-            withContext(metadataContext) {
+            withContext(headersElement) {
                 val responses = flowOf(
                     createInputTranscription("Hello"),
                     createError(503, "fail")
@@ -354,7 +354,7 @@ class DialogAccumulatorDelegateTest {
                 accumulator.processResponseChunks(responses).toList()
 
                 val requestSlot = slot<ExternalInteractionRequest>()
-                coVerify(exactly = 1) { auditor.success(capture(requestSlot), any()) }
+                coVerify(exactly = 1) { auditor.success(capture(requestSlot)) }
 
                 assertThat(requestSlot.captured.rqMessage)
                     .isEqualTo("[ERROR] 503 fail\nUSER: Hello")
@@ -367,7 +367,7 @@ class DialogAccumulatorDelegateTest {
 
         @Test
         fun `should publish dialog when dialog turn completes`() = runTest {
-            withContext(metadataContext) {
+            withContext(headersElement) {
                 val responses = flowOf(
                     createInputTranscription("Hello"),
                     createOutputTranscription("Hi there"),
@@ -382,7 +382,7 @@ class DialogAccumulatorDelegateTest {
 
         @Test
         fun `should publish dialog with accumulated text`() = runTest {
-            withContext(metadataContext) {
+            withContext(headersElement) {
                 val inputSlot = slot<String>()
                 val outputSlot = slot<String>()
                 val responseTimeSlot = slot<Long>()
@@ -411,7 +411,7 @@ class DialogAccumulatorDelegateTest {
 
         @Test
         fun `should not publish when no output before next input`() = runTest {
-            withContext(metadataContext) {
+            withContext(headersElement) {
                 val responses = flowOf(
                     createInputTranscription("First"),
                     createInputTranscription("Second"),
@@ -426,7 +426,7 @@ class DialogAccumulatorDelegateTest {
 
         @Test
         fun `should publish multiple dialogs for multiple turns`() = runTest {
-            withContext(metadataContext) {
+            withContext(headersElement) {
                 val responses = flowOf(
                     createInputTranscription("First"),
                     createOutputTranscription("Answer 1"),
@@ -443,7 +443,7 @@ class DialogAccumulatorDelegateTest {
 
         @Test
         fun `should calculate assistant response time from output generation`() = runTest {
-            withContext(metadataContext) {
+            withContext(headersElement) {
                 val responseTimeSlot = slot<Long>()
                 coEvery {
                     dialogTurnPublisher.publishDialogTurn(any(), any(), capture(responseTimeSlot))
@@ -463,7 +463,7 @@ class DialogAccumulatorDelegateTest {
 
         @Test
         fun `should calculate assistant response time correctly for multiple turns`() = runTest {
-            withContext(metadataContext) {
+            withContext(headersElement) {
                 val responseTimes = mutableListOf<Long>()
                 coEvery {
                     dialogTurnPublisher.publishDialogTurn(any(), any(), capture(responseTimes))
@@ -488,18 +488,6 @@ class DialogAccumulatorDelegateTest {
                 }
             }
         }
-    }
-
-    private fun createMetadataContext(): MetadataElement {
-        val metadata = RequestMetadata(
-            mapOf(
-                X_TOKEN to "token-456",
-                X_SESSION to "session-123",
-                UFS_SESSION to "session-123",
-                UFS_TOKEN to "token-456"
-            )
-        )
-        return MetadataElement(metadata)
     }
 
     private fun createInputTranscription(text: String): VoiceResponse.InputTranscription =
@@ -537,11 +525,4 @@ class DialogAccumulatorDelegateTest {
         voiceCallId = "call-123",
         audio = AudioSettings()
     )
-
-    private companion object {
-        private const val X_TOKEN = "x-token"
-        private const val X_SESSION = "x-session"
-        private const val UFS_SESSION = "UFS-SESSION"
-        private const val UFS_TOKEN = "UFS-TOKEN"
-    }
 }
