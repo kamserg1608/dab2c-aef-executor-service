@@ -1,10 +1,5 @@
 package ru.sbrf.dab2c.executor.clients.efs.adapter.configuration
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.kotlinModule
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpRequestRetry
@@ -36,6 +31,7 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.ConfiguratorClientImpl
 import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.ProfileClientImpl
 import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.SdsClientImpl
 import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.TypedSdsClientImpl
+import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import kotlin.math.pow
@@ -47,73 +43,56 @@ import kotlin.math.pow
 @EnableConfigurationProperties(EfsAdapterClientConfigurationProperties::class)
 class EfsAdapterClientConfiguration {
 
-    @Bean(EFS_ADAPTER_OBJECT_MAPPER_BEAN_NAME)
-    internal fun efsAdapterObjectMapper(): ObjectMapper = ObjectMapper().apply {
-        registerModule(kotlinModule())
-        registerModule(JavaTimeModule())
-        disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-    }
-
     @Bean(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME)
     internal fun efsAdapterHttpClient(
-        properties: EfsAdapterClientConfigurationProperties,
-        @Qualifier(EFS_ADAPTER_OBJECT_MAPPER_BEAN_NAME) objectMapper: ObjectMapper
+        properties: EfsAdapterClientConfigurationProperties
     ): HttpClient = HttpClient(CIO) {
         engine {
             requestTimeout = properties.requestTimeout
             maxConnectionsCount = properties.pool.maxConnections
         }
-        installPlugins(properties, objectMapper)
+        installPlugins(properties)
     }
 
     @Bean
     internal fun configuratorClient(
         @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient,
-        @Qualifier(EFS_ADAPTER_OBJECT_MAPPER_BEAN_NAME) objectMapper: ObjectMapper,
         properties: EfsAdapterClientConfigurationProperties
-    ): ConfiguratorClient = ConfiguratorClientImpl(httpClient, objectMapper, properties.baseUrl)
+    ): ConfiguratorClient = ConfiguratorClientImpl(httpClient, ObjectMappers.MAPPER, properties.baseUrl)
 
     @Bean
     internal fun auditClient(
         @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient,
-        @Qualifier(EFS_ADAPTER_OBJECT_MAPPER_BEAN_NAME) objectMapper: ObjectMapper,
         properties: EfsAdapterClientConfigurationProperties
-    ): AuditClient = AuditClientImpl(httpClient, objectMapper, properties.baseUrl)
+    ): AuditClient = AuditClientImpl(httpClient, ObjectMappers.MAPPER, properties.baseUrl)
 
     @Bean
     internal fun sdsClient(
         @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient,
-        @Qualifier(EFS_ADAPTER_OBJECT_MAPPER_BEAN_NAME) objectMapper: ObjectMapper,
         properties: EfsAdapterClientConfigurationProperties
-    ): SdsClient = SdsClientImpl(httpClient, objectMapper, properties.baseUrl)
+    ): SdsClient = SdsClientImpl(httpClient, ObjectMappers.MAPPER, properties.baseUrl)
 
     @Bean
     internal fun typedSdsClient(
-        sdsClient: SdsClient,
-        @Qualifier(EFS_ADAPTER_OBJECT_MAPPER_BEAN_NAME) objectMapper: ObjectMapper
-    ): TypedSdsClient = TypedSdsClientImpl(sdsClient, objectMapper)
+        sdsClient: SdsClient
+    ): TypedSdsClient = TypedSdsClientImpl(sdsClient, ObjectMappers.MAPPER)
 
     @Bean
     internal fun profileClient(
         @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient,
-        @Qualifier(EFS_ADAPTER_OBJECT_MAPPER_BEAN_NAME) objectMapper: ObjectMapper,
         properties: EfsAdapterClientConfigurationProperties
-    ): ProfileClient = ProfileClientImpl(httpClient, objectMapper, properties.baseUrl)
+    ): ProfileClient = ProfileClientImpl(httpClient, ObjectMappers.MAPPER, properties.baseUrl)
 
     internal companion object {
-        internal const val EFS_ADAPTER_OBJECT_MAPPER_BEAN_NAME = "efsAdapterObjectMapper"
         internal const val EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME = "efsAdapterHttpClient"
     }
 }
 
 @Suppress("LongMethod")
 private fun io.ktor.client.HttpClientConfig<*>.installPlugins(
-    properties: EfsAdapterClientConfigurationProperties,
-    objectMapper: ObjectMapper
+    properties: EfsAdapterClientConfigurationProperties
 ) {
-    install(ContentNegotiation) { register(ContentType.Application.Json, JacksonConverter(objectMapper)) }
+    install(ContentNegotiation) { register(ContentType.Application.Json, JacksonConverter(ObjectMappers.MAPPER)) }
     install(Logging) {
         logger = Logger.DEFAULT
         level = LogLevel.ALL

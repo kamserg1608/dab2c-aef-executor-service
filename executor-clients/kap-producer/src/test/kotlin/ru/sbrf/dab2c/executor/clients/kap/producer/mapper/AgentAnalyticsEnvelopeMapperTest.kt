@@ -1,7 +1,5 @@
 package ru.sbrf.dab2c.executor.clients.kap.producer.mapper
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -10,10 +8,9 @@ import ru.sbrf.dab2c.executor.domain.session.DaSessionCommon
 import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.domain.session.DaSessionMeta
 import ru.sbrf.dab2c.executor.domain.session.DaSessionUserInfo
+import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 
 class AgentAnalyticsEnvelopeMapperTest {
-
-    private val objectMapper = ObjectMapper().apply { registerModule(kotlinModule()) }
 
     @Test
     fun `should map analytics turn data to envelope with enriched data`() {
@@ -25,7 +22,7 @@ class AgentAnalyticsEnvelopeMapperTest {
         assertEquals("envelope-123", envelope.id)
         assertEquals(1705849200L, envelope.date)
 
-        val parsed = objectMapper.readValue<AgentAnalyticsData>(envelope.data!!)
+        val parsed = ObjectMappers.MAPPER.readValue<AgentAnalyticsData>(envelope.data!!)
         assertEquals("test-session-id", parsed.sessionId)
         assertEquals("test-conversation-id", parsed.conversationId)
         assertEquals("request-456", parsed.requestId)
@@ -47,7 +44,7 @@ class AgentAnalyticsEnvelopeMapperTest {
 
         val envelope = AgentAnalyticsEnvelopeMapper.toAgentAnalyticsEnvelope(turnData)
 
-        val parsed = objectMapper.readValue<AgentAnalyticsData>(envelope.data!!)
+        val parsed = ObjectMappers.MAPPER.readValue<AgentAnalyticsData>(envelope.data!!)
         assertEquals(rawData.toByteArray(Charsets.UTF_8).size.toString(), parsed.size)
     }
 
@@ -62,7 +59,7 @@ class AgentAnalyticsEnvelopeMapperTest {
 
         val envelope = AgentAnalyticsEnvelopeMapper.toAgentAnalyticsEnvelope(turnData)
 
-        val parsed = objectMapper.readValue<AgentAnalyticsData>(envelope.data!!)
+        val parsed = ObjectMappers.MAPPER.readValue<AgentAnalyticsData>(envelope.data!!)
         assertEquals("", parsed.block)
         assertEquals("", parsed.appSource)
         assertEquals("", parsed.platform)

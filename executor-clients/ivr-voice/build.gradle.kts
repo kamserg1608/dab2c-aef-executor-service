@@ -13,4 +13,6 @@ dependencies {
 
     // Coroutines for Flow
     implementation(libs.kotlinx.coroutines.core)
+
+    testImplementation(project(":executor-libraries:jackson"))
 }

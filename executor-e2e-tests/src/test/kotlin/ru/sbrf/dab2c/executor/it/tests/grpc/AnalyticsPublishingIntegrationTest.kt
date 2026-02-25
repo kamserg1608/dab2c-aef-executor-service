@@ -10,7 +10,6 @@ import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.conte
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.settingsRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.functionCallingResponse
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.outputTranscriptionResponse
-import ru.sbrf.dab2c.executor.it.support.kafka.KafkaTestSupport
 import ru.sbrf.dab2c.executor.it.support.kafka.KafkaTestSupport.withConsumer
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
@@ -21,6 +20,7 @@ import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubGigaAgentFun
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubGigaAgentSettingsWithAnalytics
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubSdsSessionReadData
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
+import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 
 private const val AGENTS_TOPIC = "dab2c-agents"
 
@@ -59,7 +59,7 @@ class AnalyticsPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
         val receivedAnalytics = analyticsRecords.first()
         assertThat(receivedAnalytics.version).isEqualTo("1.0.0")
 
-        val enrichedData = KafkaTestSupport.objectMapper.readValue<AgentAnalyticsData>(receivedAnalytics.data!!)
+        val enrichedData = ObjectMappers.MAPPER.readValue<AgentAnalyticsData>(receivedAnalytics.data!!)
         assertThat(enrichedData.data).isEqualTo(testAnalyticsData)
         assertThat(enrichedData.sessionId).isEqualTo("test-session-id")
         assertThat(enrichedData.agentName).isEqualTo("test-agent")
@@ -115,7 +115,7 @@ class AnalyticsPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
         val receivedAnalytics = analyticsRecords.first()
         assertThat(receivedAnalytics.version).isEqualTo("1.0.0")
 
-        val enrichedData = KafkaTestSupport.objectMapper.readValue<AgentAnalyticsData>(receivedAnalytics.data!!)
+        val enrichedData = ObjectMappers.MAPPER.readValue<AgentAnalyticsData>(receivedAnalytics.data!!)
         assertThat(enrichedData.data).isEqualTo(testAnalyticsData)
         assertThat(enrichedData.sessionId).isEqualTo("test-session-id")
         assertThat(enrichedData.agentName).isEqualTo("test-agent")

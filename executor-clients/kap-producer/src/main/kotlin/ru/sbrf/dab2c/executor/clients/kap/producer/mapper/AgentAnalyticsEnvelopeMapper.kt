@@ -2,11 +2,10 @@
 
 package ru.sbrf.dab2c.executor.clients.kap.producer.mapper
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.kotlinModule
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.AgentAnalyticsData
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.AgentAnalyticsEnvelope
 import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
+import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 
 /**
  * Input data for mapping agent analytics to AgentAnalyticsEnvelope.
@@ -30,10 +29,6 @@ object AgentAnalyticsEnvelopeMapper {
 
     private const val ANALYTICS_VERSION = "1.0.0"
 
-    private val objectMapper = ObjectMapper().apply {
-        registerModule(kotlinModule())
-    }
-
     fun toAgentAnalyticsEnvelope(turnData: AnalyticsTurnData): AgentAnalyticsEnvelope {
         val analyticsData = AgentAnalyticsData(
             sessionId = turnData.daSessionInfo.meta.sessionId,
@@ -55,7 +50,7 @@ object AgentAnalyticsEnvelopeMapper {
             version = ANALYTICS_VERSION,
             id = turnData.envelopeId,
             date = turnData.timestamp,
-            data = objectMapper.writeValueAsString(analyticsData)
+            data = ObjectMappers.MAPPER.writeValueAsString(analyticsData)
         )
     }
 }

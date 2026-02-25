@@ -1,9 +1,5 @@
 package ru.sbrf.dab2c.executor.clients.kap.producer.configuration
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.module.kotlin.kotlinModule
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -22,6 +18,7 @@ import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.configuration.properties.KapProducerConfigurationProperties
 import ru.sbrf.dab2c.executor.clients.kap.producer.impl.AsyncKapProducerClientDecorator
 import ru.sbrf.dab2c.executor.clients.kap.producer.impl.KapProducerClientImpl
+import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -32,17 +29,9 @@ import kotlin.coroutines.CoroutineContext
 @ConditionalOnProperty(name = ["kafka.kap.producer.enabled"], havingValue = "true", matchIfMissing = true)
 class KapProducerConfiguration {
 
-    @Bean(KAP_PRODUCER_OBJECT_MAPPER_BEAN_NAME)
-    internal fun kapProducerObjectMapper(): ObjectMapper = ObjectMapper().apply {
-        registerModule(kotlinModule())
-        disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-    }
-
     @Bean(KAP_PRODUCER_FACTORY_BEAN_NAME)
     internal fun kapProducerFactory(
-        properties: KapProducerConfigurationProperties,
-        @Qualifier(KAP_PRODUCER_OBJECT_MAPPER_BEAN_NAME) objectMapper: ObjectMapper
+        properties: KapProducerConfigurationProperties
     ): ProducerFactory<String, Any> {
         val configProps = mapOf(
             ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to properties.bootstrapServers,
@@ -53,7 +42,7 @@ class KapProducerConfiguration {
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java
         )
         val factory = DefaultKafkaProducerFactory<String, Any>(configProps)
-        factory.valueSerializer = JsonSerializer(objectMapper)
+        factory.valueSerializer = JsonSerializer(ObjectMappers.MAPPER)
         return factory
     }
 
@@ -76,7 +65,6 @@ class KapProducerConfiguration {
     )
 
     internal companion object {
-        internal const val KAP_PRODUCER_OBJECT_MAPPER_BEAN_NAME = "kapProducerObjectMapper"
         internal const val KAP_PRODUCER_FACTORY_BEAN_NAME = "kapProducerFactory"
         internal const val KAP_KAFKA_TEMPLATE_BEAN_NAME = "kapKafkaTemplate"
         internal const val KAP_PRODUCER_SCOPE_BEAN_NAME = "kapProducerScope"

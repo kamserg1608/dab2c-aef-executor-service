@@ -1,10 +1,5 @@
 package ru.sbrf.dab2c.executor.clients.giga.agent.configuration
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.kotlinModule
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpRequestRetry
@@ -33,6 +28,7 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.impl.GigaVoiceAgentClientImpl
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceFunctionCallRequestBuilder
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsRequestBuilder
 import ru.sbrf.dab2c.executor.clients.giga.agent.monitoring.MonitoringGigaVoiceAgentClientDecorator
+import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MonitoringServiceFactory
 import java.net.ConnectException
 import java.net.SocketTimeoutException
@@ -45,32 +41,21 @@ import kotlin.math.pow
 @EnableConfigurationProperties(GigaVoiceAgentClientConfigurationProperties::class)
 class GigaVoiceAgentClientConfiguration {
 
-    @Bean(GIGA_VOICE_AGENT_OBJECT_MAPPER_BEAN_NAME)
-    internal fun gigaVoiceAgentObjectMapper(): ObjectMapper = ObjectMapper().apply {
-        registerModule(kotlinModule())
-        registerModule(JavaTimeModule())
-        disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-    }
-
     @Bean(GIGA_VOICE_AGENT_HTTP_CLIENT_BEAN_NAME)
     internal fun gigaVoiceAgentHttpClient(
-        properties: GigaVoiceAgentClientConfigurationProperties,
-        @Qualifier(GIGA_VOICE_AGENT_OBJECT_MAPPER_BEAN_NAME) objectMapper: ObjectMapper
+        properties: GigaVoiceAgentClientConfigurationProperties
     ): HttpClient = HttpClient(CIO) {
         engine {
             requestTimeout = properties.requestTimeout
             maxConnectionsCount = properties.pool.maxConnections
         }
-        installPlugins(properties, objectMapper)
+        installPlugins(properties)
     }
 
     @Suppress("LongParameterList")
     @Bean
     internal fun gigaVoiceAgentClient(
         @Qualifier(GIGA_VOICE_AGENT_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient,
-        @Qualifier(GIGA_VOICE_AGENT_OBJECT_MAPPER_BEAN_NAME) objectMapper: ObjectMapper,
         properties: GigaVoiceAgentClientConfigurationProperties,
         settingsRequestBuilder: GigaVoiceSettingsRequestBuilder,
         functionCallRequestBuilder: GigaVoiceFunctionCallRequestBuilder,
@@ -79,7 +64,7 @@ class GigaVoiceAgentClientConfiguration {
     ): GigaVoiceAgentClient {
 
         val impl = GigaVoiceAgentClientImpl(
-            httpClient, objectMapper, properties.baseUrl, settingsRequestBuilder, functionCallRequestBuilder
+            httpClient, ObjectMappers.MAPPER, properties.baseUrl, settingsRequestBuilder, functionCallRequestBuilder
         )
 
         val monitored = MonitoringGigaVoiceAgentClientDecorator(
@@ -87,22 +72,20 @@ class GigaVoiceAgentClientConfiguration {
         )
 
         return AuditedGigaVoiceAgentClientDecorator(
-            monitored, agentInteractionAuditor, objectMapper, properties.baseUrl
+            monitored, agentInteractionAuditor, ObjectMappers.MAPPER, properties.baseUrl
         )
     }
 
     internal companion object {
-        internal const val GIGA_VOICE_AGENT_OBJECT_MAPPER_BEAN_NAME = "gigaVoiceAgentClientObjectMapper"
         internal const val GIGA_VOICE_AGENT_HTTP_CLIENT_BEAN_NAME = "gigaVoiceAgentClientHttpClient"
     }
 }
 
 @Suppress("LongMethod")
 private fun io.ktor.client.HttpClientConfig<*>.installPlugins(
-    properties: GigaVoiceAgentClientConfigurationProperties,
-    objectMapper: ObjectMapper
+    properties: GigaVoiceAgentClientConfigurationProperties
 ) {
-    install(ContentNegotiation) { register(ContentType.Application.Json, JacksonConverter(objectMapper)) }
+    install(ContentNegotiation) { register(ContentType.Application.Json, JacksonConverter(ObjectMappers.MAPPER)) }
     install(Logging) {
         logger = Logger.DEFAULT
         level = LogLevel.ALL

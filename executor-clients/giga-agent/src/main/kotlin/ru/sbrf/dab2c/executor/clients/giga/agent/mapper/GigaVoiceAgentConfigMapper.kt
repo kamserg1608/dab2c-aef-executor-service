@@ -1,19 +1,16 @@
 package ru.sbrf.dab2c.executor.clients.giga.agent.mapper
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.AgentConfig
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.configuration.NeighbourAgentMeta
 import ru.sbrf.dab2c.executor.domain.configuration.ToolMeta
+import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 
 /**
  * Manual mapper for converting domain AgentConfiguration to API AgentConfig.
  * Uses Jackson ObjectMapper for converting typed domain models to untyped Map.
  */
 object GigaVoiceAgentConfigMapper {
-
-    private val objectMapper: ObjectMapper = jacksonObjectMapper()
 
     /**
      * Converts domain AgentConfiguration to API AgentConfig.
@@ -33,9 +30,9 @@ object GigaVoiceAgentConfigMapper {
 
     @Suppress("UNCHECKED_CAST")
     private fun toolMetaToMap(toolMeta: ToolMeta): Map<String, Any> =
-        objectMapper.convertValue(toolMeta, Map::class.java) as Map<String, Any>
+        ObjectMappers.MAPPER.convertValue(toolMeta, Map::class.java) as Map<String, Any>
 
     @Suppress("UNCHECKED_CAST")
     private fun neighbourMetaToMap(neighbourMeta: NeighbourAgentMeta): Map<String, Any> =
-        objectMapper.convertValue(neighbourMeta, Map::class.java) as Map<String, Any>
+        ObjectMappers.MAPPER.convertValue(neighbourMeta, Map::class.java) as Map<String, Any>
 }

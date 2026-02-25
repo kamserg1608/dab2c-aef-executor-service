@@ -1,6 +1,5 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
@@ -9,6 +8,7 @@ import kotlinx.coroutines.flow.onEach
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.library.audit.model.AuditMessageSchema
+import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionAuditor
 import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionRequest
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
@@ -27,8 +27,6 @@ class DialogAccumulatorDelegate(
     private val dialogTurnPublisher: DialogTurnPublisher,
     private val auditor: ExternalInteractionAuditor
 ) : ChunkProcessingService {
-
-    private val objectMapper = jacksonObjectMapper()
 
     private val inputChunks = mutableListOf<String>()
     private val outputChunks = mutableListOf<String>()
@@ -67,7 +65,7 @@ class DialogAccumulatorDelegate(
     }
 
     private fun handleVoiceSettings(request: VoiceRequest.Settings) {
-        settingsJson = objectMapper.writeValueAsString(request.settings)
+        settingsJson = ObjectMappers.MAPPER.writeValueAsString(request.settings)
     }
 
     private suspend fun handleInputTranscription(

@@ -8,6 +8,7 @@ dependencies {
     api(project(":executor-libraries:monitoring-service"))
     api(project(":executor-libraries:audit-service"))
     implementation(project(":executor-clients:common-converters"))
+    implementation(project(":executor-libraries:jackson"))
     implementation(project(":executor-libraries:logging"))
     implementation(libs.bundles.ktor.client)
     implementation(libs.kotlin.logging.jvm)

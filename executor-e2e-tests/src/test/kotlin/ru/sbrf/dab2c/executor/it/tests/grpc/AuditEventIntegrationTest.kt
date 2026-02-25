@@ -1,6 +1,5 @@
 package ru.sbrf.dab2c.executor.it.tests.grpc
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.post
@@ -22,6 +21,7 @@ import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockAwaiter
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubs
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubGigaAgentFunctions
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
+import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 
 /**
  * Integration tests for audit event emission.
@@ -29,8 +29,6 @@ import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
  * error handling, cookie propagation, and resilience to audit failures.
  */
 class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
-
-    private val objectMapper = ObjectMapper()
 
     @Test
     fun `should emit external interaction audit with dialog transcript on multi-turn conversation`() = runItTest {
@@ -356,7 +354,7 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
             .find { it.eventName() == eventName }
 
     private fun parseAuditEvent(request: LoggedRequest): AuditEventBody =
-        AuditEventBody(objectMapper.readValue(request.bodyAsString))
+        AuditEventBody(ObjectMappers.MAPPER.readValue(request.bodyAsString))
 
     private fun setupStubsWithoutAudit() {
         efsAdapterMock.stubFor(

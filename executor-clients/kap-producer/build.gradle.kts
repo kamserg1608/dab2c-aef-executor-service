@@ -4,6 +4,6 @@ plugins {
 
 dependencies {
     api(project(":executor-domain-model"))
+    implementation(project(":executor-libraries:jackson"))
     implementation(libs.spring.kafka)
-    implementation(libs.jackson.module.kotlin)
 }

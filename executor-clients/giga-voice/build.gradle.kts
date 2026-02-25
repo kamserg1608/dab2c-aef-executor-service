@@ -18,4 +18,6 @@ dependencies {
     implementation(libs.grpc.netty.shaded)
     implementation(libs.kotlin.logging.jvm)
     compileOnly("org.springframework:spring-context")
+
+    testImplementation(project(":executor-libraries:jackson"))
 }

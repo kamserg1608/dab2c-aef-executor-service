@@ -1,7 +1,5 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -27,11 +25,10 @@ import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
 import ru.sbrf.dab2c.executor.library.context.Headers
 import ru.sbrf.dab2c.executor.library.context.HeadersElement
 import ru.sbrf.dab2c.executor.library.context.SessionInfoElement
+import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 
 class KapAnalyticsPublisherTest {
-
-    private val objectMapper = ObjectMapper().apply { registerModule(kotlinModule()) }
 
     private lateinit var kapProducerClient: KapProducerClient
     private lateinit var processingState: MutableStateFlow<ProcessingState>
@@ -115,7 +112,7 @@ class KapAnalyticsPublisherTest {
             publisher.publishAnalytics(listOf(createTestAnalytics(data = analyticsData)), "request-123")
 
             assertNotNull(envelopeSlot.captured.data)
-            val parsed = objectMapper.readValue<AgentAnalyticsData>(envelopeSlot.captured.data!!)
+            val parsed = ObjectMappers.MAPPER.readValue<AgentAnalyticsData>(envelopeSlot.captured.data!!)
             assertEquals("test-session-id", parsed.sessionId)
             assertEquals("test-conversation-id", parsed.conversationId)
             assertEquals("request-123", parsed.requestId)

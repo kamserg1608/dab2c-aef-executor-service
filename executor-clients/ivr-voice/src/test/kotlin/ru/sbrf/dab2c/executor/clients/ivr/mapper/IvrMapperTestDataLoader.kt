@@ -1,8 +1,6 @@
 package ru.sbrf.dab2c.executor.clients.ivr.mapper
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.protobuf.util.JsonFormat
 import org.junit.jupiter.params.provider.Arguments
 import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceRequest
@@ -45,6 +43,7 @@ import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.domain.voice.WarningData
+import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import java.util.Base64
 import java.util.stream.Stream
 import kotlin.time.Duration.Companion.milliseconds
@@ -54,7 +53,6 @@ import kotlin.time.Duration.Companion.milliseconds
  */
 @Suppress("TooManyFunctions")
 object IvrMapperTestDataLoader {
-    private val objectMapper: ObjectMapper = jacksonObjectMapper()
     private val protoJsonParser = JsonFormat.parser().ignoringUnknownFields()
 
     /**
@@ -95,7 +93,7 @@ object IvrMapperTestDataLoader {
         } ?: emptyArray()
 
         return files.map { file ->
-            val json = objectMapper.readTree(file)
+            val json = ObjectMappers.MAPPER.readTree(file)
             val name = json["name"]?.asText() ?: file.nameWithoutExtension
             name to json
         }.stream()

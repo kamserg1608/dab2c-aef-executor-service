@@ -1,6 +1,5 @@
 package ru.sbrf.dab2c.executor.clients.giga.agent.mapper
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.stereotype.Component
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.ACLConfig
@@ -11,6 +10,7 @@ import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.domain.voice.ContextData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
+import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 
 /**
  * Builder for constructing GigaVoiceFunctionsRequestSchema from domain models.
@@ -19,8 +19,6 @@ import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 class GigaVoiceFunctionCallRequestBuilder(
     private val mapper: GigaVoiceSettingsMapper = GigaVoiceSettingsMapper
 ) {
-
-    private val objectMapper = jacksonObjectMapper()
 
     /**
      * Builds a function call request from domain models.
@@ -51,5 +49,5 @@ class GigaVoiceFunctionCallRequestBuilder(
     }
 
     private fun parseContextJson(json: String): Map<String, Any> =
-        if (json.isEmpty()) emptyMap() else objectMapper.readValue(json)
+        if (json.isEmpty()) emptyMap() else ObjectMappers.MAPPER.readValue(json)
 }

@@ -99,6 +99,7 @@ protobuf-java-util = { module = "com.google.protobuf:protobuf-java-util", versio
 
 # Jackson (version managed by Spring Boot BOM)
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310" }
 
 # Konvert (mapping library)
 konvert-api = { module = "io.mcarle:konvert-api", version.ref = "konvert" }
