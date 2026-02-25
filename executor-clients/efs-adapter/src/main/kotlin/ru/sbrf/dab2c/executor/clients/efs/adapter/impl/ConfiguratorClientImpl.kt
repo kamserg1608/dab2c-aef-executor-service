@@ -61,6 +61,7 @@ class ConfiguratorClientImpl(
             httpClient.post(buildFullUrl(baseUrl, REST_AGENT_ENDPOINT)) {
                 contentType(ContentType.Application.Json)
                 header(HttpHeaders.Cookie, cookie)
+                applyTracingHeaders()
                 setBody(request)
             }.body<BaseResponseMapStringAgentConfig>()
         }
@@ -88,6 +89,7 @@ class ConfiguratorClientImpl(
             httpClient.post(buildFullUrl(baseUrl, SESSION_ENDPOINT)) {
                 contentType(ContentType.Application.Json)
                 header(HttpHeaders.Cookie, cookie)
+                applyTracingHeaders()
                 setBody(request)
             }.body<BaseResponseSessionConfig>()
         }

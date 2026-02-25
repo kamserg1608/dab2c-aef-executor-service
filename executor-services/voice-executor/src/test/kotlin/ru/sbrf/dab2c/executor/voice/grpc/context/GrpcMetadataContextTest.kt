@@ -22,7 +22,8 @@ class GrpcMetadataContextTest {
 
         assertEquals("req-123", result["x-request-id"])
         assertEquals("token-abc", result["x-session-token"])
-        assertEquals(2, result.size)
+        assertNotNull(result.getHeaderOrNull(RequestHeader.X_TRACE_ID))
+        assertEquals(3, result.size)
     }
 
     @Test
@@ -53,20 +54,22 @@ class GrpcMetadataContextTest {
     }
 
     @Test
-    fun `toHeaders should generate x-request-id for empty metadata`() {
+    fun `toHeaders should generate x-request-id and x-trace-id for empty metadata`() {
         val metadata = Metadata()
 
         val result = metadata.toHeaders()
 
-        assertEquals(1, result.size)
+        assertEquals(2, result.size)
         assertNotNull(result.getHeader(RequestHeader.X_REQUEST_ID))
+        assertNotNull(result.getHeader(RequestHeader.X_TRACE_ID))
     }
 
     @Test
-    fun `fromGrpcThread should return EMPTY with generated x-request-id when no context is set`() {
+    fun `fromGrpcThread should return EMPTY with generated ids when no context is set`() {
         val result = GrpcMetadataContext.fromGrpcThread()
 
-        assertEquals(1, result.size)
+        assertEquals(2, result.size)
         assertNotNull(result.getHeader(RequestHeader.X_REQUEST_ID))
+        assertNotNull(result.getHeader(RequestHeader.X_TRACE_ID))
     }
 }

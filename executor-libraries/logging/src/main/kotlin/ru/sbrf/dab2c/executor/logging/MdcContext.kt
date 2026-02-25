@@ -19,6 +19,7 @@ object MdcContext {
     fun initialize(
         serviceName: String,
         traceId: String? = null,
+        requestId: String? = null,
         sessionId: String? = null,
         channel: String? = null,
         platform: String? = null,
@@ -27,10 +28,8 @@ object MdcContext {
         MDC.put(MdcKeys.TYPE, DEFAULT_TYPE)
         MDC.put(MdcKeys.SERVICE_NAME, serviceName)
         MDC.put(MdcKeys.TENANT_CODE, DEFAULT_TENANT_CODE)
-        traceId?.let {
-            MDC.put(MdcKeys.TRACE_ID, it)
-            MDC.put(MdcKeys.RQ_UID, it)
-        }
+        traceId?.let { MDC.put(MdcKeys.TRACE_ID, it) }
+        requestId?.let { MDC.put(MdcKeys.RQ_UID, it) }
         sessionId?.let { MDC.put(MdcKeys.SESSION_ID, it) }
         channel?.let { MDC.put(MdcKeys.CHANNEL, it) }
         platform?.let { MDC.put(MdcKeys.PLATFORM, it) }

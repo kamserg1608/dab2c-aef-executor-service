@@ -12,7 +12,8 @@ object VoiceMdcInitializer {
     fun initializeForRequest(headers: Headers) {
         MdcContext.initialize(
             serviceName = SERVICE_NAME,
-            traceId = headers.getHeaderOrNull(RequestHeader.X_REQUEST_ID),
+            traceId = headers.getHeaderOrNull(RequestHeader.X_TRACE_ID),
+            requestId = headers.getHeaderOrNull(RequestHeader.X_REQUEST_ID),
             sessionId = headers.getHeaderOrNull(RequestHeader.SESSION),
             channel = headers.getHeaderOrNull(RequestHeader.CHANNEL),
             platform = headers.getHeaderOrNull(RequestHeader.PLATFORM)

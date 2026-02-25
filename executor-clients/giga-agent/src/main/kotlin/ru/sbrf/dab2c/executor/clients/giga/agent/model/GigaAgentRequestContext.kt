@@ -14,6 +14,7 @@ data class GigaAgentRequestContext(
     val channel: String,
     val conversationId: String,
     val eduId: String,
+    val traceId: String,
     val daRequestId: String,
     val daSessionId: String,
     val daChannel: String,
@@ -26,6 +27,7 @@ data class GigaAgentRequestContext(
      */
     fun HttpRequestBuilder.applyHeaders() {
         header(UFS_SESSION, ufsSession)
+        header(X_TRACE_ID_HEADER, traceId)
         header(DA_REQUEST_ID_HEADER, daRequestId)
         header(DA_SESSION_ID_HEADER, daSessionId)
         header(DA_CHANNEL_HEADER, daChannel)
@@ -41,24 +43,14 @@ data class GigaAgentRequestContext(
         cookie(UFS_TOKEN, ufsToken)
     }
 
-    /**
-     * Builds cookie header value for audit sender.
-     *
-     * Format:
-     *  UFS-SESSION=<session>; UFS-TOKEN=<token>
-     */
-    fun auditCookie(): String =
-        COOKIE_TEMPLATE.format(ufsSession, ufsToken)
-
     private companion object {
         const val UFS_SESSION = "UFS-SESSION"
         const val UFS_TOKEN = "UFS-TOKEN"
+        const val X_TRACE_ID_HEADER = "x-trace-id"
         const val DA_REQUEST_ID_HEADER = "da-request-id"
         const val DA_SESSION_ID_HEADER = "da-session-id"
         const val DA_CHANNEL_HEADER = "da-channel"
         const val DA_PLATFORM_HEADER = "da-platform"
         const val DA_UCP_ID_HEADER = "da-ucp-id"
-
-        private const val COOKIE_TEMPLATE = "$UFS_SESSION=%s; $UFS_TOKEN=%s"
     }
 }

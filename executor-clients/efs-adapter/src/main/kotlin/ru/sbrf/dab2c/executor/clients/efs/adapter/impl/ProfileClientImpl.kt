@@ -49,6 +49,7 @@ class ProfileClientImpl(
             httpClient.post(buildFullUrl(baseUrl, GET_PERSON_INFO)) {
                 contentType(ContentType.Application.Json)
                 header(HttpHeaders.Cookie, cookie)
+                applyTracingHeaders()
                 setBody(request)
             }.body<BaseResponseProfile>()
         }

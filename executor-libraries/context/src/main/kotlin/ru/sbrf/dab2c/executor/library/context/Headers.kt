@@ -20,14 +20,16 @@ class Headers private constructor(
     companion object {
         val EMPTY = invoke(emptyMap())
 
-        /** Creates [Headers], auto-generating x-request-id when absent. */
+        /** Creates [Headers], auto-generating x-request-id and x-trace-id when absent. */
         operator fun invoke(headers: Map<String, String>): Headers {
-            val headersWithRequestId = if (headers.containsKey(RequestHeader.X_REQUEST_ID.headerName)) {
-                headers
-            } else {
-                headers + (RequestHeader.X_REQUEST_ID.headerName to UUID.randomUUID().toString())
+            var result = headers
+            if (!result.containsKey(RequestHeader.X_REQUEST_ID.headerName)) {
+                result = result + (RequestHeader.X_REQUEST_ID.headerName to UUID.randomUUID().toString())
             }
-            return Headers(headersWithRequestId)
+            if (!result.containsKey(RequestHeader.X_TRACE_ID.headerName)) {
+                result = result + (RequestHeader.X_TRACE_ID.headerName to UUID.randomUUID().toString())
+            }
+            return Headers(result)
         }
     }
 }

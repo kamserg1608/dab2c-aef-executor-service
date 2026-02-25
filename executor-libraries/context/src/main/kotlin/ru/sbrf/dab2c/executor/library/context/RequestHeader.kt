@@ -10,4 +10,5 @@ enum class RequestHeader(val headerName: String) {
     CHANNEL("x-channel"),
     PLATFORM("x-platform"),
     X_REQUEST_ID("x-request-id"),
+    X_TRACE_ID("x-trace-id"),
 }

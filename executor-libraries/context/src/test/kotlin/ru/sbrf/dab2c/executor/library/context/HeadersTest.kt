@@ -13,7 +13,13 @@ class HeadersTest {
         val headers = Headers(emptyMap())
 
         assertNotNull(headers.getHeader(RequestHeader.X_REQUEST_ID))
-        assertEquals(1, headers.size)
+    }
+
+    @Test
+    fun `factory should generate x-trace-id when not present`() {
+        val headers = Headers(emptyMap())
+
+        assertNotNull(headers.getHeader(RequestHeader.X_TRACE_ID))
     }
 
     @Test
@@ -21,6 +27,13 @@ class HeadersTest {
         val headers = Headers(mapOf("x-request-id" to "my-id"))
 
         assertEquals("my-id", headers.getHeader(RequestHeader.X_REQUEST_ID))
+    }
+
+    @Test
+    fun `factory should preserve existing x-trace-id`() {
+        val headers = Headers(mapOf("x-trace-id" to "my-trace"))
+
+        assertEquals("my-trace", headers.getHeader(RequestHeader.X_TRACE_ID))
     }
 
     @Test
@@ -73,11 +86,12 @@ class HeadersTest {
     }
 
     @Test
-    fun `EMPTY should contain only generated x-request-id`() {
+    fun `EMPTY should contain generated x-request-id and x-trace-id`() {
         val empty = Headers.EMPTY
 
-        assertEquals(1, empty.size)
+        assertEquals(2, empty.size)
         assertNotNull(empty.getHeaderOrNull(RequestHeader.X_REQUEST_ID))
+        assertNotNull(empty.getHeaderOrNull(RequestHeader.X_TRACE_ID))
     }
 
     @Test
@@ -89,7 +103,7 @@ class HeadersTest {
             )
         )
 
-        assertEquals(3, headers.size)
+        assertEquals(4, headers.size)
         assertEquals("s1", headers["x-session"])
         assertNull(headers["non-existent"])
     }

@@ -56,6 +56,7 @@ class SdsClientImpl(
             val response = httpClient.post(buildFullUrl(baseUrl, READ_DATA_ENDPOINT)) {
                 contentType(ContentType.Application.Json)
                 header(HttpHeaders.Cookie, cookie)
+                applyTracingHeaders()
                 setBody(requestBody)
             }
 
@@ -88,6 +89,7 @@ class SdsClientImpl(
             httpClient.post(buildFullUrl(baseUrl, WRITE_DATA_ENDPOINT)) {
                 contentType(ContentType.Application.Json)
                 header(HttpHeaders.Cookie, cookie)
+                applyTracingHeaders()
                 setBody(requestBody)
             }.body<BaseResponseVoid>()
         }

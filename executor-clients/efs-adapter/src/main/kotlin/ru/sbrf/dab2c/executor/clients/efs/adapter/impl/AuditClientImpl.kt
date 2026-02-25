@@ -55,6 +55,7 @@ class AuditClientImpl(
             httpClient.post(buildFullUrl(baseUrl, AUDIT_EVENT_ENDPOINT)) {
                 contentType(ContentType.Application.Json)
                 header(HttpHeaders.Cookie, cookie)
+                applyTracingHeaders()
                 setBody(request)
             }.body<BaseResponseVoid>()
         }

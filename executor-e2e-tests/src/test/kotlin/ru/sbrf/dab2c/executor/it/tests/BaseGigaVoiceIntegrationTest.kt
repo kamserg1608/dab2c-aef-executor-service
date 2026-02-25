@@ -126,12 +126,14 @@ abstract class BaseGigaVoiceIntegrationTest {
     }
 
     /** Creates a stub with standard test metadata headers. */
+    @Suppress("LongParameterList")
     protected fun testStub(
         session: String = "test-session",
         token: String = "test-token",
         eduId: String = "test-edu-id",
         channel: String = "test-channel",
-        platform: String = "test-platform"
+        platform: String = "test-platform",
+        traceId: String = "test-trace-id"
     ): GigaVoiceServiceCoroutineStub = clientStub.withInterceptors(
         MetadataInterceptor(
             mapOf(
@@ -139,7 +141,8 @@ abstract class BaseGigaVoiceIntegrationTest {
                 "x-token" to token,
                 "x-eduid" to eduId,
                 "x-channel" to channel,
-                "x-platform" to platform
+                "x-platform" to platform,
+                "x-trace-id" to traceId
             )
         )
     )

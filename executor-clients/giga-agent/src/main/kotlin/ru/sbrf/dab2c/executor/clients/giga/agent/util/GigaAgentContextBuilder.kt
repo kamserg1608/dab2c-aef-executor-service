@@ -4,6 +4,7 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaAgentRequestContext
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.library.context.currentSessionInfo
+import java.util.UUID
 
 /**
  * Builds [GigaAgentRequestContext] from the current coroutine context headers and session info.
@@ -20,7 +21,8 @@ object GigaAgentContextBuilder {
             channel = headers.getHeader(RequestHeader.CHANNEL),
             conversationId = conversationId,
             eduId = headers.getHeader(RequestHeader.EDU_ID),
-            daRequestId = headers.getHeader(RequestHeader.X_REQUEST_ID),
+            traceId = headers.getHeader(RequestHeader.X_TRACE_ID),
+            daRequestId = UUID.randomUUID().toString(),
             daSessionId = sessionInfo.meta.sessionId,
             daChannel = headers.getHeader(RequestHeader.CHANNEL),
             daPlatform = headers.getHeader(RequestHeader.PLATFORM),
