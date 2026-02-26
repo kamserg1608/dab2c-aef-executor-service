@@ -2,14 +2,17 @@ package ru.sbrf.dab2c.executor.it.support.fixtures
 
 import com.google.protobuf.ByteString
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.additionalData
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audio
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.contentFromModel
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.error
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionCall
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionCalling
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaChatModelInfo
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceResponse
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.inputTranscription
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.outputTranscription
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.usage
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.warning
 
 object GigaVoiceResponseFixtures {
@@ -50,6 +53,23 @@ object GigaVoiceResponseFixtures {
         output = contentFromModel {
             audio = audio {
                 audioChunk = ByteString.copyFrom(byteArrayOf(chunkId.toByte()))
+            }
+        }
+    }
+
+    fun additionalDataResponse() = gigaVoiceResponse {
+        output = contentFromModel {
+            additionalData = additionalData {
+                usage = usage {
+                    promptTokens = 100
+                    completionTokens = 200
+                    totalTokens = 300
+                }
+                gigachatModelInfo = gigaChatModelInfo {
+                    name = "test-model"
+                    version = "1.2.0"
+                }
+                finishReason = "stop"
             }
         }
     }

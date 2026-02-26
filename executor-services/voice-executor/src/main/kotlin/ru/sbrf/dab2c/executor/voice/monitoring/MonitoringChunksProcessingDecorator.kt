@@ -38,7 +38,7 @@ class MonitoringChunksProcessingDecorator(
             .onStart {
                 val platform = getPlatformHeader()
                 val channel = getChannelHeader()
-                connectionKey = "$platform:$channel"
+                val connectionKey = "$platform:$channel"
 
                 counter = activeConnectionCounters.computeIfAbsent(connectionKey!!) { AtomicInteger(0) }
 
@@ -59,7 +59,7 @@ class MonitoringChunksProcessingDecorator(
                 ).increment()
 
                 timerSample = monitoringServiceFactory.createTimerSample(
-                    ExecutorVoiceMetric.GRPC_CONNECTIONS_DURATION,
+                    ExecutorVoiceMetric.GRPC_CONNECTIONS_DURATION_SECONDS,
                     platform = platform,
                     channel = channel,
                     tagsMap = emptyMap()
@@ -111,7 +111,7 @@ class MonitoringChunksProcessingDecorator(
                 ).start()
             }
             .onEach { response ->
-                trackChunk(response, ExecutorVoiceMetric.GRPC_OUTGOING_FROM_INITIATOR_CHUNKS_TOTAL)
+                trackChunk(response, ExecutorVoiceMetric.GRPC_OUTGOING_TO_INITIATOR_CHUNKS_TOTAL)
 
                 if (!firstTranscriptionReceived && response is VoiceResponse.InputTranscription) {
                     timeToFirstTranscriptionSample?.stop()
@@ -124,7 +124,7 @@ class MonitoringChunksProcessingDecorator(
 
                     trackChunk(
                         response,
-                        ExecutorVoiceMetric.GRPC_RESPONSE_TOTAL_TOKENS,
+                        ExecutorVoiceMetric.GRPC_RESPONSE_TOKENS_TOTAL,
                         mapOf(
                             "model" to (modelInfo?.data?.gigachatModelInfo?.name ?: UNKNOWN),
                             "version" to (modelInfo?.data?.gigachatModelInfo?.version ?: UNKNOWN)
