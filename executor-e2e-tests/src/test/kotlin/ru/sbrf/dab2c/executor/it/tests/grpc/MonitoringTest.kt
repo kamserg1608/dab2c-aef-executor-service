@@ -21,7 +21,7 @@ import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubs
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
 
-class ProxyMonitoringTest : BaseGigaVoiceIntegrationTest() {
+class MonitoringTest : BaseGigaVoiceIntegrationTest() {
 
     private val logger = KotlinLogging.logger { }
 
@@ -276,7 +276,8 @@ class ProxyMonitoringTest : BaseGigaVoiceIntegrationTest() {
         setupStubs(efsAdapterMock, gigaVoiceAgentMock)
 
         val additionalTags = mapOf(
-            "stream_chunk_type" to "GigaVoiceResponse",
+            "stream_chunk_type" to "OutputTranscription",
+            "function_name" to "",
         )
 
         assertTotalCounterIncreased(
@@ -303,7 +304,8 @@ class ProxyMonitoringTest : BaseGigaVoiceIntegrationTest() {
         setupStubs(efsAdapterMock, gigaVoiceAgentMock)
 
         val additionalTags = mapOf(
-            "stream_chunk_type" to "GigaVoiceRequest",
+            "stream_chunk_type" to "Settings",
+            "profanity_check" to "",
         )
 
         assertTotalCounterIncreased(

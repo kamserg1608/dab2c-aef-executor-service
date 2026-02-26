@@ -89,6 +89,19 @@ class MonitoringChunksProcessingDecorator(
             }
 
         return delegate.processRequestChunks(monitoredChunks)
+            .onEach { request ->
+                val profanityCheck = if (request is VoiceRequest.Settings) {
+                    request.settings.gigachat?.profanityCheck?.toString() ?: ""
+                } else {
+                    ""
+                }
+
+                trackChunk(
+                    request,
+                    ExecutorVoiceMetric.GRPC_OUTGOING_FROM_GIGAVOICE_CHUNKS_TOTAL,
+                    mapOf(PROFANITY_CHECK_TAG to profanityCheck)
+                )
+            }
     }
 
     @Suppress("LongMethod")
@@ -99,6 +112,19 @@ class MonitoringChunksProcessingDecorator(
         var timeToFirstTranscriptionSample: TimerSampleMetric.TimerSample? = null
 
         val monitoredChunks = responsesChunks
+            .onEach { response ->
+                val functionName = if (response is VoiceResponse.FunctionCalling) {
+                    response.data.functionCall.name
+                } else {
+                    ""
+                }
+
+                trackChunk(
+                    response,
+                    ExecutorVoiceMetric.GRPC_INCOMING_FROM_GIGAVOICE_CHUNKS_TOTAL,
+                    mapOf(FUNCTION_NAME_TAG to functionName)
+                )
+            }
             .onStart {
                 val platform = getPlatformHeader()
                 val channel = getChannelHeader()
@@ -170,6 +196,8 @@ class MonitoringChunksProcessingDecorator(
     /** Shared state and constants for monitoring chunk processing. */
     companion object {
         private const val STREAM_CHUNK_TYPE_TAG = "stream_chunk_type"
+        private const val PROFANITY_CHECK_TAG = "profanity_check"
+        private const val FUNCTION_NAME_TAG = "function_name"
         private const val UNKNOWN = "unknown"
 
         private val activeConnectionCounters = ConcurrentHashMap<String, AtomicInteger>()
