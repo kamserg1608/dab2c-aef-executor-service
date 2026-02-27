@@ -4,7 +4,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ProfileClient
-import ru.sbrf.dab2c.executor.clients.efs.adapter.api.TypedSdsClient
+import ru.sbrf.dab2c.executor.clients.efs.adapter.api.SdsClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.readDaSessionMeta
 import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
@@ -15,7 +15,7 @@ import ru.sbrf.dab2c.executor.voice.service.api.SessionInitService
 /** Initializes voice session by loading session metadata from SDS and EFS. */
 @Service
 class SessionInitServiceImpl(
-    private val typedSdsClient: TypedSdsClient,
+    private val sdsClient: SdsClient,
     private val configuratorClient: ConfiguratorClient,
     private val profileClient: ProfileClient
 ) : SessionInitService {
@@ -28,7 +28,7 @@ class SessionInitServiceImpl(
         val channel = headers.getHeader(RequestHeader.CHANNEL)
         logger.info { "Session initialization started for channel=$channel" }
 
-        val daSessionMeta = typedSdsClient.readDaSessionMeta(channel)
+        val daSessionMeta = sdsClient.readDaSessionMeta(channel)
         logger.debug { "Fetched DaSessionMeta: sessionId=${daSessionMeta.sessionId}, ucpId=${daSessionMeta.ucpId}" }
 
         val daSessionCommon = configuratorClient.getDaSessionCommon()

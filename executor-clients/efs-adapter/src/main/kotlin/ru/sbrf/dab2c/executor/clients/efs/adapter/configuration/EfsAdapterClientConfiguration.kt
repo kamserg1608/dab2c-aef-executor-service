@@ -16,28 +16,17 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import io.ktor.serialization.jackson.JacksonConverter
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import ru.sbrf.dab2c.executor.clients.efs.adapter.api.AuditClient
-import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
-import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ProfileClient
-import ru.sbrf.dab2c.executor.clients.efs.adapter.api.SdsClient
-import ru.sbrf.dab2c.executor.clients.efs.adapter.api.TypedSdsClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.configuration.properties.EfsAdapterClientConfigurationProperties
-import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.AuditClientImpl
-import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.ConfiguratorClientImpl
-import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.ProfileClientImpl
-import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.SdsClientImpl
-import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.TypedSdsClientImpl
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import kotlin.math.pow
 
 /**
- * Spring configuration for EFS Adapter API clients.
+ * Spring configuration for EFS Adapter HTTP client.
  */
 @Configuration
 @EnableConfigurationProperties(EfsAdapterClientConfigurationProperties::class)
@@ -54,37 +43,9 @@ class EfsAdapterClientConfiguration {
         installPlugins(properties)
     }
 
-    @Bean
-    internal fun configuratorClient(
-        @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient,
-        properties: EfsAdapterClientConfigurationProperties
-    ): ConfiguratorClient = ConfiguratorClientImpl(httpClient, ObjectMappers.MAPPER, properties.baseUrl)
-
-    @Bean
-    internal fun auditClient(
-        @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient,
-        properties: EfsAdapterClientConfigurationProperties
-    ): AuditClient = AuditClientImpl(httpClient, ObjectMappers.MAPPER, properties.baseUrl)
-
-    @Bean
-    internal fun sdsClient(
-        @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient,
-        properties: EfsAdapterClientConfigurationProperties
-    ): SdsClient = SdsClientImpl(httpClient, ObjectMappers.MAPPER, properties.baseUrl)
-
-    @Bean
-    internal fun typedSdsClient(
-        sdsClient: SdsClient
-    ): TypedSdsClient = TypedSdsClientImpl(sdsClient, ObjectMappers.MAPPER)
-
-    @Bean
-    internal fun profileClient(
-        @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient,
-        properties: EfsAdapterClientConfigurationProperties
-    ): ProfileClient = ProfileClientImpl(httpClient, ObjectMappers.MAPPER, properties.baseUrl)
-
-    internal companion object {
-        internal const val EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME = "efsAdapterHttpClient"
+    /** Bean name constants. */
+    companion object {
+        const val EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME = "efsAdapterHttpClient"
     }
 }
 

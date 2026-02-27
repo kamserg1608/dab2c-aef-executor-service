@@ -44,6 +44,22 @@ object WireMockResponses {
     """.trimIndent()
 
     /**
+     * GigaVoice Agent settings response with profanity check enabled.
+     */
+    val GIGA_VOICE_SETTINGS_WITH_PROFANITY_CHECK_RESPONSE = """
+        {
+            "settings": {
+                "voice_call_id": "test-call-123",
+                "audio": {},
+                "gigachat": {"profanity_check": true}
+            },
+            "performers": {
+                "functions": []
+            }
+        }
+    """.trimIndent()
+
+    /**
      * GigaVoice Agent settings response with function registry.
      * Contains both backend and IVR functions.
      */

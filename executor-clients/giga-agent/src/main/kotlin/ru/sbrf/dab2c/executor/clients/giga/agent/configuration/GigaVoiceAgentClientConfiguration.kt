@@ -29,7 +29,7 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceFunctionCallReq
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsRequestBuilder
 import ru.sbrf.dab2c.executor.clients.giga.agent.monitoring.MonitoringGigaVoiceAgentClientDecorator
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
-import ru.sbrf.dab2c.executor.library.monitoring.service.api.MonitoringServiceFactory
+import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricFactory
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import kotlin.math.pow
@@ -59,7 +59,7 @@ class GigaVoiceAgentClientConfiguration {
         properties: GigaVoiceAgentClientConfigurationProperties,
         settingsRequestBuilder: GigaVoiceSettingsRequestBuilder,
         functionCallRequestBuilder: GigaVoiceFunctionCallRequestBuilder,
-        monitoringServiceFactory: MonitoringServiceFactory,
+        metricFactory: MetricFactory,
         agentInteractionAuditor: AgentInteractionAuditor
     ): GigaVoiceAgentClient {
 
@@ -68,7 +68,7 @@ class GigaVoiceAgentClientConfiguration {
         )
 
         val monitored = MonitoringGigaVoiceAgentClientDecorator(
-            impl, monitoringServiceFactory
+            impl, metricFactory
         )
 
         return AuditedGigaVoiceAgentClientDecorator(

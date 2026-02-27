@@ -2,204 +2,140 @@ package ru.sbrf.dab2c.executor.voice.monitoring
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import ru.sbrf.dab2c.executor.domain.voice.ContentFromModel
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
-import ru.sbrf.dab2c.executor.library.context.RequestHeader
-import ru.sbrf.dab2c.executor.library.context.currentHeaders
-import ru.sbrf.dab2c.executor.library.monitoring.service.api.MonitoringServiceFactory
+import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricFactory
+import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricTags
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.TimerSampleMetric
 import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicInteger
 
-/** Decorator that adds monitoring metrics to chunk processing flows. */
+private const val UNKNOWN = "unknown"
+
+/**
+ * Decorator that records chunk counting metrics, TTFB timing,
+ * and response token tracking for voice processing flows.
+ */
 class MonitoringChunksProcessingDecorator(
     private val delegate: ChunkProcessingService,
-    private val monitoringServiceFactory: MonitoringServiceFactory
+    private val metricFactory: MetricFactory
 ) : ChunkProcessingService {
 
     private val logger = KotlinLogging.logger { }
 
-    @Suppress("LongMethod")
-    override fun processRequestChunks(requestsChunks: Flow<VoiceRequest>): Flow<VoiceRequest> {
-        logger.trace { "Start monitoring for incoming request flow" }
-
-        var timerSample: TimerSampleMetric.TimerSample? = null
-        var counter: AtomicInteger? = null
-        var connectionKey: String? = null
-
+    override fun processRequestChunks(
+        requestsChunks: Flow<VoiceRequest>
+    ): Flow<VoiceRequest> {
         val monitoredChunks = requestsChunks
-            .onStart {
-                val platform = getPlatformHeader()
-                val channel = getChannelHeader()
-                val connectionKey = "$platform:$channel"
-
-                counter = activeConnectionCounters.computeIfAbsent(connectionKey!!) { AtomicInteger(0) }
-
-                monitoringServiceFactory.createGauge(
-                    ExecutorVoiceMetric.GRPC_CONNECTIONS_ACTIVE,
-                    platform = platform,
-                    channel = channel,
-                    tagsMap = emptyMap(),
-                    stateObject = counter!!
-                ) { it.get().toDouble() }
-                counter!!.incrementAndGet()
-
-                monitoringServiceFactory.createCounter(
-                    ExecutorVoiceMetric.GRPC_CONNECTIONS_TOTAL,
-                    platform = platform,
-                    channel = channel,
-                    tagsMap = emptyMap()
-                ).increment()
-
-                timerSample = monitoringServiceFactory.createTimerSample(
-                    ExecutorVoiceMetric.GRPC_CONNECTIONS_DURATION_SECONDS,
-                    platform = platform,
-                    channel = channel,
-                    tagsMap = emptyMap()
-                ).start()
-
-                logger.info { "gRPC connection opened. Active connections ($connectionKey): ${counter!!.get()}" }
-            }
-            .onCompletion { cause ->
-                if (cause == null) {
-                    logger.info { "gRPC connection closed gracefully" }
-                } else {
-                    logger.warn(cause) { "gRPC connection closed with error" }
-                }
-
-                val count = counter?.decrementAndGet()
-                if (count != null && count <= 0) {
-                    connectionKey?.let { activeConnectionCounters.remove(it) }
-                }
-                timerSample?.stop()
-            }
-            .onEach {
-                trackChunk(it, ExecutorVoiceMetric.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL)
-            }
-            .catch { e ->
-                logger.error(e) { "Error on request stream: ${e.message}" }
-                throw e
+            .onEach { request ->
+                metricFactory.incrementCounter(
+                    ExecutorVoiceMetric.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL,
+                    chunkTags(request.chunkTypeName()) + request.incomingTags()
+                )
             }
 
         return delegate.processRequestChunks(monitoredChunks)
             .onEach { request ->
-                val profanityCheck = if (request is VoiceRequest.Settings) {
-                    request.settings.gigachat?.profanityCheck?.toString() ?: ""
-                } else {
-                    ""
-                }
-
-                trackChunk(
-                    request,
-                    ExecutorVoiceMetric.GRPC_OUTGOING_FROM_GIGAVOICE_CHUNKS_TOTAL,
-                    mapOf(PROFANITY_CHECK_TAG to profanityCheck)
+                metricFactory.incrementCounter(
+                    ExecutorVoiceMetric.GRPC_OUTGOING_TO_GIGAVOICE_CHUNKS_TOTAL,
+                    chunkTags(request.chunkTypeName()) + request.outgoingToGigaVoiceTags()
                 )
             }
     }
 
-    @Suppress("LongMethod")
-    override fun processResponseChunks(responsesChunks: Flow<VoiceResponse>): Flow<VoiceResponse> {
-        logger.trace { "Starting monitoring for the query output stream" }
-
-        var firstTranscriptionReceived = false
-        var timeToFirstTranscriptionSample: TimerSampleMetric.TimerSample? = null
+    override fun processResponseChunks(
+        responsesChunks: Flow<VoiceResponse>
+    ): Flow<VoiceResponse> {
+        var ttfbSample: TimerSampleMetric.TimerSample? = null
 
         val monitoredChunks = responsesChunks
-            .onEach { response ->
-                val functionName = if (response is VoiceResponse.FunctionCalling) {
-                    response.data.functionCall.name
-                } else {
-                    ""
-                }
-
-                trackChunk(
-                    response,
-                    ExecutorVoiceMetric.GRPC_INCOMING_FROM_GIGAVOICE_CHUNKS_TOTAL,
-                    mapOf(FUNCTION_NAME_TAG to functionName)
-                )
-            }
             .onStart {
-                val platform = getPlatformHeader()
-                val channel = getChannelHeader()
-
-                timeToFirstTranscriptionSample = monitoringServiceFactory.createTimerSample(
-                    ExecutorVoiceMetric.GRPC_CONNECTIONS_TTFB_SECONDS,
-                    platform = platform,
-                    channel = channel,
-                    tagsMap = emptyMap()
+                ttfbSample = metricFactory.createTimerSample(
+                    ExecutorVoiceMetric.GRPC_CONNECTIONS_TTFB_SECONDS
                 ).start()
             }
             .onEach { response ->
-                trackChunk(response, ExecutorVoiceMetric.GRPC_OUTGOING_TO_INITIATOR_CHUNKS_TOTAL)
-
-                if (!firstTranscriptionReceived && response is VoiceResponse.InputTranscription) {
-                    timeToFirstTranscriptionSample?.stop()
-                    firstTranscriptionReceived = true
-                    logger.debug { "First InputTranscription received, time measured." }
-                }
-
-                if (response is VoiceResponse.Output) {
-                    val modelInfo = response.content as? ContentFromModel.AdditionalData
-
-                    trackChunk(
-                        response,
-                        ExecutorVoiceMetric.GRPC_RESPONSE_TOKENS_TOTAL,
-                        mapOf(
-                            "model" to (modelInfo?.data?.gigachatModelInfo?.name ?: UNKNOWN),
-                            "version" to (modelInfo?.data?.gigachatModelInfo?.version ?: UNKNOWN)
-                        )
-                    )
-                }
-            }
-            .catch { e ->
-                throw e
+                metricFactory.incrementCounter(
+                    ExecutorVoiceMetric.GRPC_INCOMING_FROM_GIGAVOICE_CHUNKS_TOTAL,
+                    chunkTags(response.chunkTypeName()) + response.incomingFromGigaVoiceTags()
+                )
             }
 
         return delegate.processResponseChunks(monitoredChunks)
+            .onEach { response ->
+                trackOutgoingToInitiator(response)
+                measureTtfb(response, ttfbSample) { ttfbSample = null }
+            }
     }
 
-    private suspend inline fun <reified T : Any> trackChunk(
-        chunk: T,
-        metricName: ExecutorVoiceMetric,
-        additionalTags: Map<String, String> = emptyMap()
+    private suspend fun trackOutgoingToInitiator(response: VoiceResponse) {
+        metricFactory.incrementCounter(
+            ExecutorVoiceMetric.GRPC_OUTGOING_TO_INITIATOR_CHUNKS_TOTAL,
+            chunkTags(response.chunkTypeName())
+        )
+
+        response.responseTokenInfo()?.let { (tokenTags, tokenCount) ->
+            metricFactory.incrementCounter(
+                ExecutorVoiceMetric.GRPC_RESPONSE_TOTAL_TOKENS,
+                tokenCount,
+                chunkTags(response.chunkTypeName()) + tokenTags
+            )
+        }
+    }
+
+    private fun measureTtfb(
+        response: VoiceResponse,
+        ttfbSample: TimerSampleMetric.TimerSample?,
+        clearSample: () -> Unit
     ) {
-        val className = chunk::class.simpleName!!
-        val platform = getPlatformHeader()
-        val channel = getChannelHeader()
-        val tags = mapOf(STREAM_CHUNK_TYPE_TAG to className) + additionalTags
-
-        monitoringServiceFactory.createCounter(
-            metricName,
-            platform = platform,
-            channel = channel,
-            tagsMap = tags
-        ).increment()
+        if (ttfbSample != null && response is VoiceResponse.InputTranscription) {
+            ttfbSample.stop()
+            clearSample()
+            logger.debug { "First InputTranscription received, TTFB measured." }
+        }
     }
+}
 
-    private suspend fun getPlatformHeader(): String {
-        val headers = currentHeaders()
-        return headers.getHeader(RequestHeader.PLATFORM)
+private fun chunkTags(chunkTypeName: String): Map<String, String> =
+    mapOf(MetricTags.STREAM_CHUNK_TYPE to chunkTypeName)
+
+private fun VoiceRequest.chunkTypeName(): String = this::class.simpleName!!
+
+private fun VoiceRequest.incomingTags(): Map<String, String> = mapOf(
+    MetricTags.FUNCTION_NAME to if (this is VoiceRequest.FunctionResult) {
+        result.functionName ?: ""
+    } else {
+        ""
     }
+)
 
-    private suspend fun getChannelHeader(): String {
-        val headers = currentHeaders()
-        return headers.getHeader(RequestHeader.CHANNEL)
+private fun VoiceRequest.outgoingToGigaVoiceTags(): Map<String, String> = mapOf(
+    MetricTags.PROFANITY_CHECK to if (this is VoiceRequest.Settings) {
+        settings.gigachat?.profanityCheck?.toString() ?: ""
+    } else {
+        ""
     }
+)
 
-    /** Shared state and constants for monitoring chunk processing. */
-    companion object {
-        private const val STREAM_CHUNK_TYPE_TAG = "stream_chunk_type"
-        private const val PROFANITY_CHECK_TAG = "profanity_check"
-        private const val FUNCTION_NAME_TAG = "function_name"
-        private const val UNKNOWN = "unknown"
+private fun VoiceResponse.chunkTypeName(): String = this::class.simpleName!!
 
-        private val activeConnectionCounters = ConcurrentHashMap<String, AtomicInteger>()
+private fun VoiceResponse.incomingFromGigaVoiceTags(): Map<String, String> = mapOf(
+    MetricTags.FUNCTION_NAME to if (this is VoiceResponse.FunctionCalling) {
+        data.functionCall.name
+    } else {
+        ""
     }
+)
+
+private fun VoiceResponse.responseTokenInfo(): Pair<Map<String, String>, Double>? {
+    val data = ((this as? VoiceResponse.Output)?.content as? ContentFromModel.AdditionalData)?.data
+    val totalTokens = data?.usage?.totalTokens ?: return null
+    val tags = mapOf(
+        "model" to (data.gigachatModelInfo?.name ?: UNKNOWN),
+        "version" to (data.gigachatModelInfo?.version ?: UNKNOWN)
+    )
+    return tags to totalTokens.toDouble()
 }
