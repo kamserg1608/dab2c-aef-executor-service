@@ -5,8 +5,8 @@ plugins {
 dependencies {
     api(project(":executor-domain-model"))
     api(project(":executor-libraries:context"))
-    api(project(":executor-libraries:monitoring-service"))
-    api(project(":executor-libraries:audit-service"))
+    api(project(":executor-libraries:monitoring"))
+    api(project(":executor-libraries:audit"))
     api(project(":executor-clients:ivr-voice"))
     api(project(":executor-clients:giga-voice"))
     api(project(":executor-clients:giga-agent"))

@@ -13,8 +13,8 @@ include("executor-services:voice-executor")
 include("executor-libraries:jackson")
 include("executor-libraries:context")
 include("executor-libraries:logging")
-include("executor-libraries:monitoring-service")
-include("executor-libraries:audit-service")
+include("executor-libraries:monitoring")
+include("executor-libraries:audit")
 pluginManagement {
     repositories {
         val nexusUsername = System.getProperty("gradle.wrapperUser")
