@@ -6,9 +6,9 @@ plugins {
 dependencies {
     api(project(":executor-domain-model"))
     api(project(":executor-libraries:context"))
-    api(project(":executor-libraries:audit-service"))
+    api(project(":executor-libraries:audit"))
     implementation(project(":executor-clients:common-converters"))
-    implementation(project(":executor-libraries:monitoring-service"))
+    implementation(project(":executor-libraries:monitoring"))
     implementation(project(":executor-libraries:jackson"))
     implementation(project(":executor-libraries:logging"))
     implementation(libs.bundles.ktor.client)
