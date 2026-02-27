@@ -84,6 +84,18 @@ object WireMockSetup {
         )
     }
 
+    fun WireMockServer.stubGigaAgentSettingsWithProfanityCheck() {
+        stubFor(
+            post(urlEqualTo("/settings"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.GIGA_VOICE_SETTINGS_WITH_PROFANITY_CHECK_RESPONSE)
+                )
+        )
+    }
+
     fun WireMockServer.stubGigaAgentSettingsWithDelay(delayMs: Int, withFunctions: Boolean = false) {
         val responseBody = if (withFunctions) {
             WireMockResponses.GIGA_VOICE_SETTINGS_WITH_FUNCTIONS_RESPONSE
