@@ -70,6 +70,7 @@ class DialogEnvelopeMapperTest {
         assertEquals("test-session-id", assistantMessage?.sessionId)
         assertEquals("user-msg-456", assistantMessage?.previousMessageId)
         assertEquals("completed", assistantMessage?.streamStatus)
+        assertEquals(false, assistantMessage?.isIdp)
     }
 
     @Test

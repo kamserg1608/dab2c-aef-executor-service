@@ -24,5 +24,6 @@ data class AssistantMessage(
     val requestId: String? = null,
     val streamStatus: String? = null,
     val agentId: List<AgentId>? = null,
-    val assistantResponseTime: Long? = null
+    val assistantResponseTime: Long? = null,
+    val isIdp: Boolean = false
 )
