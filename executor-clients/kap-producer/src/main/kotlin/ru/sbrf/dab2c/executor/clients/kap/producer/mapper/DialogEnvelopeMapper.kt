@@ -85,7 +85,7 @@ object DialogEnvelopeMapper {
             previousMessageId = data.userMessageId,
             requestId = data.requestId,
             streamStatus = STREAM_STATUS_COMPLETED,
-            agentId = listOf(AgentId(ci = data.agentCi)),
+            agentIds = listOf(AgentId(ci = data.agentCi)),
             assistantResponseTime = data.assistantResponseTime
         )
     }

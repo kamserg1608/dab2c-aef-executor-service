@@ -166,7 +166,7 @@ class KapDialogTurnPublisherTest {
 
             publisher.publishDialogTurn("Hello", "Hi", 1000L)
 
-            val agentId = dialogSlot.captured.data.assistantMessage?.agentId
+            val agentId = dialogSlot.captured.data.assistantMessage?.agentIds
             assertEquals(1, agentId?.size)
             assertEquals("test-ci", agentId?.first()?.ci)
         }

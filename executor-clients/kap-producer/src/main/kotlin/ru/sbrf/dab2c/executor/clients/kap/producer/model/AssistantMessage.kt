@@ -23,7 +23,7 @@ data class AssistantMessage(
     val previousMessageId: String? = null,
     val requestId: String? = null,
     val streamStatus: String? = null,
-    val agentId: List<AgentId>? = null,
+    val agentIds: List<AgentId>? = null,
     val assistantResponseTime: Long? = null,
     val isIdp: Boolean = false
 )

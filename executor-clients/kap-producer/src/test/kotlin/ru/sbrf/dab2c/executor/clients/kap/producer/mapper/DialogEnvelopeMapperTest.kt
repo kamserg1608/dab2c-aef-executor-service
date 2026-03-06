@@ -133,8 +133,8 @@ class DialogEnvelopeMapperTest {
         val envelope = DialogEnvelopeMapper.toDialogEnvelope(data)
 
         val assistantMessage = envelope.data.assistantMessage
-        assertEquals(1, assistantMessage?.agentId?.size)
-        assertEquals("agent-ci-12345", assistantMessage?.agentId?.first()?.ci)
+        assertEquals(1, assistantMessage?.agentIds?.size)
+        assertEquals("agent-ci-12345", assistantMessage?.agentIds?.first()?.ci)
     }
 
     @Test

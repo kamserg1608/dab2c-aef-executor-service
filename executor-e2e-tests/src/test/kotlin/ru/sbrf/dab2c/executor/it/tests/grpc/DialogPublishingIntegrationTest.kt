@@ -58,9 +58,9 @@ class DialogPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(receivedDialog.data.userMessage.chatId).isEqualTo(testChatId)
 
         val assistantMessage = receivedDialog.data.assistantMessage
-        assertThat(assistantMessage?.agentId).isNotNull
-        assertThat(assistantMessage?.agentId).hasSize(1)
-        assertThat(assistantMessage?.agentId?.first()?.ci).isNotBlank()
+        assertThat(assistantMessage?.agentIds).isNotNull
+        assertThat(assistantMessage?.agentIds).hasSize(1)
+        assertThat(assistantMessage?.agentIds?.first()?.ci).isNotBlank()
         assertThat(assistantMessage?.assistantResponseTime).isNotNull
         assertThat(assistantMessage?.assistantResponseTime).isGreaterThanOrEqualTo(0L)
     }
@@ -107,7 +107,7 @@ class DialogPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(firstDialog!!.version).isEqualTo("1.2.0")
         assertThat(firstDialog.data.userMessage.text).isEqualTo("First question")
         assertThat(firstDialog.data.assistantMessage?.text).isEqualTo("First answer")
-        assertThat(firstDialog.data.assistantMessage?.agentId).isNotNull
+        assertThat(firstDialog.data.assistantMessage?.agentIds).isNotNull
         assertThat(firstDialog.data.assistantMessage?.assistantResponseTime).isNotNull
 
         val secondDialog = dialogRecords.find {
@@ -116,7 +116,7 @@ class DialogPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(secondDialog).isNotNull
         assertThat(secondDialog!!.data.userMessage.text).isEqualTo("Second question")
         assertThat(secondDialog.data.assistantMessage?.text).isEqualTo("Second answer")
-        assertThat(secondDialog.data.assistantMessage?.agentId).isNotNull
+        assertThat(secondDialog.data.assistantMessage?.agentIds).isNotNull
         assertThat(secondDialog.data.assistantMessage?.assistantResponseTime).isNotNull
     }
 }
