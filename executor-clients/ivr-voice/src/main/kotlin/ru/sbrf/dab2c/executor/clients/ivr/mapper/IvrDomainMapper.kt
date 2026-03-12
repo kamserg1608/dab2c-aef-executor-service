@@ -33,16 +33,19 @@ import ru.sbrf.dab2c.executor.clients.ivr.proto.audio
 import ru.sbrf.dab2c.executor.clients.ivr.proto.contentFromModel
 import ru.sbrf.dab2c.executor.clients.ivr.proto.emotion
 import ru.sbrf.dab2c.executor.clients.ivr.proto.error
+import ru.sbrf.dab2c.executor.clients.ivr.proto.file
 import ru.sbrf.dab2c.executor.clients.ivr.proto.functionCall
 import ru.sbrf.dab2c.executor.clients.ivr.proto.functionCalling
 import ru.sbrf.dab2c.executor.clients.ivr.proto.gigaChatModelInfo
 import ru.sbrf.dab2c.executor.clients.ivr.proto.gigaVoiceResponse
+import ru.sbrf.dab2c.executor.clients.ivr.proto.inputFiles
 import ru.sbrf.dab2c.executor.clients.ivr.proto.inputTranscription
 import ru.sbrf.dab2c.executor.clients.ivr.proto.outputTranscription
 import ru.sbrf.dab2c.executor.clients.ivr.proto.personIdentity
 import ru.sbrf.dab2c.executor.clients.ivr.proto.usage
 import ru.sbrf.dab2c.executor.clients.ivr.proto.warning
 import ru.sbrf.dab2c.executor.domain.voice.AdditionalDataContent
+import ru.sbrf.dab2c.executor.domain.voice.AudioChunkMeta
 import ru.sbrf.dab2c.executor.domain.voice.AudioEncoding
 import ru.sbrf.dab2c.executor.domain.voice.AudioInputSettings
 import ru.sbrf.dab2c.executor.domain.voice.AudioOutput
@@ -58,13 +61,16 @@ import ru.sbrf.dab2c.executor.domain.voice.FunctionRegistry
 import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
 import ru.sbrf.dab2c.executor.domain.voice.GigaChatSettings
 import ru.sbrf.dab2c.executor.domain.voice.InitialContext
+import ru.sbrf.dab2c.executor.domain.voice.InputFilesData
 import ru.sbrf.dab2c.executor.domain.voice.InputTranscriptionData
 import ru.sbrf.dab2c.executor.domain.voice.OutputModalities
 import ru.sbrf.dab2c.executor.domain.voice.OutputTranscriptionData
 import ru.sbrf.dab2c.executor.domain.voice.RequestContentSettings
 import ru.sbrf.dab2c.executor.domain.voice.ResponseContentSettings
+import ru.sbrf.dab2c.executor.domain.voice.StubSounds
 import ru.sbrf.dab2c.executor.domain.voice.SynthesisContent
 import ru.sbrf.dab2c.executor.domain.voice.SynthesisContentType
+import ru.sbrf.dab2c.executor.domain.voice.TriggerFunctionMode
 import ru.sbrf.dab2c.executor.domain.voice.UsageData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceMode
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
@@ -74,16 +80,19 @@ import ru.sbrf.dab2c.executor.domain.voice.WarningData
 import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioSettings as ProtoAudioSettings
 import ru.sbrf.dab2c.executor.clients.ivr.proto.FilterSettings as ProtoFilterSettings
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Function as ProtoFunction
+import ru.sbrf.dab2c.executor.clients.ivr.proto.FunctionRanker as ProtoFunctionRanker
 import ru.sbrf.dab2c.executor.clients.ivr.proto.FunctionRegistry as ProtoFunctionRegistry
 import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaChatSettings as ProtoGigaChatSettings
 import ru.sbrf.dab2c.executor.clients.ivr.proto.InitialContext as ProtoInitialContext
 import ru.sbrf.dab2c.executor.clients.ivr.proto.RequestContentSettings as ProtoRequestContentSettings
 import ru.sbrf.dab2c.executor.clients.ivr.proto.ResponseContentSettings as ProtoResponseContentSettings
+import ru.sbrf.dab2c.executor.clients.ivr.proto.StubSounds as ProtoStubSounds
 import ru.sbrf.dab2c.executor.domain.voice.AudioContent as DomainAudioContent
 import ru.sbrf.dab2c.executor.domain.voice.ContentFromModel as DomainContentFromModel
 import ru.sbrf.dab2c.executor.domain.voice.Emotion as DomainEmotion
 import ru.sbrf.dab2c.executor.domain.voice.FirstSpeaker as DomainFirstSpeaker
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCall as DomainFunctionCall
+import ru.sbrf.dab2c.executor.domain.voice.FunctionRanker as DomainFunctionRanker
 import ru.sbrf.dab2c.executor.domain.voice.GigaChatModelInfo as DomainGigaChatModelInfo
 import ru.sbrf.dab2c.executor.domain.voice.Message as DomainMessage
 import ru.sbrf.dab2c.executor.domain.voice.PersonIdentity as DomainPersonIdentity
@@ -129,7 +138,8 @@ object IvrDomainMapper {
         enablePrefetch = settings.enablePrefetch,
         enablePersonIdentity = settings.enablePersonIdentity,
         enableWhisper = settings.enableWhisper,
-        enableEmotion = settings.enableEmotion
+        enableEmotion = settings.enableEmotion,
+        enableTranscribeSilencePhrases = settings.enableTranscribeSilencePhrases
     )
 
     private fun toDomainAudioSettings(audio: ProtoAudioSettings): AudioSettings = AudioSettings(
@@ -158,8 +168,46 @@ object IvrDomainMapper {
 
     private fun toDomainOutputSettings(output: Output): AudioOutputSettings = AudioOutputSettings(
         voice = output.voice.takeIf { it.isNotEmpty() },
-        audioEncoding = toDomainOutputAudioEncoding(output.audioEncoding)
+        audioEncoding = toDomainOutputAudioEncoding(output.audioEncoding),
+        stubSounds = if (output.hasStubSounds()) toDomainStubSounds(output.stubSounds) else null
     )
+
+    private fun toDomainStubSounds(proto: ProtoStubSounds): StubSounds = StubSounds(
+        triggerGeneration = if (proto.hasTriggerGeneration()) {
+            ru.sbrf.dab2c.executor.domain.voice.TriggerGeneration(
+                timeout = if (proto.triggerGeneration.hasTimeout()) {
+                    ProtoTypeConverters.protoDurationToKotlinDuration(proto.triggerGeneration.timeout)
+                } else {
+                    null
+                },
+                enable = proto.triggerGeneration.enable
+            )
+        } else {
+            null
+        },
+        triggerFunction = if (proto.hasTriggerFunction()) {
+            ru.sbrf.dab2c.executor.domain.voice.TriggerFunction(
+                enable = proto.triggerFunction.enable,
+                mode = toDomainTriggerFunctionMode(proto.triggerFunction.mode),
+                functionNames = proto.triggerFunction.functionNamesList
+            )
+        } else {
+            null
+        },
+        sounds = proto.soundsList
+    )
+
+    private fun toDomainTriggerFunctionMode(
+        mode: ru.sbrf.dab2c.executor.clients.ivr.proto.TriggerFunction.Mode
+    ): TriggerFunctionMode = when (mode) {
+        ru.sbrf.dab2c.executor.clients.ivr.proto.TriggerFunction.Mode.MODE_UNSPECIFIED,
+        ru.sbrf.dab2c.executor.clients.ivr.proto.TriggerFunction.Mode.UNRECOGNIZED ->
+            TriggerFunctionMode.UNSPECIFIED
+        ru.sbrf.dab2c.executor.clients.ivr.proto.TriggerFunction.Mode.WHITELIST ->
+            TriggerFunctionMode.WHITELIST
+        ru.sbrf.dab2c.executor.clients.ivr.proto.TriggerFunction.Mode.BLACKLIST ->
+            TriggerFunctionMode.BLACKLIST
+    }
 
     private fun toDomainInputAudioEncoding(encoding: Input.AudioEncoding): AudioEncoding =
         when (encoding) {
@@ -193,7 +241,20 @@ object IvrDomainMapper {
                 toDomainFunctionRegistry(settings.functionRegistry)
             } else {
                 null
+            },
+            filterStubPhrases = settings.filterStubPhrasesList,
+            currentTime = if (settings.hasCurrentTime()) settings.currentTime else null,
+            functionRanker = if (settings.hasFunctionRanker()) {
+                toDomainFunctionRanker(settings.functionRanker)
+            } else {
+                null
             }
+        )
+
+    private fun toDomainFunctionRanker(proto: ProtoFunctionRanker): DomainFunctionRanker =
+        DomainFunctionRanker(
+            enabled = if (proto.hasEnabled()) proto.enabled else null,
+            topN = if (proto.hasTopN()) proto.topN.toInt() else null
         )
 
     private fun toDomainFilterSettings(settings: ProtoFilterSettings): FilterSettings = FilterSettings(
@@ -253,7 +314,9 @@ object IvrDomainMapper {
         functionCall = if (message.hasFunctionCall()) toDomainFunctionCall(message.functionCall) else null,
         functionName = message.functionName.takeIf { it.isNotEmpty() },
         functionsStateId = message.functionsStateId.takeIf { it.isNotEmpty() },
-        attachments = message.attachmentsList
+        attachments = message.attachmentsList,
+        inlineData = message.inlineDataMap,
+        functions = message.functionsList.map { toDomainFunction(it) }
     )
 
     private fun toDomainFunctionCall(call: FunctionCall): DomainFunctionCall = DomainFunctionCall(
@@ -299,7 +362,8 @@ object IvrDomainMapper {
                 ProtoTypeConverters.byteStringToByteArray(it)
             },
             speechStart = audio.speechStart,
-            speechEnd = audio.speechEnd
+            speechEnd = audio.speechEnd,
+            meta = if (audio.hasMeta()) AudioChunkMeta(forceNoSpeech = audio.meta.forceNoSpeech) else null
         )
 
     private fun toDomainSynthesisContent(content: ContentForSynthesis): SynthesisContent =
@@ -337,7 +401,21 @@ object IvrDomainMapper {
             gigaVoiceResponse { error = toProtoError(response.error) }
         is VoiceResponse.Warning ->
             gigaVoiceResponse { warning = toProtoWarning(response.warning) }
+        is VoiceResponse.InputFiles ->
+            gigaVoiceResponse { inputFiles = toProtoInputFiles(response.data) }
     }
+
+    private fun toProtoInputFiles(data: InputFilesData): ru.sbrf.dab2c.executor.clients.ivr.proto.InputFiles =
+        inputFiles {
+            files.addAll(
+                data.files.map {
+                    file {
+                        id = it.id
+                        type = it.type
+                    }
+                }
+            )
+        }
 
     private fun toProtoContentFromModel(content: DomainContentFromModel): ContentFromModel =
         when (content) {
@@ -422,6 +500,9 @@ object IvrDomainMapper {
             functionsStateId = data.functionsStateId
             finishReason = data.finishReason
             timestamp = data.timestamp
+            data.stubText?.let { stubText = it }
+            inlineData.putAll(data.inlineData)
+            data.silencePhrase?.let { silencePhrase = it }
         }
 
     private fun toProtoError(data: ErrorData): Error = error {

@@ -36,6 +36,11 @@ sealed class VoiceResponse {
      * Warning response.
      */
     data class Warning(val warning: WarningData) : VoiceResponse()
+
+    /**
+     * Input files response.
+     */
+    data class InputFiles(val data: InputFilesData) : VoiceResponse()
 }
 
 /**
@@ -166,7 +171,10 @@ data class OutputTranscriptionData(
     val text: String,
     val functionsStateId: String,
     val finishReason: String,
-    val timestamp: Long
+    val timestamp: Long,
+    val stubText: String? = null,
+    val inlineData: Map<String, String> = emptyMap(),
+    val silencePhrase: Boolean? = null
 )
 
 /**
@@ -182,4 +190,15 @@ data class ErrorData(
  */
 data class WarningData(
     val message: String
+)
+
+/** Input files data. */
+data class InputFilesData(
+    val files: List<FileData> = emptyList()
+)
+
+/** File reference data. */
+data class FileData(
+    val id: String,
+    val type: String
 )

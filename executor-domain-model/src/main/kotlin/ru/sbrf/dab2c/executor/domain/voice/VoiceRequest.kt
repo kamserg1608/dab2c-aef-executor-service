@@ -37,7 +37,13 @@ sealed class VoiceRequest {
 data class AudioContent(
     val audioChunk: ByteArray? = null,
     val speechStart: Boolean = false,
-    val speechEnd: Boolean = false
+    val speechEnd: Boolean = false,
+    val meta: AudioChunkMeta? = null
+)
+
+/** Metadata for an audio chunk. */
+data class AudioChunkMeta(
+    val forceNoSpeech: Boolean = false
 )
 
 /**

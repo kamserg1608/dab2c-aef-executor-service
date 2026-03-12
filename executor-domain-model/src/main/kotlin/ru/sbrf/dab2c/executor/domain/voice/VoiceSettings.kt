@@ -20,7 +20,8 @@ data class VoiceSettings(
     val enablePrefetch: Boolean = false,
     val enablePersonIdentity: Boolean = false,
     val enableWhisper: Boolean = false,
-    val enableEmotion: Boolean = false
+    val enableEmotion: Boolean = false,
+    val enableTranscribeSilencePhrases: Boolean = false
 )
 
 /**
@@ -50,7 +51,8 @@ data class AudioInputSettings(
  */
 data class AudioOutputSettings(
     val voice: String? = null,
-    val audioEncoding: AudioEncoding = AudioEncoding.UNSPECIFIED
+    val audioEncoding: AudioEncoding = AudioEncoding.UNSPECIFIED,
+    val stubSounds: StubSounds? = null
 )
 
 /**
@@ -65,7 +67,10 @@ data class GigaChatSettings(
     val profanityCheck: Boolean? = null,
     val filtersSettings: Map<String, FilterSettings> = emptyMap(),
     val functions: List<FunctionDefinition> = emptyList(),
-    val functionRegistry: FunctionRegistry? = null
+    val functionRegistry: FunctionRegistry? = null,
+    val filterStubPhrases: List<String> = emptyList(),
+    val currentTime: Int? = null,
+    val functionRanker: FunctionRanker? = null
 )
 
 /**
@@ -136,7 +141,9 @@ data class Message(
     val functionCall: FunctionCall? = null,
     val functionName: String? = null,
     val functionsStateId: String? = null,
-    val attachments: List<String> = emptyList()
+    val attachments: List<String> = emptyList(),
+    val inlineData: Map<String, String> = emptyMap(),
+    val functions: List<FunctionDefinition> = emptyList()
 )
 
 /**
@@ -145,4 +152,37 @@ data class Message(
 data class FirstSpeaker(
     val type: String? = null,
     val lockFirstIn: Boolean? = null
+)
+
+/** Stub sounds configuration for function call placeholders. */
+data class StubSounds(
+    val triggerGeneration: TriggerGeneration? = null,
+    val triggerFunction: TriggerFunction? = null,
+    val sounds: List<String> = emptyList()
+)
+
+/** Trigger settings for generation-based stub sounds. */
+data class TriggerGeneration(
+    val timeout: Duration? = null,
+    val enable: Boolean = false
+)
+
+/** Trigger settings for function-call-based stub sounds. */
+data class TriggerFunction(
+    val enable: Boolean = false,
+    val mode: TriggerFunctionMode = TriggerFunctionMode.UNSPECIFIED,
+    val functionNames: List<String> = emptyList()
+)
+
+/** Function trigger filtering mode. */
+enum class TriggerFunctionMode {
+    UNSPECIFIED,
+    WHITELIST,
+    BLACKLIST
+}
+
+/** Function ranking configuration. */
+data class FunctionRanker(
+    val enabled: Boolean? = null,
+    val topN: Int? = null
 )

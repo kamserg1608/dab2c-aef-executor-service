@@ -19,6 +19,7 @@ import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaChatModelInfo
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Input
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.InputFiles
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.InputTranscription
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Message
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Output
@@ -28,6 +29,7 @@ import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Settings
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Usage
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Warning
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.anyExample
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audioChunkMeta
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audioContent
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audioSettings
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.contentForSynthesis
@@ -36,6 +38,7 @@ import ru.sbrf.dab2c.executor.clients.gigavoice.proto.filterSettings
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.firstSpeaker
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.function
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionCall
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionRanker
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionRegistry
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionResult
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaChatSettings
@@ -49,6 +52,9 @@ import ru.sbrf.dab2c.executor.clients.gigavoice.proto.params
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.requestContentSettings
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.responseContentSettings
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.settings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.stubSounds
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.triggerFunction
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.triggerGeneration
 import ru.sbrf.dab2c.executor.domain.voice.AdditionalDataContent
 import ru.sbrf.dab2c.executor.domain.voice.AudioEncoding
 import ru.sbrf.dab2c.executor.domain.voice.AudioInputSettings
@@ -56,6 +62,7 @@ import ru.sbrf.dab2c.executor.domain.voice.AudioOutput
 import ru.sbrf.dab2c.executor.domain.voice.AudioOutputSettings
 import ru.sbrf.dab2c.executor.domain.voice.AudioSettings
 import ru.sbrf.dab2c.executor.domain.voice.ErrorData
+import ru.sbrf.dab2c.executor.domain.voice.FileData
 import ru.sbrf.dab2c.executor.domain.voice.FilterSettings
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionDefinition
@@ -64,13 +71,16 @@ import ru.sbrf.dab2c.executor.domain.voice.FunctionRegistry
 import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
 import ru.sbrf.dab2c.executor.domain.voice.GigaChatSettings
 import ru.sbrf.dab2c.executor.domain.voice.InitialContext
+import ru.sbrf.dab2c.executor.domain.voice.InputFilesData
 import ru.sbrf.dab2c.executor.domain.voice.InputTranscriptionData
 import ru.sbrf.dab2c.executor.domain.voice.OutputModalities
 import ru.sbrf.dab2c.executor.domain.voice.OutputTranscriptionData
 import ru.sbrf.dab2c.executor.domain.voice.RequestContentSettings
 import ru.sbrf.dab2c.executor.domain.voice.ResponseContentSettings
+import ru.sbrf.dab2c.executor.domain.voice.StubSounds
 import ru.sbrf.dab2c.executor.domain.voice.SynthesisContent
 import ru.sbrf.dab2c.executor.domain.voice.SynthesisContentType
+import ru.sbrf.dab2c.executor.domain.voice.TriggerFunctionMode
 import ru.sbrf.dab2c.executor.domain.voice.UsageData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceMode
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
@@ -90,6 +100,7 @@ import ru.sbrf.dab2c.executor.domain.voice.ContentFromModel as DomainContentFrom
 import ru.sbrf.dab2c.executor.domain.voice.Emotion as DomainEmotion
 import ru.sbrf.dab2c.executor.domain.voice.FirstSpeaker as DomainFirstSpeaker
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCall as DomainFunctionCall
+import ru.sbrf.dab2c.executor.domain.voice.FunctionRanker as DomainFunctionRanker
 import ru.sbrf.dab2c.executor.domain.voice.GigaChatModelInfo as DomainGigaChatModelInfo
 import ru.sbrf.dab2c.executor.domain.voice.Message as DomainMessage
 import ru.sbrf.dab2c.executor.domain.voice.PersonIdentity as DomainPersonIdentity
@@ -116,6 +127,8 @@ object GigaVoiceDomainMapper {
                 VoiceResponse.Error(toErrorData(response.error))
             GigaVoiceResponse.ResponseCase.WARNING ->
                 VoiceResponse.Warning(toWarningData(response.warning))
+            GigaVoiceResponse.ResponseCase.INPUT_FILES ->
+                VoiceResponse.InputFiles(toInputFilesData(response.inputFiles))
             GigaVoiceResponse.ResponseCase.RESPONSE_NOT_SET, null ->
                 error("Response not set")
         }
@@ -227,8 +240,15 @@ object GigaVoiceDomainMapper {
             text = transcription.text,
             functionsStateId = transcription.functionsStateId,
             finishReason = transcription.finishReason,
-            timestamp = transcription.timestamp
+            timestamp = transcription.timestamp,
+            stubText = transcription.stubText.takeIf { it.isNotEmpty() },
+            inlineData = transcription.inlineDataMap,
+            silencePhrase = if (transcription.hasSilencePhrase()) transcription.silencePhrase else null
         )
+
+    private fun toInputFilesData(inputFiles: InputFiles): InputFilesData = InputFilesData(
+        files = inputFiles.filesList.map { FileData(id = it.id, type = it.type) }
+    )
 
     private fun toErrorData(error: Error): ErrorData = ErrorData(
         status = error.status,
@@ -260,6 +280,7 @@ object GigaVoiceDomainMapper {
             audio.audioChunk?.let { audioChunk = ProtoTypeConverters.byteArrayToByteString(it) }
             speechStart = audio.speechStart
             speechEnd = audio.speechEnd
+            audio.meta?.let { meta = audioChunkMeta { forceNoSpeech = it.forceNoSpeech } }
         }
     }
 
@@ -296,6 +317,7 @@ object GigaVoiceDomainMapper {
         enablePersonIdentity = domainSettings.enablePersonIdentity
         enableWhisper = domainSettings.enableWhisper
         enableEmotion = domainSettings.enableEmotion
+        enableTranscribeSilencePhrases = domainSettings.enableTranscribeSilencePhrases
     }
 
     private fun toProtoAudioSettings(domainSettings: AudioSettings): ProtoAudioSettings =
@@ -322,6 +344,37 @@ object GigaVoiceDomainMapper {
     private fun toProtoOutput(domainOutput: AudioOutputSettings): Output = output {
         domainOutput.voice?.let { voice = it }
         audioEncoding = toProtoOutputAudioEncoding(domainOutput.audioEncoding)
+        domainOutput.stubSounds?.let { stubSounds = toProtoStubSounds(it) }
+    }
+
+    private fun toProtoStubSounds(
+        domain: StubSounds
+    ): ru.sbrf.dab2c.executor.clients.gigavoice.proto.StubSounds = stubSounds {
+        domain.triggerGeneration?.let {
+            triggerGeneration = triggerGeneration {
+                it.timeout?.let { t -> timeout = ProtoTypeConverters.kotlinDurationToProtoDuration(t) }
+                enable = it.enable
+            }
+        }
+        domain.triggerFunction?.let {
+            triggerFunction = triggerFunction {
+                enable = it.enable
+                mode = toProtoTriggerFunctionMode(it.mode)
+                functionNames.addAll(it.functionNames)
+            }
+        }
+        sounds.addAll(domain.sounds)
+    }
+
+    private fun toProtoTriggerFunctionMode(
+        mode: TriggerFunctionMode
+    ): ru.sbrf.dab2c.executor.clients.gigavoice.proto.TriggerFunction.Mode = when (mode) {
+        TriggerFunctionMode.UNSPECIFIED ->
+            ru.sbrf.dab2c.executor.clients.gigavoice.proto.TriggerFunction.Mode.MODE_UNSPECIFIED
+        TriggerFunctionMode.WHITELIST ->
+            ru.sbrf.dab2c.executor.clients.gigavoice.proto.TriggerFunction.Mode.WHITELIST
+        TriggerFunctionMode.BLACKLIST ->
+            ru.sbrf.dab2c.executor.clients.gigavoice.proto.TriggerFunction.Mode.BLACKLIST
     }
 
     private fun toProtoInputAudioEncoding(encoding: AudioEncoding): Input.AudioEncoding =
@@ -353,6 +406,17 @@ object GigaVoiceDomainMapper {
             )
             functions.addAll(domainSettings.functions.map { toProtoFunction(it) })
             domainSettings.functionRegistry?.let { functionRegistry = toProtoFunctionRegistry(it) }
+            filterStubPhrases.addAll(domainSettings.filterStubPhrases)
+            domainSettings.currentTime?.let { currentTime = it }
+            domainSettings.functionRanker?.let { functionRanker = toProtoFunctionRanker(it) }
+        }
+
+    private fun toProtoFunctionRanker(
+        domain: DomainFunctionRanker
+    ): ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionRanker =
+        functionRanker {
+            domain.enabled?.let { enabled = it }
+            domain.topN?.let { topN = it }
         }
 
     private fun toProtoFilterSettings(domainSettings: FilterSettings): ProtoFilterSettings =
@@ -418,6 +482,8 @@ object GigaVoiceDomainMapper {
         domainMessage.functionName?.let { functionName = it }
         domainMessage.functionsStateId?.let { functionsStateId = it }
         attachments.addAll(domainMessage.attachments)
+        inlineData.putAll(domainMessage.inlineData)
+        functions.addAll(domainMessage.functions.map { toProtoFunction(it) })
     }
 
     private fun toProtoFunctionCall(call: DomainFunctionCall): FunctionCall = functionCall {

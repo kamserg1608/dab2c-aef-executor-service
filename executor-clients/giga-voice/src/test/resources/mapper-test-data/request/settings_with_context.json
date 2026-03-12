@@ -50,7 +50,8 @@
       "enablePrefetch": false,
       "enablePersonIdentity": false,
       "enableWhisper": false,
-      "enableEmotion": false
+      "enableEmotion": false,
+      "enableTranscribeSilencePhrases": false
     }
   }
 }

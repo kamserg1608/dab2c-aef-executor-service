@@ -185,7 +185,8 @@
       "enablePrefetch": true,
       "enablePersonIdentity": true,
       "enableWhisper": true,
-      "enableEmotion": true
+      "enableEmotion": true,
+      "enableTranscribeSilencePhrases": false
     }
   }
 }

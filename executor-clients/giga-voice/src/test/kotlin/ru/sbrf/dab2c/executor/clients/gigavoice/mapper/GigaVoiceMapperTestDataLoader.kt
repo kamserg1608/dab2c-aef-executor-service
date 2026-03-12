@@ -295,7 +295,8 @@ object GigaVoiceMapperTestDataLoader {
             enablePrefetch = json["enablePrefetch"]?.asBoolean() ?: false,
             enablePersonIdentity = json["enablePersonIdentity"]?.asBoolean() ?: false,
             enableWhisper = json["enableWhisper"]?.asBoolean() ?: false,
-            enableEmotion = json["enableEmotion"]?.asBoolean() ?: false
+            enableEmotion = json["enableEmotion"]?.asBoolean() ?: false,
+            enableTranscribeSilencePhrases = json["enableTranscribeSilencePhrases"]?.asBoolean() ?: false
         )
     }
 

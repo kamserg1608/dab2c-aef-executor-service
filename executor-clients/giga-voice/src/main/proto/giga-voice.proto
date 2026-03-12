@@ -29,6 +29,7 @@ message GigaVoiceResponse {
     OutputTranscription output_transcription = 4;
     Error error = 5;
     Warning warning = 6;
+    InputFiles input_files = 7;
   }
 }
 
@@ -61,6 +62,7 @@ message Settings {
   optional bool enable_person_identity = 13;
   optional bool enable_whisper = 14;
   optional bool enable_emotion = 15;
+  optional bool enable_transcribe_silence_phrases = 16; //Отсылаем дополнительно транскрипцию для is_silent фраз. По умолчанию false
 }
 
 message AudioSettings {
@@ -94,6 +96,7 @@ message Output {
   }
   optional string voice = 1;
   AudioEncoding audio_encoding = 2;
+  StubSounds stub_sounds = 3;
 }
 
 message GigaChatSettings {
@@ -106,6 +109,9 @@ message GigaChatSettings {
   map<string, FilterSettings> filters_settings = 7;
   repeated Function functions = 8; //только клиентские
   FunctionRegistry function_registry = 9;
+  repeated string filter_stub_phrases = 10;
+  optional int32 current_time = 11;
+  FunctionRanker function_ranker = 12;
 }
 
 message FilterSettings{
@@ -155,6 +161,8 @@ message Message {
   optional string function_name = 4;
   optional string functions_state_id = 5;
   repeated string attachments = 6;
+  map <string,string> inline_data = 7; // для функций поиска, в значении будет валидный json
+  repeated Function functions = 8; // Описание для функций которые якобы выполнялись в этом сообщении (не путать с GigaChatSettings.functions)
 }
 
 message FirstSpeaker {
@@ -173,7 +181,12 @@ message AudioContent {
   optional bytes audio_chunk = 1;
   optional bool speech_start = 2;
   optional bool speech_end = 3;
+  AudioChunkMeta meta = 10;
 }
+
+message AudioChunkMeta {
+  optional bool force_no_speech = 1; //на стороне колонок не всегда работает aec и поэтому что отправляется часть звука от нас, коллеги хотят прислать флаг, чтобы мы его с гарантией проигнорировали
+};
 
 message ContentForSynthesis {
   enum ContentType {
@@ -233,6 +246,9 @@ message OutputTranscription {
   string functions_state_id = 2;
   string finish_reason = 3;
   int64 timestamp = 4;
+  optional string stub_text = 5;
+  map <string,string> inline_data = 6; // для функций поиска, в значении будет валидный json
+  optional bool silence_phrase = 7; // признак транскрипции фразы тишины
 }
 
 message InputTranscription {
@@ -288,4 +304,40 @@ message FunctionRegistry {
   optional string profile = 1;
   repeated string labels = 2;
   optional string ab_flags = 3; //валидный json упакованный в строку
+}
+
+message InputFiles {
+  repeated File files = 1;
+}
+
+message File {
+  string id = 1;
+  string type = 2;
+}
+
+message FunctionRanker {
+  optional bool enabled = 1;
+  optional uint32 top_n = 2;
+}
+
+message StubSounds {
+  TriggerGeneration trigger_generation = 1;
+  TriggerFunction trigger_function = 2;
+  repeated string sounds = 3;
+}
+
+message TriggerGeneration {
+  google.protobuf.Duration timeout = 1;
+  bool enable = 2;
+}
+
+message TriggerFunction {
+  enum Mode {
+    MODE_UNSPECIFIED = 0;
+    WHITELIST = 1;
+    BLACKLIST = 2;
+  }
+  bool enable = 1;
+  Mode mode = 2;
+  repeated string function_names = 3;
 }
