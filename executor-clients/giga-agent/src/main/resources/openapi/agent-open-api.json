@@ -1,9 +1,9 @@
 {
-  "openapi": "3.1.0",
+  "openapi": "3.0.4",
   "info": {
     "title": "GigaVoice Agent HTTP API",
     "description": "API для взаимодействия с агентом для GigaVoice через HTTP.",
-    "version": "0.1.0"
+    "version": "0.1.1"
   },
   "paths": {
     "/settings": {
@@ -365,7 +365,12 @@
       },
       "AudioEncoding": {
         "type": "integer",
-        "format": "int32",
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
         "title": "AudioEncoding",
         "description": "Набор поддерживаемых форматов аудио данных."
       },
@@ -684,7 +689,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 1
+                "minimum": 1.0
               },
               {
                 "type": "null"
@@ -789,7 +794,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "exclusiveMinimum": 0
+                "exclusiveMinimum": 0.0
               },
               {
                 "type": "null"
@@ -802,8 +807,8 @@
             "anyOf": [
               {
                 "type": "number",
-                "maximum": 1,
-                "minimum": 0
+                "maximum": 1.0,
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -950,7 +955,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "exclusiveMinimum": 0
+                "exclusiveMinimum": 0.0
               },
               {
                 "type": "null"
@@ -963,8 +968,8 @@
             "anyOf": [
               {
                 "type": "number",
-                "maximum": 1,
-                "minimum": 0
+                "maximum": 1.0,
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -1216,6 +1221,13 @@
       },
       "GigaVoiceMode": {
         "type": "integer",
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
         "title": "GigaVoiceMode",
         "description": "Режим работы Gigavoice."
       },
@@ -1445,8 +1457,8 @@
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 96000,
-                "minimum": 8000
+                "maximum": 96000.0,
+                "minimum": 8000.0
               },
               {
                 "type": "null"
@@ -1480,7 +1492,7 @@
               }
             ],
             "title": "Silence Phrases Timeout",
-            "description": "Время молчания (без речи) после которого GigaVoice необходимо озвучить фразу (silenсe_phrases)"
+            "description": "Время молчания (без речи) после которого GigaVoice необходимо озвучить фразу (silence_phrases)"
           },
           "silence_timeout": {
             "anyOf": [
@@ -1492,7 +1504,7 @@
               }
             ],
             "title": "Silence Timeout",
-            "description": "Время молчания (без речи) после которого GigaVoice необходимо закрыть соединение duration"
+            "description": "Время молчания (без речи) после которого GigaVoice необходимо закрыть соединение"
           },
           "stop_phrases": {
             "anyOf": [
@@ -1605,6 +1617,21 @@
             ],
             "title": "Inline Data",
             "description": "Данные для функций поиска; значения — валидный JSON в виде строки"
+          },
+          "functions": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Function-Input"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Functions",
+            "description": "Массив описаний функций с role = user || role = function"
           }
         },
         "type": "object",
@@ -1687,6 +1714,12 @@
       },
       "OutputModalities": {
         "type": "integer",
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
         "title": "OutputModalities",
         "description": "Определяют формат ответа Gigavoice."
       },
@@ -2135,6 +2168,11 @@
             ],
             "title": "Enable Emotion",
             "description": "Включение анализа эмоций"
+          },
+          "enable_transcribe_silence_phrases": {
+            "type": "boolean",
+            "description": "Отсылать дополнительно транскрипцию для is_silent фраз. По умолчанию false",
+            "default": false
           }
         },
         "type": "object",
@@ -2309,6 +2347,11 @@
             ],
             "title": "Enable Emotion",
             "description": "Включение анализа эмоций"
+          },
+          "enable_transcribe_silence_phrases": {
+            "type": "boolean",
+            "description": "Отсылать дополнительно транскрипцию для is_silent фраз. По умолчанию false",
+            "default": false
           }
         },
         "type": "object",
@@ -2321,22 +2364,24 @@
       },
       "StubSounds-Input": {
         "properties": {
+          "trigger_generation": {
+            "$ref": "#/components/schemas/TriggerGeneration",
+            "description": "Настройки триггера по времени для вставки заглушек"
+          },
           "trigger_function": {
             "$ref": "#/components/schemas/TriggerFunction",
-            "description": "Настройки триггера для вставки заглушек"
+            "description": "Настройки триггера для вставки заглушек при вызове функций"
           },
           "sounds": {
+            "type": "array",
             "items": {
               "type": "string"
             },
-            "type": "array",
-            "title": "Sounds",
             "description": "Список звуков-заглушек (например, ID звуков)"
           }
         },
         "type": "object",
         "required": [
-          "trigger_function",
           "sounds"
         ],
         "title": "StubSounds",
@@ -2344,22 +2389,24 @@
       },
       "StubSounds-Output": {
         "properties": {
+          "trigger_generation": {
+            "$ref": "#/components/schemas/TriggerGeneration",
+            "description": "Настройки триггера по времени для вставки заглушек"
+          },
           "trigger_function": {
             "$ref": "#/components/schemas/TriggerFunction",
-            "description": "Настройки триггера для вставки заглушек"
+            "description": "Настройки триггера для вставки заглушек при вызове функций"
           },
           "sounds": {
+            "type": "array",
             "items": {
               "type": "string"
             },
-            "type": "array",
-            "title": "Sounds",
             "description": "Список звуков-заглушек (например, ID звуков)"
           }
         },
         "type": "object",
         "required": [
-          "trigger_function",
           "sounds"
         ],
         "title": "StubSounds",
@@ -2387,9 +2434,7 @@
         },
         "type": "object",
         "required": [
-          "enable",
-          "mode",
-          "function_names"
+          "enable"
         ],
         "title": "TriggerFunction",
         "description": "Триггер функции."
@@ -2401,7 +2446,22 @@
           1,
           2
         ],
-        "title": "TriggerFunctionMode"
+        "title": "TriggerFunctionMode",
+        "description": "Режим триггера функции: 0 - MODE_UNSPECIFIED, 1 - WHITELIST, 2 - BLACKLIST"
+      },
+      "TriggerGeneration": {
+        "properties": {
+          "timeout": {
+            "type": "string",
+            "description": "Время ожидания перед началом проигрывания мелодии."
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "Включение проигрывания звука при долгом ответе. По дефолту выключено."
+          }
+        },
+        "title": "TriggerGeneration",
+        "description": "Настройки звуков при долгом ожидании ответа модели"
       },
       "UserInfo": {
         "properties": {
@@ -2465,7 +2525,11 @@
             "title": "Ucp Id",
             "description": "ЕПК ID клиента"
           }
-        }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "UserInfo",
+        "description": "Информация о пользователе из сессии.\nВключается параметром `can_access_user_info` в AgentConfig"
       },
       "ValidationError": {
         "properties": {

@@ -43,16 +43,21 @@ import ru.sbrf.dab2c.executor.domain.voice.StubSounds
 import ru.sbrf.dab2c.executor.domain.voice.TriggerFunctionMode
 import ru.sbrf.dab2c.executor.domain.voice.VoiceMode
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.AudioEncoding as ApiAudioEncoding
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FilterSettings as ApiFilterSettings
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FirstSpeaker as ApiFirstSpeaker
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCalling as ApiFunctionCalling
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionRanker as ApiFunctionRanker
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionRegistry as ApiFunctionRegistry
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceMode as ApiGigaVoiceMode
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.Message as ApiMessage
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.OutputModalities as ApiOutputModalities
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.TriggerFunction as ApiTriggerFunction
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.TriggerFunctionMode as ApiTriggerFunctionMode
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.TriggerGeneration as ApiTriggerGeneration
 import ru.sbrf.dab2c.executor.domain.voice.FunctionRanker as DomainFunctionRanker
 import ru.sbrf.dab2c.executor.domain.voice.TriggerFunction as DomainTriggerFunction
+import ru.sbrf.dab2c.executor.domain.voice.TriggerGeneration as DomainTriggerGeneration
 
 /**
  * Mapper for converting between domain models and GigaVoice Agent API models.
@@ -75,7 +80,8 @@ object GigaVoiceSettingsMapper {
         enablePrefetch = source.enablePrefetch,
         enablePersonIdentity = source.enablePersonIdentity,
         enableWhisper = source.enableWhisper,
-        enableEmotion = source.enableEmotion
+        enableEmotion = source.enableEmotion,
+        enableTranscribeSilencePhrases = source.enableTranscribeSilencePhrases
     )
 
     // === SettingsOutput -> VoiceSettings ===
@@ -94,7 +100,8 @@ object GigaVoiceSettingsMapper {
         enablePrefetch = source.enablePrefetch ?: false,
         enablePersonIdentity = source.enablePersonIdentity ?: false,
         enableWhisper = source.enableWhisper ?: false,
-        enableEmotion = source.enableEmotion ?: false
+        enableEmotion = source.enableEmotion ?: false,
+        enableTranscribeSilencePhrases = source.enableTranscribeSilencePhrases ?: false
     )
 
     // === Performers -> FunctionPerformers ===
@@ -108,23 +115,23 @@ object GigaVoiceSettingsMapper {
 
     // === Helper methods for enum conversions ===
 
-    fun toApiVoiceMode(mode: VoiceMode): Int =
-        mode.value
+    fun toApiVoiceMode(mode: VoiceMode): ApiGigaVoiceMode =
+        ApiGigaVoiceMode.entries.first { it.value == mode.value }
 
-    fun toDomainVoiceMode(mode: Int?): VoiceMode =
-        mode?.let { VoiceMode.entries[it] } ?: VoiceMode.UNSPECIFIED
+    fun toDomainVoiceMode(mode: ApiGigaVoiceMode?): VoiceMode =
+        mode?.let { VoiceMode.entries[it.value] } ?: VoiceMode.UNSPECIFIED
 
-    fun toApiOutputModalities(modalities: OutputModalities): Int =
-        modalities.value
+    fun toApiOutputModalities(modalities: OutputModalities): ApiOutputModalities =
+        ApiOutputModalities.entries.first { it.value == modalities.value }
 
-    fun toDomainOutputModalities(modalities: Int?): OutputModalities =
-        modalities?.let { OutputModalities.entries[it] } ?: OutputModalities.UNSPECIFIED
+    fun toDomainOutputModalities(modalities: ApiOutputModalities?): OutputModalities =
+        modalities?.let { OutputModalities.entries[it.value] } ?: OutputModalities.UNSPECIFIED
 
-    fun toApiAudioEncoding(encoding: AudioEncoding): Int =
-        encoding.value
+    fun toApiAudioEncoding(encoding: AudioEncoding): ApiAudioEncoding =
+        ApiAudioEncoding.entries.first { it.value == encoding.value }
 
-    fun toDomainAudioEncoding(encoding: Int?): AudioEncoding =
-        encoding?.let { AudioEncoding.entries[it] } ?: AudioEncoding.UNSPECIFIED
+    fun toDomainAudioEncoding(encoding: ApiAudioEncoding?): AudioEncoding =
+        encoding?.let { AudioEncoding.entries[it.value] } ?: AudioEncoding.UNSPECIFIED
 
     // === Audio settings mapping ===
 
@@ -178,17 +185,17 @@ object GigaVoiceSettingsMapper {
             stubSounds = source.stubSounds?.let { toDomainStubSounds(it) }
         )
 
-    private fun toApiStubSoundsInput(source: StubSounds): StubSoundsInput =
+    fun toApiStubSoundsInput(source: StubSounds): StubSoundsInput =
         StubSoundsInput(
-            triggerFunction = source.triggerFunction?.let { toApiTriggerFunction(it) }
-                ?: ApiTriggerFunction(enable = false, mode = ApiTriggerFunctionMode._0, functionNames = emptyList()),
+            triggerGeneration = source.triggerGeneration?.let { toApiTriggerGeneration(it) },
+            triggerFunction = source.triggerFunction?.let { toApiTriggerFunction(it) },
             sounds = source.sounds
         )
 
-    private fun toDomainStubSounds(source: StubSoundsOutput): StubSounds =
+    fun toDomainStubSounds(source: StubSoundsOutput): StubSounds =
         StubSounds(
-            triggerGeneration = null,
-            triggerFunction = toDomainTriggerFunction(source.triggerFunction),
+            triggerGeneration = source.triggerGeneration?.let { toDomainTriggerGeneration(it) },
+            triggerFunction = source.triggerFunction?.let { toDomainTriggerFunction(it) },
             sounds = source.sounds
         )
 
@@ -202,8 +209,8 @@ object GigaVoiceSettingsMapper {
     private fun toDomainTriggerFunction(source: ApiTriggerFunction): DomainTriggerFunction =
         DomainTriggerFunction(
             enable = source.enable,
-            mode = toDomainTriggerFunctionMode(source.mode),
-            functionNames = source.functionNames
+            mode = source.mode?.let { toDomainTriggerFunctionMode(it) } ?: TriggerFunctionMode.UNSPECIFIED,
+            functionNames = source.functionNames ?: emptyList()
         )
 
     private fun toApiTriggerFunctionMode(mode: TriggerFunctionMode): ApiTriggerFunctionMode =
@@ -219,6 +226,18 @@ object GigaVoiceSettingsMapper {
             ApiTriggerFunctionMode._1 -> TriggerFunctionMode.WHITELIST
             ApiTriggerFunctionMode._2 -> TriggerFunctionMode.BLACKLIST
         }
+
+    private fun toApiTriggerGeneration(source: DomainTriggerGeneration): ApiTriggerGeneration =
+        ApiTriggerGeneration(
+            timeout = source.timeout?.let { TypeConverters.durationToString(it) },
+            enable = source.enable
+        )
+
+    private fun toDomainTriggerGeneration(source: ApiTriggerGeneration): DomainTriggerGeneration =
+        DomainTriggerGeneration(
+            timeout = TypeConverters.stringToDuration(source.timeout),
+            enable = source.enable ?: false
+        )
 
     // === GigaChat settings mapping ===
 
@@ -315,6 +334,21 @@ object GigaVoiceSettingsMapper {
             params = source.params.pairs.map { it.key to it.value }
         )
 
+    private fun toDomainFunctionDefinitionFromInput(source: FunctionInput): FunctionDefinition =
+        FunctionDefinition(
+            name = source.name,
+            description = source.description,
+            parameters = source.parameters,
+            fewShotExamples = source.fewShotExamples?.map { toDomainFunctionExampleFromInput(it) } ?: emptyList(),
+            returnParameters = source.returnParameters
+        )
+
+    private fun toDomainFunctionExampleFromInput(source: AnyExampleInput): FunctionExample =
+        FunctionExample(
+            request = source.request,
+            params = source.params.pairs.map { it.key to it.value }
+        )
+
     fun toApiFilterSettings(source: FilterSettings): ApiFilterSettings =
         ApiFilterSettings(
             requestContent = source.requestContent?.let {
@@ -390,7 +424,8 @@ object GigaVoiceSettingsMapper {
             functionName = source.functionName,
             functionsStateId = source.functionsStateId,
             attachments = source.attachments.takeIf { it.isNotEmpty() },
-            inlineData = source.inlineData.takeIf { it.isNotEmpty() }
+            inlineData = source.inlineData.takeIf { it.isNotEmpty() },
+            functions = source.functions.takeIf { it.isNotEmpty() }?.map { toApiFunctionDefinition(it) }
         )
 
     fun toDomainMessage(source: ApiMessage): Message =
@@ -406,7 +441,8 @@ object GigaVoiceSettingsMapper {
             functionName = source.functionName,
             functionsStateId = source.functionsStateId,
             attachments = source.attachments ?: emptyList(),
-            inlineData = source.inlineData ?: emptyMap()
+            inlineData = source.inlineData ?: emptyMap(),
+            functions = source.functions?.map { toDomainFunctionDefinitionFromInput(it) } ?: emptyList()
         )
 
     // === FirstSpeaker mapping ===
