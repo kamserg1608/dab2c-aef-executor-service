@@ -65,7 +65,7 @@ class AnalyticsPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(enrichedData.agentName).isEqualTo("test-agent")
         assertThat(enrichedData.agentCi).isEqualTo("test-ci")
         assertThat(enrichedData.dataVersion).isEqualTo("2.0.0")
-        assertThat(enrichedData.channel).isEqualTo("ivr")
+        assertThat(enrichedData.channel).isEqualTo("IVR")
         assertThat(enrichedData.platform).isEqualTo("gsm")
     }
 
