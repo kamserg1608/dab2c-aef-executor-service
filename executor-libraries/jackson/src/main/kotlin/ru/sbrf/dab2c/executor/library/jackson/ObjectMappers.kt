@@ -16,6 +16,7 @@ object ObjectMappers {
         registerModule(JavaTimeModule())
         disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
         enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     }
 }

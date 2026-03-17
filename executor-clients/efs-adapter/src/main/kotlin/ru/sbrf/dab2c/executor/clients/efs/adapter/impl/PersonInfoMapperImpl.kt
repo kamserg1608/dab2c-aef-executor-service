@@ -4,6 +4,7 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.PersonInfoMapper
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.AdditionalInfo
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.PersonType
 import ru.sbrf.dab2c.executor.domain.session.DaSessionUserInfo
+import ru.sbrf.dab2c.executor.library.jackson.DateFormatters
 
 /**
  * Custom mapper for PersonInfo.
@@ -14,7 +15,7 @@ class PersonInfoMapperImpl : PersonInfoMapper {
         DaSessionUserInfo(
             firstName = source?.firstName,
             patrName = source?.patrName,
-            birthDay = source?.birthDay.toString(),
+            birthDay = source?.birthDay?.format(DateFormatters.DEFAULT),
             segmentCodeType = additionalInfo?.segmentCodeType,
             ucpId = source?.ucpId
         )
