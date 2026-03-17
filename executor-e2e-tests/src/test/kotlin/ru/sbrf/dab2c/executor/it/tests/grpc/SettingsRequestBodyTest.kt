@@ -57,10 +57,17 @@ class SettingsRequestBodyTest : BaseGigaVoiceIntegrationTest() {
             val sessionInfo = request.sessionInfo
             assertThat(sessionInfo).isNotNull
             assertThat(sessionInfo!!.headers).isNotNull
-            assertThat(sessionInfo.headers).doesNotContainKey("x-token")
-            assertThat(sessionInfo.headers).containsEntry("x-session", "test-session")
-            assertThat(sessionInfo.headers).containsEntry("x-channel", "test-channel")
-            assertThat(sessionInfo.headers).containsEntry("x-platform", "test-platform")
+            assertThat(sessionInfo.headers).containsEntry("UFS-SESSION", "test-session")
+            assertThat(sessionInfo.headers).containsEntry("x-trace-id", "test-trace-id")
+            assertThat(sessionInfo.headers).containsEntry("da-channel", "test-channel")
+            assertThat(sessionInfo.headers).containsEntry("da-platform", "test-platform")
+            assertThat(sessionInfo.headers).containsKey("da-request-id")
+            assertThat(sessionInfo.headers).containsKey("da-session-id")
+            assertThat(sessionInfo.headers).containsKey("da-ucp-id")
+
+            assertThat(sessionInfo.cookies).isNotNull
+            assertThat(sessionInfo.cookies).containsEntry("UFS-SESSION", "test-session")
+            assertThat(sessionInfo.cookies).containsEntry("UFS-TOKEN", "test-token")
         }
     }
 }

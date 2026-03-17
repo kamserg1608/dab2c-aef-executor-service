@@ -10,7 +10,6 @@ import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.domain.voice.ContextData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
-import ru.sbrf.dab2c.executor.library.context.Headers
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 
 /**
@@ -30,8 +29,7 @@ class GigaVoiceSettingsRequestBuilder(
         agentConfiguration: AgentConfiguration,
         voiceSettings: VoiceSettings,
         daSessionInfo: DaSessionInfo,
-        contextData: ContextData,
-        headers: Headers
+        contextData: ContextData
     ): GigaVoiceSettingsRequestSchema {
         val agentConfig = GigaVoiceAgentConfigMapper.toApiAgentConfig(agentConfiguration)
         val sessionConfig = SessionConfig(channel = context.channel)
@@ -45,7 +43,7 @@ class GigaVoiceSettingsRequestBuilder(
                 sessionConfig = sessionConfig
             ),
             settings = settingsInput,
-            sessionInfo = DaSessionInfoApiMapper.toApiSessionInfo(daSessionInfo, headers),
+            sessionInfo = DaSessionInfoApiMapper.toApiSessionInfo(daSessionInfo, context),
             userInfo = DaSessionInfoApiMapper.toApiUserInfo(daSessionInfo),
             context = parseContextJson(contextData.content)
         )

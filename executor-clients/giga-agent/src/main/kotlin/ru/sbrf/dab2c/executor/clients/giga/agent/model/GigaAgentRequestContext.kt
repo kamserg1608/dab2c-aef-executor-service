@@ -43,6 +43,23 @@ data class GigaAgentRequestContext(
         cookie(UFS_TOKEN, ufsToken)
     }
 
+    /** Returns HTTP headers as a map, matching the headers applied by [applyHeaders]. */
+    fun toHeadersMap(): Map<String, String> = mapOf(
+        UFS_SESSION to ufsSession,
+        X_TRACE_ID_HEADER to traceId,
+        DA_REQUEST_ID_HEADER to daRequestId,
+        DA_SESSION_ID_HEADER to daSessionId,
+        DA_CHANNEL_HEADER to daChannel,
+        DA_PLATFORM_HEADER to daPlatform,
+        DA_UCP_ID_HEADER to daUcpId
+    )
+
+    /** Returns HTTP cookies as a map, matching the cookies applied by [applyCookies]. */
+    fun toCookiesMap(): Map<String, String> = mapOf(
+        UFS_SESSION to ufsSession,
+        UFS_TOKEN to ufsToken
+    )
+
     private companion object {
         const val UFS_SESSION = "UFS-SESSION"
         const val UFS_TOKEN = "UFS-TOKEN"
