@@ -16,7 +16,6 @@ import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import kotlin.time.Duration.Companion.seconds
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.Message as ApiMessage
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.TriggerFunction as ApiTriggerFunction
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.TriggerFunctionMode as ApiTriggerFunctionMode
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.TriggerGeneration as ApiTriggerGeneration
 import ru.sbrf.dab2c.executor.domain.voice.TriggerFunction as DomainTriggerFunction
 import ru.sbrf.dab2c.executor.domain.voice.TriggerGeneration as DomainTriggerGeneration
@@ -226,7 +225,7 @@ class GigaVoiceSettingsMapperTest {
                 triggerGeneration = ApiTriggerGeneration(timeout = "15s", enable = true),
                 triggerFunction = ApiTriggerFunction(
                     enable = true,
-                    mode = ApiTriggerFunctionMode._1,
+                    mode = 1,
                     functionNames = listOf("func1")
                 ),
                 sounds = listOf("sound1")
@@ -247,7 +246,7 @@ class GigaVoiceSettingsMapperTest {
             val api = StubSoundsOutput(
                 triggerFunction = ApiTriggerFunction(
                     enable = false,
-                    mode = ApiTriggerFunctionMode._0,
+                    mode = 0,
                     functionNames = emptyList()
                 ),
                 sounds = emptyList()

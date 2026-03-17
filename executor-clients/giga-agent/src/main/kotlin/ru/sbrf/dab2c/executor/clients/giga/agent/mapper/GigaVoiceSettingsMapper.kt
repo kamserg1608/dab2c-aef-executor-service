@@ -43,17 +43,13 @@ import ru.sbrf.dab2c.executor.domain.voice.StubSounds
 import ru.sbrf.dab2c.executor.domain.voice.TriggerFunctionMode
 import ru.sbrf.dab2c.executor.domain.voice.VoiceMode
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.AudioEncoding as ApiAudioEncoding
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FilterSettings as ApiFilterSettings
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FirstSpeaker as ApiFirstSpeaker
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCalling as ApiFunctionCalling
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionRanker as ApiFunctionRanker
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionRegistry as ApiFunctionRegistry
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceMode as ApiGigaVoiceMode
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.Message as ApiMessage
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.OutputModalities as ApiOutputModalities
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.TriggerFunction as ApiTriggerFunction
-import ru.sbrf.dab2c.executor.clients.giga.agent.model.TriggerFunctionMode as ApiTriggerFunctionMode
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.TriggerGeneration as ApiTriggerGeneration
 import ru.sbrf.dab2c.executor.domain.voice.FunctionRanker as DomainFunctionRanker
 import ru.sbrf.dab2c.executor.domain.voice.TriggerFunction as DomainTriggerFunction
@@ -115,23 +111,20 @@ object GigaVoiceSettingsMapper {
 
     // === Helper methods for enum conversions ===
 
-    fun toApiVoiceMode(mode: VoiceMode): ApiGigaVoiceMode =
-        ApiGigaVoiceMode.entries.first { it.value == mode.value }
+    fun toApiVoiceMode(mode: VoiceMode): Int = mode.value
 
-    fun toDomainVoiceMode(mode: ApiGigaVoiceMode?): VoiceMode =
-        mode?.let { VoiceMode.entries[it.value] } ?: VoiceMode.UNSPECIFIED
+    fun toDomainVoiceMode(mode: Int?): VoiceMode =
+        mode?.let { VoiceMode.entries[it] } ?: VoiceMode.UNSPECIFIED
 
-    fun toApiOutputModalities(modalities: OutputModalities): ApiOutputModalities =
-        ApiOutputModalities.entries.first { it.value == modalities.value }
+    fun toApiOutputModalities(modalities: OutputModalities): Int = modalities.value
 
-    fun toDomainOutputModalities(modalities: ApiOutputModalities?): OutputModalities =
-        modalities?.let { OutputModalities.entries[it.value] } ?: OutputModalities.UNSPECIFIED
+    fun toDomainOutputModalities(modalities: Int?): OutputModalities =
+        modalities?.let { OutputModalities.entries[it] } ?: OutputModalities.UNSPECIFIED
 
-    fun toApiAudioEncoding(encoding: AudioEncoding): ApiAudioEncoding =
-        ApiAudioEncoding.entries.first { it.value == encoding.value }
+    fun toApiAudioEncoding(encoding: AudioEncoding): Int = encoding.value
 
-    fun toDomainAudioEncoding(encoding: ApiAudioEncoding?): AudioEncoding =
-        encoding?.let { AudioEncoding.entries[it.value] } ?: AudioEncoding.UNSPECIFIED
+    fun toDomainAudioEncoding(encoding: Int?): AudioEncoding =
+        encoding?.let { AudioEncoding.entries[it] } ?: AudioEncoding.UNSPECIFIED
 
     // === Audio settings mapping ===
 
@@ -209,23 +202,15 @@ object GigaVoiceSettingsMapper {
     private fun toDomainTriggerFunction(source: ApiTriggerFunction): DomainTriggerFunction =
         DomainTriggerFunction(
             enable = source.enable,
-            mode = source.mode?.let { toDomainTriggerFunctionMode(it) } ?: TriggerFunctionMode.UNSPECIFIED,
+            mode = source.mode?.let { toDomainTriggerFunctionMode(it) }
+                ?: TriggerFunctionMode.UNSPECIFIED,
             functionNames = source.functionNames ?: emptyList()
         )
 
-    private fun toApiTriggerFunctionMode(mode: TriggerFunctionMode): ApiTriggerFunctionMode =
-        when (mode) {
-            TriggerFunctionMode.UNSPECIFIED -> ApiTriggerFunctionMode._0
-            TriggerFunctionMode.WHITELIST -> ApiTriggerFunctionMode._1
-            TriggerFunctionMode.BLACKLIST -> ApiTriggerFunctionMode._2
-        }
+    private fun toApiTriggerFunctionMode(mode: TriggerFunctionMode): Int = mode.ordinal
 
-    private fun toDomainTriggerFunctionMode(mode: ApiTriggerFunctionMode): TriggerFunctionMode =
-        when (mode) {
-            ApiTriggerFunctionMode._0 -> TriggerFunctionMode.UNSPECIFIED
-            ApiTriggerFunctionMode._1 -> TriggerFunctionMode.WHITELIST
-            ApiTriggerFunctionMode._2 -> TriggerFunctionMode.BLACKLIST
-        }
+    private fun toDomainTriggerFunctionMode(mode: Int): TriggerFunctionMode =
+        TriggerFunctionMode.entries[mode]
 
     private fun toApiTriggerGeneration(source: DomainTriggerGeneration): ApiTriggerGeneration =
         ApiTriggerGeneration(
