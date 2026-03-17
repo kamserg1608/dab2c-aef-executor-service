@@ -26,6 +26,7 @@ import ru.sbrf.dab2c.executor.domain.voice.AgentAnalytics
 import ru.sbrf.dab2c.executor.domain.voice.ContextData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
+import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.library.context.currentSessionInfo
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
 
@@ -46,6 +47,7 @@ class GigaVoiceAgentClientImpl(
     private val mapper: GigaVoiceSettingsMapper = GigaVoiceSettingsMapper
 ) : GigaVoiceAgentClient {
 
+    @Suppress("LongMethod")
     override suspend fun getSettings(
         conversationId: String,
         agentConfiguration: AgentConfiguration,
@@ -54,10 +56,11 @@ class GigaVoiceAgentClientImpl(
     ): SettingsResult {
         val context = GigaAgentContextBuilder.buildRequestContext(conversationId)
         val daSessionInfo = currentSessionInfo()
+        val headers = currentHeaders()
         logger.debug { "Getting settings for session: ${context.ufsSession}" }
 
         val request = settingsRequestBuilder.build(
-            context, agentConfiguration, voiceSettings, daSessionInfo, contextData
+            context, agentConfiguration, voiceSettings, daSessionInfo, contextData, headers
         )
 
         val apiResponse = IntegrationLogger.logHttpCallSuspend(
@@ -84,6 +87,7 @@ class GigaVoiceAgentClientImpl(
         )
     }
 
+    @Suppress("LongMethod")
     override suspend fun executeFunctionCall(
         conversationId: String,
         agentConfiguration: AgentConfiguration,
@@ -92,10 +96,11 @@ class GigaVoiceAgentClientImpl(
     ): FunctionCallResult {
         val context = GigaAgentContextBuilder.buildRequestContext(conversationId)
         val daSessionInfo = currentSessionInfo()
+        val headers = currentHeaders()
         logger.debug { "Executing function call for session: ${context.ufsSession}" }
 
         val request = functionCallRequestBuilder.build(
-            context, agentConfiguration, functionCalling, daSessionInfo, contextData
+            context, agentConfiguration, functionCalling, daSessionInfo, contextData, headers
         )
         val requestJson = objectMapper.writeValueAsString(request)
 

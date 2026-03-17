@@ -10,6 +10,7 @@ import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.domain.voice.ContextData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
+import ru.sbrf.dab2c.executor.library.context.Headers
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 
 /**
@@ -23,12 +24,14 @@ class GigaVoiceFunctionCallRequestBuilder(
     /**
      * Builds a function call request from domain models.
      */
+    @Suppress("LongParameterList")
     fun build(
         context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
         functionCalling: FunctionCallingData,
         daSessionInfo: DaSessionInfo,
-        contextData: ContextData
+        contextData: ContextData,
+        headers: Headers
     ): GigaVoiceFunctionsRequestSchema {
         val agentConfig = GigaVoiceAgentConfigMapper.toApiAgentConfig(agentConfiguration)
         val sessionConfig = SessionConfig(channel = context.channel)
@@ -42,7 +45,7 @@ class GigaVoiceFunctionCallRequestBuilder(
                 sessionConfig = sessionConfig
             ),
             functionCalling = apiFunctionCalling,
-            sessionInfo = DaSessionInfoApiMapper.toApiSessionInfo(daSessionInfo),
+            sessionInfo = DaSessionInfoApiMapper.toApiSessionInfo(daSessionInfo, headers),
             userInfo = DaSessionInfoApiMapper.toApiUserInfo(daSessionInfo),
             context = parseContextJson(contextData.content)
         )
