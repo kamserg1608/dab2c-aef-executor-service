@@ -63,11 +63,11 @@ data class GigaAgentRequestContext(
     private companion object {
         const val UFS_SESSION = "UFS-SESSION"
         const val UFS_TOKEN = "UFS-TOKEN"
-        const val X_TRACE_ID_HEADER = "x-trace-id"
-        const val DA_REQUEST_ID_HEADER = "da-request-id"
-        const val DA_SESSION_ID_HEADER = "da-session-id"
-        const val DA_CHANNEL_HEADER = "da-channel"
-        const val DA_PLATFORM_HEADER = "da-platform"
-        const val DA_UCP_ID_HEADER = "da-ucp-id"
+        const val X_TRACE_ID_HEADER = "X-Trace-Id"
+        const val DA_REQUEST_ID_HEADER = "Da-Request-Id"
+        const val DA_SESSION_ID_HEADER = "Da-Session-Id"
+        const val DA_CHANNEL_HEADER = "Da-Channel"
+        const val DA_PLATFORM_HEADER = "Da-Platform"
+        const val DA_UCP_ID_HEADER = "Da-Ucp-Id"
     }
 }
