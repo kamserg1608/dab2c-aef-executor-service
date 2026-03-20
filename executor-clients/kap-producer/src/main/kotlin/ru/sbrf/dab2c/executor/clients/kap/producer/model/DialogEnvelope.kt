@@ -19,5 +19,6 @@ data class DialogEnvelope(
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class DialogData(
     val userMessage: UserMessage,
-    val assistantMessage: AssistantMessage? = null
+    val assistantMessage: AssistantMessage? = null,
+    val extra: String? = null
 )

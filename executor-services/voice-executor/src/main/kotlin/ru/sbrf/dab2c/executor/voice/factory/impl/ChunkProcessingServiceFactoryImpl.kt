@@ -8,6 +8,7 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.ConnectionMetrics
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricFactory
+import ru.sbrf.dab2c.executor.library.time.TimeProvider
 import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionAuditor
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
@@ -27,6 +28,7 @@ import ru.sbrf.dab2c.executor.voice.service.impl.LoggingChunkProcessingServiceDe
 import ru.sbrf.dab2c.executor.voice.service.impl.SettingsServiceImpl
 
 /** Default implementation of ChunkProcessingServiceFactory. */
+@Suppress("LongParameterList")
 @Service
 class ChunkProcessingServiceFactoryImpl(
     private val voiceExecutorConfigurationProperties: VoiceExecutorConfigurationProperties,
@@ -34,7 +36,8 @@ class ChunkProcessingServiceFactoryImpl(
     private val configuratorClient: ConfiguratorClient,
     private val metricFactory: MetricFactory,
     private val kapProducerClient: KapProducerClient,
-    private val auditor: ExternalInteractionAuditor
+    private val auditor: ExternalInteractionAuditor,
+    private val timeProvider: TimeProvider
 ) : ChunkProcessingServiceFactory {
 
     private val connectionMetrics = ConnectionMetrics(
@@ -51,7 +54,7 @@ class ChunkProcessingServiceFactoryImpl(
         return MonitoringConnectionChunksProcessingDecorator(
             MonitoringChunksProcessingDecorator(
                 LoggingChunkProcessingServiceDelegate(
-                    DialogAccumulatorDelegate(coreService, dialogTurnPublisher, auditor)
+                    DialogAccumulatorDelegate(coreService, dialogTurnPublisher, auditor, timeProvider)
                 ),
                 metricFactory
             ),

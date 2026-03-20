@@ -1,8 +1,14 @@
 package ru.sbrf.dab2c.executor.clients.kap.producer.mapper
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import ru.sbrf.dab2c.executor.clients.kap.producer.model.DialogTurnEvent
+import ru.sbrf.dab2c.executor.clients.kap.producer.model.DialogTurnExtra
+import ru.sbrf.dab2c.executor.clients.kap.producer.model.FunctionCallDetails
+import ru.sbrf.dab2c.executor.clients.kap.producer.model.FunctionCallPayload
 import ru.sbrf.dab2c.executor.domain.session.DaSessionCommon
 import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.domain.session.DaSessionMeta
@@ -162,6 +168,47 @@ class DialogEnvelopeMapperTest {
         val envelope = DialogEnvelopeMapper.toDialogEnvelope(data)
 
         assertNull(envelope.data.assistantMessage?.requestId)
+    }
+
+    @Test
+    fun `should omit extra when null`() {
+        val data = createTestDialogTurnData()
+
+        val envelope = DialogEnvelopeMapper.toDialogEnvelope(data)
+
+        assertNull(envelope.data.extra)
+    }
+
+    @Test
+    fun `should serialize extra as JSON string when present`() {
+        val extra = DialogTurnExtra(
+            events = listOf(
+                DialogTurnEvent(
+                    eventName = "function_call",
+                    timestamp = 1705849200000L,
+                    payload = FunctionCallPayload(
+                        functionCall = FunctionCallDetails(
+                            name = "get_weather",
+                            arguments = """{"city":"Moscow"}"""
+                        ),
+                        timestamp = 1705849200000L
+                    )
+                )
+            ),
+            userMessageStartTS = 1705849100000L,
+            userMessageEndTS = 1705849150000L,
+            assistantMessageStartTS = 1705849200000L,
+            assistantMessageEndTS = 1705849250000L
+        )
+        val data = createTestDialogTurnData().copy(extra = extra)
+
+        val envelope = DialogEnvelopeMapper.toDialogEnvelope(data)
+
+        val extraJson = envelope.data.extra
+        assertNotNull(extraJson)
+        assertTrue(extraJson!!.contains("\"eventName\":\"function_call\""))
+        assertTrue(extraJson.contains("\"userMessageStartTS\":1705849100000"))
+        assertTrue(extraJson.contains("\"assistantMessageEndTS\":1705849250000"))
     }
 
     private fun createTestDialogTurnData(

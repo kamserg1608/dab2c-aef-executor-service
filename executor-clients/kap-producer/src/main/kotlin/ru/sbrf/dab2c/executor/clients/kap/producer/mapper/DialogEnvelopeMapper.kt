@@ -6,8 +6,10 @@ import ru.sbrf.dab2c.executor.clients.kap.producer.model.AgentId
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.AssistantMessage
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.DialogData
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.DialogEnvelope
+import ru.sbrf.dab2c.executor.clients.kap.producer.model.DialogTurnExtra
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.UserMessage
 import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
+import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 
 /**
  * Input data for mapping a dialog turn to DialogEnvelope.
@@ -24,7 +26,9 @@ data class DialogTurnData(
     val daSessionInfo: DaSessionInfo,
     val agentCi: String,
     val assistantResponseTime: Long,
-    val requestId: String? = null
+    val requestId: String? = null,
+    val extra: DialogTurnExtra? = null,
+    val totalTokens: Int? = null
 )
 
 /**
@@ -44,7 +48,11 @@ object DialogEnvelopeMapper {
             id = data.envelopeId,
             version = DIALOG_VERSION,
             date = data.timestamp,
-            data = DialogData(userMessage = userMessage, assistantMessage = assistantMessage)
+            data = DialogData(
+                userMessage = userMessage,
+                assistantMessage = assistantMessage,
+                extra = data.extra?.let { ObjectMappers.MAPPER.writeValueAsString(it) }
+            )
         )
     }
 
@@ -86,7 +94,8 @@ object DialogEnvelopeMapper {
             requestId = data.requestId,
             streamStatus = STREAM_STATUS_COMPLETED,
             agentIds = listOf(AgentId(ci = data.agentCi)),
-            assistantResponseTime = data.assistantResponseTime
+            assistantResponseTime = data.assistantResponseTime,
+            totalTokens = data.totalTokens
         )
     }
 

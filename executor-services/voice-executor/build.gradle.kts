@@ -13,6 +13,7 @@ dependencies {
     api(project(":executor-clients:efs-adapter"))
     api(project(":executor-clients:kap-producer"))
     api(project(":executor-libraries:logging"))
+    api(project(":executor-libraries:time"))
     implementation(project(":executor-libraries:jackson"))
     implementation(libs.grpc.server.spring.boot.starter)
     implementation(libs.grpc.client.spring.boot.starter)

@@ -236,6 +236,17 @@ object WireMockResponses {
         }
     """.trimIndent()
 
+    fun retrieveParamsResponse(vararg params: Pair<String, String?>): String {
+        val paramEntries = params.joinToString(",") { (name, value) ->
+            if (value != null) {
+                """{"name":"$name","type":"STRING","values":["$value"]}"""
+            } else {
+                """{"name":"$name","type":"EMPTY","values":[]}"""
+            }
+        }
+        return """{"success":true,"body":{"parameters":[$paramEntries]}}"""
+    }
+
     /**
      * GigaVoice Agent settings response with agent analytics.
      */

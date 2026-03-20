@@ -57,6 +57,15 @@ object GigaVoiceResponseFixtures {
         }
     }
 
+    fun finalAudioResponse(): GigaVoiceResponse = gigaVoiceResponse {
+        output = contentFromModel {
+            audio = audio {
+                audioChunk = ByteString.copyFrom(byteArrayOf(0))
+                isFinal = true
+            }
+        }
+    }
+
     fun additionalDataResponse() = gigaVoiceResponse {
         output = contentFromModel {
             additionalData = additionalData {

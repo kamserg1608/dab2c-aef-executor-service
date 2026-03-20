@@ -17,6 +17,7 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.AUDIT_
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.PERSON_INFO_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.READ_DATA_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.REST_AGENT_ENDPOINT
+import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.RETRIEVE_PARAMS_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.SESSION_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.WRITE_DATA_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.efs.adapter.configuration.EfsAdapterClientConfiguration.Companion.EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME
@@ -29,6 +30,7 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.model.AppSourceRequest
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.AuditEventServiceEvent
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseListSdsSectionData
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseMapStringAgentConfig
+import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseParameters
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseProfile
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseSessionConfig
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseVoid
@@ -40,11 +42,13 @@ import ru.sbrf.dab2c.executor.library.audit.model.AuditEvent
 import ru.sbrf.dab2c.executor.library.context.currentUfsCookie
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
+import ru.sbrf.dab2c.executor.clients.efs.adapter.api.Parameter as DomainParameter
 
 private val logger = KotlinLogging.logger {}
 
 private const val HTTP_OK = 200
 private const val DEFAULT_APP_SOURCE = ""
+private const val EMPTY_PARAMETER_TYPE = "EMPTY"
 private const val CLASS_NAME = "EfsFacade"
 
 /**
@@ -91,10 +95,8 @@ class EfsFacadeImpl(
             }.body<BaseResponseVoid>()
         }
 
-        val errors = response.errors
-        if (!errors.isNullOrEmpty()) {
-            val errorMessages = errors.joinToString { it.message ?: it.code ?: "Unknown error" }
-            logger.warn { "Audit event '${event.event}' completed with errors: $errorMessages" }
+        if (response.success == false) {
+            logger.warn { "Audit event '${event.event}' completed with success=false" }
         }
     }
 
@@ -121,6 +123,8 @@ class EfsFacadeImpl(
                 setBody(request)
             }.body<BaseResponseMapStringAgentConfig>()
         }
+
+        checkSuccess(response.success, "getRestAgentConfig")
 
         val agentConfig = response.body?.get(agentName)
             ?: throw NoSuchElementException("Agent config not found for agent: $agentName")
@@ -150,6 +154,8 @@ class EfsFacadeImpl(
             }.body<BaseResponseSessionConfig>()
         }
 
+        checkSuccess(response.success, "getDaSessionCommon")
+
         return configuratorMapper.toDomain(response.body!!)
     }
 
@@ -175,10 +181,51 @@ class EfsFacadeImpl(
             }.body<BaseResponseProfile>()
         }
 
+        checkSuccess(response.success, "getPersonInfo")
+
         val person = response.body?.person
         val additionalInfo = person?.additionalInfo
 
         return personInfoMapper.toDomain(person, additionalInfo)
+    }
+
+    override suspend fun getParameter(name: String): DomainParameter =
+        getParameters(listOf(name)).getValue(name)
+
+    @Suppress("LongMethod")
+    override suspend fun getParameters(names: List<String>): Map<String, DomainParameter> {
+        val cookie = currentUfsCookie()
+        val requestJson = objectMapper.writeValueAsString(names)
+
+        val response = IntegrationLogger.logHttpCallSuspend(
+            destinationSystem = baseUrl,
+            destinationService = RETRIEVE_PARAMS_ENDPOINT,
+            rqMessage = requestJson,
+            className = CLASS_NAME,
+            responseExtractor = { resp: BaseResponseParameters ->
+                objectMapper.writeValueAsString(resp) to HTTP_OK
+            }
+        ) {
+            httpClient.post(buildFullUrl(baseUrl, RETRIEVE_PARAMS_ENDPOINT)) {
+                contentType(ContentType.Application.Json)
+                header(HttpHeaders.Cookie, cookie)
+                applyTracingHeaders()
+                setBody(names)
+            }.body<BaseResponseParameters>()
+        }
+
+        checkSuccess(response.success, "retrieveParams")
+
+        val responseMap = response.body?.parameters
+            ?.filter { it.name != null }
+            ?.associate { param ->
+                val value = param.takeIf { it.type != EMPTY_PARAMETER_TYPE }
+                    ?.propertyValues?.firstOrNull()
+                param.name!! to DomainParameter(param.name!!, value)
+            }
+            ?: emptyMap()
+
+        return names.associateWith { name -> responseMap[name] ?: DomainParameter(name, null) }
     }
 
     override suspend fun readData(sections: List<SdsSection>): List<SdsSection> {
@@ -209,7 +256,7 @@ class EfsFacadeImpl(
 
         logger.debug { "SDS readData returned ${response.body?.size ?: 0} section(s)" }
 
-        checkErrors(response.errors, "readData")
+        checkSuccess(response.success, "readData")
 
         return response.body?.map { sdsSectionMapper.toDomain(it) } ?: emptyList()
     }
@@ -238,16 +285,12 @@ class EfsFacadeImpl(
             }.body<BaseResponseVoid>()
         }
 
-        checkErrors(response.errors, "writeData")
+        checkSuccess(response.success, "writeData")
     }
 
-    private fun checkErrors(
-        errors: List<ru.sbrf.dab2c.executor.clients.efs.adapter.model.Error>?,
-        operation: String
-    ) {
-        if (!errors.isNullOrEmpty()) {
-            val errorMessages = errors.joinToString("; ") { "${it.code}: ${it.message}" }
-            error("SDS $operation failed: $errorMessages")
+    private fun checkSuccess(success: Boolean?, operation: String) {
+        if (success == false) {
+            error("EFS Adapter $operation failed: success=false")
         }
     }
 }

@@ -3,6 +3,7 @@ package ru.sbrf.dab2c.executor.voice.service.impl
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
+import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ParametersClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ProfileClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.SdsClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.readDaSessionMeta
@@ -10,6 +11,8 @@ import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.voice.logging.VoiceMdcInitializer
+import ru.sbrf.dab2c.executor.voice.model.VoiceSessionFeatureToggles
+import ru.sbrf.dab2c.executor.voice.service.api.SessionInitResult
 import ru.sbrf.dab2c.executor.voice.service.api.SessionInitService
 
 /** Initializes voice session by loading session metadata from SDS and EFS. */
@@ -17,13 +20,14 @@ import ru.sbrf.dab2c.executor.voice.service.api.SessionInitService
 class SessionInitServiceImpl(
     private val sdsClient: SdsClient,
     private val configuratorClient: ConfiguratorClient,
-    private val profileClient: ProfileClient
+    private val profileClient: ProfileClient,
+    private val parametersClient: ParametersClient
 ) : SessionInitService {
 
     private val logger = KotlinLogging.logger {}
 
     @Suppress("LongMethod")
-    override suspend fun initialize(): DaSessionInfo {
+    override suspend fun initialize(): SessionInitResult {
         val headers = currentHeaders()
         val channel = headers.getHeader(RequestHeader.CHANNEL)
         logger.info { "Session initialization started for channel=$channel" }
@@ -37,6 +41,10 @@ class SessionInitServiceImpl(
         val daSessionUserInfo = profileClient.getPersonInfo()
         logger.debug { "Fetched DaSessionUserInfo. $daSessionUserInfo" }
 
+        val toggleParams = parametersClient.getParameters(VoiceSessionFeatureToggles.PARAMETER_NAMES)
+        val featureToggles = VoiceSessionFeatureToggles(toggleParams)
+        logger.debug { "Fetched feature toggles: kapSendExtra=${featureToggles.kapSendExtra}" }
+
         val daSessionInfo = DaSessionInfo(daSessionMeta, daSessionCommon, daSessionUserInfo)
 
         VoiceMdcInitializer.updateWithSessionInfo(
@@ -45,6 +53,6 @@ class SessionInitServiceImpl(
         )
         logger.info { "Session initialization completed, MDC updated: sessionId=${daSessionInfo.meta.sessionId}" }
 
-        return daSessionInfo
+        return SessionInitResult(daSessionInfo, featureToggles)
     }
 }

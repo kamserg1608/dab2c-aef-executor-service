@@ -55,6 +55,22 @@ object WireMockSetup {
         )
     }
 
+    fun WireMockServer.stubRetrieveParams(response: String) {
+        stubFor(
+            post(urlEqualTo("/retrieveParams"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(response)
+                )
+        )
+    }
+
+    fun WireMockServer.stubRetrieveParams(vararg params: Pair<String, String?>) {
+        stubRetrieveParams(WireMockResponses.retrieveParamsResponse(*params))
+    }
+
     fun WireMockServer.stubEfsAuditEvent() {
         stubFor(
             post(urlEqualTo("/audit/event"))
@@ -194,6 +210,24 @@ object WireMockSetup {
             stubSdsSessionReadData()
             stubConfiguratorSession()
             stubEfsAuditEvent()
+            stubPersonInfo()
+            stubRetrieveParams()
+        }
+        gigaAgent.stubGigaAgentSettings(withFunctions)
+    }
+
+    fun setupStubsWithKapExtra(
+        efsAdapter: WireMockServer,
+        gigaAgent: WireMockServer,
+        withFunctions: Boolean = false,
+    ) {
+        with(efsAdapter) {
+            stubEfsRestAgent()
+            stubSdsSessionReadData()
+            stubConfiguratorSession()
+            stubEfsAuditEvent()
+            stubPersonInfo()
+            stubRetrieveParams("aef.executor.toggles.kap.send.extra" to "true")
         }
         gigaAgent.stubGigaAgentSettings(withFunctions)
     }
@@ -209,6 +243,8 @@ object WireMockSetup {
             stubSdsSessionReadData()
             stubConfiguratorSession()
             stubEfsAuditEvent()
+            stubPersonInfo()
+            stubRetrieveParams()
         }
         gigaAgent.stubGigaAgentSettingsWithAnalytics(dataVersion, analyticsData)
     }

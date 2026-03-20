@@ -7,8 +7,9 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.withContext
-import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.library.context.SessionInfoElement
+import ru.sbrf.dab2c.executor.voice.model.VoiceSessionFeatureTogglesElement
+import ru.sbrf.dab2c.executor.voice.service.api.SessionInitResult
 import kotlin.coroutines.CoroutineContext
 
 /** Maps elements matching predicate, pass through others unchanged. */
@@ -24,9 +25,11 @@ fun <T> Flow<T>.extractIf(
 /** Wraps a flow with session context. */
 fun <T> Flow<T>.withSessionContext(
     baseContext: CoroutineContext,
-    init: suspend () -> DaSessionInfo
+    init: suspend () -> SessionInitResult
 ): Flow<T> = flow {
-    val sessionInfo = withContext(baseContext) { init() }
-    val fullContext = baseContext + SessionInfoElement(sessionInfo)
+    val result = withContext(baseContext) { init() }
+    val fullContext = baseContext +
+        SessionInfoElement(result.sessionInfo) +
+        VoiceSessionFeatureTogglesElement(result.featureToggles)
     emitAll(this@withSessionContext.flowOn(fullContext))
 }

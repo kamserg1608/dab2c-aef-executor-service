@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.mapper.DialogEnvelopeMapper
 import ru.sbrf.dab2c.executor.clients.kap.producer.mapper.DialogTurnData
+import ru.sbrf.dab2c.executor.clients.kap.producer.model.DialogTurnExtra
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.library.context.currentSessionInfo
@@ -20,38 +21,54 @@ class KapDialogTurnPublisher(
 
     private var previousMessageId: String? = null
 
-    override suspend fun publishDialogTurn(inputText: String, outputText: String, assistantResponseTime: Long) {
+    @Suppress("LongParameterList")
+    override suspend fun publishDialogTurn(
+        inputText: String,
+        outputText: String,
+        assistantResponseTime: Long,
+        extra: DialogTurnExtra?,
+        totalTokens: Int?
+    ) {
         val state = processingState.value
         if (state !is ProcessingState.Serving) {
             logger.warn { "Cannot publish dialog - not in Serving state, current state: ${state::class.simpleName}" }
             return
         }
-
         logger.info {
             "Publishing dialog turn: input='$inputText', output='$outputText', responseTime=${assistantResponseTime}ms"
         }
-
-        val headers = currentHeaders()
-        val daSessionInfo = currentSessionInfo()
         val assistantMessageId = UUID.randomUUID().toString()
-
-        val dialogTurnData = DialogTurnData(
-            envelopeId = UUID.randomUUID().toString(),
-            userMessageId = UUID.randomUUID().toString(),
-            assistantMessageId = assistantMessageId,
-            inputText = inputText,
-            outputText = outputText,
-            chatId = state.conversationId,
-            timestamp = System.currentTimeMillis() / MILLIS_TO_SECONDS,
-            previousMessageId = previousMessageId,
-            daSessionInfo = daSessionInfo,
-            agentCi = state.agentConfiguration.functionalSubsystemCi,
-            assistantResponseTime = assistantResponseTime,
-            requestId = headers.getHeaderOrNull(RequestHeader.X_REQUEST_ID)
+        val dialogTurnData = buildTurnData(
+            state, inputText, outputText, assistantResponseTime, extra, totalTokens, assistantMessageId
         )
-
         publishTurnData(dialogTurnData, assistantMessageId)
     }
+
+    @Suppress("LongParameterList")
+    private suspend fun buildTurnData(
+        state: ProcessingState.Serving,
+        inputText: String,
+        outputText: String,
+        assistantResponseTime: Long,
+        extra: DialogTurnExtra?,
+        totalTokens: Int?,
+        assistantMessageId: String
+    ): DialogTurnData = DialogTurnData(
+        envelopeId = UUID.randomUUID().toString(),
+        userMessageId = UUID.randomUUID().toString(),
+        assistantMessageId = assistantMessageId,
+        inputText = inputText,
+        outputText = outputText,
+        chatId = state.conversationId,
+        timestamp = System.currentTimeMillis() / MILLIS_TO_SECONDS,
+        previousMessageId = previousMessageId,
+        daSessionInfo = currentSessionInfo(),
+        agentCi = state.agentConfiguration.functionalSubsystemCi,
+        assistantResponseTime = assistantResponseTime,
+        requestId = currentHeaders().getHeaderOrNull(RequestHeader.X_REQUEST_ID),
+        extra = extra,
+        totalTokens = totalTokens
+    )
 
     private suspend fun publishTurnData(dialogTurnData: DialogTurnData, assistantMessageId: String) {
         val dialogEnvelope = DialogEnvelopeMapper.toDialogEnvelope(dialogTurnData)

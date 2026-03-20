@@ -9,8 +9,10 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.AUDIT_
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.PERSON_INFO_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.READ_DATA_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.REST_AGENT_ENDPOINT
+import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.RETRIEVE_PARAMS_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.SESSION_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.WRITE_DATA_ENDPOINT
+import ru.sbrf.dab2c.executor.clients.efs.adapter.api.Parameter
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.session.DaSessionCommon
 import ru.sbrf.dab2c.executor.domain.session.DaSessionUserInfo
@@ -43,6 +45,16 @@ class MonitoringEfsFacadeDecorator(
     override suspend fun getDaSessionCommon(): DaSessionCommon =
         monitorCall(SESSION_ENDPOINT) {
             delegate.getDaSessionCommon()
+        }
+
+    override suspend fun getParameter(name: String): Parameter =
+        monitorCall(RETRIEVE_PARAMS_ENDPOINT) {
+            delegate.getParameter(name)
+        }
+
+    override suspend fun getParameters(names: List<String>): Map<String, Parameter> =
+        monitorCall(RETRIEVE_PARAMS_ENDPOINT) {
+            delegate.getParameters(names)
         }
 
     override suspend fun getPersonInfo(): DaSessionUserInfo =

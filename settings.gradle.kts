@@ -15,6 +15,8 @@ include("executor-libraries:context")
 include("executor-libraries:logging")
 include("executor-libraries:monitoring")
 include("executor-libraries:audit")
+include("executor-libraries:time")
+
 pluginManagement {
     repositories {
         val nexusUsername = System.getProperty("gradle.wrapperUser")

@@ -312,13 +312,8 @@ components:
     BaseResponseVoid:
       type: object
       properties:
-        result:
-          type: object
-          nullable: true
-        errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/Error'
+        success:
+          type: boolean
     AuditEventServiceEvent:
       type: object
       properties:
@@ -391,23 +386,19 @@ components:
     BaseResponseParameters:
       type: object
       properties:
-        result:
+        success:
+          type: boolean
+        body:
           $ref: '#/components/schemas/Parameters'
-        errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/Error'
     BaseResponseListSdsSectionData:
       type: object
       properties:
+        success:
+          type: boolean
         body:
           type: array
           items:
             $ref: '#/components/schemas/SdsSectionData'
-        errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/Error'
     BaseResponseListSystemState:
       type: object
       properties:
@@ -1502,7 +1493,11 @@ components:
       description: "Документы, добавленные клиентом в ЕРИБ."
     Parameters:
       type: object
-      # Схема будет определена на основе DTO
+      properties:
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/Parameter'
     SdsSectionData:
       type: object
       properties:
