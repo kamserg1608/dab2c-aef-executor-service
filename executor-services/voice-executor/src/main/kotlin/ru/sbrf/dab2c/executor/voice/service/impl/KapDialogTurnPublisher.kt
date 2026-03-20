@@ -72,6 +72,7 @@ class KapDialogTurnPublisher(
 
     private suspend fun publishTurnData(dialogTurnData: DialogTurnData, assistantMessageId: String) {
         val dialogEnvelope = DialogEnvelopeMapper.toDialogEnvelope(dialogTurnData)
+        logger.debug { "Dialog envelope content: $dialogEnvelope" }
         previousMessageId = assistantMessageId
         kapProducerClient.publishDialog(dialogEnvelope)
     }

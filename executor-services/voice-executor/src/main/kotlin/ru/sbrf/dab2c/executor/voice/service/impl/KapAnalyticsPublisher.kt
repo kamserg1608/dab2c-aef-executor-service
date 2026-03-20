@@ -49,7 +49,7 @@ class KapAnalyticsPublisher(
             )
 
             val envelope = AgentAnalyticsEnvelopeMapper.toAgentAnalyticsEnvelope(turnData)
-            logger.debug { "Publishing analytics: id=${envelope.id}" }
+            logger.debug { "Analytics envelope content: $envelope" }
             kapProducerClient.publishAgentAnalytics(envelope)
         }
     }
