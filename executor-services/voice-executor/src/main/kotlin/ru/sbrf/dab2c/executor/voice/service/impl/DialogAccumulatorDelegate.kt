@@ -251,10 +251,10 @@ class DialogAccumulatorDelegate(
     private fun buildExtra(): DialogTurnExtra =
         DialogTurnExtra(
             events = ArrayList(turnEvents),
-            userMessageStartTS = timestamps.userMessageStart,
-            userMessageEndTS = timestamps.userMessageEnd,
-            assistantMessageStartTS = timestamps.assistantMessageStart,
-            assistantMessageEndTS = timestamps.assistantMessageEnd
+            userMessageStartTS = timestamps.userMessageStart ?: timeProvider.currentTimeMillis(),
+            userMessageEndTS = timestamps.userMessageEnd ?: timeProvider.currentTimeMillis(),
+            assistantMessageStartTS = timestamps.assistantMessageStart ?: timeProvider.currentTimeMillis(),
+            assistantMessageEndTS = timestamps.assistantMessageEnd ?: timeProvider.currentTimeMillis()
         )
 
     private suspend fun sendSuccessAudit(rqMessage: String?, rsMessage: String?) {
