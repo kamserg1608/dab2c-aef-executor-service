@@ -11,6 +11,7 @@ COPY conf/k8s/base/@fpi-name@/docker-entrypoint.sh /var/
 
 RUN chmod +x /var/docker-entrypoint.sh
 RUN chmod g+rwX /var/
+RUN dnf update -y
 RUN dnf install -y openssl
 
 ENTRYPOINT [ "/var/docker-entrypoint.sh", "ru.sbrf.dab2c.executor.application.ApplicationEntryPointKt" ]
