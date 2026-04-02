@@ -1,7 +1,6 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.flow.StateFlow
 import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.mapper.DialogEnvelopeMapper
 import ru.sbrf.dab2c.executor.clients.kap.producer.mapper.DialogTurnData
@@ -10,13 +9,14 @@ import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.library.context.currentSessionInfo
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
+import ru.sbrf.dab2c.executor.voice.model.VoiceSession
 import ru.sbrf.dab2c.executor.voice.service.api.DialogTurnPublisher
 import java.util.UUID
 
 /** Publishes dialog turn events to KAP. */
 class KapDialogTurnPublisher(
     private val kapProducerClient: KapProducerClient,
-    private val processingState: StateFlow<ProcessingState>
+    private val session: VoiceSession
 ) : DialogTurnPublisher {
 
     private var previousMessageId: String? = null
@@ -29,7 +29,7 @@ class KapDialogTurnPublisher(
         extra: DialogTurnExtra?,
         totalTokens: Int?
     ) {
-        val state = processingState.value
+        val state = session.state.value
         if (state !is ProcessingState.Serving) {
             logger.warn { "Cannot publish dialog - not in Serving state, current state: ${state::class.simpleName}" }
             return

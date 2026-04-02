@@ -1,7 +1,5 @@
 package ru.sbrf.dab2c.executor.voice.factory.impl
 
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableStateFlow
 import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
@@ -12,9 +10,8 @@ import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricFactory
 import ru.sbrf.dab2c.executor.library.time.TimeProvider
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
-import ru.sbrf.dab2c.executor.voice.model.CallbackChannels
 import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
-import ru.sbrf.dab2c.executor.voice.model.ProcessingState
+import ru.sbrf.dab2c.executor.voice.model.VoiceSession
 import ru.sbrf.dab2c.executor.voice.monitoring.MonitoringChunksProcessingDecorator
 import ru.sbrf.dab2c.executor.voice.monitoring.MonitoringConnectionChunksProcessingDecorator
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
@@ -48,9 +45,9 @@ class ChunkProcessingServiceFactoryImpl(
     )
 
     override fun create(): ChunkProcessingService {
-        val processingState = MutableStateFlow<ProcessingState>(ProcessingState.AwaitingContext)
-        val coreService = createCoreService(processingState)
-        val dialogTurnPublisher = KapDialogTurnPublisher(kapProducerClient, processingState)
+        val session = VoiceSession()
+        val coreService = createCoreService(session)
+        val dialogTurnPublisher = KapDialogTurnPublisher(kapProducerClient, session)
         return MonitoringConnectionChunksProcessingDecorator(
             MonitoringChunksProcessingDecorator(
                 LoggingChunkProcessingServiceDelegate(
@@ -64,29 +61,20 @@ class ChunkProcessingServiceFactoryImpl(
         )
     }
 
-    private fun createCoreService(
-        processingState: MutableStateFlow<ProcessingState>
-    ): ChunkProcessingService {
-        val callbackChannels = CallbackChannels(
-            downstream = Channel(capacity = Channel.BUFFERED),
-            upstream = Channel(capacity = Channel.BUFFERED)
-        )
-        val analyticsPublisher = KapAnalyticsPublisher(kapProducerClient, processingState)
+    private fun createCoreService(session: VoiceSession): ChunkProcessingService {
+        val analyticsPublisher = KapAnalyticsPublisher(kapProducerClient, session)
         return ChunkProcessingServiceImpl(
-            processingState,
-            callbackChannels,
-            contextService = ContextServiceImpl(processingState),
+            session,
+            contextService = ContextServiceImpl(session),
             settingsService = SettingsServiceImpl(
-                processingState,
-                callbackChannels,
+                session,
                 gigaVoiceAgentClient,
                 configuratorClient,
                 voiceExecutorConfigurationProperties,
                 analyticsPublisher
             ),
             functionCallService = FunctionCallServiceImpl(
-                processingState,
-                callbackChannels,
+                session,
                 gigaVoiceAgentClient,
                 analyticsPublisher
             )

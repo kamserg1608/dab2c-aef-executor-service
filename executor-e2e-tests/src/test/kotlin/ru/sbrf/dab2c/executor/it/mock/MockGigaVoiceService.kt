@@ -75,6 +75,16 @@ class MockGigaVoiceService : GigaVoiceServiceCoroutineImplBase() {
     }
 
     /**
+     * Waits for the downstream request stream to close (collector job completes).
+     * Use to verify that the executor properly tore down the downstream connection.
+     */
+    suspend fun awaitStreamClosed(timeout: Duration = 5.seconds) {
+        withTimeout(timeout) {
+            collectorJob?.join() ?: error("No active stream")
+        }
+    }
+
+    /**
      * Completes the response stream.
      */
     fun completeResponses() {

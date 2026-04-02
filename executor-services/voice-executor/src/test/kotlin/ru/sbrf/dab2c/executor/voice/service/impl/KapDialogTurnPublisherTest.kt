@@ -23,11 +23,12 @@ import ru.sbrf.dab2c.executor.library.context.Headers
 import ru.sbrf.dab2c.executor.library.context.HeadersElement
 import ru.sbrf.dab2c.executor.library.context.SessionInfoElement
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
+import ru.sbrf.dab2c.executor.voice.model.VoiceSession
 
 class KapDialogTurnPublisherTest {
 
     private lateinit var kapProducerClient: KapProducerClient
-    private lateinit var processingState: MutableStateFlow<ProcessingState>
+    private lateinit var session: VoiceSession
     private lateinit var publisher: KapDialogTurnPublisher
     private lateinit var headersElement: HeadersElement
     private lateinit var sessionInfoElement: SessionInfoElement
@@ -36,8 +37,8 @@ class KapDialogTurnPublisherTest {
     fun setUp() {
         kapProducerClient = mockk()
         coEvery { kapProducerClient.publishDialog(any()) } returns Unit
-        processingState = MutableStateFlow(createServingState())
-        publisher = KapDialogTurnPublisher(kapProducerClient, processingState)
+        session = VoiceSession(state = MutableStateFlow(createServingState()))
+        publisher = KapDialogTurnPublisher(kapProducerClient, session)
 
         headersElement = HeadersElement(Headers(emptyMap()))
         sessionInfoElement = SessionInfoElement(createDaSessionInfo())
@@ -102,7 +103,7 @@ class KapDialogTurnPublisherTest {
     @Test
     fun `should not publish when not in Serving state`() = runTest {
         withContext(headersElement + sessionInfoElement) {
-            processingState.value = ProcessingState.AwaitingContext
+            session.state.value = ProcessingState.AwaitingContext
 
             publisher.publishDialogTurn("Hello", "Hi", 1000L)
 

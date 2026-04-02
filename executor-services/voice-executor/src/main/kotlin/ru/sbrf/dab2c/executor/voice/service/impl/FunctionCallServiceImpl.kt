@@ -1,24 +1,22 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.ClosedSendChannelException
-import kotlinx.coroutines.flow.MutableStateFlow
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
-import ru.sbrf.dab2c.executor.voice.model.CallbackChannels
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
+import ru.sbrf.dab2c.executor.voice.model.VoiceSession
 import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
 import ru.sbrf.dab2c.executor.voice.service.api.FunctionCallService
-import ru.sbrf.dab2c.executor.voice.util.extensions.launchAsync
 
 /** Implementation of [FunctionCallService] that routes function calls to IVR or backend execution. */
 class FunctionCallServiceImpl(
-    private val processingState: MutableStateFlow<ProcessingState>,
-    private val callbackChannels: CallbackChannels,
+    private val session: VoiceSession,
     private val gigaVoiceAgentClient: GigaVoiceAgentClient,
     private val analyticsPublisher: AnalyticsPublisher
 ) : FunctionCallService {
@@ -26,7 +24,7 @@ class FunctionCallServiceImpl(
     private val logger = KotlinLogging.logger {}
 
     override suspend fun callFunction(functionCalling: FunctionCallingData): FunctionCallingData? {
-        val state = processingState.value
+        val state = session.state.value
         check(state is ProcessingState.Serving) {
             "Expected Serving state for function calls, but was ${state::class.simpleName}"
         }
@@ -53,7 +51,7 @@ class FunctionCallServiceImpl(
         val functionName = functionCalling.functionCall.name
         val startTime = System.currentTimeMillis()
 
-        launchAsync {
+        session.launch {
             try {
                 val functionCallResult = gigaVoiceAgentClient.executeFunctionCall(
                     conversationId = state.conversationId,
@@ -70,7 +68,9 @@ class FunctionCallServiceImpl(
                     headers.getHeaderOrNull(RequestHeader.X_REQUEST_ID)
                 )
 
-                callbackChannels.downstream.send(VoiceRequest.FunctionResult(functionCallResult.result))
+                session.callbackChannels.downstream.send(VoiceRequest.FunctionResult(functionCallResult.result))
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: ClosedSendChannelException) {
                 logger.debug(e) { "Channel closed, session ended before function '$functionName' completed" }
             } catch (e: Exception) {
@@ -79,7 +79,7 @@ class FunctionCallServiceImpl(
                 val escapedMessage = e.message?.replace("\"", "\\\"") ?: "Function execution failed"
                 val errorContent = """{"error":{"code":500,"message":"$escapedMessage"}}"""
                 try {
-                    callbackChannels.downstream.send(
+                    session.callbackChannels.downstream.send(
                         VoiceRequest.FunctionResult(
                             FunctionResultData(
                                 content = errorContent,
@@ -87,6 +87,8 @@ class FunctionCallServiceImpl(
                             )
                         )
                     )
+                } catch (ex: CancellationException) {
+                    throw ex
                 } catch (ex: ClosedSendChannelException) {
                     logger.debug(ex) { "Channel closed, session ended before error for '$functionName' could be sent" }
                 }

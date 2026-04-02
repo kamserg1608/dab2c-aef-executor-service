@@ -1,7 +1,6 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.flow.StateFlow
 import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.mapper.AgentAnalyticsEnvelopeMapper
 import ru.sbrf.dab2c.executor.clients.kap.producer.mapper.AnalyticsTurnData
@@ -10,13 +9,14 @@ import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.library.context.currentSessionInfo
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
+import ru.sbrf.dab2c.executor.voice.model.VoiceSession
 import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
 import java.util.UUID
 
 /** Publishes agent analytics events to KAP. */
 class KapAnalyticsPublisher(
     private val kapProducerClient: KapProducerClient,
-    private val processingState: StateFlow<ProcessingState>
+    private val session: VoiceSession
 ) : AnalyticsPublisher {
 
     override suspend fun publishAnalytics(analytics: List<AgentAnalytics>, requestId: String?) {
@@ -24,7 +24,7 @@ class KapAnalyticsPublisher(
             return
         }
 
-        val state = processingState.value
+        val state = session.state.value
         if (state !is ProcessingState.Serving) {
             logger.warn { "Cannot publish analytics - not in Serving state, current state: ${state::class.simpleName}" }
             return

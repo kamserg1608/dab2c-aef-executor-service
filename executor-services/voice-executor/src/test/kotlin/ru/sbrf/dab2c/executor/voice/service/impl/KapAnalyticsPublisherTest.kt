@@ -27,11 +27,12 @@ import ru.sbrf.dab2c.executor.library.context.HeadersElement
 import ru.sbrf.dab2c.executor.library.context.SessionInfoElement
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
+import ru.sbrf.dab2c.executor.voice.model.VoiceSession
 
 class KapAnalyticsPublisherTest {
 
     private lateinit var kapProducerClient: KapProducerClient
-    private lateinit var processingState: MutableStateFlow<ProcessingState>
+    private lateinit var session: VoiceSession
     private lateinit var publisher: KapAnalyticsPublisher
     private lateinit var headersElement: HeadersElement
     private lateinit var sessionInfoElement: SessionInfoElement
@@ -40,8 +41,8 @@ class KapAnalyticsPublisherTest {
     fun setUp() {
         kapProducerClient = mockk()
         coEvery { kapProducerClient.publishAgentAnalytics(any()) } returns Unit
-        processingState = MutableStateFlow(createServingState())
-        publisher = KapAnalyticsPublisher(kapProducerClient, processingState)
+        session = VoiceSession(state = MutableStateFlow(createServingState()))
+        publisher = KapAnalyticsPublisher(kapProducerClient, session)
 
         headersElement = HeadersElement(Headers(emptyMap()))
         sessionInfoElement = SessionInfoElement(createDaSessionInfo())
@@ -82,7 +83,7 @@ class KapAnalyticsPublisherTest {
     @Test
     fun `should not publish when not in Serving state`() = runTest {
         withContext(headersElement + sessionInfoElement) {
-            processingState.value = ProcessingState.AwaitingContext
+            session.state.value = ProcessingState.AwaitingContext
 
             publisher.publishAnalytics(listOf(createTestAnalytics()), "request-123")
 
