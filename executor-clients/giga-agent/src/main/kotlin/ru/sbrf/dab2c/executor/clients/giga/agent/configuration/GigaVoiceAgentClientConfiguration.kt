@@ -13,7 +13,6 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import io.ktor.serialization.jackson.JacksonConverter
 import org.springframework.beans.factory.annotation.Qualifier
@@ -89,7 +88,6 @@ private fun io.ktor.client.HttpClientConfig<*>.installPlugins(
     install(Logging) {
         logger = Logger.DEFAULT
         level = LogLevel.ALL
-        sanitizeHeader("*****") { it == HttpHeaders.Cookie }
     }
     install(HttpTimeout) {
         connectTimeoutMillis = properties.connectionTimeout

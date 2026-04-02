@@ -5,12 +5,11 @@
     <conversionRule conversionWord="presentMdc"
                     converterClass="ru.sbrf.dab2c.executor.application.logging.PresentMdcConverter"/>
 
-    <!-- Text console appender - used by ALL profiles -->
+    <!-- Text console appender - used by ALL profiles. Uses MaskingPatternLayout to redact sensitive data. -->
     <appender name="CONSOLE_TEXT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
+        <layout class="ru.sbrf.dab2c.executor.application.logging.MaskingPatternLayout">
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}%presentMdc %msg%n</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
+        </layout>
     </appender>
 
     <!-- PROM profile: Text to console + JSON to file -->
@@ -23,7 +22,7 @@
                 <maxHistory>7</maxHistory>
                 <totalSizeCap>1GB</totalSizeCap>
             </rollingPolicy>
-            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <encoder class="ru.sbrf.dab2c.executor.application.logging.MaskingLogstashEncoder">
                 <includeMdc>true</includeMdc>
                 <includeCallerData>false</includeCallerData>
                 <fieldNames>

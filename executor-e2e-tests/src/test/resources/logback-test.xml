@@ -5,18 +5,17 @@
                     converterClass="ru.sbrf.dab2c.executor.application.logging.PresentMdcConverter"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
+        <layout class="ru.sbrf.dab2c.executor.application.logging.MaskingPatternLayout">
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}%presentMdc %msg%n</pattern>
-        </encoder>
+        </layout>
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
         <file>logs/e2e-tests.log</file>
         <append>false</append>
-        <encoder>
+        <layout class="ru.sbrf.dab2c.executor.application.logging.MaskingPatternLayout">
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}%presentMdc %msg%n</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
+        </layout>
     </appender>
 
     <!-- Suppress noisy debug logs from JDK internals -->

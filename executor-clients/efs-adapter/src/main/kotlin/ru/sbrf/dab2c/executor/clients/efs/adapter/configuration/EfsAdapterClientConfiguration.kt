@@ -13,7 +13,6 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import io.ktor.serialization.jackson.JacksonConverter
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -56,8 +55,7 @@ private fun io.ktor.client.HttpClientConfig<*>.installPlugins(
     install(ContentNegotiation) { register(ContentType.Application.Json, JacksonConverter(ObjectMappers.MAPPER)) }
     install(Logging) {
         logger = Logger.DEFAULT
-        level = LogLevel.ALL
-        sanitizeHeader("*****") { it == HttpHeaders.Cookie }
+        level = LogLevel.HEADERS
     }
     install(HttpTimeout) {
         connectTimeoutMillis = properties.connectionTimeout
