@@ -15,9 +15,9 @@ import ru.sbrf.dab2c.executor.domain.voice.ContentFromModel
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.library.audit.model.AuditMessageSchema
+import ru.sbrf.dab2c.executor.library.audit.model.InteractionAuditRequest
+import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
 import ru.sbrf.dab2c.executor.library.time.TimeProvider
-import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionAuditor
-import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionRequest
 import ru.sbrf.dab2c.executor.voice.exception.TolerantExceptionRegistry
 import ru.sbrf.dab2c.executor.voice.model.currentFeatureToggles
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
@@ -45,7 +45,7 @@ private data class TurnTimestamps(
 class DialogAccumulatorDelegate(
     private val delegate: ChunkProcessingService,
     private val dialogTurnPublisher: DialogTurnPublisher,
-    private val auditor: ExternalInteractionAuditor,
+    private val auditor: InteractionAuditor,
     private val timeProvider: TimeProvider
 ) : ChunkProcessingService {
 
@@ -232,7 +232,7 @@ class DialogAccumulatorDelegate(
 
     private suspend fun sendSuccessAudit(rqMessage: String?, rsMessage: String?) {
         auditor.success(
-            request = ExternalInteractionRequest(
+            request = InteractionAuditRequest(
                 answerCode = AuditMessageSchema.ANSWER_CODE_OK,
                 rqMessage = rqMessage,
                 rsMessage = rsMessage
@@ -242,10 +242,10 @@ class DialogAccumulatorDelegate(
 
     private suspend fun sendFailedAudit(cause: Throwable) {
         auditor.failed(
-            request = ExternalInteractionRequest(
+            request = InteractionAuditRequest(
                 answerCode = AuditMessageSchema.ANSWER_CODE_FAIL,
                 errorCode = TolerantExceptionRegistry.extractErrorCode(cause),
-                errorTitle = cause.message ?: AuditMessageSchema.ERROR_TITLE_VOICE_STREAM
+                errorTitle = cause.message ?: cause::class.simpleName ?: AuditMessageSchema.DEFAULT_ERROR_TITLE
             )
         )
     }

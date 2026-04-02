@@ -228,9 +228,15 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(agentAudit!!.success()).isTrue()
         val params = agentAudit.params()
         assertThat(params["ANSWER_CODE"]).isEqualTo("200")
-        assertThat(params["RQ_MESSAGE"]).contains("endpoint")
-        assertThat(params["RQ_MESSAGE"]).contains("/settings")
-        assertThat(params["RQ_MESSAGE"]).contains("conversationId")
+        assertThat(params["SENDER"]).isEqualTo("dab2c-aef-executor")
+        assertThat(params["RECEIVER"]).isEqualTo("giga-voice-agent")
+        val rqMessage: Map<String, Any?> = ObjectMappers.MAPPER.readValue(params["RQ_MESSAGE"]!!)
+        assertThat(rqMessage).containsKey("endpoint")
+        assertThat(rqMessage["endpoint"]).isEqualTo("/settings")
+        assertThat(rqMessage).containsKey("conversationId")
+        assertThat(rqMessage).containsKey("agentConfiguration")
+        assertThat(rqMessage).containsKey("voiceSettings")
+        assertThat(rqMessage).containsKey("contextData")
         assertThat(params["RS_MESSAGE"]).isNotBlank()
     }
 
@@ -273,7 +279,10 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(params["ANSWER_CODE"]).isEqualTo("500")
         assertThat(params["ERROR_CODE"]).isEqualTo("GIGAVOICE_SETTINGS_ERROR")
         assertThat(params["ERROR_TITLE"]).isNotBlank()
-        assertThat(params["RQ_MESSAGE"]).contains("endpoint")
+        assertThat(params["SENDER"]).isEqualTo("dab2c-aef-executor")
+        assertThat(params["RECEIVER"]).isEqualTo("giga-voice-agent")
+        val rqMessage: Map<String, Any?> = ObjectMappers.MAPPER.readValue(params["RQ_MESSAGE"]!!)
+        assertThat(rqMessage["endpoint"]).isEqualTo("/settings")
     }
 
     @Test
@@ -310,6 +319,12 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(functionAudit!!.success()).isTrue()
         assertThat(functionAudit.params()["ANSWER_CODE"]).isEqualTo("200")
         assertThat(functionAudit.params()["RS_MESSAGE"]).isNotBlank()
+        assertThat(functionAudit.params()["SENDER"]).isEqualTo("dab2c-aef-executor")
+        assertThat(functionAudit.params()["RECEIVER"]).isEqualTo("giga-voice-agent")
+        val rqMessage: Map<String, Any?> = ObjectMappers.MAPPER.readValue(functionAudit.params()["RQ_MESSAGE"]!!)
+        assertThat(rqMessage["endpoint"]).isEqualTo("/functions")
+        assertThat(rqMessage).containsKey("functionCalling")
+        assertThat(rqMessage).containsKey("agentConfiguration")
     }
 
     @Test
@@ -354,6 +369,12 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(failedFunctionAudit).isNotNull
         assertThat(failedFunctionAudit!!.success()).isFalse()
         assertThat(failedFunctionAudit.params()["ERROR_CODE"]).isEqualTo("GIGAVOICE_FUNCTION_ERROR")
+        assertThat(failedFunctionAudit.params()["SENDER"]).isEqualTo("dab2c-aef-executor")
+        assertThat(failedFunctionAudit.params()["RECEIVER"]).isEqualTo("giga-voice-agent")
+        assertThat(failedFunctionAudit.params()["ANSWER_CODE"]).isEqualTo("500")
+        assertThat(failedFunctionAudit.params()["ERROR_TITLE"]).isNotBlank()
+        val rqMessage: Map<String, Any?> = ObjectMappers.MAPPER.readValue(failedFunctionAudit.params()["RQ_MESSAGE"]!!)
+        assertThat(rqMessage["endpoint"]).isEqualTo("/functions")
     }
 
     // --- Cross-Cutting Tests ---

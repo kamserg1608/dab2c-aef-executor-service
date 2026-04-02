@@ -14,6 +14,8 @@ import ru.sbrf.dab2c.executor.domain.voice.ContextData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.library.audit.model.AuditMessageSchema
+import ru.sbrf.dab2c.executor.library.audit.model.InteractionAuditRequest
+import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
 
 private val logger = KotlinLogging.logger {}
 
@@ -22,7 +24,7 @@ private val logger = KotlinLogging.logger {}
  */
 class AuditedGigaVoiceAgentClientDecorator(
     private val delegate: GigaVoiceAgentClient,
-    private val auditor: AgentInteractionAuditor,
+    private val auditor: InteractionAuditor,
     private val objectMapper: ObjectMapper,
     private val receiver: String
 ) : GigaVoiceAgentClient {
@@ -52,7 +54,7 @@ class AuditedGigaVoiceAgentClientDecorator(
             auditFailure(
                 rqMessage = rqMessage,
                 e = e,
-                errorCode = AuditMessageSchema.ERROR_CODE_GIGAVOICE_SETTINGS
+                errorCode = ERROR_CODE_SETTINGS
             )
             throw e
         }
@@ -83,7 +85,7 @@ class AuditedGigaVoiceAgentClientDecorator(
             auditFailure(
                 rqMessage = rqMessage,
                 e = e,
-                errorCode = AuditMessageSchema.ERROR_CODE_GIGAVOICE_FUNCTION
+                errorCode = ERROR_CODE_FUNCTION
             )
             throw e
         }
@@ -102,7 +104,7 @@ class AuditedGigaVoiceAgentClientDecorator(
                 agentConfiguration = agentConfiguration,
                 contextData = contextData
             ) + mapOf(
-                AuditMessageSchema.KEY_VOICE_SETTINGS to voiceSettings
+                "voiceSettings" to voiceSettings
             )
         )
 
@@ -119,7 +121,7 @@ class AuditedGigaVoiceAgentClientDecorator(
                 agentConfiguration = agentConfiguration,
                 contextData = contextData
             ) + mapOf(
-                AuditMessageSchema.KEY_FUNCTION_CALLING to functionCalling
+                "functionCalling" to functionCalling
             )
         )
 
@@ -130,19 +132,19 @@ class AuditedGigaVoiceAgentClientDecorator(
         contextData: ContextData
     ): Map<String, Any?> =
         mapOf(
-            AuditMessageSchema.KEY_ENDPOINT to endpoint,
-            AuditMessageSchema.KEY_RECEIVER to receiver,
-            AuditMessageSchema.KEY_CONVERSATION_ID to context.conversationId,
-            AuditMessageSchema.KEY_EDU_ID to context.eduId,
-            AuditMessageSchema.KEY_UFS_SESSION to context.ufsSession,
-            AuditMessageSchema.KEY_CHANNEL to context.channel,
-            AuditMessageSchema.KEY_AGENT_CONFIGURATION to agentConfiguration,
-            AuditMessageSchema.KEY_CONTEXT_DATA to contextData
+            "endpoint" to endpoint,
+            "receiver" to receiver,
+            "conversationId" to context.conversationId,
+            "eduId" to context.eduId,
+            "ufsSession" to context.ufsSession,
+            "channel" to context.channel,
+            "agentConfiguration" to agentConfiguration,
+            "contextData" to contextData
         )
 
     private suspend fun auditSuccess(rqMessage: String, response: Any) {
         auditor.success(
-            request = AgentInteractionAuditRequest(
+            request = InteractionAuditRequest(
                 answerCode = AuditMessageSchema.ANSWER_CODE_OK,
                 rqMessage = rqMessage,
                 rsMessage = toJson(response)
@@ -156,16 +158,22 @@ class AuditedGigaVoiceAgentClientDecorator(
         errorCode: String
     ) {
         auditor.failed(
-            request = AgentInteractionAuditRequest(
+            request = InteractionAuditRequest(
                 answerCode = AuditMessageSchema.ANSWER_CODE_FAIL,
                 rqMessage = rqMessage,
                 rsMessage = null,
                 errorCode = errorCode,
-                errorTitle = e.message ?: AuditMessageSchema.DEFAULT_ERROR_TITLE
+                errorTitle = e.message ?: e::class.simpleName ?: AuditMessageSchema.DEFAULT_ERROR_TITLE
             )
         )
     }
 
     private fun toJson(value: Any?): String =
         objectMapper.writeValueAsString(value)
+
+    /** Audit error codes for GigaVoice agent interactions. */
+    companion object {
+        const val ERROR_CODE_SETTINGS: String = "GIGAVOICE_SETTINGS_ERROR"
+        const val ERROR_CODE_FUNCTION: String = "GIGAVOICE_FUNCTION_ERROR"
+    }
 }

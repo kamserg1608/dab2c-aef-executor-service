@@ -1,38 +1,41 @@
-package ru.sbrf.dab2c.executor.voice.audit
+package ru.sbrf.dab2c.executor.library.audit
 
 import ru.sbrf.dab2c.executor.library.audit.model.AuditEvent
-import ru.sbrf.dab2c.executor.library.audit.model.AuditEventNames
+import ru.sbrf.dab2c.executor.library.audit.model.AuditEventNamePair
 import ru.sbrf.dab2c.executor.library.audit.model.AuditParams
+import ru.sbrf.dab2c.executor.library.audit.model.InteractionAuditRequest
 import ru.sbrf.dab2c.executor.library.audit.port.AuditEventSender
+import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
 
-/** Implementation of [ExternalInteractionAuditor] that sends audit events via [AuditEventSender]. */
-class ExternalInteractionAuditorImpl(
+/** Implementation of [InteractionAuditor] that sends audit events via [AuditEventSender]. */
+class InteractionAuditorImpl(
+    private val eventNames: AuditEventNamePair,
     private val senderValue: String,
     private val receiver: String,
     private val auditEventSender: AuditEventSender,
-) : ExternalInteractionAuditor {
+) : InteractionAuditor {
 
-    override suspend fun success(request: ExternalInteractionRequest) {
+    override suspend fun success(request: InteractionAuditRequest) {
         auditEventSender.sendEvent(
             event = AuditEvent(
-                event = AuditEventNames.DAB2C_EXTERNAL_INTERACTION,
+                event = eventNames.success,
                 success = true,
                 params = interactionParams(request)
             )
         )
     }
 
-    override suspend fun failed(request: ExternalInteractionRequest) {
+    override suspend fun failed(request: InteractionAuditRequest) {
         auditEventSender.sendEvent(
             event = AuditEvent(
-                event = AuditEventNames.DAB2C_EXTERNAL_INTERACTION_FAILED,
+                event = eventNames.failed,
                 success = false,
                 params = interactionParams(request)
             )
         )
     }
 
-    private fun interactionParams(request: ExternalInteractionRequest): Map<String, String> =
+    private fun interactionParams(request: InteractionAuditRequest): Map<String, String> =
         buildMap {
             putIfNotBlank(AuditParams.SENDER, senderValue)
             putIfNotBlank(AuditParams.RECEIVER, receiver)

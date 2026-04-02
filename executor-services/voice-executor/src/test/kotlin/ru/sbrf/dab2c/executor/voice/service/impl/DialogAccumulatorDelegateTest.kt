@@ -36,10 +36,10 @@ import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.domain.voice.WarningData
+import ru.sbrf.dab2c.executor.library.audit.model.InteractionAuditRequest
+import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
 import ru.sbrf.dab2c.executor.library.context.Headers
 import ru.sbrf.dab2c.executor.library.context.HeadersElement
-import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionAuditor
-import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionRequest
 import ru.sbrf.dab2c.executor.voice.model.VoiceSessionFeatureToggles
 import ru.sbrf.dab2c.executor.voice.model.VoiceSessionFeatureToggles.Companion.KAP_SEND_EXTRA
 import ru.sbrf.dab2c.executor.voice.model.VoiceSessionFeatureTogglesElement
@@ -52,7 +52,7 @@ class DialogAccumulatorDelegateTest {
     private lateinit var delegate: ChunkProcessingService
     private lateinit var dialogTurnPublisher: DialogTurnPublisher
     private lateinit var accumulator: DialogAccumulatorDelegate
-    private lateinit var auditor: ExternalInteractionAuditor
+    private lateinit var auditor: InteractionAuditor
     private lateinit var headersElement: HeadersElement
     private lateinit var togglesElement: VoiceSessionFeatureTogglesElement
 
@@ -243,7 +243,7 @@ class DialogAccumulatorDelegateTest {
 
                 accumulator.processResponseChunks(responses).toList()
 
-                val requestSlot = slot<ExternalInteractionRequest>()
+                val requestSlot = slot<InteractionAuditRequest>()
                 coVerify(exactly = 1) { auditor.success(capture(requestSlot)) }
                 coVerify(exactly = 0) { auditor.failed(any()) }
 
@@ -264,7 +264,7 @@ class DialogAccumulatorDelegateTest {
 
                 runCatching { accumulator.processResponseChunks(responses).toList() }
 
-                val requestSlot = slot<ExternalInteractionRequest>()
+                val requestSlot = slot<InteractionAuditRequest>()
                 coVerify(exactly = 1) { auditor.success(capture(requestSlot)) }
                 coVerify(exactly = 0) { auditor.failed(any()) }
 
@@ -284,8 +284,8 @@ class DialogAccumulatorDelegateTest {
 
                 runCatching { accumulator.processResponseChunks(responses).toList() }
 
-                val successSlot = slot<ExternalInteractionRequest>()
-                val failedSlot = slot<ExternalInteractionRequest>()
+                val successSlot = slot<InteractionAuditRequest>()
+                val failedSlot = slot<InteractionAuditRequest>()
                 coVerify(exactly = 1) { auditor.success(capture(successSlot)) }
                 coVerify(exactly = 1) { auditor.failed(capture(failedSlot)) }
 
@@ -313,8 +313,8 @@ class DialogAccumulatorDelegateTest {
 
                 runCatching { accumulator.processResponseChunks(responses).toList() }
 
-                val successRequests = mutableListOf<ExternalInteractionRequest>()
-                val failedSlot = slot<ExternalInteractionRequest>()
+                val successRequests = mutableListOf<InteractionAuditRequest>()
+                val failedSlot = slot<InteractionAuditRequest>()
                 coVerify(exactly = 2) { auditor.success(capture(successRequests)) }
                 coVerify(exactly = 1) { auditor.failed(capture(failedSlot)) }
 
@@ -336,7 +336,7 @@ class DialogAccumulatorDelegateTest {
 
                 accumulator.processResponseChunks(responses).toList()
 
-                val requestSlot = slot<ExternalInteractionRequest>()
+                val requestSlot = slot<InteractionAuditRequest>()
                 coVerify(exactly = 1) { auditor.success(capture(requestSlot)) }
                 coVerify(exactly = 0) { auditor.failed(any()) }
 
@@ -355,7 +355,7 @@ class DialogAccumulatorDelegateTest {
 
                 accumulator.processResponseChunks(responses).toList()
 
-                val requestSlot = slot<ExternalInteractionRequest>()
+                val requestSlot = slot<InteractionAuditRequest>()
                 coVerify(exactly = 1) { auditor.success(capture(requestSlot)) }
 
                 assertThat(requestSlot.captured.rqMessage).isEqualTo("Hello")
@@ -373,7 +373,7 @@ class DialogAccumulatorDelegateTest {
 
                 accumulator.processResponseChunks(responses).toList()
 
-                val requestSlot = slot<ExternalInteractionRequest>()
+                val requestSlot = slot<InteractionAuditRequest>()
                 coVerify(exactly = 1) { auditor.success(capture(requestSlot)) }
 
                 assertThat(requestSlot.captured.rqMessage).isEqualTo("Hello")
@@ -390,7 +390,7 @@ class DialogAccumulatorDelegateTest {
 
                 accumulator.processResponseChunks(responses).toList()
 
-                val requestSlot = slot<ExternalInteractionRequest>()
+                val requestSlot = slot<InteractionAuditRequest>()
                 coVerify(exactly = 1) { auditor.success(capture(requestSlot)) }
 
                 assertThat(requestSlot.captured.rqMessage).isEmpty()
@@ -441,7 +441,7 @@ class DialogAccumulatorDelegateTest {
 
                 runCatching { accumulator.processResponseChunks(responses).toList() }
 
-                val failedSlot = slot<ExternalInteractionRequest>()
+                val failedSlot = slot<InteractionAuditRequest>()
                 coVerify(exactly = 1) { auditor.success(any()) }
                 coVerify(exactly = 1) { auditor.failed(capture(failedSlot)) }
 
