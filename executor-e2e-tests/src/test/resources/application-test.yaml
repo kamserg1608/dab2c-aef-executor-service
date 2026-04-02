@@ -2,6 +2,14 @@ executor:
   voice:
     agentName: test-agent
     channel: test-channel
+  masking:
+    key-masking-enabled: true
+    regex-masking-enabled: true
+    regex-patterns:
+      - '(?<="first_name":")[^"]*'
+      - '(?<="patr_name":")[^"]*'
+      - '(?<="firstName":")[^"]*'
+      - '(?<="patrName":")[^"]*'
 
 grpc:
   server:

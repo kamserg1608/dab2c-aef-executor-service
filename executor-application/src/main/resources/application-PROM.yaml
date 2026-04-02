@@ -21,6 +21,14 @@ executor:
   voice:
     agentName: ${EXECUTOR_VOICE_AGENT_NAME}
     channel: ${EXECUTOR_VOICE_CHANNEL}
+  masking:
+    key-masking-enabled: ${EXECUTOR_MASKING_KEY_ENABLED:true}
+    regex-masking-enabled: ${EXECUTOR_MASKING_REGEX_ENABLED:true}
+    regex-patterns:
+      - '(?<="first_name":")[^"]*'
+      - '(?<="patr_name":")[^"]*'
+      - '(?<="firstName":")[^"]*'
+      - '(?<="patrName":")[^"]*'
 
 # GigaAgent HTTP Client
 giga:
