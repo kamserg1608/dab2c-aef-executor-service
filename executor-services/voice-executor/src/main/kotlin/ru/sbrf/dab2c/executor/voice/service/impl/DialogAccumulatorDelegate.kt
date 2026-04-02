@@ -1,7 +1,6 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
@@ -16,15 +15,14 @@ import ru.sbrf.dab2c.executor.domain.voice.ContentFromModel
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.library.audit.model.AuditMessageSchema
-import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.library.time.TimeProvider
 import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionAuditor
 import ru.sbrf.dab2c.executor.voice.audit.ExternalInteractionRequest
+import ru.sbrf.dab2c.executor.voice.exception.TolerantExceptionRegistry
 import ru.sbrf.dab2c.executor.voice.model.currentFeatureToggles
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.service.api.DialogTurnPublisher
 import java.util.Collections
-import kotlin.reflect.KClass
 
 /** Per-turn timestamp boundaries for dialog metrics. */
 private data class TurnTimestamps(
@@ -41,7 +39,8 @@ private data class TurnTimestamps(
  *
  * Accumulates InputTranscription chunks until OutputTranscription arrives,
  * then accumulates OutputTranscription chunks until next InputTranscription.
- * When a complete input-output pair is collected, publishes the dialog turn.
+ * When a complete input-output pair is collected, publishes the dialog turn
+ * and emits a DAB2C_EXTERNAL_INTERACTION audit event per turn.
  */
 class DialogAccumulatorDelegate(
     private val delegate: ChunkProcessingService,
@@ -52,9 +51,7 @@ class DialogAccumulatorDelegate(
 
     private val inputChunks = mutableListOf<String>()
     private val outputChunks = mutableListOf<String>()
-    private val dialog = StringBuilder()
 
-    private var settingsJson: String? = null
     private var phase = Phase.AWAITING_INPUT
     private var timestamps = TurnTimestamps()
 
@@ -65,7 +62,6 @@ class DialogAccumulatorDelegate(
     override fun processRequestChunks(requestsChunks: Flow<VoiceRequest>): Flow<VoiceRequest> =
         delegate.processRequestChunks(requestsChunks).onEach { request ->
             when (request) {
-                is VoiceRequest.Settings -> handleVoiceSettings(request)
                 is VoiceRequest.Audio -> handleAudioRequest()
                 is VoiceRequest.FunctionResult -> handleFunctionResult(request)
                 else -> Unit
@@ -86,15 +82,13 @@ class DialogAccumulatorDelegate(
                 }
             }
             .onCompletion { cause ->
-                sendAuditOnCompletion(cause)
                 flushPendingDialogTurn()
+                if (cause != null && !TolerantExceptionRegistry.isTolerant(cause)) {
+                    sendFailedAudit(cause)
+                }
             }
 
         return delegate.processResponseChunks(accumulatedChunks)
-    }
-
-    private fun handleVoiceSettings(request: VoiceRequest.Settings) {
-        settingsJson = ObjectMappers.MAPPER.writeValueAsString(request.settings)
     }
 
     private fun handleAudioRequest() {
@@ -154,7 +148,6 @@ class DialogAccumulatorDelegate(
 
         if (phase == Phase.ACCUMULATING_OUTPUT) {
             publishDialogTurn()
-            appendDialogTurnToHistory()
             reset()
         }
 
@@ -179,7 +172,6 @@ class DialogAccumulatorDelegate(
     }
 
     private fun handleWarning(response: VoiceResponse.Warning) {
-        appendDialogLine(WARNING_PREFIX, response.warning.message)
         turnEvents.add(
             DialogTurnEvent(
                 eventName = EVENT_WARNING,
@@ -190,7 +182,6 @@ class DialogAccumulatorDelegate(
     }
 
     private fun handleError(response: VoiceResponse.Error) {
-        appendDialogLine(ERROR_PREFIX, "${response.error.status} ${response.error.message}")
         turnEvents.add(
             DialogTurnEvent(
                 eventName = EVENT_ERROR,
@@ -204,30 +195,10 @@ class DialogAccumulatorDelegate(
     }
 
     private suspend fun flushPendingDialogTurn() {
-        if (
-            phase == Phase.ACCUMULATING_OUTPUT &&
-            inputChunks.isNotEmpty() &&
-            outputChunks.isNotEmpty()
-        ) {
-            logger.debug { "Flushing final dialog turn on session completion" }
+        if (inputChunks.isNotEmpty() || outputChunks.isNotEmpty()) {
+            logger.debug { "Flushing pending dialog turn on session completion" }
             publishDialogTurn()
         }
-    }
-
-    private fun appendDialogTurnToHistory() {
-        val inputPhrase = inputChunks.joinToString("")
-        val outputPhrase = outputChunks.joinToString("\n")
-
-        appendDialogLine(ROLE_USER, inputPhrase)
-        appendDialogLine(ROLE_ASSISTANT, outputPhrase)
-    }
-
-    private fun handleException(cause: Throwable) {
-        appendDialogLine(EXCEPTION_PREFIX, "${cause::class.simpleName} ${cause.message}")
-    }
-
-    private fun appendDialogLine(prefix: String, text: String) {
-        if (text.isNotBlank()) dialog.append("$prefix${text.trim()}\n")
     }
 
     private suspend fun publishDialogTurn() {
@@ -246,6 +217,8 @@ class DialogAccumulatorDelegate(
         dialogTurnPublisher.publishDialogTurn(
             inputPhrase, outputPhrase, assistantResponseTime, extra, totalTokens
         )
+
+        sendSuccessAudit(rqMessage = inputPhrase, rsMessage = outputPhrase)
     }
 
     private fun buildExtra(): DialogTurnExtra =
@@ -267,43 +240,15 @@ class DialogAccumulatorDelegate(
         )
     }
 
-    private suspend fun sendFailedAudit(
-        rqMessage: String?,
-        rsMessage: String?,
-        cause: Throwable
-    ) {
+    private suspend fun sendFailedAudit(cause: Throwable) {
         auditor.failed(
             request = ExternalInteractionRequest(
                 answerCode = AuditMessageSchema.ANSWER_CODE_FAIL,
-                rqMessage = rqMessage,
-                rsMessage = rsMessage,
-                errorCode = AuditMessageSchema.ERROR_CODE_VOICE_RESPONSE_STREAM,
+                errorCode = TolerantExceptionRegistry.extractErrorCode(cause),
                 errorTitle = cause.message ?: AuditMessageSchema.ERROR_TITLE_VOICE_STREAM
             )
         )
     }
-
-    private suspend fun sendAuditOnCompletion(cause: Throwable?) {
-        val rsMessage = settingsJson
-
-        appendDialogTurnToHistory()
-
-        if (cause != null) {
-            handleException(cause)
-        }
-
-        val rqMessage = dialog.toString().trim().ifBlank { null }
-
-        if (cause == null || isNonFailureException(cause)) {
-            sendSuccessAudit(rqMessage, rsMessage)
-            return
-        }
-
-        sendFailedAudit(rqMessage, rsMessage, cause)
-    }
-
-    private fun isNonFailureException(cause: Throwable): Boolean =
-        NON_FAILURE_EXCEPTIONS.any { it.isInstance(cause) }
 
     private fun reset() {
         inputChunks.clear()
@@ -323,19 +268,9 @@ class DialogAccumulatorDelegate(
     private companion object {
         private val logger = KotlinLogging.logger {}
 
-        private const val ROLE_USER = "USER: "
-        private const val ROLE_ASSISTANT = "ASSISTANT: "
-        private const val WARNING_PREFIX = "[WARNING] "
-        private const val ERROR_PREFIX = "[ERROR] "
-        private const val EXCEPTION_PREFIX = "[EXCEPTION] "
-
         private const val EVENT_FUNCTION_CALL = "function_call"
         private const val EVENT_FUNCTION_RESULT = "function_result"
         private const val EVENT_WARNING = "warning"
         private const val EVENT_ERROR = "error"
-
-        private val NON_FAILURE_EXCEPTIONS: List<KClass<out Throwable>> = listOf(
-            CancellationException::class
-        )
     }
 }

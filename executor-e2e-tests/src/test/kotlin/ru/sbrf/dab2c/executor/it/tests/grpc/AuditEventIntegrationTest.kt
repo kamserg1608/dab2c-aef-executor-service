@@ -3,8 +3,12 @@ package ru.sbrf.dab2c.executor.it.tests.grpc
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.verification.LoggedRequest
+import io.grpc.Status
+import io.grpc.StatusRuntimeException
+import kotlinx.coroutines.delay
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.audioRequest
@@ -25,13 +29,13 @@ import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 
 /**
  * Integration tests for audit event emission.
- * Verifies external interaction audits (dialog accumulation), agent interaction audits,
- * error handling, cookie propagation, and resilience to audit failures.
+ * Verifies per-turn external interaction audits, agent interaction audits,
+ * tolerant exception handling, error handling, cookie propagation, and resilience to audit failures.
  */
 class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
-    fun `should emit external interaction audit with dialog transcript on multi-turn conversation`() = runItTest {
+    fun `should emit per-turn external interaction audits on multi-turn conversation`() = runItTest {
         setupStubs(efsAdapterMock, gigaVoiceAgentMock)
         val auditAwaiter = WireMockAwaiter(efsAdapterMock)
 
@@ -56,22 +60,30 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
             session.awaitResponse { it.hasInputTranscription() }
         }
 
-        val auditRequests = auditAwaiter.awaitPostCalls(AUDIT_EVENT_URL, 2)
-        val externalAudit = findAuditEvent(auditRequests, "DAB2C_EXTERNAL_INTERACTION")
+        val auditRequests = auditAwaiter.awaitPostCalls(AUDIT_EVENT_URL, 4)
+        val externalAudits = findAllAuditEvents(auditRequests, "DAB2C_EXTERNAL_INTERACTION")
 
-        assertThat(externalAudit).isNotNull
-        val params = externalAudit!!.params()
-        assertThat(externalAudit.success()).isTrue()
-        assertThat(params["ANSWER_CODE"]).isEqualTo("200")
-        assertThat(params["SENDER"]).isEqualTo("dab2c-aef-executor")
-        assertThat(params["RECEIVER"]).isEqualTo("voice-external")
-        val expectedDialog = "USER: Hello\nASSISTANT: World\nUSER: Next\nASSISTANT: Response\nUSER: Third"
-        assertThat(params["RQ_MESSAGE"]).isEqualTo(expectedDialog)
-        assertThat(params["RS_MESSAGE"]).isNotNull()
+        assertThat(externalAudits).hasSize(3)
+
+        val firstTurn = externalAudits[0]
+        assertThat(firstTurn.success()).isTrue()
+        assertThat(firstTurn.params()["ANSWER_CODE"]).isEqualTo("200")
+        assertThat(firstTurn.params()["SENDER"]).isEqualTo("dab2c-aef-executor")
+        assertThat(firstTurn.params()["RECEIVER"]).isEqualTo("voice-external")
+        assertThat(firstTurn.params()["RQ_MESSAGE"]).isEqualTo("Hello")
+        assertThat(firstTurn.params()["RS_MESSAGE"]).isEqualTo("World")
+
+        val secondTurn = externalAudits[1]
+        assertThat(secondTurn.params()["RQ_MESSAGE"]).isEqualTo("Next")
+        assertThat(secondTurn.params()["RS_MESSAGE"]).isEqualTo("Response")
+
+        val incompleteTurn = externalAudits[2]
+        assertThat(incompleteTurn.params()["RQ_MESSAGE"]).isEqualTo("Third")
+        assertThat(incompleteTurn.params()).doesNotContainKey("RS_MESSAGE")
     }
 
     @Test
-    fun `should include warning in external audit dialog transcript`() = runItTest {
+    fun `should emit per-turn audit for completed turn with warning`() = runItTest {
         setupStubs(efsAdapterMock, gigaVoiceAgentMock)
         val auditAwaiter = WireMockAwaiter(efsAdapterMock)
 
@@ -80,19 +92,26 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
             session.sendRequest(settingsRequest("audit-warning"))
             mock.awaitRequest { it.hasSettings() }
 
+            mock.sendResponse(inputTranscriptionResponse("Hello"))
+            session.awaitResponse { it.hasInputTranscription() }
+
             mock.sendResponse(warningResponse("High latency"))
             session.awaitResponse { it.hasWarning() }
+
+            mock.sendResponse(outputTranscriptionResponse("World"))
+            session.awaitResponse { it.hasOutputTranscription() }
         }
 
         val auditRequests = auditAwaiter.awaitPostCalls(AUDIT_EVENT_URL, 2)
         val externalAudit = findAuditEvent(auditRequests, "DAB2C_EXTERNAL_INTERACTION")
 
         assertThat(externalAudit).isNotNull
-        assertThat(externalAudit!!.params()["RQ_MESSAGE"]).isEqualTo("[WARNING] High latency")
+        assertThat(externalAudit!!.params()["RQ_MESSAGE"]).isEqualTo("Hello")
+        assertThat(externalAudit.params()["RS_MESSAGE"]).isEqualTo("World")
     }
 
     @Test
-    fun `should include error in external audit dialog transcript`() = runItTest {
+    fun `should emit per-turn audit for completed turn with error response`() = runItTest {
         setupStubs(efsAdapterMock, gigaVoiceAgentMock)
         val auditAwaiter = WireMockAwaiter(efsAdapterMock)
 
@@ -101,19 +120,26 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
             session.sendRequest(settingsRequest("audit-error"))
             mock.awaitRequest { it.hasSettings() }
 
+            mock.sendResponse(inputTranscriptionResponse("Hello"))
+            session.awaitResponse { it.hasInputTranscription() }
+
             mock.sendResponse(errorResponse(503, "unavailable"))
             session.awaitResponse { it.hasError() }
+
+            mock.sendResponse(outputTranscriptionResponse("Sorry"))
+            session.awaitResponse { it.hasOutputTranscription() }
         }
 
         val auditRequests = auditAwaiter.awaitPostCalls(AUDIT_EVENT_URL, 2)
         val externalAudit = findAuditEvent(auditRequests, "DAB2C_EXTERNAL_INTERACTION")
 
         assertThat(externalAudit).isNotNull
-        assertThat(externalAudit!!.params()["RQ_MESSAGE"]).isEqualTo("[ERROR] 503 unavailable")
+        assertThat(externalAudit!!.params()["RQ_MESSAGE"]).isEqualTo("Hello")
+        assertThat(externalAudit.params()["RS_MESSAGE"]).isEqualTo("Sorry")
     }
 
     @Test
-    fun `should emit failed external interaction audit when downstream stream errors`() = runItTest {
+    fun `should emit per-turn success audit and session failed audit when downstream stream errors`() = runItTest {
         setupStubs(efsAdapterMock, gigaVoiceAgentMock)
         val auditAwaiter = WireMockAwaiter(efsAdapterMock)
 
@@ -131,18 +157,52 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
             mock.completeResponsesWithError(RuntimeException("stream failure"))
         }
 
-        val auditRequests = auditAwaiter.awaitPostCalls(AUDIT_EVENT_URL, 2)
-        val externalAudit = findAuditEvent(auditRequests, "DAB2C_EXTERNAL_INTERACTION_FAILED")
+        val auditRequests = auditAwaiter.awaitPostCalls(AUDIT_EVENT_URL, 3)
 
-        assertThat(externalAudit).isNotNull
-        assertThat(externalAudit!!.success()).isFalse()
-        val params = externalAudit.params()
+        val successAudit = findAuditEvent(auditRequests, "DAB2C_EXTERNAL_INTERACTION")
+        assertThat(successAudit).isNotNull
+        assertThat(successAudit!!.success()).isTrue()
+        assertThat(successAudit.params()["RQ_MESSAGE"]).isEqualTo("Hello")
+        assertThat(successAudit.params()["RS_MESSAGE"]).isEqualTo("World")
+
+        val failedAudit = findAuditEvent(auditRequests, "DAB2C_EXTERNAL_INTERACTION_FAILED")
+        assertThat(failedAudit).isNotNull
+        assertThat(failedAudit!!.success()).isFalse()
+        val params = failedAudit.params()
         assertThat(params["ANSWER_CODE"]).isEqualTo("500")
-        assertThat(params["ERROR_CODE"]).isEqualTo("VOICE_RESPONSE_STREAM_ERROR")
+        assertThat(params["ERROR_CODE"]).isNotBlank()
         assertThat(params["ERROR_TITLE"]).isNotBlank()
-        assertThat(params["RQ_MESSAGE"]).contains("USER: Hello")
-        assertThat(params["RQ_MESSAGE"]).contains("ASSISTANT: World")
-        assertThat(params["RQ_MESSAGE"]).contains("[EXCEPTION]")
+    }
+
+    @Test
+    fun `should not emit failed audit when stream closes with CANCELLED status`() = runItTest {
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock)
+        val auditAwaiter = WireMockAwaiter(efsAdapterMock)
+
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(contextRequest())
+            session.sendRequest(settingsRequest("audit-cancelled"))
+            mock.awaitRequest { it.hasSettings() }
+
+            mock.sendResponse(inputTranscriptionResponse("Hello"))
+            session.awaitResponse { it.hasInputTranscription() }
+
+            mock.sendResponse(outputTranscriptionResponse("World"))
+            session.awaitResponse { it.hasOutputTranscription() }
+
+            mock.completeResponsesWithError(StatusRuntimeException(Status.CANCELLED.withDescription("RPC cancelled")))
+        }
+
+        val auditRequests = auditAwaiter.awaitPostCalls(AUDIT_EVENT_URL, 2)
+
+        val successAudit = findAuditEvent(auditRequests, "DAB2C_EXTERNAL_INTERACTION")
+        assertThat(successAudit).isNotNull
+        assertThat(successAudit!!.success()).isTrue()
+
+        delay(500)
+        val allAuditRequests = efsAdapterMock.findAll(postRequestedFor(urlEqualTo(AUDIT_EVENT_URL)))
+        val failedAudit = findAuditEvent(allAuditRequests, "DAB2C_EXTERNAL_INTERACTION_FAILED")
+        assertThat(failedAudit).isNull()
     }
 
     // --- Agent Interaction Audit Tests ---
@@ -204,7 +264,7 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
             session.awaitResponse { it.hasError() }
         }
 
-        val auditRequests = auditAwaiter.awaitPostCalls(AUDIT_EVENT_URL, 2)
+        val auditRequests = auditAwaiter.awaitPostCalls(AUDIT_EVENT_URL, 1)
         val failedAudit = findAuditEvent(auditRequests, "DAB2C_AGENT_INTERACTION_FAILED")
 
         assertThat(failedAudit).isNotNull
@@ -352,6 +412,11 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
         requests
             .map { parseAuditEvent(it) }
             .find { it.eventName() == eventName }
+
+    private fun findAllAuditEvents(requests: List<LoggedRequest>, eventName: String): List<AuditEventBody> =
+        requests
+            .map { parseAuditEvent(it) }
+            .filter { it.eventName() == eventName }
 
     private fun parseAuditEvent(request: LoggedRequest): AuditEventBody =
         AuditEventBody(ObjectMappers.MAPPER.readValue(request.bodyAsString))

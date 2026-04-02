@@ -31,14 +31,9 @@ class MonitoringConnectionChunksProcessingDecorator(
                 .onStart {
                     handle = connectionMetrics.openConnection()
                     val opened = handle!!
-                    logger.info { "gRPC connection opened. Active (${opened.connectionKey}): ${opened.activeCount}" }
+                    logger.debug { "gRPC connection opened. Active (${opened.connectionKey}): ${opened.activeCount}" }
                 }
-                .onCompletion { cause ->
-                    if (cause == null) {
-                        logger.info { "gRPC connection closed gracefully" }
-                    } else {
-                        logger.warn(cause) { "gRPC connection closed with error" }
-                    }
+                .onCompletion { _ ->
                     handle?.close()
                     logger.debug { "Connection metrics finalized (${handle?.connectionKey})" }
                 }

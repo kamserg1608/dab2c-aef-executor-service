@@ -11,6 +11,7 @@ import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
+import ru.sbrf.dab2c.executor.voice.exception.TolerantExceptionRegistry
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 
 /** Decorator that adds request/response logging to chunk processing. */
@@ -69,11 +70,18 @@ class LoggingChunkProcessingServiceDelegate(
 
     private fun logSessionEnd(error: Throwable?) {
         val executionTime = System.currentTimeMillis() - sessionStartTime
-        IntegrationLogger.logGrpcEvent(
-            message = if (error == null) "gRPC session completed" else "gRPC session failed",
-            executionTime = executionTime,
-            error = error
-        )
+        if (error != null && TolerantExceptionRegistry.isTolerant(error)) {
+            IntegrationLogger.logGrpcEvent(
+                message = "gRPC session completed (${error::class.simpleName})",
+                executionTime = executionTime
+            )
+        } else {
+            IntegrationLogger.logGrpcEvent(
+                message = if (error == null) "gRPC session completed" else "gRPC session failed",
+                executionTime = executionTime,
+                error = error
+            )
+        }
     }
 
     private suspend fun buildMetadataString(): String {
