@@ -1,4 +1,4 @@
-﻿FROM docker-dev.registry-ci.delta.sbrf.ru/ci04675739/ci04675739/sberjdk-21:java-21.0.9_001-sberlinux-ubi-9.6.2-se
+﻿FROM docker-dev.registry-ci.delta.sbrf.ru/ci04675739/ci04675739/sberjdk-21@sha256:7917291190c92f64a1f49d79b51be39b765d4ca2833a35597c76ab04503c73ff
 
 USER root
 
@@ -11,8 +11,7 @@ COPY conf/k8s/base/@fpi-name@/docker-entrypoint.sh /var/
 
 RUN chmod +x /var/docker-entrypoint.sh
 RUN chmod g+rwX /var/
-RUN dnf update -y
-RUN dnf install -y openssl
+RUN microdnf install -y openssl procps tar which --nodocs && microdnf clean all
 
 ENTRYPOINT [ "/var/docker-entrypoint.sh", "ru.sbrf.dab2c.executor.application.ApplicationEntryPointKt" ]
 
