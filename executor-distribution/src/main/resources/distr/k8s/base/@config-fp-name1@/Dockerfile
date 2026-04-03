@@ -11,6 +11,7 @@ COPY conf/k8s/base/@fpi-name@/docker-entrypoint.sh /var/
 
 RUN chmod +x /var/docker-entrypoint.sh
 RUN chmod g+rwX /var/
+RUN microdnf update -y
 RUN microdnf install -y openssl procps tar which --nodocs && microdnf clean all
 
 ENTRYPOINT [ "/var/docker-entrypoint.sh", "ru.sbrf.dab2c.executor.application.ApplicationEntryPointKt" ]
