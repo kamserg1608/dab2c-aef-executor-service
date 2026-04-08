@@ -21,6 +21,9 @@ executor:
   voice:
     agentName: ${EXECUTOR_VOICE_AGENT_NAME}
     channel: ${EXECUTOR_VOICE_CHANNEL}
+  additional-mdc-keys:
+    deploymentUnit: ${APP_DEPLOYMENT_UNIT:executor}
+    block: ${block.id:none}
   masking:
     key-masking-enabled: ${EXECUTOR_MASKING_KEY_ENABLED:true}
     regex-masking-enabled: ${EXECUTOR_MASKING_REGEX_ENABLED:true}
@@ -29,6 +32,10 @@ executor:
       - '(?<="patr_name":")[^"]*'
       - '(?<="firstName":")[^"]*'
       - '(?<="patrName":")[^"]*'
+      - '(?<=\\"first_name\\":\\")[^\\"]*'
+      - '(?<=\\"patr_name\\":\\")[^\\"]*'
+      - '(?<=\\"firstName\\":\\")[^\\"]*'
+      - '(?<=\\"patrName\\":\\")[^\\"]*'
 
 # GigaAgent HTTP Client
 giga:

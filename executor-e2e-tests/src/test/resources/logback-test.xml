@@ -18,6 +18,30 @@
         </layout>
     </appender>
 
+    <appender name="FILE_JSON" class="ch.qos.logback.core.FileAppender">
+        <file>logs/e2e-tests-json.log</file>
+        <append>false</append>
+        <encoder class="ru.sbrf.dab2c.executor.application.logging.MaskingLogstashEncoder">
+            <includeMdc>true</includeMdc>
+            <excludeMdcKeyName>__maskingValues</excludeMdcKeyName>
+            <includeCallerData>false</includeCallerData>
+            <fieldNames>
+                <timestamp>serverEventDatetime</timestamp>
+                <message>message</message>
+                <level>logLevel</level>
+                <version>[ignore]</version>
+                <levelValue>[ignore]</levelValue>
+            </fieldNames>
+            <timestampPattern>[UNIX_TIMESTAMP_AS_NUMBER]</timestampPattern>
+            <customFields>{"serviceName":"dab2c-executor","tenantCode":"DAB2C"}</customFields>
+            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                <maxLength>4096</maxLength>
+                <rootCauseFirst>true</rootCauseFirst>
+            </throwableConverter>
+        </encoder>
+    </appender>
+
     <!-- Suppress noisy debug logs from JDK internals -->
     <logger name="java.lang.ProcessBuilder" level="INFO"/>
 
@@ -37,6 +61,7 @@
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="FILE"/>
+        <appender-ref ref="FILE_JSON"/>
     </root>
 
 </configuration>

@@ -24,6 +24,7 @@
             </rollingPolicy>
             <encoder class="ru.sbrf.dab2c.executor.application.logging.MaskingLogstashEncoder">
                 <includeMdc>true</includeMdc>
+                <excludeMdcKeyName>__maskingValues</excludeMdcKeyName>
                 <includeCallerData>false</includeCallerData>
                 <fieldNames>
                     <timestamp>serverEventDatetime</timestamp>

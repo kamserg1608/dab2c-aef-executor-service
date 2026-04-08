@@ -14,6 +14,8 @@ object MdcKeys {
     const val USER_LOGIN = "userLogin"
     const val SERVICE_NAME = "serviceName"
     const val TENANT_CODE = "tenantCode"
+    const val DEPLOYMENT_UNIT = "deploymentUnit"
+    const val BLOCK = "block"
 
     // Integration-specific fields
     const val RQ_MESSAGE = "rqMessage"

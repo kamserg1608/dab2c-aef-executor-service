@@ -2,6 +2,9 @@ executor:
   voice:
     agentName: test-agent
     channel: test-channel
+  additional-mdc-keys:
+    deploymentUnit: executor
+    block: none
   masking:
     key-masking-enabled: true
     regex-masking-enabled: true
@@ -10,6 +13,10 @@ executor:
       - '(?<="patr_name":")[^"]*'
       - '(?<="firstName":")[^"]*'
       - '(?<="patrName":")[^"]*'
+      - '(?<=\\"first_name\\":\\")[^\\"]*'
+      - '(?<=\\"patr_name\\":\\")[^\\"]*'
+      - '(?<=\\"firstName\\":\\")[^\\"]*'
+      - '(?<=\\"patrName\\":\\")[^\\"]*'
 
 grpc:
   server:

@@ -34,6 +34,7 @@ object MdcContext {
         channel?.let { MDC.put(MdcKeys.CHANNEL, it) }
         platform?.let { MDC.put(MdcKeys.PLATFORM, it) }
         userLogin?.let { MDC.put(MdcKeys.USER_LOGIN, it) }
+        AdditionalMdcConfig.keys.forEach { (key, value) -> MDC.put(key, value) }
     }
 
     /**

@@ -105,6 +105,21 @@ class MaskingTest {
     }
 
     @Test
+    fun `regex masking should handle escaped JSON quotes`() {
+        MaskingConfig.configure(
+            keyEnabled = true, regexEnabled = true,
+            patterns = listOf("""(?<=\\"firstName\\":\\")[^\\"]*""", """(?<=\\"patrName\\":\\")[^\\"]*""")
+        )
+
+        val result = applyMasking(
+            """{"message":"{\"firstName\":\"Всеслав\",\"patrName\":\"Владиславович\"}"}""",
+            null
+        )
+
+        assertEquals("""{"message":"{\"firstName\":\"***\",\"patrName\":\"***\"}"}""", result)
+    }
+
+    @Test
     fun `should apply both key and regex masking together`() {
         MaskingConfig.configure(
             keyEnabled = true, regexEnabled = true,
