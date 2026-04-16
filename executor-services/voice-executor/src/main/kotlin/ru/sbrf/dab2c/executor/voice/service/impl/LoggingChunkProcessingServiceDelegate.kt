@@ -55,6 +55,8 @@ class LoggingChunkProcessingServiceDelegate(
                 content = content.copy(audio = content.audio.copy(audioChunk = byteArrayOf()))
             )
             logger.debug { "$direction$RESPONSE_PREFIX$sanitized" }
+        } else if (response is VoiceResponse.ServiceInfo) {
+            logSessionInfo(response)
         } else {
             logger.debug { "$direction$RESPONSE_PREFIX$response" }
         }
@@ -82,6 +84,12 @@ class LoggingChunkProcessingServiceDelegate(
                 error = error
             )
         }
+    }
+
+    private fun logSessionInfo(response: VoiceResponse.ServiceInfo) {
+        IntegrationLogger.logGrpcEvent(
+            message = "gRPC session info $response",
+        )
     }
 
     private suspend fun buildMetadataString(): String {

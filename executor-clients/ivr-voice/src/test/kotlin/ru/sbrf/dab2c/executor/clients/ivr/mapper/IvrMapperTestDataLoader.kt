@@ -14,6 +14,7 @@ import ru.sbrf.dab2c.executor.domain.voice.AudioOutput
 import ru.sbrf.dab2c.executor.domain.voice.AudioOutputSettings
 import ru.sbrf.dab2c.executor.domain.voice.AudioSettings
 import ru.sbrf.dab2c.executor.domain.voice.ContentFromModel
+import ru.sbrf.dab2c.executor.domain.voice.DisableInterruption
 import ru.sbrf.dab2c.executor.domain.voice.Emotion
 import ru.sbrf.dab2c.executor.domain.voice.ErrorData
 import ru.sbrf.dab2c.executor.domain.voice.FilterSettings
@@ -22,21 +23,32 @@ import ru.sbrf.dab2c.executor.domain.voice.FunctionCall
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionDefinition
 import ru.sbrf.dab2c.executor.domain.voice.FunctionExample
+import ru.sbrf.dab2c.executor.domain.voice.FunctionRanker
 import ru.sbrf.dab2c.executor.domain.voice.FunctionRegistry
 import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
+import ru.sbrf.dab2c.executor.domain.voice.FunctionSoundRule
 import ru.sbrf.dab2c.executor.domain.voice.GenderType
 import ru.sbrf.dab2c.executor.domain.voice.GigaChatModelInfo
 import ru.sbrf.dab2c.executor.domain.voice.GigaChatSettings
 import ru.sbrf.dab2c.executor.domain.voice.InitialContext
 import ru.sbrf.dab2c.executor.domain.voice.InputTranscriptionData
+import ru.sbrf.dab2c.executor.domain.voice.LockFunctionExecution
 import ru.sbrf.dab2c.executor.domain.voice.Message
 import ru.sbrf.dab2c.executor.domain.voice.OutputModalities
 import ru.sbrf.dab2c.executor.domain.voice.OutputTranscriptionData
 import ru.sbrf.dab2c.executor.domain.voice.PersonIdentity
+import ru.sbrf.dab2c.executor.domain.voice.PlatformFunctionProcessingData
 import ru.sbrf.dab2c.executor.domain.voice.RequestContentSettings
 import ru.sbrf.dab2c.executor.domain.voice.ResponseContentSettings
+import ru.sbrf.dab2c.executor.domain.voice.ServiceInfoData
+import ru.sbrf.dab2c.executor.domain.voice.ServiceVersion
+import ru.sbrf.dab2c.executor.domain.voice.Speed
+import ru.sbrf.dab2c.executor.domain.voice.StubSounds
 import ru.sbrf.dab2c.executor.domain.voice.SynthesisContent
 import ru.sbrf.dab2c.executor.domain.voice.SynthesisContentType
+import ru.sbrf.dab2c.executor.domain.voice.TriggerFunction
+import ru.sbrf.dab2c.executor.domain.voice.TriggerFunctionMode
+import ru.sbrf.dab2c.executor.domain.voice.TriggerGeneration
 import ru.sbrf.dab2c.executor.domain.voice.UsageData
 import ru.sbrf.dab2c.executor.domain.voice.VoiceMode
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
@@ -125,6 +137,9 @@ object IvrMapperTestDataLoader {
                 VoiceResponse.OutputTranscription(parseOutputTranscriptionData(json["transcription"]))
             "Error" -> VoiceResponse.Error(parseErrorData(json["error"]))
             "Warning" -> VoiceResponse.Warning(parseWarningData(json["warning"]))
+            "PlatformFunctionProcessing" ->
+                VoiceResponse.PlatformFunctionProcessing(parsePlatformFunctionProcessing(json["data"]))
+            "ServiceInfo" -> VoiceResponse.ServiceInfo(parseServiceInfo(json["data"]))
             else -> error("Unknown VoiceResponse type: $type")
         }
 
@@ -245,6 +260,27 @@ object IvrMapperTestDataLoader {
         )
     }
 
+    private fun parsePlatformFunctionProcessing(json: JsonNode): PlatformFunctionProcessingData {
+        return PlatformFunctionProcessingData(
+            name = json["name"].asText(),
+            timestamp = json["timestamp"].asLong(),
+        )
+    }
+
+    private fun parseServiceInfo(json: JsonNode): ServiceInfoData {
+        return ServiceInfoData(
+            services = json["services"]?.map { parseServiceVersion(it) } ?: emptyList(),
+        )
+    }
+
+    private fun parseServiceVersion(json: JsonNode): ServiceVersion {
+        return ServiceVersion(
+            serviceName = json["serviceName"].asText(),
+            version = json["version"].asText(),
+            build = json["build"].asText(),
+        )
+    }
+
     // ===================== Domain Request Parsing (for request tests expected) =====================
 
     private fun parseDomainRequest(json: JsonNode): VoiceRequest {
@@ -301,7 +337,24 @@ object IvrMapperTestDataLoader {
             enablePersonIdentity = json["enablePersonIdentity"]?.asBoolean() ?: false,
             enableWhisper = json["enableWhisper"]?.asBoolean() ?: false,
             enableEmotion = json["enableEmotion"]?.asBoolean() ?: false,
-            enableTranscribeSilencePhrases = json["enableTranscribeSilencePhrases"]?.asBoolean() ?: false
+            enableTranscribeSilencePhrases = json["enableTranscribeSilencePhrases"]?.asBoolean() ?: false,
+            disableInterruption = json["disableInterruption"]
+                ?.takeIf { !it.isNull }
+                ?.let { parseDisableInterruption(it) },
+        )
+    }
+
+    private fun parseDisableInterruption(json: JsonNode): DisableInterruption {
+        return DisableInterruption(
+            functions = json["functions"]?.map { parseLockFunctionExecution(it) } ?: emptyList(),
+        )
+    }
+
+    private fun parseLockFunctionExecution(json: JsonNode): LockFunctionExecution {
+        return LockFunctionExecution(
+            name = json["name"].asText(),
+            onExecution = json["onExecution"]?.takeIf { !it.isNull }?.asBoolean(),
+            afterResult = json["afterResult"]?.takeIf { !it.isNull }?.asBoolean(),
         )
     }
 
@@ -330,7 +383,10 @@ object IvrMapperTestDataLoader {
         return AudioOutputSettings(
             voice = json["voice"]?.takeIf { !it.isNull }?.asText(),
             audioEncoding = json["audioEncoding"]?.asText()?.let { AudioEncoding.valueOf(it) }
-                ?: AudioEncoding.UNSPECIFIED
+                ?: AudioEncoding.UNSPECIFIED,
+            stubSounds = json["stubSounds"]?.takeIf { !it.isNull }?.let { parseStubSounds(it) },
+            speed = json["speed"]?.asText()?.let { Speed.valueOf(it) }
+                ?: Speed.SPEED_UNSPECIFIED,
         )
     }
 
@@ -346,7 +402,9 @@ object IvrMapperTestDataLoader {
                 it.key to parseFilterSettings(it.value)
             } ?: emptyMap(),
             functions = json["functions"]?.map { parseFunctionDefinition(it) } ?: emptyList(),
-            functionRegistry = json["functionRegistry"]?.takeIf { !it.isNull }?.let { parseFunctionRegistry(it) }
+            functionRegistry = json["functionRegistry"]?.takeIf { !it.isNull }?.let { parseFunctionRegistry(it) },
+            functionRanker = json["functionRanker"]?.takeIf { !it.isNull }?.let { parseFunctionRanker(it) },
+            preset = json["preset"]?.takeIf { !it.isNull }?.asText(),
         )
     }
 
@@ -395,6 +453,47 @@ object IvrMapperTestDataLoader {
             profile = json["profile"]?.takeIf { !it.isNull }?.asText(),
             labels = json["labels"]?.map { it.asText() } ?: emptyList(),
             abFlags = json["abFlags"]?.takeIf { !it.isNull }?.asText()
+        )
+    }
+
+    private fun parseStubSounds(json: JsonNode): StubSounds {
+        return StubSounds(
+            triggerGeneration = json["triggerGeneration"]?.takeIf { !it.isNull }?.let { parseTriggerGeneration(it) },
+            triggerFunction = json["triggerFunction"]?.takeIf { !it.isNull }?.let { parseTriggerFunction(it) },
+            sounds = json["sounds"]?.map { it.asText() } ?: emptyList(),
+        )
+    }
+
+    private fun parseTriggerGeneration(json: JsonNode): TriggerGeneration {
+        return TriggerGeneration(
+            timeout = json["timeout"]?.takeIf { !it.isNull }?.asLong()?.milliseconds,
+            enable = json["enable"].asBoolean(),
+        )
+    }
+
+    private fun parseTriggerFunction(json: JsonNode): TriggerFunction {
+        return TriggerFunction(
+            enable = json["enabled"]?.takeIf { !it.isNull }?.asBoolean() ?: false,
+            mode = json["mode"]?.asText()?.let { TriggerFunctionMode.valueOf(it) }
+                ?: TriggerFunctionMode.UNSPECIFIED,
+            functionNames = json["functionNames"]?.map { it.asText() } ?: emptyList(),
+            rules = json["rules"]?.map { parseFunctionSoundRule(it) } ?: emptyList(),
+        )
+    }
+
+    private fun parseFunctionSoundRule(json: JsonNode): FunctionSoundRule {
+        return FunctionSoundRule(
+            functionNames = json["functionNames"]?.map { it.asText() } ?: emptyList(),
+            sounds = json["sounds"]?.map { it.asText() } ?: emptyList(),
+        )
+    }
+
+    private fun parseFunctionRanker(json: JsonNode): FunctionRanker {
+        return FunctionRanker(
+            enabled = json["enabled"]?.takeIf { !it.isNull }?.asBoolean(),
+            topN = json["topN"]?.takeIf { !it.isNull }?.asInt(),
+            embedderModel = json["embedderModel"]?.takeIf { !it.isNull }?.asText(),
+            ignoredFunctions = json["ignoredFunctions"]?.map { it.asText() } ?: emptyList(),
         )
     }
 

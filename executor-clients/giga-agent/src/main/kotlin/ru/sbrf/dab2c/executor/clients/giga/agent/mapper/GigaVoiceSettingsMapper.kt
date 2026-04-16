@@ -26,6 +26,7 @@ import ru.sbrf.dab2c.executor.domain.voice.AudioEncoding
 import ru.sbrf.dab2c.executor.domain.voice.AudioInputSettings
 import ru.sbrf.dab2c.executor.domain.voice.AudioOutputSettings
 import ru.sbrf.dab2c.executor.domain.voice.AudioSettings
+import ru.sbrf.dab2c.executor.domain.voice.DisableInterruption
 import ru.sbrf.dab2c.executor.domain.voice.FilterSettings
 import ru.sbrf.dab2c.executor.domain.voice.FirstSpeaker
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
@@ -35,19 +36,25 @@ import ru.sbrf.dab2c.executor.domain.voice.FunctionOptions
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
 import ru.sbrf.dab2c.executor.domain.voice.FunctionRegistry
 import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
+import ru.sbrf.dab2c.executor.domain.voice.FunctionSoundRule
 import ru.sbrf.dab2c.executor.domain.voice.GigaChatSettings
 import ru.sbrf.dab2c.executor.domain.voice.InitialContext
+import ru.sbrf.dab2c.executor.domain.voice.LockFunctionExecution
 import ru.sbrf.dab2c.executor.domain.voice.Message
 import ru.sbrf.dab2c.executor.domain.voice.OutputModalities
+import ru.sbrf.dab2c.executor.domain.voice.Speed
 import ru.sbrf.dab2c.executor.domain.voice.StubSounds
 import ru.sbrf.dab2c.executor.domain.voice.TriggerFunctionMode
 import ru.sbrf.dab2c.executor.domain.voice.VoiceMode
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.DisableInterruption as ApiDisableInterruption
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FilterSettings as ApiFilterSettings
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FirstSpeaker as ApiFirstSpeaker
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCalling as ApiFunctionCalling
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionRanker as ApiFunctionRanker
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionRegistry as ApiFunctionRegistry
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionSoundRule as ApiFunctionSoundRule
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.LockFunctionExecution as ApiLockFunctionExecution
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.Message as ApiMessage
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.TriggerFunction as ApiTriggerFunction
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.TriggerGeneration as ApiTriggerGeneration
@@ -77,7 +84,8 @@ object GigaVoiceSettingsMapper {
         enablePersonIdentity = source.enablePersonIdentity,
         enableWhisper = source.enableWhisper,
         enableEmotion = source.enableEmotion,
-        enableTranscribeSilencePhrases = source.enableTranscribeSilencePhrases
+        enableTranscribeSilencePhrases = source.enableTranscribeSilencePhrases,
+        disableInterruption = toApiDisableInterruptions(source.disableInterruption),
     )
 
     // === SettingsOutput -> VoiceSettings ===
@@ -97,7 +105,8 @@ object GigaVoiceSettingsMapper {
         enablePersonIdentity = source.enablePersonIdentity ?: false,
         enableWhisper = source.enableWhisper ?: false,
         enableEmotion = source.enableEmotion ?: false,
-        enableTranscribeSilencePhrases = source.enableTranscribeSilencePhrases ?: false
+        enableTranscribeSilencePhrases = source.enableTranscribeSilencePhrases ?: false,
+        disableInterruption = toDomainDisableInterruptions(source.disableInterruption),
     )
 
     // === Performers -> FunctionPerformers ===
@@ -123,8 +132,13 @@ object GigaVoiceSettingsMapper {
 
     fun toApiAudioEncoding(encoding: AudioEncoding): Int = encoding.value
 
+    fun toApiSpeed(speed: Speed): Int = speed.value
+
     fun toDomainAudioEncoding(encoding: Int?): AudioEncoding =
         encoding?.let { AudioEncoding.entries[it] } ?: AudioEncoding.UNSPECIFIED
+
+    fun toDomainSpeed(speed: Int?): Speed =
+        speed?.let { Speed.entries[it] } ?: Speed.SPEED_UNSPECIFIED
 
     // === Audio settings mapping ===
 
@@ -168,14 +182,44 @@ object GigaVoiceSettingsMapper {
         OutputInput(
             voice = source.voice,
             audioEncoding = toApiAudioEncoding(source.audioEncoding),
-            stubSounds = source.stubSounds?.let { toApiStubSoundsInput(it) }
+            stubSounds = source.stubSounds?.let { toApiStubSoundsInput(it) },
+            speed = toApiSpeed(source.speed),
         )
 
     fun toDomainAudioOutputSettings(source: OutputOutput): AudioOutputSettings =
         AudioOutputSettings(
             voice = source.voice,
             audioEncoding = toDomainAudioEncoding(source.audioEncoding),
-            stubSounds = source.stubSounds?.let { toDomainStubSounds(it) }
+            stubSounds = source.stubSounds?.let { toDomainStubSounds(it) },
+            speed = toDomainSpeed(source.speed),
+        )
+
+    fun toApiDisableInterruptions(interruption: DisableInterruption?): ApiDisableInterruption? =
+        interruption?.let {
+            ApiDisableInterruption(
+                functions = interruption.functions.map { toApiLockFunctions(it) },
+            )
+        }
+
+    fun toApiLockFunctions(lock: LockFunctionExecution): ApiLockFunctionExecution =
+        ApiLockFunctionExecution(
+            name = lock.name,
+            onExecution = lock.onExecution,
+            afterResult = lock.afterResult,
+        )
+
+    fun toDomainDisableInterruptions(interruption: ApiDisableInterruption?): DisableInterruption? =
+        interruption?.let {
+            DisableInterruption(
+                functions = interruption.functions?.map { toDomainLockFunctions(it) } ?: emptyList(),
+            )
+        }
+
+    fun toDomainLockFunctions(lock: ApiLockFunctionExecution): LockFunctionExecution =
+        LockFunctionExecution(
+            name = lock.name,
+            onExecution = lock.onExecution,
+            afterResult = lock.afterResult,
         )
 
     fun toApiStubSoundsInput(source: StubSounds): StubSoundsInput =
@@ -196,7 +240,8 @@ object GigaVoiceSettingsMapper {
         ApiTriggerFunction(
             enable = source.enable,
             mode = toApiTriggerFunctionMode(source.mode),
-            functionNames = source.functionNames
+            functionNames = source.functionNames,
+            rules = source.rules.map { toApiRule(it) },
         )
 
     private fun toDomainTriggerFunction(source: ApiTriggerFunction): DomainTriggerFunction =
@@ -204,7 +249,20 @@ object GigaVoiceSettingsMapper {
             enable = source.enable,
             mode = source.mode?.let { toDomainTriggerFunctionMode(it) }
                 ?: TriggerFunctionMode.UNSPECIFIED,
-            functionNames = source.functionNames ?: emptyList()
+            functionNames = source.functionNames ?: emptyList(),
+            rules = source.rules?.map { toDomainRule(it) } ?: emptyList(),
+        )
+
+    private fun toApiRule(rule: FunctionSoundRule): ApiFunctionSoundRule =
+        ApiFunctionSoundRule(
+            functionNames = rule.functionNames,
+            sounds = rule.sounds,
+        )
+
+    private fun toDomainRule(rule: ApiFunctionSoundRule): FunctionSoundRule =
+        FunctionSoundRule(
+            functionNames = rule.functionNames ?: emptyList(),
+            sounds = rule.sounds ?: emptyList(),
         )
 
     private fun toApiTriggerFunctionMode(mode: TriggerFunctionMode): Int = mode.ordinal
@@ -241,7 +299,8 @@ object GigaVoiceSettingsMapper {
                 functionRegistry = it.functionRegistry?.let { reg -> toApiFunctionRegistry(reg) },
                 filterStubPhrases = it.filterStubPhrases.takeIf { list -> list.isNotEmpty() },
                 currentTime = it.currentTime,
-                functionRanker = it.functionRanker?.let { fr -> toApiFunctionRanker(fr) }
+                functionRanker = it.functionRanker?.let { fr -> toApiFunctionRanker(fr) },
+                preset = it.preset,
             )
         }
 
@@ -261,20 +320,25 @@ object GigaVoiceSettingsMapper {
                 functionRegistry = it.functionRegistry?.let { reg -> toDomainFunctionRegistry(reg) },
                 filterStubPhrases = it.filterStubPhrases ?: emptyList(),
                 currentTime = it.currentTime,
-                functionRanker = it.functionRanker?.let { fr -> toDomainFunctionRanker(fr) }
+                functionRanker = it.functionRanker?.let { fr -> toDomainFunctionRanker(fr) },
+                preset = it.preset,
             )
         }
 
     private fun toApiFunctionRanker(source: DomainFunctionRanker): ApiFunctionRanker =
         ApiFunctionRanker(
             enabled = source.enabled,
-            topN = source.topN
+            topN = source.topN,
+            embedderModel = source.embedderModel,
+            ignoredFunctions = source.ignoredFunctions,
         )
 
     private fun toDomainFunctionRanker(source: ApiFunctionRanker): DomainFunctionRanker =
         DomainFunctionRanker(
             enabled = source.enabled,
-            topN = source.topN
+            topN = source.topN,
+            embedderModel = source.embedderModel,
+            ignoredFunctions = source.ignoredFunctions ?: emptyList(),
         )
 
     // === Function mapping (Domain → API) ===

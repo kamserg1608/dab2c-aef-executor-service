@@ -12,6 +12,9 @@ import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaChatModelInfo
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceResponse
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.inputTranscription
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.outputTranscription
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.platformFunctionProcessing
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.serviceInfo
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.serviceVersion
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.usage
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.warning
 
@@ -96,6 +99,31 @@ object GigaVoiceResponseFixtures {
         error = error {
             this.status = status
             this.message = message
+        }
+    }
+
+    fun serviceInfo(
+        name: String = "mock",
+        versionName: String = "1",
+        buildName: String = "b1"
+    ): GigaVoiceResponse = gigaVoiceResponse {
+        serviceInfo = serviceInfo {
+            services.add(
+                serviceVersion {
+                    serviceName = name
+                    version = versionName
+                    build = buildName
+                }
+            )
+        }
+    }
+
+    fun platformFunctionProcessing(
+        functionName: String = "function",
+    ): GigaVoiceResponse = gigaVoiceResponse {
+        platformFunctionProcessing = platformFunctionProcessing {
+            name = functionName
+            timestamp = System.currentTimeMillis()
         }
     }
 }

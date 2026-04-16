@@ -3,7 +3,7 @@
   "info": {
     "title": "GigaVoice Agent HTTP API",
     "description": "API для взаимодействия с агентом для GigaVoice через HTTP.",
-    "version": "0.1.1"
+    "version": "0.1.2"
   },
   "paths": {
     "/settings": {
@@ -427,6 +427,21 @@
         "title": "AudioSettings",
         "description": "Настройки звука."
       },
+      "DisableInterruption": {
+        "properties": {
+          "functions": {
+            "items": {
+              "$ref": "#/components/schemas/LockFunctionExecution"
+            },
+            "type": "array",
+            "title": "Functions",
+            "description": "Точечные правила для функций"
+          }
+        },
+        "type": "object",
+        "title": "DisableInterruption",
+        "description": "Отключение перебивания глобально или для отдельных функций."
+      },
       "FilterSettings": {
         "properties": {
           "request_content": {
@@ -692,6 +707,33 @@
             ],
             "title": "Top N",
             "description": "Топ-N функций после ранжирования"
+          },
+          "embedder_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedder Model",
+            "description": "Модель эмбеддера для ранжирования функций"
+          },
+          "ignored_functions": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ignored Functions",
+            "description": "Список функций, которые следует игнорировать при ранжировании"
           }
         },
         "type": "object",
@@ -770,6 +812,29 @@
         ],
         "title": "FunctionResult",
         "description": "Результат выполнения функции"
+      },
+      "FunctionSoundRule": {
+        "properties": {
+          "function_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Function Names",
+            "description": "Список имен функций"
+          },
+          "sounds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sounds",
+            "description": "Список звуков-заглушек для этих функций"
+          }
+        },
+        "type": "object",
+        "title": "FunctionSoundRule",
+        "description": "Правило для вставки звуков-заглушек в зависимости от вызываемой функции."
       },
       "GigaChatSettings-Input": {
         "properties": {
@@ -926,6 +991,18 @@
               }
             ],
             "description": "Настройки ранжирования функций"
+          },
+          "preset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset",
+            "description": "Пресет/шаблон модели Gigachat"
           }
         },
         "type": "object",
@@ -1087,6 +1164,18 @@
               }
             ],
             "description": "Настройки ранжирования функций"
+          },
+          "preset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset",
+            "description": "Пресет/шаблон модели Gigachat"
           }
         },
         "type": "object",
@@ -1530,6 +1619,33 @@
         "title": "Input",
         "description": "Настройки аудио входа."
       },
+      "LockFunctionExecution": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Название функции"
+          },
+          "on_execution": {
+            "type": "boolean",
+            "title": "On Execution",
+            "description": "Нельзя перебивать функцию во время выполнения",
+            "default": false
+          },
+          "after_result": {
+            "type": "boolean",
+            "title": "After Result",
+            "description": "Нельзя перебивать, пока озвучивается результат функции",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "LockFunctionExecution",
+        "description": "Правило блокировки перебивания для конкретной функции."
+      },
       "Message": {
         "properties": {
           "role": {
@@ -1660,6 +1776,17 @@
               }
             ],
             "description": "Настройки звуков-заглушек при вызове функций"
+          },
+          "speed": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Speed"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Скорость синтеза речи"
           }
         },
         "type": "object",
@@ -1695,6 +1822,17 @@
               }
             ],
             "description": "Настройки звуков-заглушек при вызове функций"
+          },
+          "speed": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Speed"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Скорость синтеза речи"
           }
         },
         "type": "object",
@@ -2157,6 +2295,17 @@
             "type": "boolean",
             "description": "Отсылать дополнительно транскрипцию для is_silent фраз. По умолчанию false",
             "default": false
+          },
+          "disable_interruption": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DisableInterruption"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Отключение перебивания глобально или для отдельных функций"
           }
         },
         "type": "object",
@@ -2336,6 +2485,17 @@
             "type": "boolean",
             "description": "Отсылать дополнительно транскрипцию для is_silent фраз. По умолчанию false",
             "default": false
+          },
+          "disable_interruption": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DisableInterruption"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Отключение перебивания глобально или для отдельных функций"
           }
         },
         "type": "object",
@@ -2345,6 +2505,12 @@
         ],
         "title": "Settings",
         "description": "Схема для передачи списка настроек поступающих на вход в GigaVoice."
+      },
+      "Speed": {
+        "type": "integer",
+        "format": "int32",
+        "title": "Speed",
+        "description": "Скорость синтеза речи."
       },
       "StubSounds-Input": {
         "properties": {
@@ -2414,6 +2580,14 @@
             "type": "array",
             "title": "Function Names",
             "description": "Список имён функций для триггера"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/FunctionSoundRule"
+            },
+            "type": "array",
+            "title": "Rules",
+            "description": "Правила для вставки звуков-заглушек в зависимости от вызываемой функции"
           }
         },
         "type": "object",

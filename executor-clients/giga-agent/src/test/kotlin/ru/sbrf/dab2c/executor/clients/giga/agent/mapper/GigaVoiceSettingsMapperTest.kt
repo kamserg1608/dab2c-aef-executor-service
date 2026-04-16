@@ -5,15 +5,28 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.AudioSettingsOutput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionInput
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaChatSettingsOutput
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.OutputOutput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.SettingsOutput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.StubSoundsOutput
+import ru.sbrf.dab2c.executor.domain.voice.AudioOutputSettings
 import ru.sbrf.dab2c.executor.domain.voice.AudioSettings
+import ru.sbrf.dab2c.executor.domain.voice.DisableInterruption
 import ru.sbrf.dab2c.executor.domain.voice.FunctionDefinition
+import ru.sbrf.dab2c.executor.domain.voice.FunctionRanker
+import ru.sbrf.dab2c.executor.domain.voice.FunctionSoundRule
+import ru.sbrf.dab2c.executor.domain.voice.GigaChatSettings
+import ru.sbrf.dab2c.executor.domain.voice.LockFunctionExecution
 import ru.sbrf.dab2c.executor.domain.voice.Message
+import ru.sbrf.dab2c.executor.domain.voice.Speed
 import ru.sbrf.dab2c.executor.domain.voice.StubSounds
 import ru.sbrf.dab2c.executor.domain.voice.TriggerFunctionMode
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import kotlin.time.Duration.Companion.seconds
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.DisableInterruption as ApiDisableInterruption
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionRanker as ApiFunctionRanker
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionSoundRule as ApiFunctionSoundRule
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.LockFunctionExecution as ApiLockFunctionExecution
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.Message as ApiMessage
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.TriggerFunction as ApiTriggerFunction
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.TriggerGeneration as ApiTriggerGeneration
@@ -138,7 +151,15 @@ class GigaVoiceSettingsMapperTest {
         fun `should preserve all fields through domain to API to domain conversion`() {
             val original = VoiceSettings(
                 voiceCallId = "round-trip-id",
-                audio = AudioSettings(),
+                audio = AudioSettings(output = AudioOutputSettings(speed = Speed.MEDIUM)),
+                gigachat = GigaChatSettings(
+                    preset = "preset",
+                    functionRanker = FunctionRanker(
+                        enabled = true,
+                        embedderModel = "embed-model",
+                        ignoredFunctions = listOf("function1"),
+                    )
+                ),
                 disableVad = true,
                 enableTranscribeInput = true,
                 flags = listOf("alpha", "beta"),
@@ -147,13 +168,30 @@ class GigaVoiceSettingsMapperTest {
                 enablePersonIdentity = true,
                 enableWhisper = false,
                 enableEmotion = true,
-                enableTranscribeSilencePhrases = true
+                enableTranscribeSilencePhrases = true,
+                disableInterruption = DisableInterruption(
+                    functions = listOf(
+                        LockFunctionExecution(
+                            name = "lock-function",
+                            onExecution = true,
+                            afterResult = false
+                        )
+                    )
+                )
             )
 
             val api = GigaVoiceSettingsMapper.toApiSettingsInput(original)
             val apiOutput = SettingsOutput(
                 voiceCallId = api.voiceCallId,
-                audio = AudioSettingsOutput(),
+                audio = AudioSettingsOutput(output = OutputOutput(speed = 3)),
+                gigachat = GigaChatSettingsOutput(
+                    preset = "preset",
+                    functionRanker = ApiFunctionRanker(
+                        enabled = true,
+                        embedderModel = "embed-model",
+                        ignoredFunctions = listOf("function1"),
+                    )
+                ),
                 disableVad = api.disableVad,
                 enableTranscribeInput = api.enableTranscribeInput,
                 flags = api.flags,
@@ -162,7 +200,16 @@ class GigaVoiceSettingsMapperTest {
                 enablePersonIdentity = api.enablePersonIdentity,
                 enableWhisper = api.enableWhisper,
                 enableEmotion = api.enableEmotion,
-                enableTranscribeSilencePhrases = api.enableTranscribeSilencePhrases
+                enableTranscribeSilencePhrases = api.enableTranscribeSilencePhrases,
+                disableInterruption = ApiDisableInterruption(
+                    functions = listOf(
+                        ApiLockFunctionExecution(
+                            name = "lock-function",
+                            onExecution = true,
+                            afterResult = false
+                        )
+                    )
+                )
             )
             val result = GigaVoiceSettingsMapper.toDomainSettings(apiOutput)
 
@@ -175,6 +222,14 @@ class GigaVoiceSettingsMapperTest {
             assertThat(result.enableWhisper).isEqualTo(original.enableWhisper)
             assertThat(result.enableEmotion).isEqualTo(original.enableEmotion)
             assertThat(result.enableTranscribeSilencePhrases).isEqualTo(original.enableTranscribeSilencePhrases)
+            assertThat(result.audio.output!!.speed).isEqualTo(original.audio.output!!.speed)
+            assertThat(result.gigachat!!.preset).isEqualTo(original.gigachat!!.preset)
+
+            val functionRanker = result.gigachat!!.functionRanker!!
+            val originalFunctionRanker = original.gigachat!!.functionRanker!!
+            assertThat(functionRanker.enabled).isEqualTo(originalFunctionRanker.enabled)
+            assertThat(functionRanker.embedderModel).isEqualTo(originalFunctionRanker.embedderModel)
+            assertThat(functionRanker.ignoredFunctions).isEqualTo(originalFunctionRanker.ignoredFunctions)
         }
     }
 
@@ -188,7 +243,13 @@ class GigaVoiceSettingsMapperTest {
                 triggerFunction = DomainTriggerFunction(
                     enable = true,
                     mode = TriggerFunctionMode.WHITELIST,
-                    functionNames = listOf("func1")
+                    functionNames = listOf("func1"),
+                    rules = listOf(
+                        FunctionSoundRule(
+                            functionNames = listOf("function1"),
+                            sounds = listOf("sound1"),
+                        )
+                    )
                 ),
                 sounds = listOf("sound1", "sound2")
             )
@@ -199,6 +260,10 @@ class GigaVoiceSettingsMapperTest {
             assertThat(result.triggerGeneration!!.enable).isTrue()
             assertThat(result.triggerFunction!!.enable).isTrue()
             assertThat(result.sounds).containsExactly("sound1", "sound2")
+            assertThat(result.triggerFunction).isNotNull
+            assertThat(result.triggerFunction!!.rules).hasSize(1)
+            assertThat(result.triggerFunction!!.rules!![0].functionNames).containsExactly("function1")
+            assertThat(result.triggerFunction!!.rules!![0].sounds).containsExactly("sound1")
         }
 
         @Test
@@ -226,7 +291,13 @@ class GigaVoiceSettingsMapperTest {
                 triggerFunction = ApiTriggerFunction(
                     enable = true,
                     mode = 1,
-                    functionNames = listOf("func1")
+                    functionNames = listOf("func1"),
+                    rules = listOf(
+                        ApiFunctionSoundRule(
+                            functionNames = listOf("function1"),
+                            sounds = listOf("sound1"),
+                        )
+                    )
                 ),
                 sounds = listOf("sound1")
             )
@@ -239,6 +310,10 @@ class GigaVoiceSettingsMapperTest {
             assertThat(result.triggerFunction).isNotNull
             assertThat(result.triggerFunction!!.enable).isTrue()
             assertThat(result.sounds).containsExactly("sound1")
+            assertThat(result.triggerFunction).isNotNull
+            assertThat(result.triggerFunction!!.rules).hasSize(1)
+            assertThat(result.triggerFunction!!.rules[0].functionNames).containsExactly("function1")
+            assertThat(result.triggerFunction!!.rules[0].sounds).containsExactly("sound1")
         }
 
         @Test

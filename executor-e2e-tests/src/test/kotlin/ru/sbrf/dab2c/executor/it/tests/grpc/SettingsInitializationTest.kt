@@ -13,6 +13,7 @@ import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.audio
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.contextRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.settingsRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.outputTranscriptionResponse
+import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.serviceInfo
 import ru.sbrf.dab2c.executor.it.support.grpc.MetadataInterceptor
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
@@ -65,6 +66,9 @@ class SettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("audio-flow-test"))
             mock.awaitRequest { it.hasSettings() }
+
+            mock.sendResponse(serviceInfo())
+            session.awaitResponse { it.hasServiceInfo() }
 
             mock.sendResponse(outputTranscriptionResponse())
             session.awaitResponse()

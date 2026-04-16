@@ -31,6 +31,8 @@ message GigaVoiceResponse {
     Error error = 5;
     Warning warning = 6;
     InputFiles input_files = 7;
+    PlatformFunctionProcessing platform_function_processing = 8;
+    ServiceInfo service_info = 9;
   }
 }
 
@@ -49,7 +51,7 @@ message Settings {
     TEXT = 3;
   }
   GigaChatSettings gigachat = 1;
-  AudioSettings audio  = 2;
+  AudioSettings audio = 2;
   InitialContext context = 3;
   optional bool disable_vad = 4;
   optional bool enable_transcribe_input = 5;
@@ -63,7 +65,8 @@ message Settings {
   optional bool enable_person_identity = 13;
   optional bool enable_whisper = 14;
   optional bool enable_emotion = 15;
-  optional bool enable_transcribe_silence_phrases = 16;
+  optional bool enable_transcribe_silence_phrases = 16; //Отсылаем дополнительно транскрипцию для is_silent фраз. По умолчанию false
+  DisableInterruption disable_interruption = 17; //Отключение перебивания глобально или для отдельных функций
 }
 
 message AudioSettings {
@@ -95,9 +98,18 @@ message Output {
     OPUS = 2; // mime audio/ogg; codecs=opus
     PCM_ALAW = 3; // audio/alaw logarithmic  encoding to 8 bits per sample
   }
+  enum Speed {
+    SPEED_UNSPECIFIED = 0; // не выбрано
+    EXTRA_SLOW = 1; // очень медленно
+    SLOW = 2; // медленно
+    MEDIUM = 3; // средний темп
+    FAST = 4; // быстро
+    EXTRA_FAST = 5; // очень быстро
+  }
   optional string voice = 1;
   AudioEncoding audio_encoding = 2;
   StubSounds stub_sounds = 3;
+  Speed speed = 4;
 }
 
 message GigaChatSettings {
@@ -113,6 +125,7 @@ message GigaChatSettings {
   repeated string filter_stub_phrases = 10;
   optional int32 current_time = 11;
   FunctionRanker function_ranker = 12;
+  optional string preset = 13;
 }
 
 message FilterSettings{
@@ -162,13 +175,23 @@ message Message {
   optional string function_name = 4;
   optional string functions_state_id = 5;
   repeated string attachments = 6;
-  map <string,string> inline_data = 7;
-  repeated Function functions = 8;
+  map <string, string> inline_data = 7; // для функций поиска, в значении будет валидный json
+  repeated Function functions = 8; // Описание для функций которые якобы выполнялись в этом сообщении (не путать с GigaChatSettings.functions)
 }
 
 message FirstSpeaker {
   optional string type = 1;
   optional bool lock_first_in = 2;
+}
+
+message DisableInterruption {
+  repeated LockFunctionExecution functions = 1; //Точечные правила для функций
+}
+
+message LockFunctionExecution {
+  string name = 1;
+  bool on_execution = 2; //Нельзя перебивать функцию во время выполнения
+  bool after_result = 3; //Нельзя перебивать, пока озвучивается результат функции
 }
 
 message ContentFromClient {
@@ -184,6 +207,10 @@ message AudioContent {
   optional bool speech_end = 3;
   AudioChunkMeta meta = 10;
 }
+
+message AudioChunkMeta {
+  optional bool force_no_speech = 1; //на стороне колонок не всегда работает aec и поэтому что отправляется часть звука от нас, коллеги хотят прислать флаг, чтобы мы его с гарантией проигнорировали
+};
 
 message ContentForSynthesis {
   enum ContentType {
@@ -248,8 +275,8 @@ message OutputTranscription {
   string finish_reason = 3;
   int64 timestamp = 4;
   optional string stub_text = 5;
-  map <string,string> inline_data = 6;
-  optional bool silence_phrase = 7;
+  map <string, string> inline_data = 6; // для функций поиска, в значении будет валидный json
+  optional bool silence_phrase = 7; // признак транскрипции фразы тишины
 }
 
 message InputTranscription {
@@ -269,13 +296,13 @@ message PersonIdentity {
   float gender_score = 4;                        // gender score from 0.0 to 1.0
 }
 
-enum AgeType {                      // age type
+enum AgeType {                                // age type
   AGE_NONE = 0;                               // age not requested / not possible to determine
   CHILD = 1;                                  // child
   ADULT = 2;                                  // adult
 }
 
-enum GenderType {                   // gender type
+enum GenderType {                             // gender type
   GENDER_NONE = 0;                            // gender not requested / not possible to determine
   MALE = 1;                                   // male
   FEMALE = 2;                                 // female
@@ -319,6 +346,13 @@ message File {
 message FunctionRanker {
   optional bool enabled = 1;
   optional uint32 top_n = 2;
+  optional string embedder_model = 3;
+  repeated string ignored_functions = 4;
+}
+
+message PlatformFunctionProcessing {
+  string name = 1;
+  int64 timestamp = 2;
 }
 
 message StubSounds {
@@ -341,8 +375,20 @@ message TriggerFunction {
   bool enable = 1;
   Mode mode = 2;
   repeated string function_names = 3;
+  repeated FunctionSoundRule rules = 4;
 }
 
-message AudioChunkMeta {
-  optional bool force_no_speech = 1;
+message FunctionSoundRule {
+  repeated string function_names = 1;
+  repeated string sounds = 2;
+}
+
+message ServiceInfo {
+  repeated ServiceVersion services = 1;
+}
+
+message ServiceVersion {
+  string service_name = 1;
+  string version = 2;
+  string build = 3;
 }

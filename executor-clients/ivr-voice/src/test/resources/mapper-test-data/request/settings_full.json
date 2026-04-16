@@ -17,7 +17,18 @@
         },
         "output": {
           "voice": "voice-1",
-          "audioEncoding": "OPUS"
+          "audioEncoding": "OPUS",
+          "stubSounds": {
+            "triggerFunction": {
+              "rules": [
+                {
+                  "functionNames": ["function1"],
+                  "sounds": ["sound1"]
+                }
+              ]
+            }
+          },
+          "speed": "MEDIUM"
         }
       },
       "gigachat": {
@@ -61,7 +72,13 @@
           "profile": "default",
           "labels": ["label1", "label2"],
           "abFlags": "{\"flag1\":true}"
-        }
+        },
+        "functionRanker": {
+          "enabled": true,
+          "embedderModel": "embedder_model",
+          "ignoredFunctions": ["function1"]
+        },
+        "preset": "preset"
       },
       "context": {
         "messages": [
@@ -88,7 +105,16 @@
       "enablePrefetch": true,
       "enablePersonIdentity": true,
       "enableWhisper": true,
-      "enableEmotion": true
+      "enableEmotion": true,
+      "disableInterruption": {
+        "functions": [
+          {
+            "name": "function1",
+            "onExecution": true,
+            "afterResult": true
+          }
+        ]
+      }
     }
   },
   "expected": {
@@ -108,7 +134,18 @@
         },
         "output": {
           "voice": "voice-1",
-          "audioEncoding": "OPUS"
+          "audioEncoding": "OPUS",
+          "stubSounds": {
+            "triggerFunction": {
+              "rules": [
+                {
+                  "functionNames": ["function1"],
+                  "sounds": ["sound1"]
+                }
+              ]
+            }
+          },
+          "speed": "MEDIUM"
         }
       },
       "gigachat": {
@@ -150,7 +187,13 @@
           "profile": "default",
           "labels": ["label1", "label2"],
           "abFlags": "{\"flag1\":true}"
-        }
+        },
+        "functionRanker": {
+          "enabled": true,
+          "embedderModel": "embedder_model",
+          "ignoredFunctions": ["function1"]
+        },
+        "preset": "preset"
       },
       "context": {
         "messages": [
@@ -178,7 +221,16 @@
       "enablePersonIdentity": true,
       "enableWhisper": true,
       "enableEmotion": true,
-      "enableTranscribeSilencePhrases": false
+      "enableTranscribeSilencePhrases": false,
+      "disableInterruption": {
+        "functions": [
+          {
+            "name": "function1",
+            "onExecution": true,
+            "afterResult": true
+          }
+        ]
+      }
     }
   }
 }

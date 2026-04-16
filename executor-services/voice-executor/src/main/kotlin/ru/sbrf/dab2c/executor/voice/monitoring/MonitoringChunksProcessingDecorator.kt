@@ -125,6 +125,8 @@ private fun VoiceResponse.chunkTypeName(): String = this::class.simpleName!!
 private fun VoiceResponse.incomingFromGigaVoiceTags(): Map<String, String> = mapOf(
     MetricTags.FUNCTION_NAME to if (this is VoiceResponse.FunctionCalling) {
         data.functionCall.name
+    } else if (this is VoiceResponse.PlatformFunctionProcessing) {
+        data.name
     } else {
         ""
     }

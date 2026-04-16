@@ -42,6 +42,9 @@ import ru.sbrf.dab2c.executor.clients.ivr.proto.inputFiles
 import ru.sbrf.dab2c.executor.clients.ivr.proto.inputTranscription
 import ru.sbrf.dab2c.executor.clients.ivr.proto.outputTranscription
 import ru.sbrf.dab2c.executor.clients.ivr.proto.personIdentity
+import ru.sbrf.dab2c.executor.clients.ivr.proto.platformFunctionProcessing
+import ru.sbrf.dab2c.executor.clients.ivr.proto.serviceInfo
+import ru.sbrf.dab2c.executor.clients.ivr.proto.serviceVersion
 import ru.sbrf.dab2c.executor.clients.ivr.proto.usage
 import ru.sbrf.dab2c.executor.clients.ivr.proto.warning
 import ru.sbrf.dab2c.executor.domain.voice.AdditionalDataContent
@@ -52,6 +55,7 @@ import ru.sbrf.dab2c.executor.domain.voice.AudioOutput
 import ru.sbrf.dab2c.executor.domain.voice.AudioOutputSettings
 import ru.sbrf.dab2c.executor.domain.voice.AudioSettings
 import ru.sbrf.dab2c.executor.domain.voice.ContextData
+import ru.sbrf.dab2c.executor.domain.voice.DisableInterruption
 import ru.sbrf.dab2c.executor.domain.voice.ErrorData
 import ru.sbrf.dab2c.executor.domain.voice.FilterSettings
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
@@ -59,14 +63,19 @@ import ru.sbrf.dab2c.executor.domain.voice.FunctionDefinition
 import ru.sbrf.dab2c.executor.domain.voice.FunctionExample
 import ru.sbrf.dab2c.executor.domain.voice.FunctionRegistry
 import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
+import ru.sbrf.dab2c.executor.domain.voice.FunctionSoundRule
 import ru.sbrf.dab2c.executor.domain.voice.GigaChatSettings
 import ru.sbrf.dab2c.executor.domain.voice.InitialContext
 import ru.sbrf.dab2c.executor.domain.voice.InputFilesData
 import ru.sbrf.dab2c.executor.domain.voice.InputTranscriptionData
+import ru.sbrf.dab2c.executor.domain.voice.LockFunctionExecution
 import ru.sbrf.dab2c.executor.domain.voice.OutputModalities
 import ru.sbrf.dab2c.executor.domain.voice.OutputTranscriptionData
+import ru.sbrf.dab2c.executor.domain.voice.PlatformFunctionProcessingData
 import ru.sbrf.dab2c.executor.domain.voice.RequestContentSettings
 import ru.sbrf.dab2c.executor.domain.voice.ResponseContentSettings
+import ru.sbrf.dab2c.executor.domain.voice.ServiceInfoData
+import ru.sbrf.dab2c.executor.domain.voice.Speed
 import ru.sbrf.dab2c.executor.domain.voice.StubSounds
 import ru.sbrf.dab2c.executor.domain.voice.SynthesisContent
 import ru.sbrf.dab2c.executor.domain.voice.SynthesisContentType
@@ -78,14 +87,19 @@ import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.domain.voice.WarningData
 import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioSettings as ProtoAudioSettings
+import ru.sbrf.dab2c.executor.clients.ivr.proto.DisableInterruption as ProtoDisableInterruption
 import ru.sbrf.dab2c.executor.clients.ivr.proto.FilterSettings as ProtoFilterSettings
 import ru.sbrf.dab2c.executor.clients.ivr.proto.Function as ProtoFunction
 import ru.sbrf.dab2c.executor.clients.ivr.proto.FunctionRanker as ProtoFunctionRanker
 import ru.sbrf.dab2c.executor.clients.ivr.proto.FunctionRegistry as ProtoFunctionRegistry
+import ru.sbrf.dab2c.executor.clients.ivr.proto.FunctionSoundRule as ProtoFunctionSoundRule
 import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaChatSettings as ProtoGigaChatSettings
 import ru.sbrf.dab2c.executor.clients.ivr.proto.InitialContext as ProtoInitialContext
+import ru.sbrf.dab2c.executor.clients.ivr.proto.LockFunctionExecution as ProtoLockFunctionExecution
+import ru.sbrf.dab2c.executor.clients.ivr.proto.PlatformFunctionProcessing as ProtoPlatformFunctionProcessing
 import ru.sbrf.dab2c.executor.clients.ivr.proto.RequestContentSettings as ProtoRequestContentSettings
 import ru.sbrf.dab2c.executor.clients.ivr.proto.ResponseContentSettings as ProtoResponseContentSettings
+import ru.sbrf.dab2c.executor.clients.ivr.proto.ServiceInfo as ProtoServiceInfo
 import ru.sbrf.dab2c.executor.clients.ivr.proto.StubSounds as ProtoStubSounds
 import ru.sbrf.dab2c.executor.domain.voice.AudioContent as DomainAudioContent
 import ru.sbrf.dab2c.executor.domain.voice.ContentFromModel as DomainContentFromModel
@@ -139,7 +153,12 @@ object IvrDomainMapper {
         enablePersonIdentity = settings.enablePersonIdentity,
         enableWhisper = settings.enableWhisper,
         enableEmotion = settings.enableEmotion,
-        enableTranscribeSilencePhrases = settings.enableTranscribeSilencePhrases
+        enableTranscribeSilencePhrases = settings.enableTranscribeSilencePhrases,
+        disableInterruption = if (settings.hasDisableInterruption()) {
+            toDomainDisableInterruption(settings.disableInterruption)
+        } else {
+            null
+        },
     )
 
     private fun toDomainAudioSettings(audio: ProtoAudioSettings): AudioSettings = AudioSettings(
@@ -169,7 +188,8 @@ object IvrDomainMapper {
     private fun toDomainOutputSettings(output: Output): AudioOutputSettings = AudioOutputSettings(
         voice = output.voice.takeIf { it.isNotEmpty() },
         audioEncoding = toDomainOutputAudioEncoding(output.audioEncoding),
-        stubSounds = if (output.hasStubSounds()) toDomainStubSounds(output.stubSounds) else null
+        stubSounds = if (output.hasStubSounds()) toDomainStubSounds(output.stubSounds) else null,
+        speed = toDomainOutputSpeed(output.speed),
     )
 
     private fun toDomainStubSounds(proto: ProtoStubSounds): StubSounds = StubSounds(
@@ -189,12 +209,18 @@ object IvrDomainMapper {
             ru.sbrf.dab2c.executor.domain.voice.TriggerFunction(
                 enable = proto.triggerFunction.enable,
                 mode = toDomainTriggerFunctionMode(proto.triggerFunction.mode),
-                functionNames = proto.triggerFunction.functionNamesList
+                functionNames = proto.triggerFunction.functionNamesList,
+                rules = proto.triggerFunction.rulesList.map { toDomainTriggerFunctionRule(it) }
             )
         } else {
             null
         },
         sounds = proto.soundsList
+    )
+
+    private fun toDomainTriggerFunctionRule(rule: ProtoFunctionSoundRule): FunctionSoundRule = FunctionSoundRule(
+        functionNames = rule.functionNamesList,
+        sounds = rule.soundsList,
     )
 
     private fun toDomainTriggerFunctionMode(
@@ -227,6 +253,16 @@ object IvrDomainMapper {
             Output.AudioEncoding.PCM_ALAW -> AudioEncoding.PCM_ALAW
         }
 
+    private fun toDomainOutputSpeed(speed: Output.Speed): Speed =
+        when (speed) {
+            Output.Speed.SPEED_UNSPECIFIED, Output.Speed.UNRECOGNIZED -> Speed.SPEED_UNSPECIFIED
+            Output.Speed.EXTRA_SLOW -> Speed.EXTRA_SLOW
+            Output.Speed.SLOW -> Speed.SLOW
+            Output.Speed.MEDIUM -> Speed.MEDIUM
+            Output.Speed.FAST -> Speed.FAST
+            Output.Speed.EXTRA_FAST -> Speed.EXTRA_FAST
+        }
+
     private fun toDomainGigaChatSettings(settings: ProtoGigaChatSettings): GigaChatSettings =
         GigaChatSettings(
             model = settings.model.takeIf { it.isNotEmpty() },
@@ -248,13 +284,16 @@ object IvrDomainMapper {
                 toDomainFunctionRanker(settings.functionRanker)
             } else {
                 null
-            }
+            },
+            preset = if (settings.hasPreset()) settings.preset else null,
         )
 
     private fun toDomainFunctionRanker(proto: ProtoFunctionRanker): DomainFunctionRanker =
         DomainFunctionRanker(
             enabled = if (proto.hasEnabled()) proto.enabled else null,
-            topN = if (proto.hasTopN()) proto.topN.toInt() else null
+            topN = if (proto.hasTopN()) proto.topN.toInt() else null,
+            embedderModel = if (proto.hasEmbedderModel()) proto.embedderModel else null,
+            ignoredFunctions = proto.ignoredFunctionsList,
         )
 
     private fun toDomainFilterSettings(settings: ProtoFilterSettings): FilterSettings = FilterSettings(
@@ -346,6 +385,18 @@ object IvrDomainMapper {
             Settings.OutputModalities.TEXT -> OutputModalities.TEXT
         }
 
+    private fun toDomainDisableInterruption(disableInterruption: ProtoDisableInterruption): DisableInterruption =
+        DisableInterruption(
+            functions = disableInterruption.functionsList.map { toDomainLockFunctionExecution(it) }
+        )
+
+    private fun toDomainLockFunctionExecution(function: ProtoLockFunctionExecution): LockFunctionExecution =
+        LockFunctionExecution(
+            name = function.name,
+            onExecution = function.onExecution,
+            afterResult = function.afterResult
+        )
+
     private fun toDomainContentFromClient(content: ContentFromClient): VoiceRequest =
         when (content.contentCase) {
             ContentFromClient.ContentCase.AUDIO_CONTENT ->
@@ -403,6 +454,29 @@ object IvrDomainMapper {
             gigaVoiceResponse { warning = toProtoWarning(response.warning) }
         is VoiceResponse.InputFiles ->
             gigaVoiceResponse { inputFiles = toProtoInputFiles(response.data) }
+        is VoiceResponse.PlatformFunctionProcessing ->
+            gigaVoiceResponse { platformFunctionProcessing = toProtoPlatformFunctionProcessing(response.data) }
+        is VoiceResponse.ServiceInfo ->
+            gigaVoiceResponse { serviceInfo = toProtoServiceInfo(response.data) }
+    }
+
+    private fun toProtoServiceInfo(data: ServiceInfoData): ProtoServiceInfo =
+        serviceInfo {
+            services.addAll(
+                data.services.map {
+                    serviceVersion {
+                        serviceName = it.serviceName
+                        version = it.version
+                        it.build?.let { build = it }
+                    }
+                }
+            )
+        }
+
+    private fun toProtoPlatformFunctionProcessing(data: PlatformFunctionProcessingData):
+        ProtoPlatformFunctionProcessing = platformFunctionProcessing {
+        name = data.name
+        timestamp = data.timestamp
     }
 
     private fun toProtoInputFiles(data: InputFilesData): ru.sbrf.dab2c.executor.clients.ivr.proto.InputFiles =
