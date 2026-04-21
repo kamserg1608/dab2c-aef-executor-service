@@ -201,8 +201,8 @@ data class DisableInterruption(
 /** Настройки блокировки перебивания по функциям. */
 data class LockFunctionExecution(
     val name: String,
-    val onExecution: Boolean? = null,
-    val afterResult: Boolean? = null,
+    val onExecution: Boolean = false,
+    val afterResult: Boolean = false,
 )
 
 /** Правило для сопоставления функций и звуков. */

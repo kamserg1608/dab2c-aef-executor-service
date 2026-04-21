@@ -366,8 +366,8 @@ object GigaVoiceDomainMapper {
     private fun toProtoLockFunctionExecution(lock: LockFunctionExecution): ProtoLockFunctionExecution =
         lockFunctionExecution {
             name = lock.name
-            lock.onExecution?.let { onExecution = it }
-            lock.afterResult?.let { afterResult = it }
+            onExecution = lock.onExecution
+            afterResult = lock.afterResult
         }
 
     private fun toProtoAudioSettings(domainSettings: AudioSettings): ProtoAudioSettings =

@@ -19,6 +19,8 @@
           "voice": "voice-1",
           "audioEncoding": "OPUS",
           "stubSounds": {
+            "enable": true,
+            "mode": "WHITELIST",
             "triggerFunction": {
               "rules": [
                 {
@@ -136,6 +138,8 @@
           "voice": "voice-1",
           "audioEncoding": "OPUS",
           "stubSounds": {
+            "enable": true,
+            "mode": "WHITELIST",
             "triggerFunction": {
               "rules": [
                 {

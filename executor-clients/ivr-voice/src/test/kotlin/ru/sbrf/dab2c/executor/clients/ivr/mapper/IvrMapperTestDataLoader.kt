@@ -353,8 +353,8 @@ object IvrMapperTestDataLoader {
     private fun parseLockFunctionExecution(json: JsonNode): LockFunctionExecution {
         return LockFunctionExecution(
             name = json["name"].asText(),
-            onExecution = json["onExecution"]?.takeIf { !it.isNull }?.asBoolean(),
-            afterResult = json["afterResult"]?.takeIf { !it.isNull }?.asBoolean(),
+            onExecution = json["onExecution"].asBoolean(),
+            afterResult = json["afterResult"].asBoolean(),
         )
     }
 
@@ -473,7 +473,7 @@ object IvrMapperTestDataLoader {
 
     private fun parseTriggerFunction(json: JsonNode): TriggerFunction {
         return TriggerFunction(
-            enable = json["enabled"]?.takeIf { !it.isNull }?.asBoolean() ?: false,
+            enable = json["enable"]?.takeIf { !it.isNull }?.asBoolean() ?: false,
             mode = json["mode"]?.asText()?.let { TriggerFunctionMode.valueOf(it) }
                 ?: TriggerFunctionMode.UNSPECIFIED,
             functionNames = json["functionNames"]?.map { it.asText() } ?: emptyList(),

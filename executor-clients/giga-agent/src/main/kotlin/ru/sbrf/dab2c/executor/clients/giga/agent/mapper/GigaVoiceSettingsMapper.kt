@@ -85,7 +85,7 @@ object GigaVoiceSettingsMapper {
         enableWhisper = source.enableWhisper,
         enableEmotion = source.enableEmotion,
         enableTranscribeSilencePhrases = source.enableTranscribeSilencePhrases,
-        disableInterruption = toApiDisableInterruptions(source.disableInterruption),
+        disableInterruption = toApiDisableInterruption(source.disableInterruption),
     )
 
     // === SettingsOutput -> VoiceSettings ===
@@ -106,7 +106,7 @@ object GigaVoiceSettingsMapper {
         enableWhisper = source.enableWhisper ?: false,
         enableEmotion = source.enableEmotion ?: false,
         enableTranscribeSilencePhrases = source.enableTranscribeSilencePhrases ?: false,
-        disableInterruption = toDomainDisableInterruptions(source.disableInterruption),
+        disableInterruption = toDomainDisableInterruption(source.disableInterruption),
     )
 
     // === Performers -> FunctionPerformers ===
@@ -194,32 +194,32 @@ object GigaVoiceSettingsMapper {
             speed = toDomainSpeed(source.speed),
         )
 
-    fun toApiDisableInterruptions(interruption: DisableInterruption?): ApiDisableInterruption? =
+    fun toApiDisableInterruption(interruption: DisableInterruption?): ApiDisableInterruption? =
         interruption?.let {
             ApiDisableInterruption(
-                functions = interruption.functions.map { toApiLockFunctions(it) },
+                functions = interruption.functions.map { toApiLockFunction(it) },
             )
         }
 
-    fun toApiLockFunctions(lock: LockFunctionExecution): ApiLockFunctionExecution =
+    fun toApiLockFunction(lock: LockFunctionExecution): ApiLockFunctionExecution =
         ApiLockFunctionExecution(
             name = lock.name,
             onExecution = lock.onExecution,
             afterResult = lock.afterResult,
         )
 
-    fun toDomainDisableInterruptions(interruption: ApiDisableInterruption?): DisableInterruption? =
+    fun toDomainDisableInterruption(interruption: ApiDisableInterruption?): DisableInterruption? =
         interruption?.let {
             DisableInterruption(
-                functions = interruption.functions?.map { toDomainLockFunctions(it) } ?: emptyList(),
+                functions = interruption.functions?.map { toDomainLockFunction(it) } ?: emptyList(),
             )
         }
 
-    fun toDomainLockFunctions(lock: ApiLockFunctionExecution): LockFunctionExecution =
+    fun toDomainLockFunction(lock: ApiLockFunctionExecution): LockFunctionExecution =
         LockFunctionExecution(
             name = lock.name,
-            onExecution = lock.onExecution,
-            afterResult = lock.afterResult,
+            onExecution = lock.onExecution ?: false,
+            afterResult = lock.afterResult ?: false,
         )
 
     fun toApiStubSoundsInput(source: StubSounds): StubSoundsInput =
