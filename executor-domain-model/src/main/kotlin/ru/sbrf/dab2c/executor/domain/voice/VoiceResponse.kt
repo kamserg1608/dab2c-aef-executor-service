@@ -41,6 +41,16 @@ sealed class VoiceResponse {
      * Input files response.
      */
     data class InputFiles(val data: InputFilesData) : VoiceResponse()
+
+    /**
+     * Информация о выполнении функции.
+     */
+    data class PlatformFunctionProcessing(val data: PlatformFunctionProcessingData) : VoiceResponse()
+
+    /**
+     * Информация о версии сервиса.
+     */
+    data class ServiceInfo(val data: ServiceInfoData) : VoiceResponse()
 }
 
 /**
@@ -201,4 +211,22 @@ data class InputFilesData(
 data class FileData(
     val id: String,
     val type: String
+)
+
+/** Информация о выполнении функции. */
+data class PlatformFunctionProcessingData(
+    val name: String,
+    val timestamp: Long,
+)
+
+/** Список сервисов, информация о версиях которых передается клиенту. */
+data class ServiceInfoData(
+    val services: List<ServiceVersion> = emptyList(),
+)
+
+/** Информация о версии сервиса. */
+data class ServiceVersion(
+    val serviceName: String,
+    val version: String,
+    val build: String? = null,
 )

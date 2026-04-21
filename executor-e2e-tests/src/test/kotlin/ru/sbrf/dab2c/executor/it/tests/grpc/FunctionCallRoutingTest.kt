@@ -11,6 +11,7 @@ import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.conte
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.settingsRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.functionCallingResponse
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.outputTranscriptionResponse
+import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.platformFunctionProcessing
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubs
@@ -91,6 +92,9 @@ class FunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
             mock.awaitRequest { it.hasInput() }
 
             mock.sendResponse(functionCallingResponse("get_account_balance", """{"account_id": "12345"}"""))
+
+            mock.sendResponse(platformFunctionProcessing())
+            session.awaitResponse { it.hasPlatformFunctionProcessing() }
 
             wireMock.awaitPostCall("/functions")
 

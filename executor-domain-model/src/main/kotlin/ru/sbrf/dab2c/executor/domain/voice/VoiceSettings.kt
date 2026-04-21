@@ -21,7 +21,8 @@ data class VoiceSettings(
     val enablePersonIdentity: Boolean = false,
     val enableWhisper: Boolean = false,
     val enableEmotion: Boolean = false,
-    val enableTranscribeSilencePhrases: Boolean = false
+    val enableTranscribeSilencePhrases: Boolean = false,
+    val disableInterruption: DisableInterruption? = null,
 )
 
 /**
@@ -52,7 +53,8 @@ data class AudioInputSettings(
 data class AudioOutputSettings(
     val voice: String? = null,
     val audioEncoding: AudioEncoding = AudioEncoding.UNSPECIFIED,
-    val stubSounds: StubSounds? = null
+    val stubSounds: StubSounds? = null,
+    val speed: Speed = Speed.SPEED_UNSPECIFIED,
 )
 
 /**
@@ -70,7 +72,8 @@ data class GigaChatSettings(
     val functionRegistry: FunctionRegistry? = null,
     val filterStubPhrases: List<String> = emptyList(),
     val currentTime: Int? = null,
-    val functionRanker: FunctionRanker? = null
+    val functionRanker: FunctionRanker? = null,
+    val preset: String? = null,
 )
 
 /**
@@ -171,7 +174,8 @@ data class TriggerGeneration(
 data class TriggerFunction(
     val enable: Boolean = false,
     val mode: TriggerFunctionMode = TriggerFunctionMode.UNSPECIFIED,
-    val functionNames: List<String> = emptyList()
+    val functionNames: List<String> = emptyList(),
+    val rules: List<FunctionSoundRule> = emptyList(),
 )
 
 /** Function trigger filtering mode. */
@@ -184,5 +188,25 @@ enum class TriggerFunctionMode {
 /** Function ranking configuration. */
 data class FunctionRanker(
     val enabled: Boolean? = null,
-    val topN: Int? = null
+    val topN: Int? = null,
+    val embedderModel: String? = null,
+    val ignoredFunctions: List<String> = emptyList(),
+)
+
+/** Настройки игнорирования голосового ввода. */
+data class DisableInterruption(
+    val functions: List<LockFunctionExecution> = emptyList(),
+)
+
+/** Настройки блокировки перебивания по функциям. */
+data class LockFunctionExecution(
+    val name: String,
+    val onExecution: Boolean = false,
+    val afterResult: Boolean = false,
+)
+
+/** Правило для сопоставления функций и звуков. */
+data class FunctionSoundRule(
+    val functionNames: List<String> = emptyList(),
+    val sounds: List<String> = emptyList(),
 )
