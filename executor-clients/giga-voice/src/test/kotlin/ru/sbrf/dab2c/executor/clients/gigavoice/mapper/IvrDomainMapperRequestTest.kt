@@ -1,9 +1,9 @@
-package ru.sbrf.dab2c.executor.clients.ivr.mapper
+package ru.sbrf.dab2c.executor.clients.gigavoice.mapper
 
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import java.util.stream.Stream
 

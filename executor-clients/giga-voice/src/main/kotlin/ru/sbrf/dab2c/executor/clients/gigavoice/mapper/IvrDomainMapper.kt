@@ -1,52 +1,52 @@
-package ru.sbrf.dab2c.executor.clients.ivr.mapper
+package ru.sbrf.dab2c.executor.clients.gigavoice.mapper
 
 import ru.sbrf.dab2c.executor.clients.converter.ProtoTypeConverters
-import ru.sbrf.dab2c.executor.clients.ivr.proto.AdditionalData
-import ru.sbrf.dab2c.executor.clients.ivr.proto.AgeType
-import ru.sbrf.dab2c.executor.clients.ivr.proto.AnyExample
-import ru.sbrf.dab2c.executor.clients.ivr.proto.Audio
-import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioContent
-import ru.sbrf.dab2c.executor.clients.ivr.proto.ContentForSynthesis
-import ru.sbrf.dab2c.executor.clients.ivr.proto.ContentFromClient
-import ru.sbrf.dab2c.executor.clients.ivr.proto.ContentFromModel
-import ru.sbrf.dab2c.executor.clients.ivr.proto.Emotion
-import ru.sbrf.dab2c.executor.clients.ivr.proto.Error
-import ru.sbrf.dab2c.executor.clients.ivr.proto.FirstSpeaker
-import ru.sbrf.dab2c.executor.clients.ivr.proto.FunctionCall
-import ru.sbrf.dab2c.executor.clients.ivr.proto.FunctionCalling
-import ru.sbrf.dab2c.executor.clients.ivr.proto.FunctionResult
-import ru.sbrf.dab2c.executor.clients.ivr.proto.GenderType
-import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaChatModelInfo
-import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceRequest
-import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceResponse
-import ru.sbrf.dab2c.executor.clients.ivr.proto.Input
-import ru.sbrf.dab2c.executor.clients.ivr.proto.InputTranscription
-import ru.sbrf.dab2c.executor.clients.ivr.proto.Message
-import ru.sbrf.dab2c.executor.clients.ivr.proto.Output
-import ru.sbrf.dab2c.executor.clients.ivr.proto.OutputTranscription
-import ru.sbrf.dab2c.executor.clients.ivr.proto.PersonIdentity
-import ru.sbrf.dab2c.executor.clients.ivr.proto.Settings
-import ru.sbrf.dab2c.executor.clients.ivr.proto.Usage
-import ru.sbrf.dab2c.executor.clients.ivr.proto.Warning
-import ru.sbrf.dab2c.executor.clients.ivr.proto.additionalData
-import ru.sbrf.dab2c.executor.clients.ivr.proto.audio
-import ru.sbrf.dab2c.executor.clients.ivr.proto.contentFromModel
-import ru.sbrf.dab2c.executor.clients.ivr.proto.emotion
-import ru.sbrf.dab2c.executor.clients.ivr.proto.error
-import ru.sbrf.dab2c.executor.clients.ivr.proto.file
-import ru.sbrf.dab2c.executor.clients.ivr.proto.functionCall
-import ru.sbrf.dab2c.executor.clients.ivr.proto.functionCalling
-import ru.sbrf.dab2c.executor.clients.ivr.proto.gigaChatModelInfo
-import ru.sbrf.dab2c.executor.clients.ivr.proto.gigaVoiceResponse
-import ru.sbrf.dab2c.executor.clients.ivr.proto.inputFiles
-import ru.sbrf.dab2c.executor.clients.ivr.proto.inputTranscription
-import ru.sbrf.dab2c.executor.clients.ivr.proto.outputTranscription
-import ru.sbrf.dab2c.executor.clients.ivr.proto.personIdentity
-import ru.sbrf.dab2c.executor.clients.ivr.proto.platformFunctionProcessing
-import ru.sbrf.dab2c.executor.clients.ivr.proto.serviceInfo
-import ru.sbrf.dab2c.executor.clients.ivr.proto.serviceVersion
-import ru.sbrf.dab2c.executor.clients.ivr.proto.usage
-import ru.sbrf.dab2c.executor.clients.ivr.proto.warning
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.AdditionalData
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.AgeType
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.AnyExample
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Audio
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.AudioContent
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.ContentForSynthesis
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.ContentFromClient
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.ContentFromModel
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Emotion
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Error
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FirstSpeaker
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCall
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionResult
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GenderType
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaChatModelInfo
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Input
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.InputTranscription
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Message
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Output
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.OutputTranscription
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.PersonIdentity
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Settings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Usage
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Warning
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.additionalData
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audio
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.contentFromModel
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.emotion
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.error
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.file
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionCall
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionCalling
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaChatModelInfo
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceResponse
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.inputFiles
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.inputTranscription
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.outputTranscription
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.personIdentity
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.platformFunctionProcessing
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.serviceInfo
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.serviceVersion
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.usage
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.warning
 import ru.sbrf.dab2c.executor.domain.voice.AdditionalDataContent
 import ru.sbrf.dab2c.executor.domain.voice.AudioChunkMeta
 import ru.sbrf.dab2c.executor.domain.voice.AudioEncoding
@@ -86,21 +86,21 @@ import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.domain.voice.WarningData
-import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioSettings as ProtoAudioSettings
-import ru.sbrf.dab2c.executor.clients.ivr.proto.DisableInterruption as ProtoDisableInterruption
-import ru.sbrf.dab2c.executor.clients.ivr.proto.FilterSettings as ProtoFilterSettings
-import ru.sbrf.dab2c.executor.clients.ivr.proto.Function as ProtoFunction
-import ru.sbrf.dab2c.executor.clients.ivr.proto.FunctionRanker as ProtoFunctionRanker
-import ru.sbrf.dab2c.executor.clients.ivr.proto.FunctionRegistry as ProtoFunctionRegistry
-import ru.sbrf.dab2c.executor.clients.ivr.proto.FunctionSoundRule as ProtoFunctionSoundRule
-import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaChatSettings as ProtoGigaChatSettings
-import ru.sbrf.dab2c.executor.clients.ivr.proto.InitialContext as ProtoInitialContext
-import ru.sbrf.dab2c.executor.clients.ivr.proto.LockFunctionExecution as ProtoLockFunctionExecution
-import ru.sbrf.dab2c.executor.clients.ivr.proto.PlatformFunctionProcessing as ProtoPlatformFunctionProcessing
-import ru.sbrf.dab2c.executor.clients.ivr.proto.RequestContentSettings as ProtoRequestContentSettings
-import ru.sbrf.dab2c.executor.clients.ivr.proto.ResponseContentSettings as ProtoResponseContentSettings
-import ru.sbrf.dab2c.executor.clients.ivr.proto.ServiceInfo as ProtoServiceInfo
-import ru.sbrf.dab2c.executor.clients.ivr.proto.StubSounds as ProtoStubSounds
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.AudioSettings as ProtoAudioSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.DisableInterruption as ProtoDisableInterruption
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FilterSettings as ProtoFilterSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Function as ProtoFunction
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionRanker as ProtoFunctionRanker
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionRegistry as ProtoFunctionRegistry
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionSoundRule as ProtoFunctionSoundRule
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaChatSettings as ProtoGigaChatSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.InitialContext as ProtoInitialContext
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.LockFunctionExecution as ProtoLockFunctionExecution
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.PlatformFunctionProcessing as ProtoPlatformFunctionProcessing
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.RequestContentSettings as ProtoRequestContentSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.ResponseContentSettings as ProtoResponseContentSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.ServiceInfo as ProtoServiceInfo
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.StubSounds as ProtoStubSounds
 import ru.sbrf.dab2c.executor.domain.voice.AudioContent as DomainAudioContent
 import ru.sbrf.dab2c.executor.domain.voice.ContentFromModel as DomainContentFromModel
 import ru.sbrf.dab2c.executor.domain.voice.Emotion as DomainEmotion
@@ -224,14 +224,14 @@ object IvrDomainMapper {
     )
 
     private fun toDomainTriggerFunctionMode(
-        mode: ru.sbrf.dab2c.executor.clients.ivr.proto.TriggerFunction.Mode
+        mode: ru.sbrf.dab2c.executor.clients.gigavoice.proto.TriggerFunction.Mode
     ): TriggerFunctionMode = when (mode) {
-        ru.sbrf.dab2c.executor.clients.ivr.proto.TriggerFunction.Mode.MODE_UNSPECIFIED,
-        ru.sbrf.dab2c.executor.clients.ivr.proto.TriggerFunction.Mode.UNRECOGNIZED ->
+        ru.sbrf.dab2c.executor.clients.gigavoice.proto.TriggerFunction.Mode.MODE_UNSPECIFIED,
+        ru.sbrf.dab2c.executor.clients.gigavoice.proto.TriggerFunction.Mode.UNRECOGNIZED ->
             TriggerFunctionMode.UNSPECIFIED
-        ru.sbrf.dab2c.executor.clients.ivr.proto.TriggerFunction.Mode.WHITELIST ->
+        ru.sbrf.dab2c.executor.clients.gigavoice.proto.TriggerFunction.Mode.WHITELIST ->
             TriggerFunctionMode.WHITELIST
-        ru.sbrf.dab2c.executor.clients.ivr.proto.TriggerFunction.Mode.BLACKLIST ->
+        ru.sbrf.dab2c.executor.clients.gigavoice.proto.TriggerFunction.Mode.BLACKLIST ->
             TriggerFunctionMode.BLACKLIST
     }
 
@@ -433,7 +433,7 @@ object IvrDomainMapper {
         functionName = result.functionName.takeIf { it.isNotEmpty() }
     )
 
-    private fun toDomainContext(context: ru.sbrf.dab2c.executor.clients.ivr.proto.Context): ContextData =
+    private fun toDomainContext(context: ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context): ContextData =
         ContextData(content = context.content)
 
     // ==================== Response Mapping: Domain -> Proto (Server-side) ====================
@@ -479,7 +479,7 @@ object IvrDomainMapper {
         timestamp = data.timestamp
     }
 
-    private fun toProtoInputFiles(data: InputFilesData): ru.sbrf.dab2c.executor.clients.ivr.proto.InputFiles =
+    private fun toProtoInputFiles(data: InputFilesData): ru.sbrf.dab2c.executor.clients.gigavoice.proto.InputFiles =
         inputFiles {
             files.addAll(
                 data.files.map {

@@ -2,7 +2,7 @@ package ru.sbrf.dab2c.executor.it.support.session
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import kotlinx.coroutines.coroutineScope
-import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineStub
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineStub
 import ru.sbrf.dab2c.executor.it.mock.MockGigaVoiceService
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockAwaiter
 

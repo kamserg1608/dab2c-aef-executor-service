@@ -1,10 +1,10 @@
-package ru.sbrf.dab2c.executor.clients.ivr.mapper
+package ru.sbrf.dab2c.executor.clients.gigavoice.mapper
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.protobuf.util.JsonFormat
 import org.junit.jupiter.params.provider.Arguments
-import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceRequest
-import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceResponse
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.domain.voice.AdditionalDataContent
 import ru.sbrf.dab2c.executor.domain.voice.AgeType
 import ru.sbrf.dab2c.executor.domain.voice.AudioContent
@@ -73,7 +73,7 @@ object IvrMapperTestDataLoader {
      * Expected: VoiceRequest domain object
      */
     fun loadRequestTestCases(): Stream<Arguments> {
-        return loadTestCasesFromDirectory("mapper-test-data/request/")
+        return loadTestCasesFromDirectory("ivr-mapper-test-data/request/")
             .map { (name, json) ->
                 val protoRequest = parseProtoRequest(json["input"])
                 val expectedDomain = parseDomainRequest(json["expected"])
@@ -87,7 +87,7 @@ object IvrMapperTestDataLoader {
      * Expected: GigaVoiceResponse proto JSON
      */
     fun loadResponseTestCases(): Stream<Arguments> {
-        return loadTestCasesFromDirectory("mapper-test-data/response/")
+        return loadTestCasesFromDirectory("ivr-mapper-test-data/response/")
             .map { (name, json) ->
                 val domainResponse = parseDomainResponse(json["input"])
                 val expectedProto = parseProtoResponse(json["expected"])

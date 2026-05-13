@@ -18,6 +18,7 @@ message GigaVoiceRequest {
     Settings settings = 1; //всегда первое
     ContentFromClient input = 2;
     FunctionResult function_result = 3;
+    Context context = 10;
   }
 }
 
@@ -224,6 +225,10 @@ message ContentForSynthesis {
 message FunctionResult {
   string content = 1;
   optional string function_name = 2;
+}
+
+message Context {
+  string content = 1;
 }
 
 message ContentFromModel {
