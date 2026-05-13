@@ -1,37 +1,6 @@
 package ru.sbrf.dab2c.executor.domain.voice
 
 /**
- * Voice request from client - can be settings, audio content, or function result.
- */
-sealed class VoiceRequest {
-
-    /**
-     * Initial settings request (must be first).
-     */
-    data class Settings(val settings: VoiceSettings) : VoiceRequest()
-
-    /**
-     * Audio content from client.
-     */
-    data class Audio(val content: AudioContent) : VoiceRequest()
-
-    /**
-     * Text content for synthesis.
-     */
-    data class TextForSynthesis(val content: SynthesisContent) : VoiceRequest()
-
-    /**
-     * Function execution result.
-     */
-    data class FunctionResult(val result: FunctionResultData) : VoiceRequest()
-
-    /**
-     * Context update during conversation.
-     */
-    data class Context(val context: ContextData) : VoiceRequest()
-}
-
-/**
  * Audio content from client.
  */
 data class AudioContent(

@@ -3,78 +3,6 @@ package ru.sbrf.dab2c.executor.domain.voice
 import kotlin.time.Duration
 
 /**
- * Voice response from model - can be content, function call, transcription, etc.
- */
-sealed class VoiceResponse {
-
-    /**
-     * Content output from model (audio, additional data, or interruption).
-     */
-    data class Output(val content: ContentFromModel) : VoiceResponse()
-
-    /**
-     * Function call request from model.
-     */
-    data class FunctionCalling(val data: FunctionCallingData) : VoiceResponse()
-
-    /**
-     * Input transcription (ASR result).
-     */
-    data class InputTranscription(val transcription: InputTranscriptionData) : VoiceResponse()
-
-    /**
-     * Output transcription (what model said).
-     */
-    data class OutputTranscription(val transcription: OutputTranscriptionData) : VoiceResponse()
-
-    /**
-     * Error response.
-     */
-    data class Error(val error: ErrorData) : VoiceResponse()
-
-    /**
-     * Warning response.
-     */
-    data class Warning(val warning: WarningData) : VoiceResponse()
-
-    /**
-     * Input files response.
-     */
-    data class InputFiles(val data: InputFilesData) : VoiceResponse()
-
-    /**
-     * Информация о выполнении функции.
-     */
-    data class PlatformFunctionProcessing(val data: PlatformFunctionProcessingData) : VoiceResponse()
-
-    /**
-     * Информация о версии сервиса.
-     */
-    data class ServiceInfo(val data: ServiceInfoData) : VoiceResponse()
-}
-
-/**
- * Content from model - audio, additional data, or interruption signal.
- */
-sealed class ContentFromModel {
-
-    /**
-     * Audio output.
-     */
-    data class Audio(val audio: AudioOutput) : ContentFromModel()
-
-    /**
-     * Additional data (usage stats, model info).
-     */
-    data class AdditionalData(val data: AdditionalDataContent) : ContentFromModel()
-
-    /**
-     * Interruption signal.
-     */
-    data object Interrupted : ContentFromModel()
-}
-
-/**
  * Audio output data.
  */
 data class AudioOutput(
@@ -213,18 +141,18 @@ data class FileData(
     val type: String
 )
 
-/** Информация о выполнении функции. */
+/** Function execution metadata. */
 data class PlatformFunctionProcessingData(
     val name: String,
     val timestamp: Long,
 )
 
-/** Список сервисов, информация о версиях которых передается клиенту. */
+/** Set of service versions reported to the client. */
 data class ServiceInfoData(
     val services: List<ServiceVersion> = emptyList(),
 )
 
-/** Информация о версии сервиса. */
+/** Service version metadata. */
 data class ServiceVersion(
     val serviceName: String,
     val version: String,
