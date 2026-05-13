@@ -4,9 +4,10 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.ClosedSendChannelException
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
+import ru.sbrf.dab2c.executor.clients.gigavoice.mapper.toProto
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceRequest
 import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
-import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
@@ -68,7 +69,9 @@ class FunctionCallServiceImpl(
                     headers.getHeaderOrNull(RequestHeader.X_REQUEST_ID)
                 )
 
-                session.callbackChannels.downstream.send(VoiceRequest.FunctionResult(functionCallResult.result))
+                session.callbackChannels.downstream.send(
+                    gigaVoiceRequest { functionResult = functionCallResult.result.toProto() }
+                )
             } catch (e: CancellationException) {
                 throw e
             } catch (e: ClosedSendChannelException) {
@@ -80,12 +83,12 @@ class FunctionCallServiceImpl(
                 val errorContent = """{"error":{"code":500,"message":"$escapedMessage"}}"""
                 try {
                     session.callbackChannels.downstream.send(
-                        VoiceRequest.FunctionResult(
-                            FunctionResultData(
+                        gigaVoiceRequest {
+                            functionResult = FunctionResultData(
                                 content = errorContent,
                                 functionName = functionCalling.functionCall.name
-                            )
-                        )
+                            ).toProto()
+                        }
                     )
                 } catch (ex: CancellationException) {
                     throw ex

@@ -6,8 +6,11 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.transform
-import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
-import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
+import ru.sbrf.dab2c.executor.clients.gigavoice.mapper.toDomain
+import ru.sbrf.dab2c.executor.clients.gigavoice.mapper.toProto
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceResponse
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.model.VoiceSession
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
@@ -26,48 +29,50 @@ class ChunkProcessingServiceImpl(
 ) : ChunkProcessingService {
 
     override fun processRequestChunks(
-        requestsChunks: Flow<VoiceRequest>
-    ): Flow<VoiceRequest> = merge(
+        requestsChunks: Flow<GigaVoiceRequest>
+    ): Flow<GigaVoiceRequest> = merge(
         session.callbackChannels.downstream.receiveAsFlow(),
         routeIncomingChunks(requestsChunks)
             .onCompletion { session.close() }
     ).gateUntilSettingsReceived()
 
     override fun processResponseChunks(
-        responsesChunks: Flow<VoiceResponse>
-    ): Flow<VoiceResponse> = merge(
+        responsesChunks: Flow<GigaVoiceResponse>
+    ): Flow<GigaVoiceResponse> = merge(
         session.callbackChannels.upstream.receiveAsFlow(),
         routeResponses(responsesChunks)
     ).onCompletion {
         session.terminate()
     }
 
-    private fun routeIncomingChunks(requestsChunks: Flow<VoiceRequest>) = requestsChunks
+    private fun routeIncomingChunks(requestsChunks: Flow<GigaVoiceRequest>) = requestsChunks
         .transform { chunk ->
             when {
-                chunk is VoiceRequest.Context && session.state.value is ProcessingState.AwaitingContext ->
-                    contextService.processContext(chunk.context)
-                chunk is VoiceRequest.Settings && session.state.value is ProcessingState.AwaitingSettings ->
-                    settingsService.initSettingsCalculation(chunk.settings)
+                chunk.requestCase == GigaVoiceRequest.RequestCase.CONTEXT &&
+                    session.state.value is ProcessingState.AwaitingContext ->
+                    contextService.processContext(chunk.context.toDomain())
+                chunk.requestCase == GigaVoiceRequest.RequestCase.SETTINGS &&
+                    session.state.value is ProcessingState.AwaitingSettings ->
+                    settingsService.initSettingsCalculation(chunk.settings.toDomain())
                 session.state.value is ProcessingState.Serving ->
                     emit(chunk)
             }
         }
 
-    private fun routeResponses(responsesChunks: Flow<VoiceResponse>) = responsesChunks
+    private fun routeResponses(responsesChunks: Flow<GigaVoiceResponse>) = responsesChunks
         .transform { chunk ->
-            if (chunk is VoiceResponse.FunctionCalling) {
-                functionCallService.callFunction(chunk.data)
-                    ?.let { emit(VoiceResponse.FunctionCalling(it)) }
+            if (chunk.responseCase == GigaVoiceResponse.ResponseCase.FUNCTION_CALL) {
+                functionCallService.callFunction(chunk.functionCall.toDomain())
+                    ?.let { emit(gigaVoiceResponse { functionCall = it.toProto() }) }
             } else {
                 emit(chunk)
             }
         }
 
-    private fun Flow<VoiceRequest>.gateUntilSettingsReceived(): Flow<VoiceRequest> {
+    private fun Flow<GigaVoiceRequest>.gateUntilSettingsReceived(): Flow<GigaVoiceRequest> {
         var settingsReceived = false
         return filter { chunk ->
-            if (chunk is VoiceRequest.Settings) settingsReceived = true
+            if (chunk.requestCase == GigaVoiceRequest.RequestCase.SETTINGS) settingsReceived = true
             settingsReceived
         }
     }

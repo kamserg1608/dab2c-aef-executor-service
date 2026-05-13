@@ -1,10 +1,7 @@
 package ru.sbrf.dab2c.executor.voice.grpc.base
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import net.devh.boot.grpc.server.service.GrpcService
-import ru.sbrf.dab2c.executor.clients.gigavoice.mapper.GigaVoiceDomainMapper
-import ru.sbrf.dab2c.executor.clients.gigavoice.mapper.IvrDomainMapper
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceServiceGrpcKt
@@ -31,14 +28,9 @@ class IvrServiceImpl(
         headers.getHeaderOrNull(RequestHeader.TOKEN)?.let { MaskingCollector.register(it) }
 
         return with(sessionInitService) {
-            requests
-                .map { IvrDomainMapper.toDomainRequest(it) }
-                .let { chunkProcessingService.processRequestChunks(it) }
-                .map { GigaVoiceDomainMapper.toProtoRequest(it) }
+            chunkProcessingService.processRequestChunks(requests)
                 .let { gigaVoiceClient.session(it) }
-                .map { GigaVoiceDomainMapper.toDomainResponse(it) }
                 .let { chunkProcessingService.processResponseChunks(it) }
-                .map { IvrDomainMapper.toProtoResponse(it) }
                 .withSessionContext(headers)
         }
     }

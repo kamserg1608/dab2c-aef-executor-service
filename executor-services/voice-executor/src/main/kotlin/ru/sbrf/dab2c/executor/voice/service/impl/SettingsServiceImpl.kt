@@ -5,13 +5,13 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.ClosedSendChannelException
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
+import ru.sbrf.dab2c.executor.clients.gigavoice.mapper.toProto
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceResponse
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.voice.AgentAnalytics
 import ru.sbrf.dab2c.executor.domain.voice.ContextData
-import ru.sbrf.dab2c.executor.domain.voice.ErrorData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
-import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
-import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
@@ -20,6 +20,9 @@ import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.model.VoiceSession
 import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
 import ru.sbrf.dab2c.executor.voice.service.api.SettingsService
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.error as protoError
+
+private const val SETTINGS_CALCULATION_ERROR_STATUS = 1501
 
 /** Implementation of [SettingsService] that resolves voice settings via EFS and GigaAgent. */
 class SettingsServiceImpl(
@@ -50,7 +53,10 @@ class SettingsServiceImpl(
         session.launch {
             try {
                 val settingsData = fetchSettingsData(settings, contextData)
-                session.callbackChannels.downstream.send(VoiceRequest.Settings(settingsData.settings))
+                val resolvedSettingsProto = settingsData.settings.toProto()
+                session.callbackChannels.downstream.send(
+                    gigaVoiceRequest { this.settings = resolvedSettingsProto }
+                )
                 updateStateAndPublish(settingsData, contextData)
             } catch (e: CancellationException) {
                 throw e
@@ -59,7 +65,12 @@ class SettingsServiceImpl(
             } catch (e: Exception) {
                 logger.error { "Failed to calculate settings: ${e.message}" }
                 session.callbackChannels.upstream.send(
-                    VoiceResponse.Error(ErrorData(status = 1501, message = e.message ?: "Settings calculation failed"))
+                    gigaVoiceResponse {
+                        error = protoError {
+                            status = SETTINGS_CALCULATION_ERROR_STATUS
+                            message = e.message ?: "Settings calculation failed"
+                        }
+                    }
                 )
             }
         }
