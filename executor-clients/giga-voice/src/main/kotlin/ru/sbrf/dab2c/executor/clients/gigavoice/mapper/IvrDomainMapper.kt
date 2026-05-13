@@ -133,7 +133,7 @@ object IvrDomainMapper {
                 error("Request not set")
         }
 
-    private fun toDomainSettings(settings: Settings): VoiceSettings = VoiceSettings(
+    internal fun toDomainSettings(settings: Settings): VoiceSettings = VoiceSettings(
         voiceCallId = settings.voiceCallId,
         audio = toDomainAudioSettings(settings.audio),
         gigachat = if (settings.hasGigachat()) toDomainGigaChatSettings(settings.gigachat) else null,

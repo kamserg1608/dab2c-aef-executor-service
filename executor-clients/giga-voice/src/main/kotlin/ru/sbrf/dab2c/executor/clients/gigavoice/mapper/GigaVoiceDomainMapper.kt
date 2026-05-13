@@ -338,7 +338,7 @@ object GigaVoiceDomainMapper {
         result.functionName?.let { functionName = it }
     }
 
-    private fun toProtoSettings(domainSettings: VoiceSettings): Settings = settings {
+    internal fun toProtoSettings(domainSettings: VoiceSettings): Settings = settings {
         voiceCallId = domainSettings.voiceCallId
         audio = toProtoAudioSettings(domainSettings.audio)
         domainSettings.gigachat?.let { gigachat = toProtoGigaChatSettings(it) }
