@@ -20,7 +20,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.Parameter
-import ru.sbrf.dab2c.executor.clients.gigavoice.mapper.toProto
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audio
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audioContent
@@ -42,6 +41,7 @@ import ru.sbrf.dab2c.executor.library.audit.model.InteractionAuditRequest
 import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
 import ru.sbrf.dab2c.executor.library.context.Headers
 import ru.sbrf.dab2c.executor.library.context.HeadersElement
+import ru.sbrf.dab2c.executor.voice.mapper.toProto
 import ru.sbrf.dab2c.executor.voice.model.VoiceSessionFeatureToggles
 import ru.sbrf.dab2c.executor.voice.model.VoiceSessionFeatureToggles.Companion.KAP_SEND_EXTRA
 import ru.sbrf.dab2c.executor.voice.model.VoiceSessionFeatureTogglesElement

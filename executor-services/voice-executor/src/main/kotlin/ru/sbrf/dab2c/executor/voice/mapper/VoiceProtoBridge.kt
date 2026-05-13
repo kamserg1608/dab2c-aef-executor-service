@@ -1,6 +1,6 @@
 @file:Suppress("TooManyFunctions")
 
-package ru.sbrf.dab2c.executor.clients.gigavoice.mapper
+package ru.sbrf.dab2c.executor.voice.mapper
 
 import ru.sbrf.dab2c.executor.clients.converter.ProtoTypeConverters
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.AnyExample

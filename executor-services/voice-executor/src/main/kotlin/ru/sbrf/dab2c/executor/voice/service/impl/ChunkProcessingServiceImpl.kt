@@ -6,11 +6,11 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.transform
-import ru.sbrf.dab2c.executor.clients.gigavoice.mapper.toDomain
-import ru.sbrf.dab2c.executor.clients.gigavoice.mapper.toProto
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceResponse
+import ru.sbrf.dab2c.executor.voice.mapper.toDomain
+import ru.sbrf.dab2c.executor.voice.mapper.toProto
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.model.VoiceSession
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
