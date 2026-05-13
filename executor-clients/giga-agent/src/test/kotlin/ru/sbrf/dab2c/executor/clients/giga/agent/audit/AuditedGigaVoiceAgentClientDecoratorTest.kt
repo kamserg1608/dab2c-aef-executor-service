@@ -13,18 +13,18 @@ import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCallResult
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.SettingsResult
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audioSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.context
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionCall
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionCalling
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionResult
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.settings
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.session.DaSessionCommon
 import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.domain.session.DaSessionMeta
 import ru.sbrf.dab2c.executor.domain.session.DaSessionUserInfo
-import ru.sbrf.dab2c.executor.domain.voice.AudioSettings
-import ru.sbrf.dab2c.executor.domain.voice.ContextData
-import ru.sbrf.dab2c.executor.domain.voice.FunctionCall
-import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
-import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
-import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.library.audit.model.InteractionAuditRequest
 import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
 import ru.sbrf.dab2c.executor.library.context.Headers
@@ -85,17 +85,20 @@ class AuditedGigaVoiceAgentClientDecoratorTest {
         toggles = emptyMap()
     )
 
-    private val voiceSettings = VoiceSettings(
-        voiceCallId = "call-123",
-        audio = AudioSettings()
-    )
+    private val voiceSettings = settings {
+        voiceCallId = "call-123"
+        audio = audioSettings { }
+    }
 
-    private val contextData = ContextData(content = "{}")
+    private val contextData = context { content = "{}" }
 
-    private val functionCalling = FunctionCallingData(
-        functionCall = FunctionCall(name = "get_balance", arguments = """{"id":"1"}"""),
+    private val functionCalling = functionCalling {
+        functionCall = functionCall {
+            name = "get_balance"
+            arguments = """{"id":"1"}"""
+        }
         timestamp = 1000L
-    )
+    }
 
     @Nested
     inner class GetSettingsTest {
@@ -178,7 +181,10 @@ class AuditedGigaVoiceAgentClientDecoratorTest {
     inner class ExecuteFunctionCallTest {
 
         private val functionCallResult = FunctionCallResult(
-            result = FunctionResultData(content = """{"balance":1000}""", functionName = "get_balance")
+            result = functionResult {
+                content = """{"balance":1000}"""
+                functionName = "get_balance"
+            }
         )
 
         @Test

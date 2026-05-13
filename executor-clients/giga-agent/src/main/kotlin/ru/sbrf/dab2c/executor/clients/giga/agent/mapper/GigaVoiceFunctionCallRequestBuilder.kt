@@ -6,30 +6,28 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.model.ACLConfig
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaAgentRequestContext
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsRequestSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.SessionConfig
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
-import ru.sbrf.dab2c.executor.domain.voice.ContextData
-import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 
 /**
- * Builder for constructing GigaVoiceFunctionsRequestSchema from domain models.
+ * Builder for constructing GigaVoiceFunctionsRequestSchema from proto inputs.
  */
 @Component
 class GigaVoiceFunctionCallRequestBuilder(
     private val mapper: GigaVoiceSettingsMapper = GigaVoiceSettingsMapper
 ) {
 
-    /**
-     * Builds a function call request from domain models.
-     */
+    /** Builds a function call request from proto inputs. */
     @Suppress("LongParameterList")
     fun build(
         context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
-        functionCalling: FunctionCallingData,
+        functionCalling: FunctionCalling,
         daSessionInfo: DaSessionInfo,
-        contextData: ContextData
+        contextData: Context
     ): GigaVoiceFunctionsRequestSchema {
         val agentConfig = GigaVoiceAgentConfigMapper.toApiAgentConfig(agentConfiguration)
         val sessionConfig = SessionConfig(channel = context.channel)

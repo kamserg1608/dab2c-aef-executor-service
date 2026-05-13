@@ -9,8 +9,6 @@ import kotlinx.coroutines.flow.transform
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceResponse
-import ru.sbrf.dab2c.executor.voice.mapper.toDomain
-import ru.sbrf.dab2c.executor.voice.mapper.toProto
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.model.VoiceSession
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
@@ -50,10 +48,10 @@ class ChunkProcessingServiceImpl(
             when {
                 chunk.requestCase == GigaVoiceRequest.RequestCase.CONTEXT &&
                     session.state.value is ProcessingState.AwaitingContext ->
-                    contextService.processContext(chunk.context.toDomain())
+                    contextService.processContext(chunk.context)
                 chunk.requestCase == GigaVoiceRequest.RequestCase.SETTINGS &&
                     session.state.value is ProcessingState.AwaitingSettings ->
-                    settingsService.initSettingsCalculation(chunk.settings.toDomain())
+                    settingsService.initSettingsCalculation(chunk.settings)
                 session.state.value is ProcessingState.Serving ->
                     emit(chunk)
             }
@@ -62,8 +60,8 @@ class ChunkProcessingServiceImpl(
     private fun routeResponses(responsesChunks: Flow<GigaVoiceResponse>) = responsesChunks
         .transform { chunk ->
             if (chunk.responseCase == GigaVoiceResponse.ResponseCase.FUNCTION_CALL) {
-                functionCallService.callFunction(chunk.functionCall.toDomain())
-                    ?.let { emit(gigaVoiceResponse { functionCall = it.toProto() }) }
+                functionCallService.callFunction(chunk.functionCall)
+                    ?.let { emit(gigaVoiceResponse { functionCall = it }) }
             } else {
                 emit(chunk)
             }

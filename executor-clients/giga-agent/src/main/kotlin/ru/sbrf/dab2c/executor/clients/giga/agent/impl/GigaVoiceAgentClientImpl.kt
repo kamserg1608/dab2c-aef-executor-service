@@ -21,11 +21,11 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsRespons
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceSettingsResponseSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.SettingsResult
 import ru.sbrf.dab2c.executor.clients.giga.agent.util.GigaAgentContextBuilder
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Settings
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.voice.AgentAnalytics
-import ru.sbrf.dab2c.executor.domain.voice.ContextData
-import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
-import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.library.context.currentSessionInfo
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
 
@@ -50,8 +50,8 @@ class GigaVoiceAgentClientImpl(
     override suspend fun getSettings(
         conversationId: String,
         agentConfiguration: AgentConfiguration,
-        voiceSettings: VoiceSettings,
-        contextData: ContextData,
+        voiceSettings: Settings,
+        contextData: Context,
     ): SettingsResult {
         val context = GigaAgentContextBuilder.buildRequestContext(conversationId)
         val daSessionInfo = currentSessionInfo()
@@ -79,7 +79,7 @@ class GigaVoiceAgentClientImpl(
         }
 
         return SettingsResult(
-            settings = mapper.toDomainSettings(apiResponse.settings),
+            settings = mapper.toProtoSettings(apiResponse.settings),
             performers = mapper.toDomainPerformers(apiResponse.performers),
             analytics = apiResponse.agentAnalytics?.map { it.toDomain() }.orEmpty()
         )
@@ -89,8 +89,8 @@ class GigaVoiceAgentClientImpl(
     override suspend fun executeFunctionCall(
         conversationId: String,
         agentConfiguration: AgentConfiguration,
-        functionCalling: FunctionCallingData,
-        contextData: ContextData
+        functionCalling: FunctionCalling,
+        contextData: Context
     ): FunctionCallResult {
         val context = GigaAgentContextBuilder.buildRequestContext(conversationId)
         val daSessionInfo = currentSessionInfo()
@@ -119,7 +119,7 @@ class GigaVoiceAgentClientImpl(
         }
 
         return FunctionCallResult(
-            result = mapper.toDomainFunctionResult(apiResponse.functionResult),
+            result = mapper.toProtoFunctionResult(apiResponse.functionResult),
             analytics = apiResponse.agentAnalytics?.map { it.toDomain() }.orEmpty()
         )
     }

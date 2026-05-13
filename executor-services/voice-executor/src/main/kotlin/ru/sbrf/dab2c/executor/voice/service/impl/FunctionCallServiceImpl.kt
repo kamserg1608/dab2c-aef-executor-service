@@ -4,12 +4,11 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.ClosedSendChannelException
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionResult
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceRequest
-import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
-import ru.sbrf.dab2c.executor.domain.voice.FunctionResultData
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
-import ru.sbrf.dab2c.executor.voice.mapper.toProto
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.model.VoiceSession
 import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
@@ -24,7 +23,7 @@ class FunctionCallServiceImpl(
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun callFunction(functionCalling: FunctionCallingData): FunctionCallingData? {
+    override suspend fun callFunction(functionCalling: FunctionCalling): FunctionCalling? {
         val state = session.state.value
         check(state is ProcessingState.Serving) {
             "Expected Serving state for function calls, but was ${state::class.simpleName}"
@@ -46,7 +45,7 @@ class FunctionCallServiceImpl(
     @Suppress("LongMethod")
     private suspend fun executeBackendFunctionAsync(
         state: ProcessingState.Serving,
-        functionCalling: FunctionCallingData
+        functionCalling: FunctionCalling
     ) {
         val headers = currentHeaders()
         val functionName = functionCalling.functionCall.name
@@ -70,7 +69,7 @@ class FunctionCallServiceImpl(
                 )
 
                 session.callbackChannels.downstream.send(
-                    gigaVoiceRequest { functionResult = functionCallResult.result.toProto() }
+                    gigaVoiceRequest { functionResult = functionCallResult.result }
                 )
             } catch (e: CancellationException) {
                 throw e
@@ -84,10 +83,10 @@ class FunctionCallServiceImpl(
                 try {
                     session.callbackChannels.downstream.send(
                         gigaVoiceRequest {
-                            functionResult = FunctionResultData(
-                                content = errorContent,
-                                functionName = functionCalling.functionCall.name
-                            ).toProto()
+                            functionResult = functionResult {
+                                this.content = errorContent
+                                this.functionName = functionCalling.functionCall.name
+                            }
                         }
                     )
                 } catch (ex: CancellationException) {

@@ -1,5 +1,6 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
+import com.google.protobuf.Message
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onCompletion
@@ -10,6 +11,7 @@ import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
+import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
 import ru.sbrf.dab2c.executor.voice.exception.TolerantExceptionRegistry
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
@@ -47,7 +49,7 @@ class LoggingChunkProcessingServiceDelegate(
         } else {
             request
         }
-        logger.debug { "$direction$REQUEST_PREFIX$sanitized" }
+        logger.debug { "$direction$REQUEST_PREFIX${toJson(sanitized)}" }
     }
 
     private fun logResponse(direction: String, response: GigaVoiceResponse) {
@@ -63,8 +65,10 @@ class LoggingChunkProcessingServiceDelegate(
         } else {
             response
         }
-        logger.debug { "$direction$RESPONSE_PREFIX$sanitized" }
+        logger.debug { "$direction$RESPONSE_PREFIX${toJson(sanitized)}" }
     }
+
+    private fun toJson(message: Message): String = ObjectMappers.MAPPER.writeValueAsString(message)
 
     private suspend fun logSessionStart() {
         val metadataString = buildMetadataString()
@@ -92,7 +96,7 @@ class LoggingChunkProcessingServiceDelegate(
 
     private fun logSessionInfo(response: GigaVoiceResponse) {
         IntegrationLogger.logGrpcEvent(
-            message = "gRPC session info $response",
+            message = "gRPC session info ${toJson(response)}",
         )
     }
 

@@ -1,5 +1,6 @@
 package ru.sbrf.dab2c.executor.clients.giga.agent.mapper
 
+import com.google.protobuf.duration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -9,20 +10,19 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaChatSettingsOutput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.OutputOutput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.SettingsOutput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.StubSoundsOutput
-import ru.sbrf.dab2c.executor.domain.voice.AudioOutputSettings
-import ru.sbrf.dab2c.executor.domain.voice.AudioSettings
-import ru.sbrf.dab2c.executor.domain.voice.DisableInterruption
-import ru.sbrf.dab2c.executor.domain.voice.FunctionDefinition
-import ru.sbrf.dab2c.executor.domain.voice.FunctionRanker
-import ru.sbrf.dab2c.executor.domain.voice.FunctionSoundRule
-import ru.sbrf.dab2c.executor.domain.voice.GigaChatSettings
-import ru.sbrf.dab2c.executor.domain.voice.LockFunctionExecution
-import ru.sbrf.dab2c.executor.domain.voice.Message
-import ru.sbrf.dab2c.executor.domain.voice.Speed
-import ru.sbrf.dab2c.executor.domain.voice.StubSounds
-import ru.sbrf.dab2c.executor.domain.voice.TriggerFunctionMode
-import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
-import kotlin.time.Duration.Companion.seconds
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Output
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audioSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.disableInterruption
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionRanker
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionSoundRule
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaChatSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.lockFunctionExecution
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.message
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.output
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.settings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.stubSounds
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.triggerFunction
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.triggerGeneration
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.DisableInterruption as ApiDisableInterruption
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionRanker as ApiFunctionRanker
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionSoundRule as ApiFunctionSoundRule
@@ -30,8 +30,7 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.model.LockFunctionExecution as 
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.Message as ApiMessage
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.TriggerFunction as ApiTriggerFunction
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.TriggerGeneration as ApiTriggerGeneration
-import ru.sbrf.dab2c.executor.domain.voice.TriggerFunction as DomainTriggerFunction
-import ru.sbrf.dab2c.executor.domain.voice.TriggerGeneration as DomainTriggerGeneration
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.function as protoFunctionDsl
 
 /**
  * Tests for [GigaVoiceSettingsMapper] focusing on boolean flag and flags list mappings.
@@ -43,21 +42,21 @@ class GigaVoiceSettingsMapperTest {
 
         @Test
         fun `should map all boolean flags and flags list when populated`() {
-            val domain = VoiceSettings(
-                voiceCallId = "test-call-id",
-                audio = AudioSettings(),
-                disableVad = true,
-                enableTranscribeInput = true,
-                flags = listOf("flag1", "flag2"),
-                enableDenoiser = true,
-                enablePrefetch = true,
-                enablePersonIdentity = true,
-                enableWhisper = true,
-                enableEmotion = true,
+            val proto = settings {
+                voiceCallId = "test-call-id"
+                audio = audioSettings { }
+                disableVad = true
+                enableTranscribeInput = true
+                flags.addAll(listOf("flag1", "flag2"))
+                enableDenoiser = true
+                enablePrefetch = true
+                enablePersonIdentity = true
+                enableWhisper = true
+                enableEmotion = true
                 enableTranscribeSilencePhrases = true
-            )
+            }
 
-            val result = GigaVoiceSettingsMapper.toApiSettingsInput(domain)
+            val result = GigaVoiceSettingsMapper.toApiSettingsInput(proto)
 
             assertThat(result.disableVad).isTrue()
             assertThat(result.enableTranscribeInput).isTrue()
@@ -71,13 +70,13 @@ class GigaVoiceSettingsMapperTest {
         }
 
         @Test
-        fun `should map default domain values correctly`() {
-            val domain = VoiceSettings(
-                voiceCallId = "test-call-id",
-                audio = AudioSettings()
-            )
+        fun `should map default proto values correctly`() {
+            val proto = settings {
+                voiceCallId = "test-call-id"
+                audio = audioSettings { }
+            }
 
-            val result = GigaVoiceSettingsMapper.toApiSettingsInput(domain)
+            val result = GigaVoiceSettingsMapper.toApiSettingsInput(proto)
 
             assertThat(result.disableVad).isFalse()
             assertThat(result.enableTranscribeInput).isFalse()
@@ -92,7 +91,7 @@ class GigaVoiceSettingsMapperTest {
     }
 
     @Nested
-    inner class ToDomainSettings {
+    inner class ToProtoSettings {
 
         @Test
         fun `should map all boolean flags and flags list when populated`() {
@@ -110,11 +109,11 @@ class GigaVoiceSettingsMapperTest {
                 enableTranscribeSilencePhrases = true
             )
 
-            val result = GigaVoiceSettingsMapper.toDomainSettings(api)
+            val result = GigaVoiceSettingsMapper.toProtoSettings(api)
 
             assertThat(result.disableVad).isTrue()
             assertThat(result.enableTranscribeInput).isTrue()
-            assertThat(result.flags).containsExactly("flag1", "flag2")
+            assertThat(result.flagsList).containsExactly("flag1", "flag2")
             assertThat(result.enableDenoiser).isTrue()
             assertThat(result.enablePrefetch).isTrue()
             assertThat(result.enablePersonIdentity).isTrue()
@@ -130,11 +129,11 @@ class GigaVoiceSettingsMapperTest {
                 audio = AudioSettingsOutput()
             )
 
-            val result = GigaVoiceSettingsMapper.toDomainSettings(api)
+            val result = GigaVoiceSettingsMapper.toProtoSettings(api)
 
             assertThat(result.disableVad).isFalse()
             assertThat(result.enableTranscribeInput).isFalse()
-            assertThat(result.flags).isEmpty()
+            assertThat(result.flagsList).isEmpty()
             assertThat(result.enableDenoiser).isFalse()
             assertThat(result.enablePrefetch).isFalse()
             assertThat(result.enablePersonIdentity).isFalse()
@@ -148,37 +147,37 @@ class GigaVoiceSettingsMapperTest {
     inner class RoundTrip {
 
         @Test
-        fun `should preserve all fields through domain to API to domain conversion`() {
-            val original = VoiceSettings(
-                voiceCallId = "round-trip-id",
-                audio = AudioSettings(output = AudioOutputSettings(speed = Speed.MEDIUM)),
-                gigachat = GigaChatSettings(
-                    preset = "preset",
-                    functionRanker = FunctionRanker(
-                        enabled = true,
-                        embedderModel = "embed-model",
-                        ignoredFunctions = listOf("function1"),
-                    )
-                ),
-                disableVad = true,
-                enableTranscribeInput = true,
-                flags = listOf("alpha", "beta"),
-                enableDenoiser = true,
-                enablePrefetch = false,
-                enablePersonIdentity = true,
-                enableWhisper = false,
-                enableEmotion = true,
-                enableTranscribeSilencePhrases = true,
-                disableInterruption = DisableInterruption(
-                    functions = listOf(
-                        LockFunctionExecution(
-                            name = "lock-function",
-                            onExecution = true,
+        fun `should preserve all fields through proto to API to proto conversion`() {
+            val original = settings {
+                voiceCallId = "round-trip-id"
+                audio = audioSettings { output = output { speed = Output.Speed.MEDIUM } }
+                gigachat = gigaChatSettings {
+                    preset = "preset"
+                    functionRanker = functionRanker {
+                        enabled = true
+                        embedderModel = "embed-model"
+                        ignoredFunctions.add("function1")
+                    }
+                }
+                disableVad = true
+                enableTranscribeInput = true
+                flags.addAll(listOf("alpha", "beta"))
+                enableDenoiser = true
+                enablePrefetch = false
+                enablePersonIdentity = true
+                enableWhisper = false
+                enableEmotion = true
+                enableTranscribeSilencePhrases = true
+                disableInterruption = disableInterruption {
+                    functions.add(
+                        lockFunctionExecution {
+                            name = "lock-function"
+                            onExecution = true
                             afterResult = false
-                        )
+                        }
                     )
-                )
-            )
+                }
+            }
 
             val api = GigaVoiceSettingsMapper.toApiSettingsInput(original)
             val apiOutput = SettingsOutput(
@@ -211,25 +210,25 @@ class GigaVoiceSettingsMapperTest {
                     )
                 )
             )
-            val result = GigaVoiceSettingsMapper.toDomainSettings(apiOutput)
+            val result = GigaVoiceSettingsMapper.toProtoSettings(apiOutput)
 
             assertThat(result.disableVad).isEqualTo(original.disableVad)
             assertThat(result.enableTranscribeInput).isEqualTo(original.enableTranscribeInput)
-            assertThat(result.flags).isEqualTo(original.flags)
+            assertThat(result.flagsList).isEqualTo(original.flagsList)
             assertThat(result.enableDenoiser).isEqualTo(original.enableDenoiser)
             assertThat(result.enablePrefetch).isEqualTo(original.enablePrefetch)
             assertThat(result.enablePersonIdentity).isEqualTo(original.enablePersonIdentity)
             assertThat(result.enableWhisper).isEqualTo(original.enableWhisper)
             assertThat(result.enableEmotion).isEqualTo(original.enableEmotion)
             assertThat(result.enableTranscribeSilencePhrases).isEqualTo(original.enableTranscribeSilencePhrases)
-            assertThat(result.audio.output!!.speed).isEqualTo(original.audio.output!!.speed)
-            assertThat(result.gigachat!!.preset).isEqualTo(original.gigachat!!.preset)
+            assertThat(result.audio.output.speed).isEqualTo(original.audio.output.speed)
+            assertThat(result.gigachat.preset).isEqualTo(original.gigachat.preset)
 
-            val functionRanker = result.gigachat!!.functionRanker!!
-            val originalFunctionRanker = original.gigachat!!.functionRanker!!
-            assertThat(functionRanker.enabled).isEqualTo(originalFunctionRanker.enabled)
-            assertThat(functionRanker.embedderModel).isEqualTo(originalFunctionRanker.embedderModel)
-            assertThat(functionRanker.ignoredFunctions).isEqualTo(originalFunctionRanker.ignoredFunctions)
+            val ranker = result.gigachat.functionRanker
+            val originalRanker = original.gigachat.functionRanker
+            assertThat(ranker.enabled).isEqualTo(originalRanker.enabled)
+            assertThat(ranker.embedderModel).isEqualTo(originalRanker.embedderModel)
+            assertThat(ranker.ignoredFunctionsList).isEqualTo(originalRanker.ignoredFunctionsList)
         }
     }
 
@@ -237,24 +236,27 @@ class GigaVoiceSettingsMapperTest {
     inner class StubSoundsMapping {
 
         @Test
-        fun `should map domain StubSounds with triggerGeneration to API`() {
-            val domain = StubSounds(
-                triggerGeneration = DomainTriggerGeneration(timeout = 30.seconds, enable = true),
-                triggerFunction = DomainTriggerFunction(
-                    enable = true,
-                    mode = TriggerFunctionMode.WHITELIST,
-                    functionNames = listOf("func1"),
-                    rules = listOf(
-                        FunctionSoundRule(
-                            functionNames = listOf("function1"),
-                            sounds = listOf("sound1"),
-                        )
+        fun `should map proto StubSounds with triggerGeneration to API`() {
+            val proto = stubSounds {
+                triggerGeneration = triggerGeneration {
+                    timeout = duration { seconds = 30L }
+                    enable = true
+                }
+                triggerFunction = triggerFunction {
+                    enable = true
+                    mode = ru.sbrf.dab2c.executor.clients.gigavoice.proto.TriggerFunction.Mode.WHITELIST
+                    functionNames.add("func1")
+                    rules.add(
+                        functionSoundRule {
+                            functionNames.add("function1")
+                            sounds.add("sound1")
+                        }
                     )
-                ),
-                sounds = listOf("sound1", "sound2")
-            )
+                }
+                sounds.addAll(listOf("sound1", "sound2"))
+            }
 
-            val result = GigaVoiceSettingsMapper.toApiStubSoundsInput(domain)
+            val result = GigaVoiceSettingsMapper.toApiStubSoundsInput(proto)
 
             assertThat(result.triggerGeneration!!.timeout).isEqualTo("30s")
             assertThat(result.triggerGeneration!!.enable).isTrue()
@@ -267,25 +269,25 @@ class GigaVoiceSettingsMapperTest {
         }
 
         @Test
-        fun `should use defaults when domain triggerGeneration is null`() {
-            val domain = StubSounds(sounds = listOf("sound1"))
+        fun `should use defaults when proto triggerGeneration is unset`() {
+            val proto = stubSounds { sounds.add("sound1") }
 
-            val result = GigaVoiceSettingsMapper.toApiStubSoundsInput(domain)
+            val result = GigaVoiceSettingsMapper.toApiStubSoundsInput(proto)
 
             assertThat(result.triggerGeneration).isNull()
         }
 
         @Test
-        fun `should use defaults when domain triggerFunction is null`() {
-            val domain = StubSounds(sounds = listOf("sound1"))
+        fun `should use defaults when proto triggerFunction is unset`() {
+            val proto = stubSounds { sounds.add("sound1") }
 
-            val result = GigaVoiceSettingsMapper.toApiStubSoundsInput(domain)
+            val result = GigaVoiceSettingsMapper.toApiStubSoundsInput(proto)
 
             assertThat(result.triggerFunction).isNull()
         }
 
         @Test
-        fun `should map API StubSoundsOutput with triggerGeneration to domain`() {
+        fun `should map API StubSoundsOutput with triggerGeneration to proto`() {
             val api = StubSoundsOutput(
                 triggerGeneration = ApiTriggerGeneration(timeout = "15s", enable = true),
                 triggerFunction = ApiTriggerFunction(
@@ -302,22 +304,21 @@ class GigaVoiceSettingsMapperTest {
                 sounds = listOf("sound1")
             )
 
-            val result = GigaVoiceSettingsMapper.toDomainStubSounds(api)
+            val result = GigaVoiceSettingsMapper.toProtoStubSounds(api)
 
-            assertThat(result.triggerGeneration).isNotNull
-            assertThat(result.triggerGeneration!!.timeout).isEqualTo(15.seconds)
-            assertThat(result.triggerGeneration!!.enable).isTrue()
-            assertThat(result.triggerFunction).isNotNull
-            assertThat(result.triggerFunction!!.enable).isTrue()
-            assertThat(result.sounds).containsExactly("sound1")
-            assertThat(result.triggerFunction).isNotNull
-            assertThat(result.triggerFunction!!.rules).hasSize(1)
-            assertThat(result.triggerFunction!!.rules[0].functionNames).containsExactly("function1")
-            assertThat(result.triggerFunction!!.rules[0].sounds).containsExactly("sound1")
+            assertThat(result.hasTriggerGeneration()).isTrue()
+            assertThat(result.triggerGeneration.timeout.seconds).isEqualTo(15L)
+            assertThat(result.triggerGeneration.enable).isTrue()
+            assertThat(result.hasTriggerFunction()).isTrue()
+            assertThat(result.triggerFunction.enable).isTrue()
+            assertThat(result.soundsList).containsExactly("sound1")
+            assertThat(result.triggerFunction.rulesList).hasSize(1)
+            assertThat(result.triggerFunction.rulesList[0].functionNamesList).containsExactly("function1")
+            assertThat(result.triggerFunction.rulesList[0].soundsList).containsExactly("sound1")
         }
 
         @Test
-        fun `should map null triggerGeneration in API to null in domain`() {
+        fun `should leave triggerGeneration unset when API value is null`() {
             val api = StubSoundsOutput(
                 triggerFunction = ApiTriggerFunction(
                     enable = false,
@@ -327,9 +328,9 @@ class GigaVoiceSettingsMapperTest {
                 sounds = emptyList()
             )
 
-            val result = GigaVoiceSettingsMapper.toDomainStubSounds(api)
+            val result = GigaVoiceSettingsMapper.toProtoStubSounds(api)
 
-            assertThat(result.triggerGeneration).isNull()
+            assertThat(result.hasTriggerGeneration()).isFalse()
         }
     }
 
@@ -337,16 +338,19 @@ class GigaVoiceSettingsMapperTest {
     inner class MessageMapping {
 
         @Test
-        fun `should map domain message with functions to API`() {
-            val domain = Message(
-                role = "assistant",
-                content = "hello",
-                functions = listOf(
-                    FunctionDefinition(name = "func1", description = "desc1")
+        fun `should map proto message with functions to API`() {
+            val proto = message {
+                role = "assistant"
+                content = "hello"
+                functions.add(
+                    protoFunctionDsl {
+                        name = "func1"
+                        description = "desc1"
+                    }
                 )
-            )
+            }
 
-            val result = GigaVoiceSettingsMapper.toApiMessage(domain)
+            val result = GigaVoiceSettingsMapper.toApiMessage(proto)
 
             assertThat(result.functions).hasSize(1)
             assertThat(result.functions!![0].name).isEqualTo("func1")
@@ -354,46 +358,39 @@ class GigaVoiceSettingsMapperTest {
         }
 
         @Test
-        fun `should map domain message with empty functions to null in API`() {
-            val domain = Message(
-                role = "user",
-                content = "hello",
-                functions = emptyList()
-            )
+        fun `should map proto message with empty functions to null in API`() {
+            val proto = message {
+                role = "user"
+                content = "hello"
+            }
 
-            val result = GigaVoiceSettingsMapper.toApiMessage(domain)
+            val result = GigaVoiceSettingsMapper.toApiMessage(proto)
 
             assertThat(result.functions).isNull()
         }
 
         @Test
-        fun `should map API message with functions to domain`() {
+        fun `should map API message with functions to proto`() {
             val api = ApiMessage(
                 role = "assistant",
                 content = "hello",
-                functions = listOf(
-                    FunctionInput(name = "func1", description = "desc1")
-                )
+                functions = listOf(FunctionInput(name = "func1", description = "desc1"))
             )
 
-            val result = GigaVoiceSettingsMapper.toDomainMessage(api)
+            val result = GigaVoiceSettingsMapper.toProtoMessage(api)
 
-            assertThat(result.functions).hasSize(1)
-            assertThat(result.functions[0].name).isEqualTo("func1")
-            assertThat(result.functions[0].description).isEqualTo("desc1")
+            assertThat(result.functionsList).hasSize(1)
+            assertThat(result.functionsList[0].name).isEqualTo("func1")
+            assertThat(result.functionsList[0].description).isEqualTo("desc1")
         }
 
         @Test
-        fun `should map API message with null functions to empty list in domain`() {
-            val api = ApiMessage(
-                role = "user",
-                content = "hello",
-                functions = null
-            )
+        fun `should map API message with null functions to empty list in proto`() {
+            val api = ApiMessage(role = "user", content = "hello", functions = null)
 
-            val result = GigaVoiceSettingsMapper.toDomainMessage(api)
+            val result = GigaVoiceSettingsMapper.toProtoMessage(api)
 
-            assertThat(result.functions).isEmpty()
+            assertThat(result.functionsList).isEmpty()
         }
     }
 }

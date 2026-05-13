@@ -23,6 +23,7 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.api.Parameter
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audio
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audioContent
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audioSettings
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.contentFromClient
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.contentFromModel
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionCalling
@@ -30,18 +31,16 @@ import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceRequest
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceResponse
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.inputTranscription
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.outputTranscription
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.settings
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.warning
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.DialogTurnExtra
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.ErrorPayload
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.FunctionCallPayload
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.WarningPayload
-import ru.sbrf.dab2c.executor.domain.voice.AudioSettings
-import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.library.audit.model.InteractionAuditRequest
 import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
 import ru.sbrf.dab2c.executor.library.context.Headers
 import ru.sbrf.dab2c.executor.library.context.HeadersElement
-import ru.sbrf.dab2c.executor.voice.mapper.toProto
 import ru.sbrf.dab2c.executor.voice.model.VoiceSessionFeatureToggles
 import ru.sbrf.dab2c.executor.voice.model.VoiceSessionFeatureToggles.Companion.KAP_SEND_EXTRA
 import ru.sbrf.dab2c.executor.voice.model.VoiceSessionFeatureTogglesElement
@@ -79,7 +78,7 @@ class DialogAccumulatorDelegateTest {
     fun `processRequestChunks should pass through unchanged`() = runTest {
         withContext(headersElement + togglesElement) {
             val requests = flowOf(
-                gigaVoiceRequest { settings = createVoiceSettings().toProto() },
+                gigaVoiceRequest { settings = createVoiceSettings() },
                 gigaVoiceRequest {
                     input = contentFromClient {
                         audioContent = audioContent { audioChunk = ByteString.copyFrom(byteArrayOf(1, 2, 3)) }
@@ -622,10 +621,10 @@ class DialogAccumulatorDelegateTest {
         }
     }
 
-    private fun createVoiceSettings(): VoiceSettings = VoiceSettings(
-        voiceCallId = "call-123",
-        audio = AudioSettings()
-    )
+    private fun createVoiceSettings() = settings {
+        voiceCallId = "call-123"
+        audio = audioSettings { }
+    }
 
     private fun togglesElement(
         kapSendExtra: Boolean

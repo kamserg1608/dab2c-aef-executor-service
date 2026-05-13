@@ -8,6 +8,7 @@ dependencies {
     api(project(":executor-libraries:monitoring"))
     api(project(":executor-libraries:audit"))
     implementation(project(":executor-clients:common-converters"))
+    implementation(project(":executor-clients:giga-voice"))
     implementation(project(":executor-libraries:jackson"))
     implementation(project(":executor-libraries:logging"))
     implementation(libs.bundles.ktor.client)

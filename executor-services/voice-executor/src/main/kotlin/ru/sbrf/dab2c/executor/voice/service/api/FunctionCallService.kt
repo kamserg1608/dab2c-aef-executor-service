@@ -1,6 +1,6 @@
 package ru.sbrf.dab2c.executor.voice.service.api
 
-import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
 
 /**
  * Service for executing function calls via Agent API.
@@ -8,5 +8,5 @@ import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
 interface FunctionCallService {
 
     /** Executes function call and returns updated data. */
-    suspend fun callFunction(functionCalling: FunctionCallingData): FunctionCallingData?
+    suspend fun callFunction(functionCalling: FunctionCalling): FunctionCalling?
 }

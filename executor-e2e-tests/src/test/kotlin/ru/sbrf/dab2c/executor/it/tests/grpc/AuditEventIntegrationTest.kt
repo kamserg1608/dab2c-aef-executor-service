@@ -231,13 +231,32 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(params["SENDER"]).isEqualTo("dab2c-aef-executor")
         assertThat(params["RECEIVER"]).isEqualTo("giga-voice-agent")
         val rqMessage: Map<String, Any?> = ObjectMappers.MAPPER.readValue(params["RQ_MESSAGE"]!!)
-        assertThat(rqMessage).containsKey("endpoint")
         assertThat(rqMessage["endpoint"]).isEqualTo("/settings")
         assertThat(rqMessage).containsKey("conversationId")
         assertThat(rqMessage).containsKey("agentConfiguration")
-        assertThat(rqMessage).containsKey("voiceSettings")
-        assertThat(rqMessage).containsKey("contextData")
-        assertThat(params["RS_MESSAGE"]).isNotBlank()
+
+        @Suppress("UNCHECKED_CAST")
+        val voiceSettings = rqMessage["voiceSettings"] as? Map<String, Any?>
+        assertThat(voiceSettings)
+            .describedAs("voiceSettings must be a structured proto3 JSON object, not a textproto string")
+            .isNotNull
+        assertThat(voiceSettings!!["voiceCallId"]).isEqualTo("audit-agent-settings")
+        assertThat(voiceSettings["audio"]).isInstanceOf(Map::class.java)
+
+        @Suppress("UNCHECKED_CAST")
+        val contextData = rqMessage["contextData"] as? Map<String, Any?>
+        assertThat(contextData)
+            .describedAs("contextData must serialize as a structured object exposing the proto content field")
+            .isNotNull
+        assertThat(contextData!!["content"]).isEqualTo("{}")
+
+        val rsMessage: Map<String, Any?> = ObjectMappers.MAPPER.readValue(params["RS_MESSAGE"]!!)
+        @Suppress("UNCHECKED_CAST")
+        val rsSettings = rsMessage["settings"] as? Map<String, Any?>
+        assertThat(rsSettings)
+            .describedAs("RS_MESSAGE.settings must be a structured proto3 JSON object")
+            .isNotNull
+        assertThat(rsSettings!!["voiceCallId"]).isEqualTo("test-call-123")
     }
 
     @Test
@@ -318,13 +337,34 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(functionAudit).isNotNull
         assertThat(functionAudit!!.success()).isTrue()
         assertThat(functionAudit.params()["ANSWER_CODE"]).isEqualTo("200")
-        assertThat(functionAudit.params()["RS_MESSAGE"]).isNotBlank()
         assertThat(functionAudit.params()["SENDER"]).isEqualTo("dab2c-aef-executor")
         assertThat(functionAudit.params()["RECEIVER"]).isEqualTo("giga-voice-agent")
         val rqMessage: Map<String, Any?> = ObjectMappers.MAPPER.readValue(functionAudit.params()["RQ_MESSAGE"]!!)
         assertThat(rqMessage["endpoint"]).isEqualTo("/functions")
-        assertThat(rqMessage).containsKey("functionCalling")
         assertThat(rqMessage).containsKey("agentConfiguration")
+
+        @Suppress("UNCHECKED_CAST")
+        val functionCalling = rqMessage["functionCalling"] as? Map<String, Any?>
+        assertThat(functionCalling)
+            .describedAs("functionCalling must serialize as a structured proto3 JSON object")
+            .isNotNull
+
+        @Suppress("UNCHECKED_CAST")
+        val functionCall = functionCalling!!["functionCall"] as? Map<String, Any?>
+        assertThat(functionCall)
+            .describedAs("functionCalling.functionCall must be nested, not a flattened string")
+            .isNotNull
+        assertThat(functionCall!!["name"]).isEqualTo("get_account_balance")
+        assertThat(functionCall["arguments"]).isEqualTo("""{"account_id": "12345"}""")
+
+        val rsMessage: Map<String, Any?> = ObjectMappers.MAPPER.readValue(functionAudit.params()["RS_MESSAGE"]!!)
+        @Suppress("UNCHECKED_CAST")
+        val result = rsMessage["result"] as? Map<String, Any?>
+        assertThat(result)
+            .describedAs("RS_MESSAGE.result must be a structured proto3 JSON object")
+            .isNotNull
+        assertThat(result!!["functionName"]).isEqualTo("get_account_balance")
+        assertThat(result["content"]).isEqualTo("""{"balance": 1000}""")
     }
 
     @Test
