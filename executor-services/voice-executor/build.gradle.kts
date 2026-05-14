@@ -9,7 +9,6 @@ dependencies {
     api(project(":executor-libraries:audit"))
     api(project(":executor-clients:giga-voice"))
     api(project(":executor-clients:giga-agent"))
-    implementation(project(":executor-clients:common-converters"))
     api(project(":executor-clients:efs-adapter"))
     api(project(":executor-clients:kap-producer"))
     api(project(":executor-libraries:logging"))

@@ -26,6 +26,7 @@ import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Settings
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.voice.AgentAnalytics
+import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.library.context.currentSessionInfo
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
 
@@ -53,8 +54,8 @@ class GigaVoiceAgentClientImpl(
         voiceSettings: Settings,
         contextData: Context,
     ): SettingsResult {
-        val context = GigaAgentContextBuilder.buildRequestContext(conversationId)
         val daSessionInfo = currentSessionInfo()
+        val context = GigaAgentContextBuilder.buildRequestContext(conversationId, daSessionInfo, currentHeaders())
         logger.debug { "Getting settings for session: ${context.ufsSession}" }
 
         val request = settingsRequestBuilder.build(
@@ -92,8 +93,8 @@ class GigaVoiceAgentClientImpl(
         functionCalling: FunctionCalling,
         contextData: Context
     ): FunctionCallResult {
-        val context = GigaAgentContextBuilder.buildRequestContext(conversationId)
         val daSessionInfo = currentSessionInfo()
+        val context = GigaAgentContextBuilder.buildRequestContext(conversationId, daSessionInfo, currentHeaders())
         logger.debug { "Executing function call for session: ${context.ufsSession}" }
 
         val request = functionCallRequestBuilder.build(

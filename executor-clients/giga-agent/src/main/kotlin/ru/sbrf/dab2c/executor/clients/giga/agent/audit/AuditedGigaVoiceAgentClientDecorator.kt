@@ -16,6 +16,8 @@ import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.library.audit.model.AuditMessageSchema
 import ru.sbrf.dab2c.executor.library.audit.model.InteractionAuditRequest
 import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
+import ru.sbrf.dab2c.executor.library.context.currentHeaders
+import ru.sbrf.dab2c.executor.library.context.currentSessionInfo
 
 private val logger = KotlinLogging.logger {}
 
@@ -35,7 +37,9 @@ class AuditedGigaVoiceAgentClientDecorator(
         voiceSettings: Settings,
         contextData: Context
     ): SettingsResult {
-        val context = GigaAgentContextBuilder.buildRequestContext(conversationId)
+        val context = GigaAgentContextBuilder.buildRequestContext(
+            conversationId, currentSessionInfo(), currentHeaders()
+        )
         logger.debug { "GigaVoice getSettings -> receiver=$receiver, conversationId=${context.conversationId}" }
 
         val rqMessage = buildSettingsRqMessage(context, agentConfiguration, voiceSettings, contextData)
@@ -66,7 +70,9 @@ class AuditedGigaVoiceAgentClientDecorator(
         functionCalling: FunctionCalling,
         contextData: Context
     ): FunctionCallResult {
-        val context = GigaAgentContextBuilder.buildRequestContext(conversationId)
+        val context = GigaAgentContextBuilder.buildRequestContext(
+            conversationId, currentSessionInfo(), currentHeaders()
+        )
         logger.debug { "GigaVoice executeFunctionCall -> receiver=$receiver, conversationId=${context.conversationId}" }
 
         val rqMessage = buildFunctionRqMessage(context, agentConfiguration, functionCalling, contextData)
