@@ -1,0 +1,21 @@
+{
+  "settings" : {
+    "audio" : { },
+    "disableVad" : false,
+    "enableTranscribeInput" : false,
+    "flags" : [ ],
+    "outputModalities" : "MODALITIES_UNSPECIFIED",
+    "mode" : "MODE_UNSPECIFIED",
+    "voiceCallId" : "test-call-123",
+    "enableDenoiser" : false,
+    "enablePrefetch" : false,
+    "enablePersonIdentity" : false,
+    "enableWhisper" : false,
+    "enableEmotion" : false,
+    "enableTranscribeSilencePhrases" : false
+  },
+  "performers" : {
+    "functions" : { }
+  },
+  "analytics" : [ ]
+}

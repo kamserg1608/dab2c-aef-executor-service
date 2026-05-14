@@ -12,8 +12,8 @@ import ru.sbrf.dab2c.executor.clients.common.util.buildFullUrl
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient.Companion.FUNCTIONS_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient.Companion.SETTINGS_ENDPOINT
+import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceApiToProtoMapper
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceFunctionCallRequestBuilder
-import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsMapper
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsRequestBuilder
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.ACLAgentAnalytics
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCallResult
@@ -44,7 +44,6 @@ class GigaVoiceAgentClientImpl(
     private val baseUrl: String,
     private val settingsRequestBuilder: GigaVoiceSettingsRequestBuilder,
     private val functionCallRequestBuilder: GigaVoiceFunctionCallRequestBuilder,
-    private val mapper: GigaVoiceSettingsMapper = GigaVoiceSettingsMapper
 ) : GigaVoiceAgentClient {
 
     @Suppress("LongMethod")
@@ -80,8 +79,8 @@ class GigaVoiceAgentClientImpl(
         }
 
         return SettingsResult(
-            settings = mapper.toProtoSettings(apiResponse.settings),
-            performers = mapper.toDomainPerformers(apiResponse.performers),
+            settings = GigaVoiceApiToProtoMapper.toProtoSettings(apiResponse.settings),
+            performers = GigaVoiceApiToProtoMapper.toDomainPerformers(apiResponse.performers),
             analytics = apiResponse.agentAnalytics?.map { it.toDomain() }.orEmpty()
         )
     }
@@ -120,7 +119,7 @@ class GigaVoiceAgentClientImpl(
         }
 
         return FunctionCallResult(
-            result = mapper.toProtoFunctionResult(apiResponse.functionResult),
+            result = GigaVoiceApiToProtoMapper.toProtoFunctionResult(apiResponse.functionResult),
             analytics = apiResponse.agentAnalytics?.map { it.toDomain() }.orEmpty()
         )
     }

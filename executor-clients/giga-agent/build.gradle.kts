@@ -13,6 +13,8 @@ dependencies {
     implementation(project(":executor-libraries:logging"))
     implementation(libs.bundles.ktor.client)
     implementation(libs.kotlin.logging.jvm)
+
+    testImplementation(project(":executor-libraries:test-support"))
 }
 
 val generateGigaVoiceAgent = tasks

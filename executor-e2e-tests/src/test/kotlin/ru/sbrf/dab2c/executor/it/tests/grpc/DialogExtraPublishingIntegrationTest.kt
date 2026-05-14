@@ -1,6 +1,7 @@
 package ru.sbrf.dab2c.executor.it.tests.grpc
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.DialogEnvelope
@@ -28,6 +29,8 @@ import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubsWithKa
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubGigaAgentFunctions
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
+import ru.sbrf.dab2c.executor.library.testing.golden.assertMatchesGolden
+import ru.sbrf.dab2c.executor.library.testing.golden.maskNonDeterministic
 
 private const val DIALOGS_TOPIC = "dab2c-core-dialogs"
 
@@ -169,19 +172,12 @@ class DialogExtraPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
         assertThat(records).isNotEmpty()
 
-        val extra = parseExtra(records.first())
-        assertThat(extra.events).isNotEmpty()
-
-        val functionCallEvent = extra.events.find { it.eventName == "function_call" }
-        assertThat(functionCallEvent).isNotNull()
-        assertThat(functionCallEvent!!.timestamp).isGreaterThan(0)
-
-        val fcPayload = functionCallEvent.payload as FunctionCallPayload
-        assertThat(fcPayload.functionCall.name).isEqualTo("get_account_balance")
-
-        val functionResultEvent = extra.events.find { it.eventName == "function_result" }
-        assertThat(functionResultEvent).isNotNull()
-        assertThat(functionResultEvent!!.timestamp).isGreaterThanOrEqualTo(functionCallEvent.timestamp)
+        val extraMap: Map<String, Any?> =
+            ObjectMappers.MAPPER.readValue(records.first().data.extra ?: error("extra missing"))
+        assertMatchesGolden(
+            maskNonDeterministic(extraMap, EXTRA_NON_DETERMINISTIC_FIELDS),
+            "golden/dialog-extra/function-call-events.json"
+        )
     }
 
     @Test
@@ -225,18 +221,12 @@ class DialogExtraPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
         assertThat(records).isNotEmpty()
 
-        val extra = parseExtra(records.first())
-
-        val warningEvent = extra.events.find { it.eventName == "warning" }
-        assertThat(warningEvent).isNotNull()
-        assertThat((warningEvent!!.payload as WarningPayload).message)
-            .isEqualTo("low confidence")
-
-        val errorEvent = extra.events.find { it.eventName == "error" }
-        assertThat(errorEvent).isNotNull()
-        val errorPayload = errorEvent!!.payload as ErrorPayload
-        assertThat(errorPayload.status).isEqualTo(400)
-        assertThat(errorPayload.message).isEqualTo("Bad Request")
+        val extraMap: Map<String, Any?> =
+            ObjectMappers.MAPPER.readValue(records.first().data.extra ?: error("extra missing"))
+        assertMatchesGolden(
+            maskNonDeterministic(extraMap, EXTRA_NON_DETERMINISTIC_FIELDS),
+            "golden/dialog-extra/warning-error-events.json"
+        )
     }
 
     private fun parseExtra(envelope: DialogEnvelope): DialogTurnExtra {
@@ -265,5 +255,16 @@ class DialogExtraPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
             else -> error("Unknown event: $eventName")
         }
         return DialogTurnEvent(eventName = eventName, timestamp = timestamp, payload = payload)
+    }
+
+    private companion object {
+        /** Non-deterministic timestamp fields in DialogTurnExtra (per-event + per-turn boundary). */
+        private val EXTRA_NON_DETERMINISTIC_FIELDS = setOf(
+            "timestamp",
+            "userMessageStartTS",
+            "userMessageEndTS",
+            "assistantMessageStartTS",
+            "assistantMessageEndTS"
+        )
     }
 }

@@ -18,6 +18,7 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.kotlin.logging.jvm)
     testImplementation(project(":executor-libraries:jackson"))
+    testImplementation(project(":executor-libraries:test-support"))
     testImplementation(libs.wiremock.spring.boot)
     testImplementation(libs.spring.kafka)
     testImplementation(libs.spring.kafka.test)

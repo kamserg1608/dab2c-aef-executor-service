@@ -1,0 +1,36 @@
+{
+  "id" : "<MASKED>",
+  "version" : "1.2.0",
+  "date" : "<MASKED>",
+  "data" : {
+    "userMessage" : {
+      "chatId" : "<MASKED>",
+      "id" : "<MASKED>",
+      "dateCreated" : "<MASKED>",
+      "text" : "First question",
+      "isMine" : true,
+      "userId" : "<MASKED>",
+      "ucpId" : "<MASKED>",
+      "sessionId" : "<MASKED>",
+      "channel" : "IVR",
+      "platform" : "gsm",
+      "inputType" : "voice"
+    },
+    "assistantMessage" : {
+      "chatId" : "<MASKED>",
+      "id" : "<MASKED>",
+      "dateCreated" : "<MASKED>",
+      "text" : "First answer",
+      "isMine" : false,
+      "sessionId" : "<MASKED>",
+      "previousMessageId" : "<MASKED>",
+      "requestId" : "<MASKED>",
+      "streamStatus" : "completed",
+      "agentIds" : [ {
+        "ci" : "test-ci"
+      } ],
+      "assistantResponseTime" : "<MASKED>",
+      "isIdp" : false
+    }
+  }
+}

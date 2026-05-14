@@ -1,0 +1,24 @@
+{
+  "events" : [ {
+    "eventName" : "function_call",
+    "timestamp" : "<MASKED>",
+    "payload" : {
+      "function_call" : {
+        "name" : "get_account_balance",
+        "arguments" : "{\"account_id\": \"123\"}"
+      },
+      "timestamp" : "<MASKED>"
+    }
+  }, {
+    "eventName" : "function_result",
+    "timestamp" : "<MASKED>",
+    "payload" : {
+      "content" : "{\"balance\": 1000}",
+      "function_name" : "get_account_balance"
+    }
+  } ],
+  "userMessageStartTS" : "<MASKED>",
+  "userMessageEndTS" : "<MASKED>",
+  "assistantMessageStartTS" : "<MASKED>",
+  "assistantMessageEndTS" : "<MASKED>"
+}

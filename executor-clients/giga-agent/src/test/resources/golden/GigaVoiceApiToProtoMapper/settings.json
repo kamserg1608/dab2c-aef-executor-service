@@ -1,0 +1,128 @@
+{
+  "gigachat" : {
+    "model" : "GigaChat-Pro",
+    "temperature" : 0.7,
+    "topP" : 0.9,
+    "repetitionPenalty" : 1.1,
+    "updateInterval" : 0.5,
+    "profanityCheck" : true,
+    "filtersSettings" : {
+      "filter-key" : {
+        "requestContent" : {
+          "neuro" : true,
+          "blacklist" : false,
+          "whitelist" : true
+        },
+        "responseContent" : {
+          "blacklist" : true
+        }
+      }
+    },
+    "functions" : [ {
+      "name" : "get_balance",
+      "description" : "Returns user balance",
+      "parameters" : "{\"type\":\"object\"}",
+      "fewShotExamples" : [ {
+        "request" : "What is my balance?",
+        "params" : {
+          "pairs" : [ {
+            "key" : "user_id",
+            "value" : "42"
+          } ]
+        }
+      } ],
+      "returnParameters" : "{\"type\":\"number\"}"
+    } ],
+    "functionRegistry" : {
+      "profile" : "default",
+      "labels" : [ "voice", "rus" ],
+      "abFlags" : "{\"experiment\":\"on\"}"
+    },
+    "filterStubPhrases" : [ "заглушка" ],
+    "currentTime" : 1730000000,
+    "functionRanker" : {
+      "enabled" : true,
+      "topN" : 5,
+      "embedderModel" : "embedder-v1",
+      "ignoredFunctions" : [ "noop" ]
+    },
+    "preset" : "preset-a"
+  },
+  "audio" : {
+    "input" : {
+      "model" : "asr-v2",
+      "audioEncoding" : "PCM_S16LE",
+      "sampleRate" : 16000,
+      "silencePhrases" : [ "silence-a", "silence-b" ],
+      "silencePhrasesTimeout" : "5s",
+      "silenceTimeout" : "3s",
+      "stopPhrases" : [ "stop-it" ],
+      "ignorePhrases" : [ "ignore-me" ]
+    },
+    "output" : {
+      "voice" : "Nina",
+      "audioEncoding" : "OPUS",
+      "stubSounds" : {
+        "triggerGeneration" : {
+          "timeout" : "2s",
+          "enable" : true
+        },
+        "triggerFunction" : {
+          "enable" : true,
+          "mode" : "WHITELIST",
+          "functionNames" : [ "get_balance" ],
+          "rules" : [ {
+            "functionNames" : [ "transfer_money" ],
+            "sounds" : [ "sound-1" ]
+          } ]
+        },
+        "sounds" : [ "intro-sound" ]
+      },
+      "speed" : "MEDIUM"
+    }
+  },
+  "context" : {
+    "messages" : [ {
+      "role" : "user",
+      "content" : "Hi there",
+      "functionCall" : {
+        "name" : "ping",
+        "arguments" : "{\"x\":1}"
+      },
+      "functionName" : "ping",
+      "functionsStateId" : "state-1",
+      "attachments" : [ "att-1" ],
+      "inlineData" : {
+        "key-1" : "value-1"
+      },
+      "functions" : [ {
+        "name" : "ping",
+        "description" : "Ping",
+        "fewShotExamples" : [ ]
+      } ]
+    } ]
+  },
+  "disableVad" : true,
+  "enableTranscribeInput" : true,
+  "flags" : [ "flag-a", "flag-b" ],
+  "outputModalities" : "AUDIO_TEXT",
+  "mode" : "RECOGNIZE_GIGACHAT_SYNTHESIS",
+  "voiceCallId" : "call-uuid-1",
+  "firstSpeaker" : {
+    "type" : "agent",
+    "lockFirstIn" : true
+  },
+  "enableDenoiser" : true,
+  "enablePrefetch" : true,
+  "enablePersonIdentity" : true,
+  "enableWhisper" : true,
+  "enableEmotion" : true,
+  "enableTranscribeSilencePhrases" : true,
+  "disableInterruption" : {
+    "functions" : [ {
+      "name" : "transfer",
+      "onExecution" : true,
+      "afterResult" : false
+    } ]
+  }
+}

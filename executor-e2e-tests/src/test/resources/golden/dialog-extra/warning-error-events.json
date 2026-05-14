@@ -1,0 +1,20 @@
+{
+  "events" : [ {
+    "eventName" : "warning",
+    "timestamp" : "<MASKED>",
+    "payload" : {
+      "message" : "low confidence"
+    }
+  }, {
+    "eventName" : "error",
+    "timestamp" : "<MASKED>",
+    "payload" : {
+      "status" : 400,
+      "message" : "Bad Request"
+    }
+  } ],
+  "userMessageStartTS" : "<MASKED>",
+  "userMessageEndTS" : "<MASKED>",
+  "assistantMessageStartTS" : "<MASKED>",
+  "assistantMessageEndTS" : "<MASKED>"
+}

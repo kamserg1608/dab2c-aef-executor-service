@@ -15,6 +15,7 @@ include("executor-libraries:logging")
 include("executor-libraries:monitoring")
 include("executor-libraries:audit")
 include("executor-libraries:time")
+include("executor-libraries:test-support")
 
 pluginManagement {
     repositories {

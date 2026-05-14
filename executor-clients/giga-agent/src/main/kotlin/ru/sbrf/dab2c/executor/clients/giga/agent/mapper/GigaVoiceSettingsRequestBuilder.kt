@@ -16,9 +16,7 @@ import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
  * Builder for constructing GigaVoiceSettingsRequestSchema from proto inputs.
  */
 @Component
-class GigaVoiceSettingsRequestBuilder(
-    private val settingsMapper: GigaVoiceSettingsMapper = GigaVoiceSettingsMapper
-) {
+class GigaVoiceSettingsRequestBuilder {
 
     /** Builds a settings request from proto inputs. */
     @Suppress("LongParameterList")
@@ -31,7 +29,7 @@ class GigaVoiceSettingsRequestBuilder(
     ): GigaVoiceSettingsRequestSchema {
         val agentConfig = GigaVoiceAgentConfigMapper.toApiAgentConfig(agentConfiguration)
         val sessionConfig = SessionConfig(channel = context.channel)
-        val settingsInput = settingsMapper.toApiSettingsInput(voiceSettings)
+        val settingsInput = GigaVoiceProtoToApiMapper.toApiSettingsInput(voiceSettings)
 
         return GigaVoiceSettingsRequestSchema(
             conversationId = context.conversationId,
