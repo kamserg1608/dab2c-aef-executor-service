@@ -1,15 +1,17 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
+import com.google.protobuf.Message
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
-import ru.sbrf.dab2c.executor.domain.voice.ContentFromModel
-import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
-import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.ContentFromModel
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
+import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
 import ru.sbrf.dab2c.executor.voice.exception.TolerantExceptionRegistry
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
@@ -22,7 +24,7 @@ class LoggingChunkProcessingServiceDelegate(
     private val logger = KotlinLogging.logger { }
     private val sessionStartTime = System.currentTimeMillis()
 
-    override fun processRequestChunks(requestsChunks: Flow<VoiceRequest>): Flow<VoiceRequest> {
+    override fun processRequestChunks(requestsChunks: Flow<GigaVoiceRequest>): Flow<GigaVoiceRequest> {
         val observedChunks = requestsChunks
             .onStart { logSessionStart() }
             .onEach { request -> logRequest(DIRECTION_IN, request) }
@@ -30,7 +32,7 @@ class LoggingChunkProcessingServiceDelegate(
             .onEach { request -> logRequest(DIRECTION_OUT, request) }
     }
 
-    override fun processResponseChunks(responsesChunks: Flow<VoiceResponse>): Flow<VoiceResponse> {
+    override fun processResponseChunks(responsesChunks: Flow<GigaVoiceResponse>): Flow<GigaVoiceResponse> {
         val observedChunks = responsesChunks
             .onEach { response -> logResponse(DIRECTION_IN, response) }
         return delegate.processResponseChunks(observedChunks)
@@ -38,29 +40,35 @@ class LoggingChunkProcessingServiceDelegate(
             .onCompletion { error -> logSessionEnd(error) }
     }
 
-    private fun logRequest(direction: String, request: VoiceRequest) {
-        if (request is VoiceRequest.Audio) {
-            logger.debug {
-                "$direction$REQUEST_PREFIX${request.copy(content = request.content.copy(audioChunk = null))}"
-            }
+    private fun logRequest(direction: String, request: GigaVoiceRequest) {
+        val sanitized = if (
+            request.requestCase == GigaVoiceRequest.RequestCase.INPUT &&
+            request.input.hasAudioContent()
+        ) {
+            request.toBuilder().apply { inputBuilder.audioContentBuilder.clearAudioChunk() }.build()
         } else {
-            logger.debug { "$direction$REQUEST_PREFIX$request" }
+            request
         }
+        logger.debug { "$direction$REQUEST_PREFIX${toJson(sanitized)}" }
     }
 
-    private fun logResponse(direction: String, response: VoiceResponse) {
-        if (response is VoiceResponse.Output && response.content is ContentFromModel.Audio) {
-            val content = response.content as ContentFromModel.Audio
-            val sanitized = response.copy(
-                content = content.copy(audio = content.audio.copy(audioChunk = byteArrayOf()))
-            )
-            logger.debug { "$direction$RESPONSE_PREFIX$sanitized" }
-        } else if (response is VoiceResponse.ServiceInfo) {
+    private fun logResponse(direction: String, response: GigaVoiceResponse) {
+        if (response.responseCase == GigaVoiceResponse.ResponseCase.SERVICE_INFO) {
             logSessionInfo(response)
-        } else {
-            logger.debug { "$direction$RESPONSE_PREFIX$response" }
+            return
         }
+        val sanitized = if (
+            response.responseCase == GigaVoiceResponse.ResponseCase.OUTPUT &&
+            response.output.responseCase == ContentFromModel.ResponseCase.AUDIO
+        ) {
+            response.toBuilder().apply { outputBuilder.audioBuilder.clearAudioChunk() }.build()
+        } else {
+            response
+        }
+        logger.debug { "$direction$RESPONSE_PREFIX${toJson(sanitized)}" }
     }
+
+    private fun toJson(message: Message): String = ObjectMappers.MAPPER.writeValueAsString(message)
 
     private suspend fun logSessionStart() {
         val metadataString = buildMetadataString()
@@ -86,9 +94,9 @@ class LoggingChunkProcessingServiceDelegate(
         }
     }
 
-    private fun logSessionInfo(response: VoiceResponse.ServiceInfo) {
+    private fun logSessionInfo(response: GigaVoiceResponse) {
         IntegrationLogger.logGrpcEvent(
-            message = "gRPC session info $response",
+            message = "gRPC session info ${toJson(response)}",
         )
     }
 

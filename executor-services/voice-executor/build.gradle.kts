@@ -7,7 +7,6 @@ dependencies {
     api(project(":executor-libraries:context"))
     api(project(":executor-libraries:monitoring"))
     api(project(":executor-libraries:audit"))
-    api(project(":executor-clients:ivr-voice"))
     api(project(":executor-clients:giga-voice"))
     api(project(":executor-clients:giga-agent"))
     api(project(":executor-clients:efs-adapter"))

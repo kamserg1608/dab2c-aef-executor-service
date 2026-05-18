@@ -1,18 +1,18 @@
 package ru.sbrf.dab2c.executor.it.support.fixtures
 
-import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioContent
-import ru.sbrf.dab2c.executor.clients.ivr.proto.AudioSettings
-import ru.sbrf.dab2c.executor.clients.ivr.proto.ContentFromClient
-import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceRequest
-import ru.sbrf.dab2c.executor.clients.ivr.proto.Settings
-import ru.sbrf.dab2c.executor.clients.ivr.proto.audioContent
-import ru.sbrf.dab2c.executor.clients.ivr.proto.audioSettings
-import ru.sbrf.dab2c.executor.clients.ivr.proto.contentForSynthesis
-import ru.sbrf.dab2c.executor.clients.ivr.proto.contentFromClient
-import ru.sbrf.dab2c.executor.clients.ivr.proto.context
-import ru.sbrf.dab2c.executor.clients.ivr.proto.functionResult
-import ru.sbrf.dab2c.executor.clients.ivr.proto.gigaVoiceRequest
-import ru.sbrf.dab2c.executor.clients.ivr.proto.settings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.AudioContent
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.AudioSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.ContentFromClient
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Settings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audioContent
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audioSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.contentForSynthesis
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.contentFromClient
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.context
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionResult
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.settings
 
 object GigaVoiceRequestFixtures {
 

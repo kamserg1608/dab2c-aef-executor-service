@@ -1,0 +1,76 @@
+{
+  "conversation_id" : "headers-test-call",
+  "edu_id" : "test-edu-id",
+  "config" : {
+    "agent_config" : {
+      "name" : "test-agent",
+      "type" : "voice",
+      "functional_subsystem_ci" : "test-ci",
+      "description" : "Test agent",
+      "ufs_service_available" : true,
+      "tools_meta" : [ ],
+      "neighbours_agent_meta" : [ ],
+      "toggles" : { },
+      "can_access_user_info" : true,
+      "can_access_dialog_history" : true
+    },
+    "session_config" : {
+      "channel" : "test-channel",
+      "block" : null,
+      "surface" : null,
+      "platform" : null,
+      "app_source" : null,
+      "sdk_version" : null,
+      "entry_point" : null,
+      "app_version" : null,
+      "channel_version" : null,
+      "time_zone" : null
+    }
+  },
+  "settings" : {
+    "audio" : {
+      "input" : null,
+      "output" : null
+    },
+    "voice_call_id" : "headers-test-call",
+    "gigachat" : null,
+    "context" : null,
+    "disable_vad" : false,
+    "enable_transcribe_input" : false,
+    "flags" : null,
+    "output_modalities" : 0,
+    "mode" : 0,
+    "first_speaker" : null,
+    "enable_denoiser" : false,
+    "enable_prefetch" : false,
+    "enable_person_identity" : false,
+    "enable_whisper" : false,
+    "enable_emotion" : false,
+    "enable_transcribe_silence_phrases" : false,
+    "disable_interruption" : null
+  },
+  "session_info" : {
+    "ufs_host" : "test-ufs-host",
+    "cookies" : {
+      "UFS-SESSION" : "test-session",
+      "UFS-TOKEN" : "test-token"
+    },
+    "headers" : {
+      "UFS-SESSION" : "test-session",
+      "X-Trace-Id" : "test-trace-id",
+      "Da-Request-Id" : "<MASKED>",
+      "Da-Session-Id" : "test-session-id",
+      "Da-Channel" : "test-channel",
+      "Da-Platform" : "test-platform",
+      "Da-Ucp-Id" : "test-ucp-id"
+    }
+  },
+  "user_info" : {
+    "first_name" : "Всеслав",
+    "patr_name" : "Владиславович",
+    "birth_day" : "1998-01-20T14:50:00.000+0300",
+    "segment_code_type" : "1",
+    "ucp_id" : "2064943548742642674"
+  },
+  "context" : { }
+}

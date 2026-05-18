@@ -9,13 +9,15 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCallResult
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaAgentRequestContext
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.SettingsResult
 import ru.sbrf.dab2c.executor.clients.giga.agent.util.GigaAgentContextBuilder
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Settings
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
-import ru.sbrf.dab2c.executor.domain.voice.ContextData
-import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
-import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.library.audit.model.AuditMessageSchema
 import ru.sbrf.dab2c.executor.library.audit.model.InteractionAuditRequest
 import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
+import ru.sbrf.dab2c.executor.library.context.currentHeaders
+import ru.sbrf.dab2c.executor.library.context.currentSessionInfo
 
 private val logger = KotlinLogging.logger {}
 
@@ -32,10 +34,12 @@ class AuditedGigaVoiceAgentClientDecorator(
     override suspend fun getSettings(
         conversationId: String,
         agentConfiguration: AgentConfiguration,
-        voiceSettings: VoiceSettings,
-        contextData: ContextData
+        voiceSettings: Settings,
+        contextData: Context
     ): SettingsResult {
-        val context = GigaAgentContextBuilder.buildRequestContext(conversationId)
+        val context = GigaAgentContextBuilder.buildRequestContext(
+            conversationId, currentSessionInfo(), currentHeaders()
+        )
         logger.debug { "GigaVoice getSettings -> receiver=$receiver, conversationId=${context.conversationId}" }
 
         val rqMessage = buildSettingsRqMessage(context, agentConfiguration, voiceSettings, contextData)
@@ -63,10 +67,12 @@ class AuditedGigaVoiceAgentClientDecorator(
     override suspend fun executeFunctionCall(
         conversationId: String,
         agentConfiguration: AgentConfiguration,
-        functionCalling: FunctionCallingData,
-        contextData: ContextData
+        functionCalling: FunctionCalling,
+        contextData: Context
     ): FunctionCallResult {
-        val context = GigaAgentContextBuilder.buildRequestContext(conversationId)
+        val context = GigaAgentContextBuilder.buildRequestContext(
+            conversationId, currentSessionInfo(), currentHeaders()
+        )
         logger.debug { "GigaVoice executeFunctionCall -> receiver=$receiver, conversationId=${context.conversationId}" }
 
         val rqMessage = buildFunctionRqMessage(context, agentConfiguration, functionCalling, contextData)
@@ -94,8 +100,8 @@ class AuditedGigaVoiceAgentClientDecorator(
     private fun buildSettingsRqMessage(
         context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
-        voiceSettings: VoiceSettings,
-        contextData: ContextData
+        voiceSettings: Settings,
+        contextData: Context
     ): String =
         toJson(
             baseRqMap(
@@ -111,8 +117,8 @@ class AuditedGigaVoiceAgentClientDecorator(
     private fun buildFunctionRqMessage(
         context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
-        functionCalling: FunctionCallingData,
-        contextData: ContextData
+        functionCalling: FunctionCalling,
+        contextData: Context
     ): String =
         toJson(
             baseRqMap(
@@ -129,7 +135,7 @@ class AuditedGigaVoiceAgentClientDecorator(
         endpoint: String,
         context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
-        contextData: ContextData
+        contextData: Context
     ): Map<String, Any?> =
         mapOf(
             "endpoint" to endpoint,

@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'clearAgent&&!static'
+        label 'clearAgent&&rhel8&&!static'
     }
 
     options {

@@ -12,6 +12,9 @@ import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubs
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
+import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
+import ru.sbrf.dab2c.executor.library.testing.golden.assertMatchesGolden
+import ru.sbrf.dab2c.executor.library.testing.golden.maskNonDeterministic
 
 private const val DIALOGS_TOPIC = "dab2c-core-dialogs"
 
@@ -103,20 +106,40 @@ class DialogPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(dialogRecords.size).isGreaterThanOrEqualTo(2)
 
         val firstDialog = dialogRecords.find { it.data.userMessage.previousMessageId == null }
-        assertThat(firstDialog).isNotNull
-        assertThat(firstDialog!!.version).isEqualTo("1.2.0")
-        assertThat(firstDialog.data.userMessage.text).isEqualTo("First question")
-        assertThat(firstDialog.data.assistantMessage?.text).isEqualTo("First answer")
-        assertThat(firstDialog.data.assistantMessage?.agentIds).isNotNull
-        assertThat(firstDialog.data.assistantMessage?.assistantResponseTime).isNotNull
-
+            ?: error("First dialog (with previousMessageId=null) not found in $dialogRecords")
         val secondDialog = dialogRecords.find {
             it.data.userMessage.previousMessageId == firstDialog.data.assistantMessage?.id
-        }
-        assertThat(secondDialog).isNotNull
-        assertThat(secondDialog!!.data.userMessage.text).isEqualTo("Second question")
-        assertThat(secondDialog.data.assistantMessage?.text).isEqualTo("Second answer")
-        assertThat(secondDialog.data.assistantMessage?.agentIds).isNotNull
-        assertThat(secondDialog.data.assistantMessage?.assistantResponseTime).isNotNull
+        } ?: error("Second dialog (linked to first by previousMessageId) not found in $dialogRecords")
+
+        assertMatchesGolden(
+            maskNonDeterministic(firstDialog.asMap(), DIALOG_NON_DETERMINISTIC_FIELDS),
+            "golden/dialog/first-turn.json"
+        )
+        assertMatchesGolden(
+            maskNonDeterministic(secondDialog.asMap(), DIALOG_NON_DETERMINISTIC_FIELDS),
+            "golden/dialog/second-turn.json"
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun DialogEnvelope.asMap(): Map<String, Any?> =
+        ObjectMappers.MAPPER.convertValue(this, Map::class.java) as Map<String, Any?>
+
+    private companion object {
+        /** Non-deterministic fields in a DialogEnvelope: UUIDs, timestamps, generated chat ids. */
+        private val DIALOG_NON_DETERMINISTIC_FIELDS = setOf(
+            "id",
+            "userMessageId",
+            "assistantMessageId",
+            "previousMessageId",
+            "requestId",
+            "chatId",
+            "date",
+            "dateCreated",
+            "assistantResponseTime",
+            "sessionId",
+            "userId",
+            "ucpId"
+        )
     }
 }

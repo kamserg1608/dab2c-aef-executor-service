@@ -1,5 +1,6 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
+import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.grpc.StatusException
 import io.mockk.coEvery
@@ -19,23 +20,23 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.Parameter
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audio
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audioContent
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audioSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.contentFromClient
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.contentFromModel
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionCalling
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceResponse
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.inputTranscription
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.outputTranscription
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.settings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.warning
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.DialogTurnExtra
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.ErrorPayload
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.FunctionCallPayload
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.WarningPayload
-import ru.sbrf.dab2c.executor.domain.voice.AudioContent
-import ru.sbrf.dab2c.executor.domain.voice.AudioOutput
-import ru.sbrf.dab2c.executor.domain.voice.AudioSettings
-import ru.sbrf.dab2c.executor.domain.voice.ContentFromModel
-import ru.sbrf.dab2c.executor.domain.voice.ErrorData
-import ru.sbrf.dab2c.executor.domain.voice.FunctionCall
-import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
-import ru.sbrf.dab2c.executor.domain.voice.InputTranscriptionData
-import ru.sbrf.dab2c.executor.domain.voice.OutputTranscriptionData
-import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
-import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
-import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
-import ru.sbrf.dab2c.executor.domain.voice.WarningData
 import ru.sbrf.dab2c.executor.library.audit.model.InteractionAuditRequest
 import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
 import ru.sbrf.dab2c.executor.library.context.Headers
@@ -46,6 +47,8 @@ import ru.sbrf.dab2c.executor.voice.model.VoiceSessionFeatureTogglesElement
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.service.api.DialogTurnPublisher
 import ru.sbrf.dab2c.executor.voice.test.IncrementingTimeProvider
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.error as protoError
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionCall as protoFunctionCallDsl
 
 class DialogAccumulatorDelegateTest {
 
@@ -75,8 +78,12 @@ class DialogAccumulatorDelegateTest {
     fun `processRequestChunks should pass through unchanged`() = runTest {
         withContext(headersElement + togglesElement) {
             val requests = flowOf(
-                VoiceRequest.Settings(createVoiceSettings()),
-                VoiceRequest.Audio(AudioContent(audioChunk = byteArrayOf(1, 2, 3)))
+                gigaVoiceRequest { settings = createVoiceSettings() },
+                gigaVoiceRequest {
+                    input = contentFromClient {
+                        audioContent = audioContent { audioChunk = ByteString.copyFrom(byteArrayOf(1, 2, 3)) }
+                    }
+                }
             )
 
             val result = accumulator.processRequestChunks(requests).toList()
@@ -587,41 +594,37 @@ class DialogAccumulatorDelegateTest {
         }
     }
 
-    private fun createInputTranscription(text: String): VoiceResponse.InputTranscription =
-        VoiceResponse.InputTranscription(
-            InputTranscriptionData(
-                text = text,
-                timestamp = System.currentTimeMillis()
-            )
-        )
+    private fun createInputTranscription(text: String): GigaVoiceResponse = gigaVoiceResponse {
+        inputTranscription = inputTranscription {
+            this.text = text
+            timestamp = System.currentTimeMillis()
+        }
+    }
 
-    private fun createOutputTranscription(text: String): VoiceResponse.OutputTranscription =
-        VoiceResponse.OutputTranscription(
-            OutputTranscriptionData(
-                text = text,
-                functionsStateId = "state-1",
-                finishReason = "stop",
-                timestamp = System.currentTimeMillis()
-            )
-        )
+    private fun createOutputTranscription(text: String): GigaVoiceResponse = gigaVoiceResponse {
+        outputTranscription = outputTranscription {
+            this.text = text
+            functionsStateId = "state-1"
+            finishReason = "stop"
+            timestamp = System.currentTimeMillis()
+        }
+    }
 
-    private fun createWarning(message: String): VoiceResponse.Warning =
-        VoiceResponse.Warning(
-            WarningData(message = message)
-        )
+    private fun createWarning(message: String): GigaVoiceResponse = gigaVoiceResponse {
+        warning = warning { this.message = message }
+    }
 
-    private fun createError(status: Int, message: String): VoiceResponse.Error =
-        VoiceResponse.Error(
-            ErrorData(
-                status = status,
-                message = message
-            )
-        )
+    private fun createError(status: Int, message: String): GigaVoiceResponse = gigaVoiceResponse {
+        error = protoError {
+            this.status = status
+            this.message = message
+        }
+    }
 
-    private fun createVoiceSettings(): VoiceSettings = VoiceSettings(
-        voiceCallId = "call-123",
-        audio = AudioSettings()
-    )
+    private fun createVoiceSettings() = settings {
+        voiceCallId = "call-123"
+        audio = audioSettings { }
+    }
 
     private fun togglesElement(
         kapSendExtra: Boolean
@@ -674,16 +677,27 @@ class DialogAccumulatorDelegateTest {
                 } returns Unit
 
                 accumulator.processRequestChunks(
-                    flowOf(VoiceRequest.Audio(AudioContent()))
+                    flowOf(
+                        gigaVoiceRequest {
+                            input = contentFromClient { audioContent = audioContent {} }
+                        }
+                    )
                 ).toList()
 
                 val responses = flowOf(
                     createInputTranscription("Hello"),
-                    VoiceResponse.Output(ContentFromModel.Audio(AudioOutput(byteArrayOf(1)))),
+                    gigaVoiceResponse {
+                        output = contentFromModel { audio = audio { audioChunk = ByteString.copyFrom(byteArrayOf(1)) } }
+                    },
                     createOutputTranscription("Hi"),
-                    VoiceResponse.Output(
-                        ContentFromModel.Audio(AudioOutput(byteArrayOf(2), isFinal = true))
-                    ),
+                    gigaVoiceResponse {
+                        output = contentFromModel {
+                            audio = audio {
+                                audioChunk = ByteString.copyFrom(byteArrayOf(2))
+                                isFinal = true
+                            }
+                        }
+                    },
                     createInputTranscription("Next")
                 )
                 accumulator.processResponseChunks(responses).toList()
@@ -749,12 +763,15 @@ class DialogAccumulatorDelegateTest {
 
                 val responses = flowOf(
                     createInputTranscription("Check balance"),
-                    VoiceResponse.FunctionCalling(
-                        FunctionCallingData(
-                            FunctionCall("get_balance", """{"id":"1"}"""),
+                    gigaVoiceResponse {
+                        functionCall = functionCalling {
+                            functionCall = protoFunctionCallDsl {
+                                name = "get_balance"
+                                arguments = """{"id":"1"}"""
+                            }
                             timestamp = 999L
-                        )
-                    ),
+                        }
+                    },
                     createOutputTranscription("Your balance is 1000"),
                     createInputTranscription("Thanks")
                 )

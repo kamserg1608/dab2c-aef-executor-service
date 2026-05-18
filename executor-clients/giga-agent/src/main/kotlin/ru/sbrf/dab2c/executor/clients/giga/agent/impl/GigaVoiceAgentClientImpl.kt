@@ -12,8 +12,8 @@ import ru.sbrf.dab2c.executor.clients.common.util.buildFullUrl
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient.Companion.FUNCTIONS_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient.Companion.SETTINGS_ENDPOINT
+import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceApiToProtoMapper
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceFunctionCallRequestBuilder
-import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsMapper
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsRequestBuilder
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.ACLAgentAnalytics
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCallResult
@@ -21,11 +21,12 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsRespons
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceSettingsResponseSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.SettingsResult
 import ru.sbrf.dab2c.executor.clients.giga.agent.util.GigaAgentContextBuilder
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Settings
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.voice.AgentAnalytics
-import ru.sbrf.dab2c.executor.domain.voice.ContextData
-import ru.sbrf.dab2c.executor.domain.voice.FunctionCallingData
-import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
+import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.library.context.currentSessionInfo
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
 
@@ -43,18 +44,17 @@ class GigaVoiceAgentClientImpl(
     private val baseUrl: String,
     private val settingsRequestBuilder: GigaVoiceSettingsRequestBuilder,
     private val functionCallRequestBuilder: GigaVoiceFunctionCallRequestBuilder,
-    private val mapper: GigaVoiceSettingsMapper = GigaVoiceSettingsMapper
 ) : GigaVoiceAgentClient {
 
     @Suppress("LongMethod")
     override suspend fun getSettings(
         conversationId: String,
         agentConfiguration: AgentConfiguration,
-        voiceSettings: VoiceSettings,
-        contextData: ContextData,
+        voiceSettings: Settings,
+        contextData: Context,
     ): SettingsResult {
-        val context = GigaAgentContextBuilder.buildRequestContext(conversationId)
         val daSessionInfo = currentSessionInfo()
+        val context = GigaAgentContextBuilder.buildRequestContext(conversationId, daSessionInfo, currentHeaders())
         logger.debug { "Getting settings for session: ${context.ufsSession}" }
 
         val request = settingsRequestBuilder.build(
@@ -79,8 +79,8 @@ class GigaVoiceAgentClientImpl(
         }
 
         return SettingsResult(
-            settings = mapper.toDomainSettings(apiResponse.settings),
-            performers = mapper.toDomainPerformers(apiResponse.performers),
+            settings = GigaVoiceApiToProtoMapper.toProtoSettings(apiResponse.settings),
+            performers = GigaVoiceApiToProtoMapper.toDomainPerformers(apiResponse.performers),
             analytics = apiResponse.agentAnalytics?.map { it.toDomain() }.orEmpty()
         )
     }
@@ -89,11 +89,11 @@ class GigaVoiceAgentClientImpl(
     override suspend fun executeFunctionCall(
         conversationId: String,
         agentConfiguration: AgentConfiguration,
-        functionCalling: FunctionCallingData,
-        contextData: ContextData
+        functionCalling: FunctionCalling,
+        contextData: Context
     ): FunctionCallResult {
-        val context = GigaAgentContextBuilder.buildRequestContext(conversationId)
         val daSessionInfo = currentSessionInfo()
+        val context = GigaAgentContextBuilder.buildRequestContext(conversationId, daSessionInfo, currentHeaders())
         logger.debug { "Executing function call for session: ${context.ufsSession}" }
 
         val request = functionCallRequestBuilder.build(
@@ -119,7 +119,7 @@ class GigaVoiceAgentClientImpl(
         }
 
         return FunctionCallResult(
-            result = mapper.toDomainFunctionResult(apiResponse.functionResult),
+            result = GigaVoiceApiToProtoMapper.toProtoFunctionResult(apiResponse.functionResult),
             analytics = apiResponse.agentAnalytics?.map { it.toDomain() }.orEmpty()
         )
     }

@@ -1,6 +1,6 @@
 package ru.sbrf.dab2c.executor.voice.service.api
 
-import ru.sbrf.dab2c.executor.domain.voice.ContextData
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context
 
 /**
  * Service for handling context initialization.
@@ -8,5 +8,5 @@ import ru.sbrf.dab2c.executor.domain.voice.ContextData
 interface ContextService {
 
     /** Processes the initial context chunk. */
-    suspend fun processContext(contextData: ContextData)
+    suspend fun processContext(contextData: Context)
 }

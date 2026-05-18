@@ -1,0 +1,4 @@
+{
+  "content" : "{\"balance\":1000,\"currency\":\"RUB\"}",
+  "functionName" : "get_balance"
+}

@@ -14,6 +14,7 @@ object ObjectMappers {
     val MAPPER: ObjectMapper = ObjectMapper().apply {
         registerModule(kotlinModule())
         registerModule(JavaTimeModule())
+        registerModule(ProtobufModule())
         disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)

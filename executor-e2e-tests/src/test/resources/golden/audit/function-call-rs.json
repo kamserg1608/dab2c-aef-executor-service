@@ -1,0 +1,7 @@
+{
+  "result" : {
+    "content" : "{\"balance\": 1000}",
+    "functionName" : "get_account_balance"
+  },
+  "analytics" : [ ]
+}

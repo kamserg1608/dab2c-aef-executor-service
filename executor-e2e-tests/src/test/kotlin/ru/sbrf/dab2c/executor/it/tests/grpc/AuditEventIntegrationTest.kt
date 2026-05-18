@@ -26,6 +26,8 @@ import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubs
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubGigaAgentFunctions
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
+import ru.sbrf.dab2c.executor.library.testing.golden.assertMatchesGolden
+import ru.sbrf.dab2c.executor.library.testing.golden.maskNonDeterministic
 
 /**
  * Integration tests for audit event emission.
@@ -230,14 +232,18 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(params["ANSWER_CODE"]).isEqualTo("200")
         assertThat(params["SENDER"]).isEqualTo("dab2c-aef-executor")
         assertThat(params["RECEIVER"]).isEqualTo("giga-voice-agent")
+
         val rqMessage: Map<String, Any?> = ObjectMappers.MAPPER.readValue(params["RQ_MESSAGE"]!!)
-        assertThat(rqMessage).containsKey("endpoint")
-        assertThat(rqMessage["endpoint"]).isEqualTo("/settings")
-        assertThat(rqMessage).containsKey("conversationId")
-        assertThat(rqMessage).containsKey("agentConfiguration")
-        assertThat(rqMessage).containsKey("voiceSettings")
-        assertThat(rqMessage).containsKey("contextData")
-        assertThat(params["RS_MESSAGE"]).isNotBlank()
+        val rsMessage: Map<String, Any?> = ObjectMappers.MAPPER.readValue(params["RS_MESSAGE"]!!)
+
+        assertMatchesGolden(
+            maskNonDeterministic(rqMessage, AUDIT_NON_DETERMINISTIC_FIELDS),
+            "golden/audit/settings-rq.json"
+        )
+        assertMatchesGolden(
+            maskNonDeterministic(rsMessage, AUDIT_NON_DETERMINISTIC_FIELDS),
+            "golden/audit/settings-rs.json"
+        )
     }
 
     @Test
@@ -318,13 +324,20 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(functionAudit).isNotNull
         assertThat(functionAudit!!.success()).isTrue()
         assertThat(functionAudit.params()["ANSWER_CODE"]).isEqualTo("200")
-        assertThat(functionAudit.params()["RS_MESSAGE"]).isNotBlank()
         assertThat(functionAudit.params()["SENDER"]).isEqualTo("dab2c-aef-executor")
         assertThat(functionAudit.params()["RECEIVER"]).isEqualTo("giga-voice-agent")
+
         val rqMessage: Map<String, Any?> = ObjectMappers.MAPPER.readValue(functionAudit.params()["RQ_MESSAGE"]!!)
-        assertThat(rqMessage["endpoint"]).isEqualTo("/functions")
-        assertThat(rqMessage).containsKey("functionCalling")
-        assertThat(rqMessage).containsKey("agentConfiguration")
+        val rsMessage: Map<String, Any?> = ObjectMappers.MAPPER.readValue(functionAudit.params()["RS_MESSAGE"]!!)
+
+        assertMatchesGolden(
+            maskNonDeterministic(rqMessage, AUDIT_NON_DETERMINISTIC_FIELDS),
+            "golden/audit/function-call-rq.json"
+        )
+        assertMatchesGolden(
+            maskNonDeterministic(rsMessage, AUDIT_NON_DETERMINISTIC_FIELDS),
+            "golden/audit/function-call-rs.json"
+        )
     }
 
     @Test
@@ -474,6 +487,9 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
 
     companion object {
         private const val AUDIT_EVENT_URL = "/audit/event"
+
+        /** Non-deterministic fields in audit payloads: wiremock port + per-call timestamps. */
+        private val AUDIT_NON_DETERMINISTIC_FIELDS = setOf("receiver", "timestamp")
 
         private val EFS_ADAPTER_RESPONSE = """
             {

@@ -6,9 +6,9 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
-import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceRequest
-import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceResponse
-import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineStub
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineStub
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 

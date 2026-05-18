@@ -4,6 +4,15 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.ContentFromModel
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Error
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionResult
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.InputTranscription
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.OutputTranscription
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Warning
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.DialogTurnEvent
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.DialogTurnExtra
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.ErrorPayload
@@ -11,9 +20,6 @@ import ru.sbrf.dab2c.executor.clients.kap.producer.model.FunctionCallDetails
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.FunctionCallPayload
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.FunctionResultPayload
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.WarningPayload
-import ru.sbrf.dab2c.executor.domain.voice.ContentFromModel
-import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
-import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
 import ru.sbrf.dab2c.executor.library.audit.model.AuditMessageSchema
 import ru.sbrf.dab2c.executor.library.audit.model.InteractionAuditRequest
 import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
@@ -59,25 +65,33 @@ class DialogAccumulatorDelegate(
     private val turnEvents: MutableList<DialogTurnEvent> =
         Collections.synchronizedList(mutableListOf())
 
-    override fun processRequestChunks(requestsChunks: Flow<VoiceRequest>): Flow<VoiceRequest> =
+    override fun processRequestChunks(requestsChunks: Flow<GigaVoiceRequest>): Flow<GigaVoiceRequest> =
         delegate.processRequestChunks(requestsChunks).onEach { request ->
-            when (request) {
-                is VoiceRequest.Audio -> handleAudioRequest()
-                is VoiceRequest.FunctionResult -> handleFunctionResult(request)
+            when (request.requestCase) {
+                GigaVoiceRequest.RequestCase.INPUT ->
+                    if (request.input.hasAudioContent()) handleAudioRequest()
+                GigaVoiceRequest.RequestCase.FUNCTION_RESULT ->
+                    handleFunctionResult(request.functionResult)
                 else -> Unit
             }
         }
 
-    override fun processResponseChunks(responsesChunks: Flow<VoiceResponse>): Flow<VoiceResponse> {
+    override fun processResponseChunks(responsesChunks: Flow<GigaVoiceResponse>): Flow<GigaVoiceResponse> {
         val accumulatedChunks = responsesChunks
             .onEach { response ->
-                when (response) {
-                    is VoiceResponse.InputTranscription -> handleInputTranscription(response)
-                    is VoiceResponse.OutputTranscription -> handleOutputTranscription(response)
-                    is VoiceResponse.Warning -> handleWarning(response)
-                    is VoiceResponse.Error -> handleError(response)
-                    is VoiceResponse.FunctionCalling -> handleFunctionCalling(response)
-                    is VoiceResponse.Output -> handleOutput(response)
+                when (response.responseCase) {
+                    GigaVoiceResponse.ResponseCase.INPUT_TRANSCRIPTION ->
+                        handleInputTranscription(response.inputTranscription)
+                    GigaVoiceResponse.ResponseCase.OUTPUT_TRANSCRIPTION ->
+                        handleOutputTranscription(response.outputTranscription)
+                    GigaVoiceResponse.ResponseCase.WARNING ->
+                        handleWarning(response.warning)
+                    GigaVoiceResponse.ResponseCase.ERROR ->
+                        handleError(response.error)
+                    GigaVoiceResponse.ResponseCase.FUNCTION_CALL ->
+                        handleFunctionCalling(response.functionCall)
+                    GigaVoiceResponse.ResponseCase.OUTPUT ->
+                        handleOutput(response.output)
                     else -> Unit
                 }
             }
@@ -97,52 +111,54 @@ class DialogAccumulatorDelegate(
         }
     }
 
-    private fun handleFunctionResult(request: VoiceRequest.FunctionResult) {
+    private fun handleFunctionResult(result: FunctionResult) {
         turnEvents.add(
             DialogTurnEvent(
                 eventName = EVENT_FUNCTION_RESULT,
                 timestamp = timeProvider.currentTimeMillis(),
                 payload = FunctionResultPayload(
-                    content = request.result.content,
-                    functionName = request.result.functionName ?: ""
+                    content = result.content,
+                    functionName = result.functionName
                 )
             )
         )
     }
 
-    private fun handleFunctionCalling(response: VoiceResponse.FunctionCalling) {
+    private fun handleFunctionCalling(functionCalling: FunctionCalling) {
         turnEvents.add(
             DialogTurnEvent(
                 eventName = EVENT_FUNCTION_CALL,
                 timestamp = timeProvider.currentTimeMillis(),
                 payload = FunctionCallPayload(
                     functionCall = FunctionCallDetails(
-                        name = response.data.functionCall.name,
-                        arguments = response.data.functionCall.arguments
+                        name = functionCalling.functionCall.name,
+                        arguments = functionCalling.functionCall.arguments
                     ),
-                    timestamp = response.data.timestamp
+                    timestamp = functionCalling.timestamp
                 )
             )
         )
     }
 
-    private fun handleOutput(response: VoiceResponse.Output) {
+    private fun handleOutput(content: ContentFromModel) {
         if (timestamps.assistantMessageStart == null) {
             timestamps.assistantMessageStart = timeProvider.currentTimeMillis()
         }
-        val content = response.content
-        if (content is ContentFromModel.Audio && content.audio.isFinal) {
-            timestamps.assistantMessageEnd = timeProvider.currentTimeMillis()
-        }
-        if (content is ContentFromModel.AdditionalData) {
-            totalTokens += content.data.usage?.totalTokens ?: 0
+        when (content.responseCase) {
+            ContentFromModel.ResponseCase.AUDIO ->
+                if (content.audio.isFinal) {
+                    timestamps.assistantMessageEnd = timeProvider.currentTimeMillis()
+                }
+            ContentFromModel.ResponseCase.ADDITIONAL_DATA ->
+                if (content.additionalData.hasUsage()) {
+                    totalTokens += content.additionalData.usage.totalTokens
+                }
+            else -> Unit
         }
     }
 
-    private suspend fun handleInputTranscription(
-        response: VoiceResponse.InputTranscription
-    ) {
-        val text = response.transcription.text
+    private suspend fun handleInputTranscription(transcription: InputTranscription) {
+        val text = transcription.text
 
         timestamps.userMessageEnd = timeProvider.currentTimeMillis()
 
@@ -157,38 +173,36 @@ class DialogAccumulatorDelegate(
         logger.debug { "Accumulated input chunk: '$text'" }
     }
 
-    private fun handleOutputTranscription(
-        response: VoiceResponse.OutputTranscription
-    ) {
+    private fun handleOutputTranscription(transcription: OutputTranscription) {
         if (outputChunks.isEmpty()) {
             timestamps.outputStart = timeProvider.currentTimeMillis()
         }
 
         phase = Phase.ACCUMULATING_OUTPUT
-        outputChunks.add(response.transcription.text)
+        outputChunks.add(transcription.text)
         timestamps.outputEnd = timeProvider.currentTimeMillis()
 
-        logger.debug { "Accumulated output chunk: '${response.transcription.text}'" }
+        logger.debug { "Accumulated output chunk: '${transcription.text}'" }
     }
 
-    private fun handleWarning(response: VoiceResponse.Warning) {
+    private fun handleWarning(warning: Warning) {
         turnEvents.add(
             DialogTurnEvent(
                 eventName = EVENT_WARNING,
                 timestamp = timeProvider.currentTimeMillis(),
-                payload = WarningPayload(message = response.warning.message)
+                payload = WarningPayload(message = warning.message)
             )
         )
     }
 
-    private fun handleError(response: VoiceResponse.Error) {
+    private fun handleError(error: Error) {
         turnEvents.add(
             DialogTurnEvent(
                 eventName = EVENT_ERROR,
                 timestamp = timeProvider.currentTimeMillis(),
                 payload = ErrorPayload(
-                    status = response.error.status,
-                    message = response.error.message
+                    status = error.status,
+                    message = error.message
                 )
             )
         )

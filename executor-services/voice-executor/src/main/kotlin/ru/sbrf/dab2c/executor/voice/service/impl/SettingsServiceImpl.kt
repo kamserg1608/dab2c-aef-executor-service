@@ -5,14 +5,13 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.ClosedSendChannelException
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Settings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceResponse
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.voice.AgentAnalytics
-import ru.sbrf.dab2c.executor.domain.voice.ContextData
-import ru.sbrf.dab2c.executor.domain.voice.ErrorData
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
-import ru.sbrf.dab2c.executor.domain.voice.VoiceRequest
-import ru.sbrf.dab2c.executor.domain.voice.VoiceResponse
-import ru.sbrf.dab2c.executor.domain.voice.VoiceSettings
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
@@ -20,6 +19,9 @@ import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.model.VoiceSession
 import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
 import ru.sbrf.dab2c.executor.voice.service.api.SettingsService
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.error as protoError
+
+private const val SETTINGS_CALCULATION_ERROR_STATUS = 1501
 
 /** Implementation of [SettingsService] that resolves voice settings via EFS and GigaAgent. */
 class SettingsServiceImpl(
@@ -32,7 +34,7 @@ class SettingsServiceImpl(
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun initSettingsCalculation(settings: VoiceSettings) {
+    override suspend fun initSettingsCalculation(settings: Settings) {
         val currentState = session.state.value
         check(currentState is ProcessingState.AwaitingSettings) {
             "Expected AwaitingSettings state, but was ${currentState::class.simpleName}"
@@ -42,15 +44,17 @@ class SettingsServiceImpl(
     }
 
     private suspend fun calculateSettingsAsync(
-        settings: VoiceSettings,
-        contextData: ContextData
+        settings: Settings,
+        contextData: Context
     ) {
         logger.debug { "Calculating settings for session" }
 
         session.launch {
             try {
                 val settingsData = fetchSettingsData(settings, contextData)
-                session.callbackChannels.downstream.send(VoiceRequest.Settings(settingsData.settings))
+                session.callbackChannels.downstream.send(
+                    gigaVoiceRequest { this.settings = settingsData.settings }
+                )
                 updateStateAndPublish(settingsData, contextData)
             } catch (e: CancellationException) {
                 throw e
@@ -59,7 +63,12 @@ class SettingsServiceImpl(
             } catch (e: Exception) {
                 logger.error { "Failed to calculate settings: ${e.message}" }
                 session.callbackChannels.upstream.send(
-                    VoiceResponse.Error(ErrorData(status = 1501, message = e.message ?: "Settings calculation failed"))
+                    gigaVoiceResponse {
+                        error = protoError {
+                            status = SETTINGS_CALCULATION_ERROR_STATUS
+                            message = e.message ?: "Settings calculation failed"
+                        }
+                    }
                 )
             }
         }
@@ -67,8 +76,8 @@ class SettingsServiceImpl(
 
     @Suppress("LongMethod")
     private suspend fun fetchSettingsData(
-        settings: VoiceSettings,
-        contextData: ContextData
+        settings: Settings,
+        contextData: Context
     ): SettingsData {
         val headers = currentHeaders()
         val agentConfiguration = configuratorClient.getRestAgentConfig(configProperties.agentName)
@@ -103,7 +112,7 @@ class SettingsServiceImpl(
         )
     }
 
-    private suspend fun updateStateAndPublish(settingsData: SettingsData, contextData: ContextData) {
+    private suspend fun updateStateAndPublish(settingsData: SettingsData, contextData: Context) {
         session.state.value = ProcessingState.Serving(
             contextData = contextData,
             agentConfiguration = settingsData.agentConfiguration,
@@ -120,7 +129,7 @@ class SettingsServiceImpl(
     }
 
     private data class SettingsData(
-        val settings: VoiceSettings,
+        val settings: Settings,
         val agentConfiguration: AgentConfiguration,
         val conversationId: String,
         val functionRegistry: FunctionPerformers,

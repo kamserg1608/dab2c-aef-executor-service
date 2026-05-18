@@ -29,7 +29,7 @@ import org.wiremock.spring.ConfigureWireMock
 import org.wiremock.spring.EnableWireMock
 import org.wiremock.spring.InjectWireMock
 import ru.sbrf.dab2c.executor.application.ApplicationEntryPoint
-import ru.sbrf.dab2c.executor.clients.ivr.proto.GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineStub
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineStub
 import ru.sbrf.dab2c.executor.it.mock.MockGigaVoiceService
 import ru.sbrf.dab2c.executor.it.support.grpc.MetadataInterceptor
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubConfiguratorSession
