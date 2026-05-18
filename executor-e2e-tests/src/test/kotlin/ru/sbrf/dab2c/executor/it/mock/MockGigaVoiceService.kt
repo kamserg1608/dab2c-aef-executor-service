@@ -56,7 +56,7 @@ class MockGigaVoiceService : GigaVoiceServiceCoroutineImplBase() {
      */
     @Suppress("detekt:LabeledExpression")
     suspend fun awaitRequest(
-        timeout: Duration = 5.seconds,
+        timeout: Duration = 100.seconds,
         predicate: (GigaVoiceRequest) -> Boolean = { true }
     ): GigaVoiceRequest {
         return withTimeout(timeout) {

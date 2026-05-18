@@ -87,6 +87,20 @@ class SettingsServiceImpl(
         logger.debug { "Fetched agent configuration: ${agentConfiguration.name}" }
 
         val conversationId = settings.voiceCallId
+        val configuratorFunctionMatch =
+            currentFeatureToggles().configuratorFunctionMatch
+
+        val functionCall = if (configuratorFunctionMatch) {
+            configuratorClient.getFunctionCall(
+                agentName = FUNCTION_CALL_AGENT_NAME,
+                modality = FUNCTION_CALL_MODALITY
+            )
+        } else {
+            null
+        }
+
+        logger.debug { "Configurator: configuratorFunctionMatch=$configuratorFunctionMatch" }
+        logger.debug { "functionCall: functionCall=$functionCall" }
 
         val settingsResult = gigaVoiceAgentClient.getSettings(
             conversationId = conversationId,
@@ -94,15 +108,6 @@ class SettingsServiceImpl(
             voiceSettings = settings,
             contextData = contextData
         )
-        val configuratorFunctionMatch =
-            currentFeatureToggles().configuratorFunctionMatch
-
-        val functionCall = configuratorClient.getFunctionCall(
-            agentName = FUNCTION_CALL_AGENT_NAME,
-            modality = FUNCTION_CALL_MODALITY
-        )
-        logger.debug { "Configurator: configuratorFunctionMatch=$configuratorFunctionMatch" }
-        logger.debug { "functionCall: functionCall=$functionCall" }
 
         val backendFuncs = settingsResult.performers.functions
             .filter { it.value.isBackendFunction }.keys

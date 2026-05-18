@@ -64,6 +64,7 @@ class SettingsRequestBodyTest : BaseGigaVoiceIntegrationTest() {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("headers-test-call"))
 
+            val functionCall = wireMock.awaitPostCall("/configurator/function/list/v1")
             val settingsCall = wireMock.awaitPostCall("/settings")
             val body: Map<String, Any?> = ObjectMappers.MAPPER.readValue(settingsCall.bodyAsString)
 

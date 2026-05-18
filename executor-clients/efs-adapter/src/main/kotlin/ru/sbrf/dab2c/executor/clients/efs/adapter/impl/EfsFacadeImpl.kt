@@ -176,27 +176,42 @@ class EfsFacadeImpl(
         )
         val requestJson = objectMapper.writeValueAsString(request)
 
-        val response = IntegrationLogger.logHttpCallSuspend(
+        val responseJson = IntegrationLogger.logHttpCallSuspend(
             destinationSystem = baseUrl,
             destinationService = FUNCTION_LIST_ENDPOINT,
             rqMessage = requestJson,
             className = CLASS_NAME,
-            responseExtractor = { resp: BaseResponseFunctionListResponse ->
-                objectMapper.writeValueAsString(resp) to HTTP_OK
+            responseExtractor = { resp: String ->
+                resp to HTTP_OK
             }
         ) {
-            httpClient.post(buildFullUrl(baseUrl, FUNCTION_LIST_ENDPOINT)) {
-                contentType(ContentType.Application.Json)
-                header(HttpHeaders.Cookie, cookie)
-                applyTracingHeaders()
-                setBody(request)
-            }.body<BaseResponseFunctionListResponse>()
+            try {
+                httpClient.post(buildFullUrl(baseUrl, FUNCTION_LIST_ENDPOINT)) {
+                    contentType(ContentType.Application.Json)
+                    header(HttpHeaders.Cookie, cookie)
+                    applyTracingHeaders()
+                    setBody(request)
+                }.body<String>()
+            } catch (e: Throwable) {
+                throw e
+            }
         }
+
+        val response = objectMapper.readValue(
+            responseJson,
+            BaseResponseFunctionListResponse::class.java
+        )
+
         checkSuccess(response.success, "getFunctionCall")
 
-        return functionListResponseMapper.toDomain(response.body!!)
-    }
+        val mappedResponse = functionListResponseMapper.toDomain(response.body!!)
 
+        logger.debug {
+            "Function call response mapped successfully: $mappedResponse"
+        }
+
+        return mappedResponse
+    }
     override suspend fun getPersonInfo(): DaSessionUserInfo {
         val cookie = currentUfsCookie()
         val request = "[\"PERSON\"]"
