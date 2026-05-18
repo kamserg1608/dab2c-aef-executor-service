@@ -13,7 +13,7 @@ dependencies {
     implementation(project(":executor-distribution"))
     implementation(project(":executor-services:voice-executor"))
     implementation(project(":executor-libraries:jackson"))
-
+    implementation(libs.springdoc.openapi.starter.webflux.ui)
     implementation(libs.spring.boot.starter.actuator)
 
     // JSON logging for PROM profile

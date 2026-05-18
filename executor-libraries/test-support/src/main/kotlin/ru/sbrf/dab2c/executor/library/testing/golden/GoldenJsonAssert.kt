@@ -5,6 +5,7 @@ import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.math.max
 
 /**
  * Serializes [actual] via [mapper] and compares the result tree-wise against a JSON file on
@@ -64,6 +65,38 @@ private fun readGoldenOrFail(goldenResource: String, actualJson: String, mapper:
                 "Actual:\n$actualJson"
         )
 
+private fun unifiedDiff(expected: String, actual: String): String {
+    val expectedLines = expected.lines()
+    val actualLines = actual.lines()
+
+    val maxLines = max(expectedLines.size, actualLines.size)
+    val result = StringBuilder()
+
+    for (index in 0 until maxLines) {
+        val expectedLine = expectedLines.getOrNull(index)
+        val actualLine = actualLines.getOrNull(index)
+
+        if (expectedLine == actualLine) {
+            result.append("  ")
+                .append(expectedLine)
+                .append('\n')
+        } else {
+            if (expectedLine != null) {
+                result.append("- ")
+                    .append(expectedLine)
+                    .append('\n')
+            }
+            if (actualLine != null) {
+                result.append("+ ")
+                    .append(actualLine)
+                    .append('\n')
+            }
+        }
+    }
+
+    return result.toString()
+}
+
 private fun formatGoldenMismatch(
     goldenResource: String,
     expectedTree: com.fasterxml.jackson.databind.JsonNode,
@@ -75,6 +108,7 @@ private fun formatGoldenMismatch(
     return "Golden mismatch: $goldenResource\n" +
         "--- expected ---\n$expectedPretty\n" +
         "--- actual ---\n$actualPretty\n" +
+        "--- diff ---\n${unifiedDiff(expectedPretty, actualPretty)}\n" +
         "If the divergence is intentional, set UPDATE_GOLDENS=1 to regenerate."
 }
 

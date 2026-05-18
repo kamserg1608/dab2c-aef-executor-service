@@ -16,12 +16,26 @@ data class VoiceSessionFeatureToggles(private val parameters: Map<String, Parame
     val kapSendExtra: Boolean
         get() = parameters.getValue(KAP_SEND_EXTRA).getBool { KAP_SEND_EXTRA_DEFAULT }
 
+    /** Whether Configurator function matching is enabled. */
+    val configuratorFunctionMatch: Boolean
+        get() = parameters
+            .getValue(CONFIGURATOR_FUNCTION_MATCH)
+            .getBool { CONFIGURATOR_FUNCTION_MATCH_DEFAULT }
+
     /** Toggle parameter name constants and defaults. */
     companion object {
         const val KAP_SEND_EXTRA = "aef.executor.toggles.kap.send.extra"
         private const val KAP_SEND_EXTRA_DEFAULT = false
 
+        const val CONFIGURATOR_FUNCTION_MATCH =
+            "aef.executor.toggles.configurator.function-match"
+
+        private const val CONFIGURATOR_FUNCTION_MATCH_DEFAULT = false
+
         /** All parameter names to query from EFS. */
-        val PARAMETER_NAMES: List<String> = listOf(KAP_SEND_EXTRA)
+        val PARAMETER_NAMES: List<String> = listOf(
+            KAP_SEND_EXTRA,
+            CONFIGURATOR_FUNCTION_MATCH
+        )
     }
 }

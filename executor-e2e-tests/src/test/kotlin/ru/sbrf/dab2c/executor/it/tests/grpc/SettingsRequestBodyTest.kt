@@ -7,6 +7,7 @@ import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.setti
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubs
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubsWithFunctionMatch
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.library.testing.golden.assertMatchesGolden
@@ -51,6 +52,24 @@ class SettingsRequestBodyTest : BaseGigaVoiceIntegrationTest() {
             assertMatchesGolden(
                 maskNonDeterministic(body, SETTINGS_BODY_NON_DETERMINISTIC_FIELDS),
                 "golden/settings-request/session-info.json"
+            )
+        }
+    }
+
+    @Test
+    fun `should include session_info with functions when function match enabled`() = runItTest {
+        setupStubsWithFunctionMatch(efsAdapterMock, gigaVoiceAgentMock)
+
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(contextRequest())
+            session.sendRequest(settingsRequest("headers-test-call"))
+
+            val settingsCall = wireMock.awaitPostCall("/settings")
+            val body: Map<String, Any?> = ObjectMappers.MAPPER.readValue(settingsCall.bodyAsString)
+
+            assertMatchesGolden(
+                maskNonDeterministic(body, SETTINGS_BODY_NON_DETERMINISTIC_FIELDS),
+                "golden/settings-request/session-info-function.json"
             )
         }
     }

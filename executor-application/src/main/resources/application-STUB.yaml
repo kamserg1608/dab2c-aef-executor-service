@@ -1,10 +1,10 @@
 server:
-  port: 8080
+  port: 8083
 
 # gRPC Configuration
 grpc:
   server:
-    port: 9090
+    port: 9093
     reflection-service-enabled: true
     security:
       enabled: false
@@ -89,3 +89,9 @@ logging:
     ru.sbrf.dab2c: DEBUG
     net.devh.boot.grpc: INFO
     io.ktor: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

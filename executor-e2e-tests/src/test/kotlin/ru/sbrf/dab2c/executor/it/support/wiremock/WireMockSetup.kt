@@ -19,6 +19,18 @@ object WireMockSetup {
         )
     }
 
+    fun WireMockServer.stubConfiguratorFunctionList() {
+        stubFor(
+            post(urlEqualTo("/configurator/function/list/v1"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.CONFIGURATOR_FUNCTION_LIST_RESPONSE)
+                )
+        )
+    }
+
     fun WireMockServer.stubSdsSessionReadData() {
         stubFor(
             post(urlEqualTo("/session/readData"))
@@ -228,6 +240,25 @@ object WireMockSetup {
             stubEfsAuditEvent()
             stubPersonInfo()
             stubRetrieveParams("aef.executor.toggles.kap.send.extra" to "true")
+        }
+        gigaAgent.stubGigaAgentSettings(withFunctions)
+    }
+
+    fun setupStubsWithFunctionMatch(
+        efsAdapter: WireMockServer,
+        gigaAgent: WireMockServer,
+        withFunctions: Boolean = true,
+    ) {
+        with(efsAdapter) {
+            stubEfsRestAgent()
+            stubSdsSessionReadData()
+            stubConfiguratorSession()
+            stubEfsAuditEvent()
+            stubPersonInfo()
+            stubRetrieveParams(
+                "aef.executor.toggles.configurator.function-match" to "true"
+            )
+            stubConfiguratorFunctionList()
         }
         gigaAgent.stubGigaAgentSettings(withFunctions)
     }

@@ -17,11 +17,14 @@ import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.model.VoiceSession
+import ru.sbrf.dab2c.executor.voice.model.currentFeatureToggles
 import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
 import ru.sbrf.dab2c.executor.voice.service.api.SettingsService
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.error as protoError
 
 private const val SETTINGS_CALCULATION_ERROR_STATUS = 1501
+private const val FUNCTION_CALL_AGENT_NAME = "ivr900humanagent"
+private const val FUNCTION_CALL_MODALITY = "voice"
 
 /** Implementation of [SettingsService] that resolves voice settings via EFS and GigaAgent. */
 class SettingsServiceImpl(
@@ -81,7 +84,6 @@ class SettingsServiceImpl(
     ): SettingsData {
         val headers = currentHeaders()
         val agentConfiguration = configuratorClient.getRestAgentConfig(configProperties.agentName)
-
         logger.debug { "Fetched agent configuration: ${agentConfiguration.name}" }
 
         val conversationId = settings.voiceCallId
@@ -92,6 +94,15 @@ class SettingsServiceImpl(
             voiceSettings = settings,
             contextData = contextData
         )
+        val configuratorFunctionMatch =
+            currentFeatureToggles().configuratorFunctionMatch
+
+        val functionCall = configuratorClient.getFunctionCall(
+            agentName = FUNCTION_CALL_AGENT_NAME,
+            modality = FUNCTION_CALL_MODALITY
+        )
+        logger.debug { "Configurator: configuratorFunctionMatch=$configuratorFunctionMatch" }
+        logger.debug { "functionCall: functionCall=$functionCall" }
 
         val backendFuncs = settingsResult.performers.functions
             .filter { it.value.isBackendFunction }.keys

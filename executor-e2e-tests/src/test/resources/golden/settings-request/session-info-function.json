@@ -1,0 +1,159 @@
+{
+  "conversation_id" : "headers-test-call",
+  "edu_id" : "test-edu-id",
+  "config" : {
+    "agent_config" : {
+      "name" : "test-agent",
+      "type" : "voice",
+      "functional_subsystem_ci" : "test-ci",
+      "description" : "Test agent",
+      "ufs_service_available" : true,
+      "tools_meta" : [ ],
+      "neighbours_agent_meta" : [ ],
+      "toggles" : { },
+      "can_access_user_info" : true,
+      "can_access_dialog_history" : true
+    },
+    "session_config" : {
+      "channel" : "test-channel",
+      "block" : null,
+      "surface" : null,
+      "platform" : null,
+      "app_source" : null,
+      "sdk_version" : null,
+      "entry_point" : null,
+      "app_version" : null,
+      "channel_version" : null,
+      "time_zone" : null
+    }
+  },
+  "settings" : {
+    "audio" : {
+      "input" : null,
+      "output": {
+        "stub_sounds": {
+          "trigger_function": {
+            "function_names": [
+              "ask_ai_expert"
+            ],
+            "rules": [
+              {
+                "function_names": [
+                  "ask_ai_expert"
+                ],
+                "sounds": [
+                  "Я уточню информацию и вернусь к вам, пожалуйста, не отключайтесь",
+                  "Мне потребуется немного времени, чтобы внимательно всё проверить, пожалуйста, оставайтесь на линии",
+                  "Пожалуйста, подождите немного, я всё уточню и вернусь"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "voice_call_id" : "headers-test-call",
+    "gigachat": {
+      "function_ranker": {
+        "ignored_functions": [
+          "get_autopayment_info",
+          "call_operator"
+        ]
+      },
+      "functions": [
+        {
+          "name": "end_dialogue",
+          "description": "Функция для завершения диалога, когда пользователь явно завершает диалог (прощается).",
+          "parameters": "{\"type\":\"object\",\"properties\":{}}",
+          "return_parameters": "{\"type\":\"object\",\"properties\":{\"status\":{\"type\":\"string\",\"enum\":[\"success\",\"fail\"],\"description\":\"Статус выполнения\"},\"errorMessage\":{\"type\":\"string\",\"description\":\"Описание ошибки\"}},\"required\":[\"status\"]}"
+        },
+        {
+          "name": "call_operator",
+          "description": "Функция инициирует соединение клиента со специалистом-оператором.",
+          "parameters": "{\"type\":\"object\",\"properties\":{}}",
+          "return_parameters": "{\"type\":\"object\",\"properties\":{\"status\":{\"type\":\"string\",\"enum\":[\"success\",\"fail\"],\"description\":\"Статус выполнения функции\"},\"errorMessage\":{\"type\":\"string\",\"description\":\"Описание ошибки\"}}}"
+        },
+        {
+          "name": "dangerous_themes",
+          "description": "Функция обнаружения высокорисковых обращений клиентов.",
+          "parameters": "{\"type\":\"object\",\"properties\":{}}",
+          "return_parameters": "{\"type\":\"object\",\"properties\":{\"status\":{\"type\":\"string\",\"enum\":[\"success\",\"fail\"],\"description\":\"Статус выполнения\"},\"errorMessage\":{\"type\":\"string\",\"description\":\"Описание ошибки\"}}}"
+        },
+        {
+          "name": "ask_ai_expert",
+          "description": "Вспомогательная функция для консультации со специалистом-экспертом.",
+          "parameters": "{\"type\":\"object\",\"properties\":{\"question\":{\"type\":\"string\",\"description\":\"Запрос к эксперту\"},\"clientAdditionalAnswer\":{\"type\":\"string\",\"description\":\"Дополнительная информация от клиента\"},\"dialogSummary\":{\"type\":\"string\",\"description\":\"Краткая сводка диалога\"},\"mainUserQuestion\":{\"type\":\"string\",\"description\":\"Основной вопрос клиента\"}},\"required\":[\"question\",\"dialogSummary\",\"mainUserQuestion\"]}",
+          "return_parameters": "{\"type\":\"object\",\"properties\":{\"aiExpertAnswer\":{\"type\":\"string\",\"description\":\"Ответ специалиста-эксперта\"},\"status\":{\"type\":\"string\",\"enum\":[\"success\",\"fail\"],\"description\":\"Статус выполнения функции\"},\"errorMessage\":{\"type\":\"string\",\"description\":\"Описание ошибки\"}}}"
+        },
+        {
+          "name": "find_bank_office",
+          "description": "Функция поиска офиса банка и графика работы.",
+          "parameters": "{\"type\":\"object\",\"properties\":{\"address\":{\"type\":\"string\",\"description\":\"Адрес офиса\"},\"subject\":{\"type\":\"string\",\"description\":\"Регион\"},\"city\":{\"type\":\"string\",\"description\":\"Город\"},\"metro\":{\"type\":\"string\",\"description\":\"Метро\"},\"specific_date\":{\"type\":\"string\",\"description\":\"Дата в формате YYYY-MM-DD\"}},\"required\":[\"city\"]}",
+          "return_parameters": "{\"type\":\"object\",\"properties\":{\"status\":{\"type\":\"string\",\"enum\":[\"success\",\"error\"],\"description\":\"Статус выполнения функции\"},\"error_message\":{\"type\":\"string\",\"description\":\"Сообщение об ошибке\"},\"city\":{\"type\":\"string\",\"description\":\"Город офиса\"},\"address_office\":{\"type\":\"string\",\"description\":\"Адрес офиса\"},\"working_hours\":{\"type\":\"string\",\"description\":\"График работы\"}}}"
+        },
+        {
+          "name": "get_sbol_info",
+          "description": "Функция получения информации о профиле СберБанк Онлайн.",
+          "parameters": "{\"type\":\"object\",\"properties\":{}}",
+          "return_parameters": "{\"type\":\"object\",\"properties\":{\"status\":{\"type\":\"string\",\"enum\":[\"OK\",\"ERROR\"],\"description\":\"Статус выполнения функции\"},\"error_message\":{\"type\":\"string\",\"description\":\"Сообщение об ошибке\"},\"status_sbol\":{\"type\":\"string\",\"enum\":[\"active\",\"block\"],\"description\":\"Статус профиля\"},\"confirm_auth_sms\":{\"type\":\"string\",\"enum\":[\"none\",\"sms\",\"fraud\"],\"description\":\"Подтверждение входа\"},\"status_dbo\":{\"type\":\"string\",\"enum\":[\"true\",\"false\"],\"description\":\"Наличие ДБО\"}}}"
+        }
+      ]
+    },
+    "context" : null,
+    "disable_vad" : false,
+    "enable_transcribe_input" : false,
+    "flags" : null,
+    "output_modalities" : 0,
+    "mode" : 0,
+    "first_speaker" : null,
+    "enable_denoiser" : false,
+    "enable_prefetch" : false,
+    "enable_person_identity" : false,
+    "enable_whisper" : false,
+    "enable_emotion" : false,
+    "enable_transcribe_silence_phrases" : false,
+    "disable_interruption": {
+      "functions": [
+        {
+          "name": "ask_ai_expert",
+          "on_execution": true,
+          "after_result": true
+        },
+        {
+          "name": "find_bank_office",
+          "on_execution": true,
+          "after_result": false
+        },
+        {
+          "name": "get_sbol_info",
+          "on_execution": true,
+          "after_result": false
+        }
+      ]
+    }
+  },
+  "session_info" : {
+    "ufs_host" : "test-ufs-host",
+    "cookies" : {
+      "UFS-SESSION" : "test-session",
+      "UFS-TOKEN" : "test-token"
+    },
+    "headers" : {
+      "UFS-SESSION" : "test-session",
+      "X-Trace-Id" : "test-trace-id",
+      "Da-Request-Id" : "<MASKED>",
+      "Da-Session-Id" : "test-session-id",
+      "Da-Channel" : "test-channel",
+      "Da-Platform" : "test-platform",
+      "Da-Ucp-Id" : "test-ucp-id"
+    }
+  },
+  "user_info" : {
+    "first_name" : "Всеслав",
+    "patr_name" : "Владиславович",
+    "birth_day" : "1998-01-20T14:50:00.000+0300",
+    "segment_code_type" : "1",
+    "ucp_id" : "2064943548742642674"
+  },
+  "context" : { }
+}
