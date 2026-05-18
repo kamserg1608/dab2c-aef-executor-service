@@ -10,6 +10,7 @@ import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricFactory
 import ru.sbrf.dab2c.executor.library.time.TimeProvider
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
+import ru.sbrf.dab2c.executor.voice.mapper.FunctionCallSettingsProtoMapper
 import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
 import ru.sbrf.dab2c.executor.voice.model.VoiceSession
 import ru.sbrf.dab2c.executor.voice.monitoring.MonitoringChunksProcessingDecorator
@@ -34,7 +35,8 @@ class ChunkProcessingServiceFactoryImpl(
     private val metricFactory: MetricFactory,
     private val kapProducerClient: KapProducerClient,
     private val externalInteractionAuditor: InteractionAuditor,
-    private val timeProvider: TimeProvider
+    private val timeProvider: TimeProvider,
+    private val functionCallSettingsProtoMapper: FunctionCallSettingsProtoMapper
 ) : ChunkProcessingServiceFactory {
 
     private val connectionMetrics = ConnectionMetrics(
@@ -71,7 +73,8 @@ class ChunkProcessingServiceFactoryImpl(
                 gigaVoiceAgentClient,
                 configuratorClient,
                 voiceExecutorConfigurationProperties,
-                analyticsPublisher
+                analyticsPublisher,
+                functionCallSettingsProtoMapper
             ),
             functionCallService = FunctionCallServiceImpl(
                 session,

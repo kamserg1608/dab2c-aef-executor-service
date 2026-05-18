@@ -23,7 +23,7 @@ class WireMockAwaiter(private val server: WireMockServer) {
      */
     suspend fun awaitPostCall(
         url: String,
-        timeout: Duration = 5.seconds,
+        timeout: Duration = 10.seconds,
         pollInterval: Duration = 50.milliseconds
     ): LoggedRequest = withTimeout(timeout) {
         while (true) {

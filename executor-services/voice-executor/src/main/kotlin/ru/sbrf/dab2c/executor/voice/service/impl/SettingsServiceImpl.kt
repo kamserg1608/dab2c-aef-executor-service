@@ -15,6 +15,7 @@ import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
+import ru.sbrf.dab2c.executor.voice.mapper.FunctionCallSettingsProtoMapper
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.model.VoiceSession
 import ru.sbrf.dab2c.executor.voice.model.currentFeatureToggles
@@ -32,7 +33,8 @@ class SettingsServiceImpl(
     private val gigaVoiceAgentClient: GigaVoiceAgentClient,
     private val configuratorClient: ConfiguratorClient,
     private val configProperties: VoiceExecutorConfigurationProperties,
-    private val analyticsPublisher: AnalyticsPublisher
+    private val analyticsPublisher: AnalyticsPublisher,
+    private val functionCallSettingsProtoMapper: FunctionCallSettingsProtoMapper
 ) : SettingsService {
 
     private val logger = KotlinLogging.logger {}
@@ -90,7 +92,7 @@ class SettingsServiceImpl(
         val configuratorFunctionMatch =
             currentFeatureToggles().configuratorFunctionMatch
 
-        val functionCall = if (configuratorFunctionMatch) {
+        val functionCallSettings = if (configuratorFunctionMatch) {
             configuratorClient.getFunctionCall(
                 agentName = FUNCTION_CALL_AGENT_NAME,
                 modality = FUNCTION_CALL_MODALITY
@@ -100,12 +102,21 @@ class SettingsServiceImpl(
         }
 
         logger.debug { "Configurator: configuratorFunctionMatch=$configuratorFunctionMatch" }
-        logger.debug { "functionCall: functionCall=$functionCall" }
+        logger.debug { "functionCall: functionCall=$functionCallSettings" }
+
+        val resolvedSettings = if (configuratorFunctionMatch && functionCallSettings != null) {
+            functionCallSettingsProtoMapper.enrich(
+                protoSettings = settings,
+                restSettings = functionCallSettings.settings
+            )
+        } else {
+            settings
+        }
 
         val settingsResult = gigaVoiceAgentClient.getSettings(
             conversationId = conversationId,
             agentConfiguration = agentConfiguration,
-            voiceSettings = settings,
+            voiceSettings = resolvedSettings,
             contextData = contextData
         )
 
@@ -119,7 +130,7 @@ class SettingsServiceImpl(
         }
 
         return SettingsData(
-            settings = settingsResult.settings,
+            settings = resolvedSettings,
             agentConfiguration = agentConfiguration,
             conversationId = conversationId,
             functionRegistry = settingsResult.performers,
