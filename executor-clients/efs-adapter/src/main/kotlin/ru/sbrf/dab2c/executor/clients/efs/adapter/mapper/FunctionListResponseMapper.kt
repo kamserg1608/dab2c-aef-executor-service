@@ -1,6 +1,5 @@
 package ru.sbrf.dab2c.executor.clients.efs.adapter.mapper
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mcarle.konvert.api.Konverter
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.AnyExample
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.AudioOutputSettings
@@ -46,14 +45,13 @@ interface FunctionListResponseMapper :
         DomainFunction(
             name = source.name.orEmpty(),
             description = source.description.orEmpty(),
-            parameters = mapperObjectMapper.writeValueAsString(source.parameters),
+            parameters = source.parameters.orEmpty(),
             fewShotExamples = source.fewShotExamples?.map(::toDomain).orEmpty(),
-            returnParameters = mapperObjectMapper.writeValueAsString(source.returnParameters)
+            returnParameters = source.returnParameters.orEmpty()
         )
 
+    /** Provides singleton instance of the mapper. */
     companion object {
-        private val mapperObjectMapper = jacksonObjectMapper()
-
         val INSTANCE: FunctionListResponseMapper get() = FunctionListResponseMapperImpl
     }
 }

@@ -95,12 +95,24 @@ object WireMockSetup {
         )
     }
 
-    fun WireMockServer.stubGigaAgentSettings(withFunctions: Boolean = false) {
-        val responseBody = if (withFunctions) {
-            WireMockResponses.GIGA_VOICE_SETTINGS_WITH_FUNCTIONS_RESPONSE
-        } else {
-            WireMockResponses.GIGA_VOICE_SETTINGS_RESPONSE
+    fun WireMockServer.stubGigaAgentSettings(
+        withFunctions: Boolean = false,
+        configuratorEnabled: Boolean = false
+    ) {
+        val responseBody = when {
+            configuratorEnabled -> {
+                WireMockResponses.GIGA_VOICE_SETTINGS_CONFIGURATOR_RESPONSE
+            }
+
+            withFunctions -> {
+                WireMockResponses.GIGA_VOICE_SETTINGS_WITH_FUNCTIONS_RESPONSE
+            }
+
+            else -> {
+                WireMockResponses.GIGA_VOICE_SETTINGS_RESPONSE
+            }
         }
+
         stubFor(
             post(urlEqualTo("/settings"))
                 .willReturn(
@@ -130,6 +142,7 @@ object WireMockSetup {
         } else {
             WireMockResponses.GIGA_VOICE_SETTINGS_RESPONSE
         }
+
         stubFor(
             post(urlEqualTo("/settings"))
                 .willReturn(
@@ -248,6 +261,7 @@ object WireMockSetup {
         efsAdapter: WireMockServer,
         gigaAgent: WireMockServer,
         withFunctions: Boolean = true,
+        configuratorEnabled: Boolean = true,
     ) {
         with(efsAdapter) {
             stubEfsRestAgent()
@@ -260,7 +274,7 @@ object WireMockSetup {
             )
             stubConfiguratorFunctionList()
         }
-        gigaAgent.stubGigaAgentSettings(withFunctions)
+        gigaAgent.stubGigaAgentSettings(withFunctions, configuratorEnabled)
     }
 
     fun setupStubsWithAnalytics(

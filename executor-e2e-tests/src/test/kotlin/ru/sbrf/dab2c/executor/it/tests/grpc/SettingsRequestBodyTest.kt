@@ -65,8 +65,13 @@ class SettingsRequestBodyTest : BaseGigaVoiceIntegrationTest() {
             session.sendRequest(settingsRequest("headers-test-call"))
 
             val functionCall = wireMock.awaitPostCall("/configurator/function/list/v1")
+            @Suppress("UnusedPrivateProperty")
+            val bodyFunction: Map<String, Any?> =
+                ObjectMappers.MAPPER.readValue(functionCall.bodyAsString)
+
             val settingsCall = wireMock.awaitPostCall("/settings")
-            val body: Map<String, Any?> = ObjectMappers.MAPPER.readValue(settingsCall.bodyAsString)
+            val body: Map<String, Any?> =
+                ObjectMappers.MAPPER.readValue(settingsCall.bodyAsString)
 
             assertMatchesGolden(
                 maskNonDeterministic(body, SETTINGS_BODY_NON_DETERMINISTIC_FIELDS),

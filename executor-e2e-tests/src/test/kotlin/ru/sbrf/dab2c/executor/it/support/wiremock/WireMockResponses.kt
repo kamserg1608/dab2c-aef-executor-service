@@ -162,6 +162,113 @@ object WireMockResponses {
     """.trimIndent()
 
     /**
+     * GigaVoice settings response with configurator function settings.
+     */
+    val GIGA_VOICE_SETTINGS_CONFIGURATOR_RESPONSE = """
+    {
+        "settings": {
+            "voice_call_id": "test-call-123",
+            "gigachat": {
+                "function_ranker": {
+                    "ignored_functions": [
+                        "get_autopayment_info",
+                        "call_operator"
+                    ]
+                },
+                "functions": [
+                    {
+                        "name": "end_dialogue",
+                        "description": "Функция для завершения диалога, когда пользователь явно завершает диалог (прощается).",
+                        "parameters": "{\"type\":\"object\",\"properties\":{}}",
+                        "return_parameters": "{\"type\":\"object\",\"properties\":{\"status\":{\"type\":\"string\",\"enum\":[\"success\",\"fail\"],\"description\":\"Статус выполнения\"},\"errorMessage\":{\"type\":\"string\",\"description\":\"Описание ошибки\"}},\"required\":[\"status\"]}"
+                    },
+                    {
+                        "name": "call_operator",
+                        "description": "Функция инициирует соединение клиента со специалистом-оператором.",
+                        "parameters": "{\"type\":\"object\",\"properties\":{}}",
+                        "return_parameters": "{\"type\":\"object\",\"properties\":{\"status\":{\"type\":\"string\",\"enum\":[\"success\",\"fail\"],\"description\":\"Статус выполнения функции\"},\"errorMessage\":{\"type\":\"string\",\"description\":\"Описание ошибки\"}}}"
+                    },
+                    {
+                        "name": "dangerous_themes",
+                        "description": "Функция обнаружения высокорисковых обращений клиентов.",
+                        "parameters": "{\"type\":\"object\",\"properties\":{}}",
+                        "return_parameters": "{\"type\":\"object\",\"properties\":{\"status\":{\"type\":\"string\",\"enum\":[\"success\",\"fail\"],\"description\":\"Статус выполнения\"},\"errorMessage\":{\"type\":\"string\",\"description\":\"Описание ошибки\"}}}"
+                    },
+                    {
+                        "name": "ask_ai_expert",
+                        "description": "Вспомогательная функция для консультации со специалистом-экспертом.",
+                        "parameters": "{\"type\":\"object\",\"properties\":{\"question\":{\"type\":\"string\",\"description\":\"Запрос к эксперту\"},\"clientAdditionalAnswer\":{\"type\":\"string\",\"description\":\"Дополнительная информация от клиента\"},\"dialogSummary\":{\"type\":\"string\",\"description\":\"Краткая сводка диалога\"},\"mainUserQuestion\":{\"type\":\"string\",\"description\":\"Основной вопрос клиента\"}},\"required\":[\"question\",\"dialogSummary\",\"mainUserQuestion\"]}",
+                        "return_parameters": "{\"type\":\"object\",\"properties\":{\"aiExpertAnswer\":{\"type\":\"string\",\"description\":\"Ответ специалиста-эксперта\"},\"status\":{\"type\":\"string\",\"enum\":[\"success\",\"fail\"],\"description\":\"Статус выполнения функции\"},\"errorMessage\":{\"type\":\"string\",\"description\":\"Описание ошибки\"}}}"
+                    },
+                    {
+                        "name": "find_bank_office",
+                        "description": "Функция поиска офиса банка и графика работы.",
+                        "parameters": "{\"type\":\"object\",\"properties\":{\"address\":{\"type\":\"string\",\"description\":\"Адрес офиса\"},\"subject\":{\"type\":\"string\",\"description\":\"Регион\"},\"city\":{\"type\":\"string\",\"description\":\"Город\"},\"metro\":{\"type\":\"string\",\"description\":\"Метро\"},\"specific_date\":{\"type\":\"string\",\"description\":\"Дата в формате YYYY-MM-DD\"}},\"required\":[\"city\"]}",
+                        "return_parameters": "{\"type\":\"object\",\"properties\":{\"status\":{\"type\":\"string\",\"enum\":[\"success\",\"error\"],\"description\":\"Статус выполнения функции\"},\"error_message\":{\"type\":\"string\",\"description\":\"Сообщение об ошибке\"},\"city\":{\"type\":\"string\",\"description\":\"Город офиса\"},\"address_office\":{\"type\":\"string\",\"description\":\"Адрес офиса\"},\"working_hours\":{\"type\":\"string\",\"description\":\"График работы\"}}}"
+                    },
+                    {
+                        "name": "get_sbol_info",
+                        "description": "Функция получения информации о профиле СберБанк Онлайн.",
+                        "parameters": "{\"type\":\"object\",\"properties\":{}}",
+                        "return_parameters": "{\"type\":\"object\",\"properties\":{\"status\":{\"type\":\"string\",\"enum\":[\"OK\",\"ERROR\"],\"description\":\"Статус выполнения функции\"},\"error_message\":{\"type\":\"string\",\"description\":\"Сообщение об ошибке\"},\"status_sbol\":{\"type\":\"string\",\"enum\":[\"active\",\"block\"],\"description\":\"Статус профиля\"},\"confirm_auth_sms\":{\"type\":\"string\",\"enum\":[\"none\",\"sms\",\"fraud\"],\"description\":\"Подтверждение входа\"},\"status_dbo\":{\"type\":\"string\",\"enum\":[\"true\",\"false\"],\"description\":\"Наличие ДБО\"}}}"
+                    }
+                ]
+            },
+            "audio": {
+                "output": {
+                    "stub_sounds": {
+                        "sounds" : [ "intro-sound" ],
+                        "trigger_function": {
+                            "function_names": [
+                                "ask_ai_expert"
+                            ],
+                            "rules": [
+                                {
+                                    "function_names": [
+                                        "ask_ai_expert"
+                                    ],
+                                    "sounds": [
+                                        "Я уточню информацию и вернусь к вам, пожалуйста, не отключайтесь",
+                                        "Мне потребуется немного времени, чтобы внимательно всё проверить, пожалуйста, оставайтесь на линии",
+                                        "Пожалуйста, подождите немного, я всё уточню и вернусь"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "disable_interruption": {
+                "functions": [
+                    {
+                        "name": "ask_ai_expert",
+                        "on_execution": true,
+                        "after_result": true
+                    },
+                    {
+                        "name": "find_bank_office",
+                        "on_execution": true,
+                        "after_result": false
+                    },
+                    {
+                        "name": "get_sbol_info",
+                        "on_execution": true,
+                        "after_result": false
+                    }
+                ]
+            }
+        },
+        "performers": {
+            "functions": [
+                {"name": "ask_ai_expert", "is_backend_function": true},
+                {"name": "find_bank_office", "is_backend_function": true},
+                {"name": "get_sbol_info", "is_backend_function": true}
+            ]
+        }
+    }
+    """.trimIndent()
+
+    /**
      * GigaVoice Agent settings response with function registry.
      * Contains both backend and IVR functions.
      */

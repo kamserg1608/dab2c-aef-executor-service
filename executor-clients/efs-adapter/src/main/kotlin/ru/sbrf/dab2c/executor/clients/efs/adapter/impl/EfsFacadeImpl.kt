@@ -168,39 +168,12 @@ class EfsFacadeImpl(
         agentName: String,
         modality: String
     ): FunctionListResponse {
-        val cookie = currentUfsCookie()
-
         val request = mapOf(
             "agentName" to agentName,
             "modality" to modality
         )
-        val requestJson = objectMapper.writeValueAsString(request)
 
-        val responseJson = IntegrationLogger.logHttpCallSuspend(
-            destinationSystem = baseUrl,
-            destinationService = FUNCTION_LIST_ENDPOINT,
-            rqMessage = requestJson,
-            className = CLASS_NAME,
-            responseExtractor = { resp: String ->
-                resp to HTTP_OK
-            }
-        ) {
-            try {
-                httpClient.post(buildFullUrl(baseUrl, FUNCTION_LIST_ENDPOINT)) {
-                    contentType(ContentType.Application.Json)
-                    header(HttpHeaders.Cookie, cookie)
-                    applyTracingHeaders()
-                    setBody(request)
-                }.body<String>()
-            } catch (e: Throwable) {
-                throw e
-            }
-        }
-
-        val response = objectMapper.readValue(
-            responseJson,
-            BaseResponseFunctionListResponse::class.java
-        )
+        val response = fetchFunctionCallResponse(request)
 
         checkSuccess(response.success, "getFunctionCall")
 
@@ -212,6 +185,36 @@ class EfsFacadeImpl(
 
         return mappedResponse
     }
+
+    private suspend fun fetchFunctionCallResponse(
+        request: Map<String, String>
+    ): BaseResponseFunctionListResponse {
+        val cookie = currentUfsCookie()
+        val requestJson = objectMapper.writeValueAsString(request)
+
+        val responseJson = IntegrationLogger.logHttpCallSuspend(
+            destinationSystem = baseUrl,
+            destinationService = FUNCTION_LIST_ENDPOINT,
+            rqMessage = requestJson,
+            className = CLASS_NAME,
+            responseExtractor = { resp: String ->
+                resp to HTTP_OK
+            }
+        ) {
+            httpClient.post(buildFullUrl(baseUrl, FUNCTION_LIST_ENDPOINT)) {
+                contentType(ContentType.Application.Json)
+                header(HttpHeaders.Cookie, cookie)
+                applyTracingHeaders()
+                setBody(request)
+            }.body<String>()
+        }
+
+        return objectMapper.readValue(
+            responseJson,
+            BaseResponseFunctionListResponse::class.java
+        )
+    }
+
     override suspend fun getPersonInfo(): DaSessionUserInfo {
         val cookie = currentUfsCookie()
         val request = "[\"PERSON\"]"
