@@ -74,7 +74,7 @@ efs:
       statusCodes: 502,503,504
 
 # Configurator HTTP Client
-configutator:
+configurator:
   baseUrl: http://localhost:8080
   connectionTimeout: 5000
   requestTimeout: 15000
