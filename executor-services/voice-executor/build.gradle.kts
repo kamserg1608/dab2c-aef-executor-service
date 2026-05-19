@@ -11,6 +11,7 @@ dependencies {
     api(project(":executor-clients:giga-agent"))
     api(project(":executor-clients:efs-adapter"))
     api(project(":executor-clients:kap-producer"))
+    api(project(":executor-clients:configurator"))
     api(project(":executor-libraries:logging"))
     api(project(":executor-libraries:time"))
     implementation(project(":executor-libraries:jackson"))

@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.common.model.ClientMetric
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.AUDIT_EVENT_ENDPOINT
-import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.FUNCTION_LIST_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.PERSON_INFO_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.READ_DATA_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.REST_AGENT_ENDPOINT
@@ -15,7 +14,6 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.SESSIO
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.WRITE_DATA_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.Parameter
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
-import ru.sbrf.dab2c.executor.domain.configuration.FunctionListResponse
 import ru.sbrf.dab2c.executor.domain.session.DaSessionCommon
 import ru.sbrf.dab2c.executor.domain.session.DaSessionUserInfo
 import ru.sbrf.dab2c.executor.domain.session.SdsSection
@@ -47,14 +45,6 @@ class MonitoringEfsFacadeDecorator(
     override suspend fun getDaSessionCommon(): DaSessionCommon =
         monitorCall(SESSION_ENDPOINT) {
             delegate.getDaSessionCommon()
-        }
-
-    override suspend fun getFunctionCall(
-        agentName: String,
-        modality: String
-    ): FunctionListResponse =
-        monitorCall(FUNCTION_LIST_ENDPOINT) {
-            delegate.getFunctionCall(agentName, modality)
         }
 
     override suspend fun getParameter(name: String): Parameter =

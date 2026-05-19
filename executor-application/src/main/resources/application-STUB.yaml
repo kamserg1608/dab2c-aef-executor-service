@@ -73,6 +73,21 @@ efs:
       multiplier: 2.0
       statusCodes: 502,503,504
 
+# Configurator HTTP Client
+configutator:
+  baseUrl: http://localhost:8080
+  connectionTimeout: 5000
+  requestTimeout: 15000
+  socketTimeout: 15000
+  pool:
+    maxConnections: 50
+  retry:
+    maxRetries: 2
+    delay: 500
+    maxDelay: 5000
+    multiplier: 2.0
+    statusCodes: 502,503,504
+
 # KAP Producer (disabled in STUB mode)
 kafka:
   kap:

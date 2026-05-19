@@ -49,7 +49,8 @@ import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubSdsSessionRe
 @ActiveProfiles(profiles = ["STUB", "stubMode", "test"])
 @EnableWireMock(
     ConfigureWireMock(name = "gigaVoiceAgent", baseUrlProperties = ["giga.voice.agent.client.baseUrl"]),
-    ConfigureWireMock(name = "efsAdapter", baseUrlProperties = ["efs.adapter.baseUrl"])
+    ConfigureWireMock(name = "efsAdapter", baseUrlProperties = ["efs.adapter.baseUrl"]),
+    ConfigureWireMock(name = "configurator", baseUrlProperties = ["configurator.baseUrl"])
 )
 @EmbeddedKafka(
     partitions = 1,
@@ -60,6 +61,9 @@ abstract class BaseGigaVoiceIntegrationTest {
 
     @InjectWireMock("gigaVoiceAgent")
     protected lateinit var gigaVoiceAgentMock: WireMockServer
+
+    @InjectWireMock("configurator")
+    protected lateinit var configuratorMock: WireMockServer
 
     @InjectWireMock("efsAdapter")
     protected lateinit var efsAdapterMock: WireMockServer
@@ -105,6 +109,7 @@ abstract class BaseGigaVoiceIntegrationTest {
     fun resetState() {
         mockGigaVoiceService.reset()
         gigaVoiceAgentMock.resetAll()
+        configuratorMock.resetAll()
         efsAdapterMock.resetAll()
         efsAdapterMock.stubSdsSessionReadData()
         efsAdapterMock.stubConfiguratorSession()

@@ -71,6 +71,21 @@ efs:
       multiplier: ${EFS_ADAPTER_RETRY_MULTIPLIER:2.0}
       statusCodes: ${EFS_ADAPTER_RETRY_STATUS_CODES:502,503,504}
 
+# Configurator HTTP Client
+configutator:
+  baseUrl: ${CONFIGURATOR_BASE_URL}
+  connectionTimeout: ${CONFIGURATOR_CONNECT_TIMEOUT_MS:5000}
+  requestTimeout: ${CONFIGURATOR_REQUEST_TIMEOUT_MS:15000}
+  socketTimeout: ${CONFIGURATOR_SOCKET_TIMEOUT_MS:15000}
+  pool:
+    maxConnections: ${CONFIGURATOR_POOL_MAX_CONNECTIONS:50}
+  retry:
+    maxRetries: ${CONFIGURATOR_RETRY_MAX_RETRIES:2}
+    delay: ${CONFIGURATOR_RETRY_DELAY_MS:500}
+    maxDelay: ${CONFIGURATOR_RETRY_MAX_DELAY_MS:5000}
+    multiplier: ${CONFIGURATOR_RETRY_MULTIPLIER:2.0}
+    statusCodes: ${CONFIGURATOR_RETRY_STATUS_CODES:502,503,504}
+
 # KAP Producer
 kafka:
   kap:

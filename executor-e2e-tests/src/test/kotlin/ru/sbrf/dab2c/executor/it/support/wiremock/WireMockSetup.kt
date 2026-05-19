@@ -259,6 +259,7 @@ object WireMockSetup {
 
     fun setupStubsWithFunctionMatch(
         efsAdapter: WireMockServer,
+        configurator: WireMockServer,
         gigaAgent: WireMockServer,
         withFunctions: Boolean = true,
         configuratorEnabled: Boolean = true,
@@ -272,6 +273,8 @@ object WireMockSetup {
             stubRetrieveParams(
                 "aef.executor.toggles.configurator.function-match" to "true"
             )
+        }
+        with(configurator) {
             stubConfiguratorFunctionList()
         }
         gigaAgent.stubGigaAgentSettings(withFunctions, configuratorEnabled)

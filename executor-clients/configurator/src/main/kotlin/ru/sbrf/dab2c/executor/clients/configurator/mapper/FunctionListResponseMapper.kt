@@ -1,21 +1,24 @@
-package ru.sbrf.dab2c.executor.clients.efs.adapter.mapper
+package ru.sbrf.dab2c.executor.clients.configurator.mapper
 
 import io.mcarle.konvert.api.Konverter
-import ru.sbrf.dab2c.executor.clients.efs.adapter.model.AnyExample
-import ru.sbrf.dab2c.executor.clients.efs.adapter.model.AudioOutputSettings
-import ru.sbrf.dab2c.executor.clients.efs.adapter.model.AudioSettings
-import ru.sbrf.dab2c.executor.clients.efs.adapter.model.DisableInterruptionSettings
-import ru.sbrf.dab2c.executor.clients.efs.adapter.model.Function
-import ru.sbrf.dab2c.executor.clients.efs.adapter.model.FunctionListResponse
-import ru.sbrf.dab2c.executor.clients.efs.adapter.model.FunctionRanker
-import ru.sbrf.dab2c.executor.clients.efs.adapter.model.FunctionSoundRule
-import ru.sbrf.dab2c.executor.clients.efs.adapter.model.GigachatSettings
-import ru.sbrf.dab2c.executor.clients.efs.adapter.model.LockFunctionExecution
-import ru.sbrf.dab2c.executor.clients.efs.adapter.model.Pair
-import ru.sbrf.dab2c.executor.clients.efs.adapter.model.Params
-import ru.sbrf.dab2c.executor.clients.efs.adapter.model.Settings
-import ru.sbrf.dab2c.executor.clients.efs.adapter.model.StubSounds
-import ru.sbrf.dab2c.executor.clients.efs.adapter.model.TriggerFunction
+import ru.sbrf.dab2c.executor.clients.configurator.model.AnyExample
+import ru.sbrf.dab2c.executor.clients.configurator.model.AudioOutputSettings
+import ru.sbrf.dab2c.executor.clients.configurator.model.AudioSettings
+import ru.sbrf.dab2c.executor.clients.configurator.model.DisableInterruptionSettings
+import ru.sbrf.dab2c.executor.clients.configurator.model.Function
+import ru.sbrf.dab2c.executor.clients.configurator.model.FunctionListResponse
+import ru.sbrf.dab2c.executor.clients.configurator.model.FunctionRanker
+import ru.sbrf.dab2c.executor.clients.configurator.model.FunctionSoundRule
+import ru.sbrf.dab2c.executor.clients.configurator.model.GigachatSettings
+import ru.sbrf.dab2c.executor.clients.configurator.model.LockFunctionExecution
+import ru.sbrf.dab2c.executor.clients.configurator.model.Pair
+import ru.sbrf.dab2c.executor.clients.configurator.model.Params
+import ru.sbrf.dab2c.executor.clients.configurator.model.Settings
+import ru.sbrf.dab2c.executor.clients.configurator.model.StubSounds
+import ru.sbrf.dab2c.executor.clients.configurator.model.TriggerFunction
+import kotlin.collections.map
+import kotlin.collections.orEmpty
+import kotlin.text.orEmpty
 import ru.sbrf.dab2c.executor.domain.configuration.AnyExample as DomainAnyExample
 import ru.sbrf.dab2c.executor.domain.configuration.AudioOutputSettings as DomainAudioOutputSettings
 import ru.sbrf.dab2c.executor.domain.configuration.AudioSettings as DomainAudioSettings
