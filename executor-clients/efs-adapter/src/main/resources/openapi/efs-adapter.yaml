@@ -286,23 +286,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseResponseAgentConfig'
-  /configurator/function-call:
-    post:
-      summary: Получение настроек функций агента
-      description: Получает рассчитанную конфигурацию функций агента из ССД
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FunctionListRequest'
-        required: true
-      responses:
-        "200":
-          description: Возвращает настройки функций агента
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseResponseFunctionListResponse'
 components:
   schemas:
     Alert:
