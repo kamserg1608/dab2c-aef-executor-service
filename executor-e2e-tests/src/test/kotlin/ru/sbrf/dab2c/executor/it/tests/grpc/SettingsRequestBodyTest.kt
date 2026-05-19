@@ -1,7 +1,6 @@
 package ru.sbrf.dab2c.executor.it.tests.grpc
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.contextRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.settingsRequest
@@ -58,18 +57,12 @@ class SettingsRequestBodyTest : BaseGigaVoiceIntegrationTest() {
     }
 
     @Test
-    @Disabled("temporarily disabled")
     fun `should include session_info with functions when function match enabled`() = runItTest {
         setupStubsWithFunctionMatch(efsAdapterMock, configuratorMock, gigaVoiceAgentMock)
 
         withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("headers-test-call"))
-
-            val functionCall = wireMock.awaitPostCall("/configurator/function/list/v1")
-            @Suppress("UnusedPrivateProperty")
-            val bodyFunction: Map<String, Any?> =
-                ObjectMappers.MAPPER.readValue(functionCall.bodyAsString)
 
             val settingsCall = wireMock.awaitPostCall("/settings")
             val body: Map<String, Any?> =
