@@ -4,6 +4,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.mapper.AgentAnalyticsEnvelopeMapper
 import ru.sbrf.dab2c.executor.clients.kap.producer.mapper.AnalyticsTurnData
+import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.domain.voice.AgentAnalytics
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
@@ -32,27 +33,34 @@ class KapAnalyticsPublisher(
 
         logger.info { "Publishing ${analytics.size} analytics event(s)" }
 
-        val headers = currentHeaders()
+        val resolvedRequestId = requestId ?: currentHeaders().getHeaderOrNull(RequestHeader.X_REQUEST_ID)
         val daSessionInfo = currentSessionInfo()
 
-        analytics.forEach { analyticsItem ->
-            val turnData = AnalyticsTurnData(
-                envelopeId = UUID.randomUUID().toString(),
-                timestamp = System.currentTimeMillis() / MILLIS_TO_SECONDS,
-                daSessionInfo = daSessionInfo,
-                conversationId = state.conversationId,
-                requestId = requestId ?: headers.getHeaderOrNull(RequestHeader.X_REQUEST_ID),
-                agentName = state.agentConfiguration.name,
-                agentCi = state.agentConfiguration.functionalSubsystemCi,
-                dataVersion = analyticsItem.dataVersion,
-                data = analyticsItem.data
-            )
-
+        analytics.forEach { item ->
+            val turnData = buildTurnData(state, daSessionInfo, resolvedRequestId, item)
             val envelope = AgentAnalyticsEnvelopeMapper.toAgentAnalyticsEnvelope(turnData)
             logger.debug { "Analytics envelope content: $envelope" }
             kapProducerClient.publishAgentAnalytics(envelope)
         }
     }
+
+    private fun buildTurnData(
+        state: ProcessingState.Serving,
+        daSessionInfo: DaSessionInfo,
+        requestId: String?,
+        item: AgentAnalytics
+    ): AnalyticsTurnData = AnalyticsTurnData(
+        envelopeId = UUID.randomUUID().toString(),
+        timestamp = System.currentTimeMillis() / MILLIS_TO_SECONDS,
+        daSessionInfo = daSessionInfo,
+        conversationId = state.conversationId,
+        requestId = requestId,
+        messageId = session.turnIds.assistantMessageId,
+        agentName = state.agentConfiguration.name,
+        agentCi = state.agentConfiguration.functionalSubsystemCi,
+        dataVersion = item.dataVersion,
+        data = item.data
+    )
 
     private companion object {
         private val logger = KotlinLogging.logger {}

@@ -16,6 +16,7 @@ import kotlinx.coroutines.slf4j.MDCContext
  */
 class VoiceSession(
     val state: MutableStateFlow<ProcessingState> = MutableStateFlow(ProcessingState.AwaitingContext),
+    val turnIds: DialogTurnIds = DialogTurnIds(),
     val callbackChannels: CallbackChannels = CallbackChannels(
         downstream = Channel(capacity = Channel.BUFFERED),
         upstream = Channel(capacity = Channel.BUFFERED)

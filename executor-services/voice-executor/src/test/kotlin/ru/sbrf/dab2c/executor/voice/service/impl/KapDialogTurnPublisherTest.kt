@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -170,6 +171,34 @@ class KapDialogTurnPublisherTest {
             val agentId = dialogSlot.captured.data.assistantMessage?.agentIds
             assertEquals(1, agentId?.size)
             assertEquals("test-ci", agentId?.first()?.ci)
+        }
+    }
+
+    @Test
+    fun `should source userMessageId and assistantMessageId from session turnIds`() = runTest {
+        withContext(headersElement + sessionInfoElement) {
+            val dialogSlot = slot<DialogEnvelope>()
+            coEvery { kapProducerClient.publishDialog(capture(dialogSlot)) } returns Unit
+            val expectedUserId = session.turnIds.userMessageId
+            val expectedAssistantId = session.turnIds.assistantMessageId
+
+            publisher.publishDialogTurn("Hello", "Hi", 1000L)
+
+            assertEquals(expectedUserId, dialogSlot.captured.data.userMessage.id)
+            assertEquals(expectedAssistantId, dialogSlot.captured.data.assistantMessage?.id)
+        }
+    }
+
+    @Test
+    fun `should rotate session turnIds after publish`() = runTest {
+        withContext(headersElement + sessionInfoElement) {
+            val beforeUserId = session.turnIds.userMessageId
+            val beforeAssistantId = session.turnIds.assistantMessageId
+
+            publisher.publishDialogTurn("Hello", "Hi", 1000L)
+
+            assertNotEquals(beforeUserId, session.turnIds.userMessageId)
+            assertNotEquals(beforeAssistantId, session.turnIds.assistantMessageId)
         }
     }
 
