@@ -9,6 +9,7 @@ data class AgentAnalyticsData(
     @JsonProperty("session_id") val sessionId: String,
     @JsonProperty("conversation_id") val conversationId: String,
     @JsonProperty("request_id") val requestId: String,
+    @JsonProperty("message_id") val messageId: String,
     @JsonProperty("ucp_id") val ucpId: String,
     val block: String,
     val channel: String,

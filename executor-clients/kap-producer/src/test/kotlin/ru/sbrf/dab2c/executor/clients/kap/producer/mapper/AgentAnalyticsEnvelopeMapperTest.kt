@@ -26,6 +26,7 @@ class AgentAnalyticsEnvelopeMapperTest {
         assertEquals("test-session-id", parsed.sessionId)
         assertEquals("test-conversation-id", parsed.conversationId)
         assertEquals("request-456", parsed.requestId)
+        assertEquals("message-789", parsed.messageId)
         assertEquals("test-ucp-id", parsed.ucpId)
         assertEquals("test-block", parsed.block)
         assertEquals("sbol", parsed.channel)
@@ -66,11 +67,13 @@ class AgentAnalyticsEnvelopeMapperTest {
         assertEquals("", parsed.requestId)
     }
 
+    @Suppress("LongParameterList")
     private fun createTurnData(
         block: String? = "test-block",
         appSource: String? = "ucf",
         platform: String? = "ios",
         requestId: String? = "request-456",
+        messageId: String = "message-789",
         data: String = """{"metric":"value"}"""
     ): AnalyticsTurnData = AnalyticsTurnData(
         envelopeId = "envelope-123",
@@ -92,6 +95,7 @@ class AgentAnalyticsEnvelopeMapperTest {
         ),
         conversationId = "test-conversation-id",
         requestId = requestId,
+        messageId = messageId,
         agentName = "test-agent",
         agentCi = "test-ci",
         dataVersion = "1.0.0",
