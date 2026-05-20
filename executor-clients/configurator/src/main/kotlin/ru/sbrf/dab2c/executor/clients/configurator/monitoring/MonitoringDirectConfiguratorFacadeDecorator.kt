@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Primary
 import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.common.model.ClientMetric
-import ru.sbrf.dab2c.executor.clients.configurator.api.ConfiguratorFunctionFacade
-import ru.sbrf.dab2c.executor.clients.configurator.api.ConfiguratorFunctionFacade.Companion.FUNCTION_LIST_ENDPOINT
+import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorFacade
+import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorFacade.Companion.FUNCTION_LIST_ENDPOINT
 import ru.sbrf.dab2c.executor.domain.configuration.FunctionListResponse
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.HttpCallDescriptor
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricFactory
@@ -16,17 +16,17 @@ import ru.sbrf.dab2c.executor.library.monitoring.service.api.monitorHttpCall
  */
 @Service
 @Primary
-class MonitoringConfiguratorFunctionFacadeDecorator(
-    @Qualifier("configuratorFacadeImpl") private val delegate: ConfiguratorFunctionFacade,
+class MonitoringDirectConfiguratorFacadeDecorator(
+    @Qualifier("configuratorFacadeImpl") private val delegate: DirectConfiguratorFacade,
     private val metricFactory: MetricFactory
-) : ConfiguratorFunctionFacade {
+) : DirectConfiguratorFacade {
 
-    override suspend fun getFunctionCall(
+    override suspend fun fetchFunctionRegistry(
         agentName: String,
         modality: String
     ): FunctionListResponse =
         monitorCall(FUNCTION_LIST_ENDPOINT) {
-            delegate.getFunctionCall(agentName, modality)
+            delegate.fetchFunctionRegistry(agentName, modality)
         }
 
     private suspend fun <T> monitorCall(

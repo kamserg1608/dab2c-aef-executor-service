@@ -12,10 +12,10 @@ import io.ktor.http.contentType
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.common.util.buildFullUrl
-import ru.sbrf.dab2c.executor.clients.configurator.api.ConfiguratorFunctionFacade
-import ru.sbrf.dab2c.executor.clients.configurator.api.ConfiguratorFunctionFacade.Companion.FUNCTION_LIST_ENDPOINT
-import ru.sbrf.dab2c.executor.clients.configurator.configuration.ConfiguratorClientConfiguration.Companion.CONFIGURATOR_HTTP_CLIENT_BEAN_NAME
-import ru.sbrf.dab2c.executor.clients.configurator.configuration.properties.ConfiguratorClientConfigurationProperties
+import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorFacade
+import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorFacade.Companion.FUNCTION_LIST_ENDPOINT
+import ru.sbrf.dab2c.executor.clients.configurator.configuration.DirectConfiguratorClientConfiguration.Companion.CONFIGURATOR_HTTP_CLIENT_BEAN_NAME
+import ru.sbrf.dab2c.executor.clients.configurator.configuration.properties.DirectConfiguratorClientConfigurationProperties
 import ru.sbrf.dab2c.executor.clients.configurator.mapper.FunctionListResponseMapper
 import ru.sbrf.dab2c.executor.clients.configurator.model.BaseResponseFunctionListResponse
 import ru.sbrf.dab2c.executor.domain.configuration.FunctionListResponse
@@ -32,17 +32,17 @@ private const val CLASS_NAME = "ConfiguratorFacade"
  * Merged implementation of all Configurator API calls.
  */
 @Service("configuratorFacadeImpl")
-class ConfiguratorFunctionFacadeImpl(
+class DirectConfiguratorFacadeImpl(
     @Qualifier(CONFIGURATOR_HTTP_CLIENT_BEAN_NAME)
     private val httpClient: HttpClient,
-    properties: ConfiguratorClientConfigurationProperties
-) : ConfiguratorFunctionFacade {
+    properties: DirectConfiguratorClientConfigurationProperties
+) : DirectConfiguratorFacade {
 
     private val baseUrl = properties.baseUrl
     private val objectMapper = ObjectMappers.MAPPER
     private val functionListResponseMapper = FunctionListResponseMapper.INSTANCE
 
-    override suspend fun getFunctionCall(
+    override suspend fun fetchFunctionRegistry(
         agentName: String,
         modality: String
     ): FunctionListResponse {

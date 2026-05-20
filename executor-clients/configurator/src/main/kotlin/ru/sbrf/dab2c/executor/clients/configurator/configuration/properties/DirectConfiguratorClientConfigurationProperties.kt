@@ -8,7 +8,7 @@ import ru.sbrf.dab2c.executor.clients.common.config.RetryProperties
  * Configuration properties for EFS Adapter HTTP client.
  */
 @ConfigurationProperties(prefix = "configurator")
-data class ConfiguratorClientConfigurationProperties(
+data class DirectConfiguratorClientConfigurationProperties(
     val baseUrl: String,
     val connectionTimeout: Long,
     val requestTimeout: Long,

@@ -5,12 +5,12 @@ import ru.sbrf.dab2c.executor.domain.configuration.FunctionListResponse
 /**
  * Client interface for EFS Adapter Configurator API.
  */
-interface ConfiguratorFunctionClient {
+interface DirectConfiguratorClient {
 
     /**
      * Get function response.
      */
-    suspend fun getFunctionCall(
+    suspend fun fetchFunctionRegistry(
         agentName: String,
         modality: String
     ): FunctionListResponse

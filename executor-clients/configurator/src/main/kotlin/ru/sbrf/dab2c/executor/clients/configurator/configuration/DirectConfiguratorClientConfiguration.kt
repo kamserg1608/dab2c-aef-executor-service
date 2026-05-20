@@ -19,7 +19,7 @@ import io.ktor.serialization.jackson.JacksonConverter
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import ru.sbrf.dab2c.executor.clients.configurator.configuration.properties.ConfiguratorClientConfigurationProperties
+import ru.sbrf.dab2c.executor.clients.configurator.configuration.properties.DirectConfiguratorClientConfigurationProperties
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import java.net.ConnectException
 import java.net.SocketTimeoutException
@@ -29,12 +29,12 @@ import kotlin.math.pow
  * Spring configuration for Configurator HTTP client.
  */
 @Configuration
-@EnableConfigurationProperties(ConfiguratorClientConfigurationProperties::class)
-class ConfiguratorClientConfiguration {
+@EnableConfigurationProperties(DirectConfiguratorClientConfigurationProperties::class)
+class DirectConfiguratorClientConfiguration {
 
     @Bean(CONFIGURATOR_HTTP_CLIENT_BEAN_NAME)
     internal fun configuratorHttpClient(
-        properties: ConfiguratorClientConfigurationProperties
+        properties: DirectConfiguratorClientConfigurationProperties
     ): HttpClient = HttpClient(CIO) {
         engine {
             requestTimeout = properties.requestTimeout
@@ -51,12 +51,11 @@ class ConfiguratorClientConfiguration {
 
 @Suppress("LongMethod")
 private fun HttpClientConfig<*>.installPlugins(
-    properties: ConfiguratorClientConfigurationProperties
+    properties: DirectConfiguratorClientConfigurationProperties
 ) {
     install(ContentNegotiation) {
         register(
-            ContentType.Application.Json,
-            JacksonConverter(ObjectMappers.MAPPER)
+            ContentType.Application.Json, JacksonConverter(ObjectMappers.MAPPER)
         )
     }
 

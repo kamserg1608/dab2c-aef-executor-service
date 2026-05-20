@@ -11,14 +11,10 @@ import ru.sbrf.dab2c.executor.clients.configurator.model.FunctionRanker
 import ru.sbrf.dab2c.executor.clients.configurator.model.FunctionSoundRule
 import ru.sbrf.dab2c.executor.clients.configurator.model.GigachatSettings
 import ru.sbrf.dab2c.executor.clients.configurator.model.LockFunctionExecution
-import ru.sbrf.dab2c.executor.clients.configurator.model.Pair
 import ru.sbrf.dab2c.executor.clients.configurator.model.Params
 import ru.sbrf.dab2c.executor.clients.configurator.model.Settings
 import ru.sbrf.dab2c.executor.clients.configurator.model.StubSounds
 import ru.sbrf.dab2c.executor.clients.configurator.model.TriggerFunction
-import kotlin.collections.map
-import kotlin.collections.orEmpty
-import kotlin.text.orEmpty
 import ru.sbrf.dab2c.executor.domain.configuration.AnyExample as DomainAnyExample
 import ru.sbrf.dab2c.executor.domain.configuration.AudioOutputSettings as DomainAudioOutputSettings
 import ru.sbrf.dab2c.executor.domain.configuration.AudioSettings as DomainAudioSettings
@@ -29,7 +25,6 @@ import ru.sbrf.dab2c.executor.domain.configuration.FunctionRanker as DomainFunct
 import ru.sbrf.dab2c.executor.domain.configuration.FunctionSoundRule as DomainFunctionSoundRule
 import ru.sbrf.dab2c.executor.domain.configuration.GigachatSettings as DomainGigachatSettings
 import ru.sbrf.dab2c.executor.domain.configuration.LockFunctionExecution as DomainLockFunctionExecution
-import ru.sbrf.dab2c.executor.domain.configuration.Pair as DomainPair
 import ru.sbrf.dab2c.executor.domain.configuration.Params as DomainParams
 import ru.sbrf.dab2c.executor.domain.configuration.Settings as DomainSettings
 import ru.sbrf.dab2c.executor.domain.configuration.StubSounds as DomainStubSounds
@@ -51,6 +46,13 @@ interface FunctionListResponseMapper :
             parameters = source.parameters.orEmpty(),
             fewShotExamples = source.fewShotExamples?.map(::toDomain).orEmpty(),
             returnParameters = source.returnParameters.orEmpty()
+        )
+
+    override fun toDomain(source: Params): DomainParams =
+        DomainParams(
+            pairs = source.pairs.orEmpty().map {
+                it.key.orEmpty() to it.value
+            }
         )
 
     /** Provides singleton instance of the mapper. */
@@ -84,9 +86,6 @@ interface FunctionListResponseCoreMapper {
 
     /** Converts Params to domain Params. */
     fun toDomain(source: Params): DomainParams
-
-    /** Converts Pair to domain Pair. */
-    fun toDomain(source: Pair): DomainPair
 }
 
 /**

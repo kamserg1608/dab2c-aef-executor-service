@@ -54,15 +54,7 @@ data class AnyExample(
  * Parameters container for few-shot examples.
  */
 data class Params(
-    val pairs: List<Pair>
-)
-
-/**
- * Key-value parameter pair.
- */
-data class Pair(
-    val key: String,
-    val value: Any?
+    val pairs: List<Pair<String, Any?>>
 )
 
 /**

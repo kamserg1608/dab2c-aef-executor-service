@@ -3,7 +3,7 @@ package ru.sbrf.dab2c.executor.voice.service.impl
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.ClosedSendChannelException
-import ru.sbrf.dab2c.executor.clients.configurator.api.ConfiguratorFunctionClient
+import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context
@@ -32,7 +32,7 @@ private const val FUNCTION_CALL_MODALITY = "voice"
 class SettingsServiceImpl(
     private val session: VoiceSession,
     private val gigaVoiceAgentClient: GigaVoiceAgentClient,
-    private val configuratorFunctionClient: ConfiguratorFunctionClient,
+    private val directConfiguratorClient: DirectConfiguratorClient,
     private val configuratorClient: ConfiguratorClient,
     private val configProperties: VoiceExecutorConfigurationProperties,
     private val analyticsPublisher: AnalyticsPublisher,
@@ -95,7 +95,7 @@ class SettingsServiceImpl(
             currentFeatureToggles().configuratorFunctionMatch
 
         val functionCallSettings = if (configuratorFunctionMatch) {
-            configuratorFunctionClient.getFunctionCall(
+            directConfiguratorClient.fetchFunctionRegistry(
                 agentName = FUNCTION_CALL_AGENT_NAME,
                 modality = FUNCTION_CALL_MODALITY
             )

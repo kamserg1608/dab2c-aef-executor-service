@@ -1,7 +1,7 @@
 package ru.sbrf.dab2c.executor.voice.factory.impl
 
 import org.springframework.stereotype.Service
-import ru.sbrf.dab2c.executor.clients.configurator.api.ConfiguratorFunctionClient
+import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
@@ -32,7 +32,7 @@ import ru.sbrf.dab2c.executor.voice.service.impl.SettingsServiceImpl
 class ChunkProcessingServiceFactoryImpl(
     private val voiceExecutorConfigurationProperties: VoiceExecutorConfigurationProperties,
     private val gigaVoiceAgentClient: GigaVoiceAgentClient,
-    private val configuratorFunctionClient: ConfiguratorFunctionClient,
+    private val directConfiguratorClient: DirectConfiguratorClient,
     private val configuratorClient: ConfiguratorClient,
     private val metricFactory: MetricFactory,
     private val kapProducerClient: KapProducerClient,
@@ -73,7 +73,7 @@ class ChunkProcessingServiceFactoryImpl(
             settingsService = SettingsServiceImpl(
                 session,
                 gigaVoiceAgentClient,
-                configuratorFunctionClient,
+                directConfiguratorClient,
                 configuratorClient,
                 voiceExecutorConfigurationProperties,
                 analyticsPublisher,

@@ -3,7 +3,7 @@ package ru.sbrf.dab2c.executor.clients.configurator.api
 /**
  * Unified facade for all EFS Adapter API interactions.
  */
-interface ConfiguratorFunctionFacade : ConfiguratorFunctionClient {
+interface DirectConfiguratorFacade : DirectConfiguratorClient {
 
     /** EFS Adapter endpoint constants. */
     companion object {
