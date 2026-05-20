@@ -117,6 +117,7 @@ class KapAnalyticsPublisherTest {
             assertEquals("test-session-id", parsed.sessionId)
             assertEquals("test-conversation-id", parsed.conversationId)
             assertEquals("request-123", parsed.requestId)
+            assertEquals(session.turnIds.assistantMessageId, parsed.messageId)
             assertEquals("test-ucp-id", parsed.ucpId)
             assertEquals("test-block", parsed.block)
             assertEquals("sbol", parsed.channel)

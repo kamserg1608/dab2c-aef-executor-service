@@ -37,7 +37,7 @@ class KapDialogTurnPublisher(
         logger.info {
             "Publishing dialog turn: input='$inputText', output='$outputText', responseTime=${assistantResponseTime}ms"
         }
-        val assistantMessageId = UUID.randomUUID().toString()
+        val assistantMessageId = session.turnIds.assistantMessageId
         val dialogTurnData = buildTurnData(
             state, inputText, outputText, assistantResponseTime, extra, totalTokens, assistantMessageId
         )
@@ -55,7 +55,7 @@ class KapDialogTurnPublisher(
         assistantMessageId: String
     ): DialogTurnData = DialogTurnData(
         envelopeId = UUID.randomUUID().toString(),
-        userMessageId = UUID.randomUUID().toString(),
+        userMessageId = session.turnIds.userMessageId,
         assistantMessageId = assistantMessageId,
         inputText = inputText,
         outputText = outputText,
@@ -75,6 +75,7 @@ class KapDialogTurnPublisher(
         logger.debug { "Dialog envelope content: $dialogEnvelope" }
         previousMessageId = assistantMessageId
         kapProducerClient.publishDialog(dialogEnvelope)
+        session.turnIds.rotate()
     }
 
     private companion object {
