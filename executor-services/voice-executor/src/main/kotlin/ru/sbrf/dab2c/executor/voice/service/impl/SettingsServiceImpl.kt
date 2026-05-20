@@ -29,6 +29,7 @@ private const val FUNCTION_CALL_AGENT_NAME = "ivr900humanagent"
 private const val FUNCTION_CALL_MODALITY = "voice"
 
 /** Implementation of [SettingsService] that resolves voice settings via EFS and GigaAgent. */
+@Suppress("LongParameterList")
 class SettingsServiceImpl(
     private val session: VoiceSession,
     private val gigaVoiceAgentClient: GigaVoiceAgentClient,

@@ -19,7 +19,9 @@ import ru.sbrf.dab2c.executor.domain.configuration.Settings as RestSettings
  */
 @Component
 class FunctionCallSettingsProtoMapper {
-
+    /**
+     * Enriches existing protobuf settings with function call settings from Configurator REST response.
+     */
     fun enrich(
         protoSettings: Settings,
         restSettings: RestSettings
