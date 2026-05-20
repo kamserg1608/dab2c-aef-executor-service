@@ -132,7 +132,7 @@ class SettingsServiceImpl(
         }
 
         return SettingsData(
-            settings = resolvedSettings,
+            settings = settingsResult.settings,
             agentConfiguration = agentConfiguration,
             conversationId = conversationId,
             functionRegistry = settingsResult.performers,
