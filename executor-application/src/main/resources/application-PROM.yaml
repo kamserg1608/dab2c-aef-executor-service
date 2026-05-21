@@ -72,7 +72,7 @@ efs:
       statusCodes: ${EFS_ADAPTER_RETRY_STATUS_CODES:502,503,504}
 
 # Configurator HTTP Client
-configutator:
+configurator:
   baseUrl: ${CONFIGURATOR_BASE_URL:http://project78750.sbermock.sigma.sbrf.ru}
   connectionTimeout: ${CONFIGURATOR_CONNECT_TIMEOUT_MS:5000}
   requestTimeout: ${CONFIGURATOR_REQUEST_TIMEOUT_MS:15000}
