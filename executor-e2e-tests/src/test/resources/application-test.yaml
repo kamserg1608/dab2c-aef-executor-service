@@ -47,3 +47,13 @@ kafka:
       clientId: test-kap-producer
       acks: all
       retries: 1
+
+aef:
+  tracing:
+    mode: KAFKA
+    voice-enabled: true
+    grpc-enabled: true
+    websocket-enabled: false
+    topic: aef-tracing-test
+    kafka:
+      bootstrap-servers: ${spring.embedded.kafka.brokers}

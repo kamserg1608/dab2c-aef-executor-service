@@ -32,6 +32,8 @@ ktor = "3.1.2"
 konvert = "4.1.0"
 ksp = "2.1.20-1.0.32"
 
+aef-sdk = "1.1.62-SNAPSHOT"
+
 [libraries]
 # Spring Boot BOM
 spring-boot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
@@ -104,6 +106,10 @@ jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-dat
 # Konvert (mapping library)
 konvert-api = { module = "io.mcarle:konvert-api", version.ref = "konvert" }
 konvert = { module = "io.mcarle:konvert", version.ref = "konvert" }
+
+# AEF SDK
+aef-sdk-core = { module = "ru.sbrf.aef:sdk-core", version.ref = "aef-sdk" }
+aef-sdk-spring-boot-starter = { module = "ru.sbrf.aef:sdk-spring-boot-starter", version.ref = "aef-sdk" }
 
 # KSP (for buildSrc)
 ksp-gradle-plugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }

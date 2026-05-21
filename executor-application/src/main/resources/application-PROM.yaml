@@ -90,3 +90,14 @@ logging:
     ru.sbrf.dab2c: ${LOG_LEVEL_DAB2C:INFO}
     net.devh.boot.grpc: ${LOG_LEVEL_GRPC:WARN}
     io.ktor: ${LOG_LEVEL_KTOR:WARN}
+
+aef:
+  tracing:
+    mode: ${AEF_TRACING_MODE:KAFKA}
+    voice-enabled: ${AEF_TRACING_ENABLED:true}
+    grpc-enabled: true
+    websocket-enabled: false
+    http-filter-patterns: []
+    topic: ${AEF_TRACING_TOPIC:no_topic}
+    kafka:
+      bootstrap-servers: ${AEF_TRACING_BROKERS:no_brokers}
