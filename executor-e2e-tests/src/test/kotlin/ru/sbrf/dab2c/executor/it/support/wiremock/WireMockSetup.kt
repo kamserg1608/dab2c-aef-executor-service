@@ -21,7 +21,7 @@ object WireMockSetup {
 
     fun WireMockServer.stubConfiguratorFunctionList() {
         stubFor(
-            post(urlEqualTo("/configurator/function/list/v1"))
+            post(urlEqualTo("/function/list/v1"))
                 .willReturn(
                     aResponse()
                         .withStatus(200)

@@ -6,7 +6,7 @@ info:
 servers:
   - url: http://localhost:8080
 paths:
-  /configurator/function-call:
+  /function/list/v1:
     post:
       summary: Получение настроек функций агента
       description: Получает рассчитанную конфигурацию функций агента из ССД

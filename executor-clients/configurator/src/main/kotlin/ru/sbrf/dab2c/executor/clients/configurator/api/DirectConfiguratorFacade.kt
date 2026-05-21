@@ -7,6 +7,6 @@ interface DirectConfiguratorFacade : DirectConfiguratorClient {
 
     /** EFS Adapter endpoint constants. */
     companion object {
-        const val FUNCTION_LIST_ENDPOINT = "/configurator/function/list/v1"
+        const val FUNCTION_LIST_ENDPOINT = "/function/list/v1"
     }
 }
