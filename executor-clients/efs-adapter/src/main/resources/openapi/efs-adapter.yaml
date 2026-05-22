@@ -286,6 +286,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseResponseAgentConfig'
+  /configurator/function:
+    post:
+      summary: Получение конфигурации функции
+      description: Получает конфигурацию функции агента из Конфигуратора
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FunctionConfigRequest'
+        required: true
+      responses:
+        "200":
+          description: Возвращает конфигурацию функции
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseFunctionConfig'
 components:
   schemas:
     Alert:
@@ -2046,24 +2063,35 @@ components:
           type: array
           items:
             type: string
-    FunctionListRequest:
+    FunctionConfigRequest:
       type: object
       properties:
         agentName:
           type: string
           description: Имя агента
-        modality:
+        functionName:
           type: string
-          description: Модальность
-      description: Запрос на получение настроек функций агента
-
-    BaseResponseFunctionListResponse:
+          description: Имя функции
+      description: Запрос на получение конфигурации функции
+    FunctionConfig:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - divr
+            - backend
+            - iag
+        path:
+          type: string
+          description: Endpoint/path для вызова функции
+    BaseResponseFunctionConfig:
       type: object
       properties:
         success:
           type: boolean
         body:
-          $ref: '#/components/schemas/FunctionListResponse'
+          $ref: '#/components/schemas/FunctionConfig'
         context:
           $ref: '#/components/schemas/Context'
         messages:
@@ -2076,138 +2104,3 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Alert'
-
-    FunctionListResponse:
-      type: object
-      properties:
-        settings:
-          $ref: '#/components/schemas/Settings'
-
-    Settings:
-      type: object
-      properties:
-        gigachat:
-          $ref: '#/components/schemas/GigachatSettings'
-        audio:
-          $ref: '#/components/schemas/AudioSettings'
-        disable_interruption:
-          $ref: '#/components/schemas/DisableInterruptionSettings'
-
-    GigachatSettings:
-      type: object
-      properties:
-        function_ranker:
-          $ref: '#/components/schemas/FunctionRanker'
-        functions:
-          type: array
-          items:
-            $ref: '#/components/schemas/Function'
-
-    FunctionRanker:
-      type: object
-      properties:
-        ignored_functions:
-          type: array
-          items:
-            type: string
-
-    Function:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        parameters:
-          type: string
-        few_shot_examples:
-          type: array
-          items:
-            $ref: '#/components/schemas/AnyExample'
-        return_parameters:
-          type: string
-
-    AnyExample:
-      type: object
-      properties:
-        request:
-          type: string
-        params:
-          $ref: '#/components/schemas/Params'
-
-    Params:
-      type: object
-      properties:
-        pairs:
-          type: array
-          items:
-            $ref: '#/components/schemas/Pair'
-
-    Pair:
-      type: object
-      properties:
-        key:
-          type: string
-        value:
-          type: object
-          nullable: true
-
-    AudioSettings:
-      type: object
-      properties:
-        output:
-          $ref: '#/components/schemas/AudioOutputSettings'
-
-    AudioOutputSettings:
-      type: object
-      properties:
-        stub_sounds:
-          $ref: '#/components/schemas/StubSounds'
-
-    StubSounds:
-      type: object
-      properties:
-        trigger_function:
-          $ref: '#/components/schemas/TriggerFunction'
-
-    TriggerFunction:
-      type: object
-      properties:
-        function_names:
-          type: array
-          items:
-            type: string
-        rules:
-          type: array
-          items:
-            $ref: '#/components/schemas/FunctionSoundRule'
-
-    FunctionSoundRule:
-      type: object
-      properties:
-        function_names:
-          type: array
-          items:
-            type: string
-        sounds:
-          type: array
-          items:
-            type: string
-
-    DisableInterruptionSettings:
-      type: object
-      properties:
-        functions:
-          type: array
-          items:
-            $ref: '#/components/schemas/LockFunctionExecution'
-
-    LockFunctionExecution:
-      type: object
-      properties:
-        name:
-          type: string
-        on_execution:
-          type: boolean
-        after_result:
-          type: boolean

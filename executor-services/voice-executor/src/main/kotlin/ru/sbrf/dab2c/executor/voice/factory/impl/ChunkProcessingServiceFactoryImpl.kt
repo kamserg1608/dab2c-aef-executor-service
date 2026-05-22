@@ -1,6 +1,7 @@
 package ru.sbrf.dab2c.executor.voice.factory.impl
 
 import org.springframework.stereotype.Service
+import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
@@ -19,7 +20,6 @@ import ru.sbrf.dab2c.executor.voice.monitoring.MonitoringConnectionChunksProcess
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.service.impl.ChunkProcessingServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.ContextServiceImpl
-import ru.sbrf.dab2c.executor.voice.service.impl.DialogAccumulatorDelegate
 import ru.sbrf.dab2c.executor.voice.service.impl.FunctionCallServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.KapAnalyticsPublisher
 import ru.sbrf.dab2c.executor.voice.service.impl.KapDialogTurnPublisher
@@ -65,6 +65,11 @@ class ChunkProcessingServiceFactoryImpl(
             connectionMetrics
         )
     }
+
+    private fun buildSessionObservers(session: VoiceSession): List<VoiceSessionObserver> = listOf(
+        KapDialogTurnPublisher(kapProducerClient, session),
+        DialogTurnAuditor(externalInteractionAuditor),
+    )
 
     private fun createCoreService(session: VoiceSession): ChunkProcessingService {
         val analyticsPublisher = KapAnalyticsPublisher(kapProducerClient, session)

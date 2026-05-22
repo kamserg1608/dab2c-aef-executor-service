@@ -1,6 +1,7 @@
 package ru.sbrf.dab2c.executor.clients.efs.adapter.api
 
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
+import ru.sbrf.dab2c.executor.domain.configuration.FunctionConfig
 import ru.sbrf.dab2c.executor.domain.session.DaSessionCommon
 
 /**
@@ -17,4 +18,11 @@ interface ConfiguratorClient {
      * Get DaSessionCommon.
      */
     suspend fun getDaSessionCommon(): DaSessionCommon
+    /**
+     * Get function configuration by agent and function name.
+     */
+    suspend fun getFunction(
+        agentName: String,
+        functionName: String
+    ): FunctionConfig
 }
