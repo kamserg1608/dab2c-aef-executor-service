@@ -1,5 +1,6 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
+import io.mockk.CapturingSlot
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -7,11 +8,14 @@ import io.mockk.slot
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import ru.sbrf.dab2c.executor.clients.efs.adapter.api.Parameter
 import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.DialogEnvelope
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
@@ -23,8 +27,19 @@ import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
 import ru.sbrf.dab2c.executor.library.context.Headers
 import ru.sbrf.dab2c.executor.library.context.HeadersElement
 import ru.sbrf.dab2c.executor.library.context.SessionInfoElement
+import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
+import ru.sbrf.dab2c.executor.library.testing.golden.assertMatchesGolden
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.model.VoiceSession
+import ru.sbrf.dab2c.executor.voice.model.VoiceSessionFeatureToggles
+import ru.sbrf.dab2c.executor.voice.model.VoiceSessionFeatureToggles.Companion.KAP_SEND_EXTRA
+import ru.sbrf.dab2c.executor.voice.model.VoiceSessionFeatureTogglesElement
+import ru.sbrf.dab2c.executor.voice.session.observer.ErrorEmitted
+import ru.sbrf.dab2c.executor.voice.session.observer.FunctionCallReceived
+import ru.sbrf.dab2c.executor.voice.session.observer.FunctionResultSent
+import ru.sbrf.dab2c.executor.voice.session.observer.Replica
+import ru.sbrf.dab2c.executor.voice.session.observer.TurnCompleted
+import ru.sbrf.dab2c.executor.voice.session.observer.WarningEmitted
 
 class KapDialogTurnPublisherTest {
 
@@ -211,6 +226,109 @@ class KapDialogTurnPublisherTest {
             publisher.publishDialogTurn("Hello", "Hi", 2500L)
 
             assertEquals(2500L, dialogSlot.captured.data.assistantMessage?.assistantResponseTime)
+        }
+    }
+
+    @Nested
+    inner class OnTurnCompletedTest {
+
+        private fun togglesElement(kapSendExtra: Boolean) = VoiceSessionFeatureTogglesElement(
+            VoiceSessionFeatureToggles(
+                mapOf(KAP_SEND_EXTRA to Parameter(KAP_SEND_EXTRA, kapSendExtra.toString()))
+            )
+        )
+
+        @Test
+        fun `publishes turn with replicas, response time from assistant window, no extras when toggle off`() = runTest {
+            val dialogSlot = slot<DialogEnvelope>()
+            coEvery { kapProducerClient.publishDialog(capture(dialogSlot)) } returns Unit
+
+            withContext(headersElement + sessionInfoElement + togglesElement(kapSendExtra = false)) {
+                publisher.onTurnCompleted(
+                    TurnCompleted(
+                        userReplica = Replica("Hello", startedAtMs = 100L, endedAtMs = 200L),
+                        assistantReplica = Replica("Hi there", startedAtMs = 300L, endedAtMs = 800L),
+                        turnEvents = emptyList(),
+                        totalTokens = 42,
+                    )
+                )
+            }
+
+            val data = dialogSlot.captured.data
+            assertEquals("Hello", data.userMessage.text)
+            assertEquals("Hi there", data.assistantMessage?.text)
+            assertEquals(500L, data.assistantMessage?.assistantResponseTime)
+            assertThat(data.extra).isNull()
+            assertThat(data.assistantMessage?.totalTokens).isNull()
+        }
+
+        @Test
+        fun `publishes extras with timestamps and total tokens when toggle on`() = runTest {
+            val dialogSlot = slot<DialogEnvelope>()
+            coEvery { kapProducerClient.publishDialog(capture(dialogSlot)) } returns Unit
+
+            withContext(headersElement + sessionInfoElement + togglesElement(kapSendExtra = true)) {
+                publisher.onTurnCompleted(
+                    TurnCompleted(
+                        userReplica = Replica("Hi", startedAtMs = 100L, endedAtMs = 200L),
+                        assistantReplica = Replica("Hello", startedAtMs = 300L, endedAtMs = 800L),
+                        turnEvents = emptyList(),
+                        totalTokens = 42,
+                    )
+                )
+            }
+
+            assertMatchesGolden(extraNode(dialogSlot), "golden/kap-dialog-turn/extra-replica-timestamps-only.json")
+            assertEquals(42, dialogSlot.captured.data.assistantMessage?.totalTokens)
+        }
+
+        @Test
+        fun `maps all four TurnEvent types into KAP event payloads`() = runTest {
+            val dialogSlot = slot<DialogEnvelope>()
+            coEvery { kapProducerClient.publishDialog(capture(dialogSlot)) } returns Unit
+
+            withContext(headersElement + sessionInfoElement + togglesElement(kapSendExtra = true)) {
+                publisher.onTurnCompleted(
+                    TurnCompleted(
+                        userReplica = Replica("u", 100L, 200L),
+                        assistantReplica = Replica("a", 300L, 400L),
+                        turnEvents = listOf(
+                            FunctionCallReceived(name = "get_balance", arguments = """{"id":"1"}""", atMs = 250L),
+                            FunctionResultSent(name = "get_balance", content = """{"balance":100}""", atMs = 260L),
+                            WarningEmitted(message = "low confidence", atMs = 270L),
+                            ErrorEmitted(status = 400, message = "Bad", atMs = 280L),
+                        ),
+                        totalTokens = null,
+                    )
+                )
+            }
+
+            assertMatchesGolden(extraNode(dialogSlot), "golden/kap-dialog-turn/extra-all-event-types.json")
+        }
+
+        private fun extraNode(dialogSlot: CapturingSlot<DialogEnvelope>) =
+            ObjectMappers.MAPPER.readTree(dialogSlot.captured.data.extra!!)
+
+        @Test
+        fun `handles null replicas by emitting empty text and zero response time`() = runTest {
+            val dialogSlot = slot<DialogEnvelope>()
+            coEvery { kapProducerClient.publishDialog(capture(dialogSlot)) } returns Unit
+
+            withContext(headersElement + sessionInfoElement + togglesElement(kapSendExtra = false)) {
+                publisher.onTurnCompleted(
+                    TurnCompleted(
+                        userReplica = null,
+                        assistantReplica = null,
+                        turnEvents = emptyList(),
+                        totalTokens = null,
+                    )
+                )
+            }
+
+            val data = dialogSlot.captured.data
+            assertEquals("", data.userMessage.text)
+            assertEquals("", data.assistantMessage?.text)
+            assertEquals(0L, data.assistantMessage?.assistantResponseTime)
         }
     }
 

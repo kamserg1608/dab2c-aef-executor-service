@@ -1,0 +1,37 @@
+{
+  "events" : [ {
+    "eventName" : "function_call",
+    "timestamp" : 250,
+    "payload" : {
+      "function_call" : {
+        "name" : "get_balance",
+        "arguments" : "{\"id\":\"1\"}"
+      },
+      "timestamp" : 250
+    }
+  }, {
+    "eventName" : "function_result",
+    "timestamp" : 260,
+    "payload" : {
+      "content" : "{\"balance\":100}",
+      "function_name" : "get_balance"
+    }
+  }, {
+    "eventName" : "warning",
+    "timestamp" : 270,
+    "payload" : {
+      "message" : "low confidence"
+    }
+  }, {
+    "eventName" : "error",
+    "timestamp" : 280,
+    "payload" : {
+      "status" : 400,
+      "message" : "Bad"
+    }
+  } ],
+  "userMessageStartTS" : 100,
+  "userMessageEndTS" : 200,
+  "assistantMessageStartTS" : 300,
+  "assistantMessageEndTS" : 400
+}

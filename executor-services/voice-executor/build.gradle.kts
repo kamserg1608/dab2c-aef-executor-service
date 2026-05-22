@@ -18,4 +18,5 @@ dependencies {
     implementation(libs.grpc.client.spring.boot.starter)
     implementation(libs.grpc.services)
     implementation(libs.kotlin.logging.jvm)
+    testImplementation(project(":executor-libraries:test-support"))
 }
