@@ -1,0 +1,7 @@
+{
+  "events" : [ ],
+  "userMessageStartTS" : 100,
+  "userMessageEndTS" : 200,
+  "assistantMessageStartTS" : 300,
+  "assistantMessageEndTS" : 800
+}
