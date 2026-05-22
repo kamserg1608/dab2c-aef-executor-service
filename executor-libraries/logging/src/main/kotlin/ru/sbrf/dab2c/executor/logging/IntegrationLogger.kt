@@ -3,6 +3,7 @@
 package ru.sbrf.dab2c.executor.logging
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CancellationException
 import org.slf4j.MDC
 import java.time.Instant
 
@@ -22,7 +23,7 @@ object IntegrationLogger {
     /**
      * Wraps a suspend HTTP call and logs a single integration record after completion.
      */
-    @Suppress("LongParameterList")
+    @Suppress("LongParameterList", "LongMethod")
     suspend fun <T> logHttpCallSuspend(
         destinationSystem: String,
         destinationService: String,
@@ -50,6 +51,8 @@ object IntegrationLogger {
             logger.info { "HTTP $destinationService completed" }
 
             result
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             val executionTime = System.currentTimeMillis() - startTime
             val statusCode = (e as? io.ktor.client.plugins.ResponseException)?.response?.status?.value

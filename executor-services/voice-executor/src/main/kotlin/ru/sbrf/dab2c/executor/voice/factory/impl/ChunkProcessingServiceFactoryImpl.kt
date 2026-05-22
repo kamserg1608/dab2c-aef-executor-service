@@ -1,7 +1,6 @@
 package ru.sbrf.dab2c.executor.voice.factory.impl
 
 import org.springframework.stereotype.Service
-import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
@@ -9,6 +8,7 @@ import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.ConnectionMetrics
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricFactory
 import ru.sbrf.dab2c.executor.library.time.TimeProvider
+import ru.sbrf.dab2c.executor.voice.audit.DialogTurnAuditor
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
 import ru.sbrf.dab2c.executor.voice.mapper.FunctionCallSettingsProtoMapper
@@ -25,6 +25,9 @@ import ru.sbrf.dab2c.executor.voice.service.impl.KapAnalyticsPublisher
 import ru.sbrf.dab2c.executor.voice.service.impl.KapDialogTurnPublisher
 import ru.sbrf.dab2c.executor.voice.service.impl.LoggingChunkProcessingServiceDelegate
 import ru.sbrf.dab2c.executor.voice.service.impl.SettingsServiceImpl
+import ru.sbrf.dab2c.executor.voice.service.impl.VoiceSessionObserverDelegate
+import ru.sbrf.dab2c.executor.voice.session.observer.CompositeVoiceSessionObserver
+import ru.sbrf.dab2c.executor.voice.session.observer.VoiceSessionObserver
 
 /** Default implementation of ChunkProcessingServiceFactory. */
 @Suppress("LongParameterList")
@@ -51,13 +54,11 @@ class ChunkProcessingServiceFactoryImpl(
     override fun create(): ChunkProcessingService {
         val session = VoiceSession()
         val coreService = createCoreService(session)
-        val dialogTurnPublisher = KapDialogTurnPublisher(kapProducerClient, session)
+        val sessionObserver = CompositeVoiceSessionObserver(buildSessionObservers(session))
         return MonitoringConnectionChunksProcessingDecorator(
             MonitoringChunksProcessingDecorator(
                 LoggingChunkProcessingServiceDelegate(
-                    DialogAccumulatorDelegate(
-                        coreService, dialogTurnPublisher, externalInteractionAuditor, timeProvider
-                    )
+                    VoiceSessionObserverDelegate(coreService, sessionObserver, timeProvider)
                 ),
                 metricFactory
             ),

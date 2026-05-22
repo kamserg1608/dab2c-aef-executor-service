@@ -411,9 +411,9 @@
         <Bug category="CORRECTNESS"/>
     </Match>
 
-    <!-- DialogAccumulatorDelegate: false positive — fields accessed from single flow despite class being multi-threaded -->
+    <!-- VoiceSessionObserverDelegate: false positive — fields accessed from single flow despite class being multi-threaded -->
     <Match>
-        <Class name="ru.sbrf.dab2c.executor.voice.service.impl.DialogAccumulatorDelegate"/>
+        <Class name="ru.sbrf.dab2c.executor.voice.service.impl.VoiceSessionObserverDelegate"/>
         <Bug category="MT_CORRECTNESS"/>
     </Match>
 </FindBugsFilter>
