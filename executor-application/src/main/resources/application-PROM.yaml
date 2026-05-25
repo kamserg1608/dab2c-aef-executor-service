@@ -86,6 +86,22 @@ configurator:
     multiplier: ${CONFIGURATOR_RETRY_MULTIPLIER:2.0}
     statusCodes: ${CONFIGURATOR_RETRY_STATUS_CODES:502,503,504}
 
+# IAG HTTP Client
+iag:
+  client:
+    baseUrl: ${IAG_BASE_URL:http://project78750.sbermock.sigma.sbrf.ru:8080}
+    connectionTimeout: ${IAG_CONNECT_TIMEOUT_MS:5000}
+    requestTimeout: ${IAG_REQUEST_TIMEOUT_MS:15000}
+    socketTimeout: ${IAG_SOCKET_TIMEOUT_MS:15000}
+    pool:
+      maxConnections: ${IAG_POOL_MAX_CONNECTIONS:50}
+    retry:
+      maxRetries: ${IAG_RETRY_MAX_RETRIES:2}
+      delay: ${IAG_RETRY_DELAY_MS:500}
+      maxDelay: ${IAG_RETRY_MAX_DELAY_MS:5000}
+      multiplier: ${IAG_RETRY_MULTIPLIER:2.0}
+      statusCodes: ${IAG_RETRY_STATUS_CODES:502,503,504}
+
 # KAP Producer
 kafka:
   kap:

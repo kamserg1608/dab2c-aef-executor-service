@@ -1,0 +1,56 @@
+{
+  "output": {
+    "filePath": "repomix-output.md",
+    "style": "markdown",
+    "compress": false,
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "showLineNumbers": true
+  },
+  "include": [
+    "**/src/main/java/**",
+    "**/src/main/kotlin/**",
+    "**/src/main/resources/**",
+    "**/src/test/java/**",
+    "**/src/test/kotlin/**",
+    "pom.xml",
+    "**/pom.xml",
+    "build.gradle",
+    "build.gradle.kts",
+    "settings.gradle",
+    "settings.gradle.kts",
+    "gradle.properties",
+    "**/application.yml",
+    "**/application.yaml",
+    "**/application.properties",
+    "**/bootstrap.yml",
+    "**/bootstrap.yaml",
+    "**/logback*.xml",
+    "**/openapi*.yml",
+    "**/openapi*.yaml"
+  ],
+  "ignore": {
+    "customPatterns": [
+      "**/target/**",
+      "**/build/**",
+      "**/.gradle/**",
+      "**/.mvn/**",
+      "**/node_modules/**",
+      "**/.idea/**",
+      "**/.git/**",
+      "**/out/**",
+      "**/generated/**",
+      "**/generated-sources/**",
+      "**/generated-test-sources/**",
+      "**/*.class",
+      "**/*.jar",
+      "**/*.war",
+      "**/*.ear",
+      "**/*.iml",
+      "**/*.log",
+      "**/logs/**",
+      "**/tmp/**",
+      "**/.DS_Store"
+    ]
+  }
+}

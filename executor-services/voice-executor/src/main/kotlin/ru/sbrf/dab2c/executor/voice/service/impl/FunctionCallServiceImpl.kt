@@ -7,10 +7,12 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionResult
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceRequest
+import ru.sbrf.dab2c.executor.clients.iag.api.IagFunctionClient
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.model.VoiceSession
+import ru.sbrf.dab2c.executor.voice.model.currentFeatureToggles
 import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
 import ru.sbrf.dab2c.executor.voice.service.api.FunctionCallService
 
@@ -18,6 +20,7 @@ import ru.sbrf.dab2c.executor.voice.service.api.FunctionCallService
 class FunctionCallServiceImpl(
     private val session: VoiceSession,
     private val gigaVoiceAgentClient: GigaVoiceAgentClient,
+    private val iagFunctionClient: IagFunctionClient,
     private val analyticsPublisher: AnalyticsPublisher
 ) : FunctionCallService {
 
@@ -53,12 +56,21 @@ class FunctionCallServiceImpl(
 
         session.launch {
             try {
-                val functionCallResult = gigaVoiceAgentClient.executeFunctionCall(
-                    conversationId = state.conversationId,
-                    agentConfiguration = state.agentConfiguration,
-                    functionCalling = functionCalling,
-                    contextData = state.contextData
-                )
+                val functionCallResult = if (currentFeatureToggles().configuratorFunctionMatch) {
+                    iagFunctionClient.executeFunctionCall(
+                        conversationId = state.conversationId,
+                        agentConfiguration = state.agentConfiguration,
+                        functionCalling = functionCalling,
+                        contextData = state.contextData
+                    )
+                } else {
+                    gigaVoiceAgentClient.executeFunctionCall(
+                        conversationId = state.conversationId,
+                        agentConfiguration = state.agentConfiguration,
+                        functionCalling = functionCalling,
+                        contextData = state.contextData
+                    )
+                }
 
                 val elapsed = System.currentTimeMillis() - startTime
                 logger.info { "Backend function '$functionName' completed in ${elapsed}ms" }

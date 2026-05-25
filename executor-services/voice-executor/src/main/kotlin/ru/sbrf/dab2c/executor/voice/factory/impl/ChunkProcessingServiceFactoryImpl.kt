@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
+import ru.sbrf.dab2c.executor.clients.iag.api.IagFunctionClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.ConnectionMetrics
@@ -39,6 +40,7 @@ class ChunkProcessingServiceFactoryImpl(
     private val configuratorClient: ConfiguratorClient,
     private val metricFactory: MetricFactory,
     private val kapProducerClient: KapProducerClient,
+    private val iagFunctionClient: IagFunctionClient,
     private val externalInteractionAuditor: InteractionAuditor,
     private val timeProvider: TimeProvider,
     private val functionCallSettingsProtoMapper: FunctionCallSettingsProtoMapper
@@ -88,6 +90,7 @@ class ChunkProcessingServiceFactoryImpl(
             functionCallService = FunctionCallServiceImpl(
                 session,
                 gigaVoiceAgentClient,
+                iagFunctionClient,
                 analyticsPublisher
             )
         )

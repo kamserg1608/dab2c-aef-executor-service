@@ -1,0 +1,85 @@
+openapi: 3.0.1
+
+info:
+  title: IAG Function Call API
+  description: API for backend function execution through IAG.
+  version: "1.0"
+
+servers:
+  - url: http://localhost:8080
+
+paths:
+  /function/call:
+    post:
+      summary: Execute backend function call
+      operationId: executeFunctionCall
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IagFunctionRequest'
+
+      responses:
+        '200':
+          description: EFS-style function call response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IagFunctionResponse'
+              examples:
+                success:
+                  value:
+                    success: true
+                    body:
+                      function_result:
+                        content: '{"status":"success"}'
+                        function_name: "stub_function"
+                      agent_analytics: []
+                      context:
+                        disabled_functions: []
+
+components:
+  schemas:
+
+    IagFunctionCallRequest:
+      type: object
+      description: Request body produced from GigaVoice function call request builder.
+      additionalProperties: true
+
+    IagFunctionCallResponse:
+      type: object
+      required:
+        - success
+
+      properties:
+        success:
+          type: boolean
+
+        body:
+          type: object
+          additionalProperties: true
+
+        context:
+          nullable: true
+          description: Optional EFS wrapper context.
+
+        messages:
+          type: array
+          nullable: true
+          items:
+            type: object
+            additionalProperties: true
+
+        error:
+          nullable: true
+
+        alerts:
+          type: array
+          nullable: true
+          items:
+            type: object
+            additionalProperties: true
+
+      additionalProperties: true
