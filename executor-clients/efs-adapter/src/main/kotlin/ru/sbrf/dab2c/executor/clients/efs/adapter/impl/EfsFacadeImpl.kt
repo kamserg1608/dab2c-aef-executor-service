@@ -30,9 +30,9 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.PersonInfoMapper
 import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.SdsSectionMapper
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.AppSourceRequest
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.AuditEventServiceEvent
-import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseFunctionConfig
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseListSdsSectionData
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseMapStringAgentConfig
+import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseMapStringFunctionConfig
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseParameters
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseProfile
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseSessionConfig
@@ -141,7 +141,7 @@ class EfsFacadeImpl(
     override suspend fun getFunction(
         agentName: String,
         functionName: String
-    ): FunctionConfig {
+    ): Map<String, FunctionConfig> {
         val cookie = currentUfsCookie()
         logger.debug {
             "Getting function config for agent: $agentName function: $functionName"
@@ -159,7 +159,7 @@ class EfsFacadeImpl(
             destinationService = FUNCTION_ENDPOINT,
             rqMessage = requestJson,
             className = CLASS_NAME,
-            responseExtractor = { resp: BaseResponseFunctionConfig ->
+            responseExtractor = { resp: BaseResponseMapStringFunctionConfig ->
                 objectMapper.writeValueAsString(resp) to HTTP_OK
             }
         ) {
@@ -168,12 +168,16 @@ class EfsFacadeImpl(
                 header(HttpHeaders.Cookie, cookie)
                 applyTracingHeaders()
                 setBody(request)
-            }.body<BaseResponseFunctionConfig>()
+            }.body<BaseResponseMapStringFunctionConfig>()
         }
 
         checkSuccess(response.success, "getFunction")
 
-        return functionConfigMapper.toDomain(response.body!!)
+        return response.body
+            ?.mapValues { (_, functionConfig) ->
+                functionConfigMapper.toDomain(functionConfig)
+            }
+            ?: emptyMap()
     }
 
     override suspend fun getDaSessionCommon(): DaSessionCommon {

@@ -288,8 +288,8 @@ paths:
                 $ref: '#/components/schemas/BaseResponseAgentConfig'
   /configurator/function:
     post:
-      summary: Получение конфигурации функции
-      description: Получает конфигурацию функции агента из Конфигуратора
+      summary: Получение конфигурации функций
+      description: Получает конфигурации функций агента из Конфигуратора
       requestBody:
         content:
           application/json:
@@ -298,11 +298,28 @@ paths:
         required: true
       responses:
         "200":
-          description: Возвращает конфигурацию функции
+          description: Возвращает конфигурации функций
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BaseResponseFunctionConfig'
+                $ref: '#/components/schemas/BaseResponseMapStringFunctionConfig'
+              example:
+                success: true
+                body:
+                  function_1:
+                    type: IAG
+                    path: /example-1
+                    modality:
+                      - voice
+                  function_2:
+                    type: DIVR
+                    modality:
+                      - text
+                  function_n:
+                    type: BACKEND
+                    modality:
+                      - text
+                      - voice
 components:
   schemas:
     Alert:
@@ -2079,19 +2096,29 @@ components:
         type:
           type: string
           enum:
-            - divr
-            - backend
-            - iag
+            - IAG
+            - DIVR
+            - BACKEND
         path:
           type: string
           description: Endpoint/path для вызова функции
-    BaseResponseFunctionConfig:
+        modality:
+          type: array
+          description: Доступные модальности функции
+          items:
+            type: string
+            enum:
+              - text
+              - voice
+    BaseResponseMapStringFunctionConfig:
       type: object
       properties:
         success:
           type: boolean
         body:
-          $ref: '#/components/schemas/FunctionConfig'
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/FunctionConfig'
         context:
           $ref: '#/components/schemas/Context'
         messages:
