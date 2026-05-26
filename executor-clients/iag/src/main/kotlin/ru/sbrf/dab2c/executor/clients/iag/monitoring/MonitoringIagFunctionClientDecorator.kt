@@ -23,16 +23,27 @@ class MonitoringIagFunctionClientDecorator(
         conversationId: String,
         agentConfiguration: AgentConfiguration,
         functionCalling: FunctionCalling,
-        contextData: Context
-    ): FunctionCallResult = metricFactory.monitorHttpCall(
-        timerMetric = ClientMetric.HTTP_INTEGRATION_REQUEST_DURATION_SECONDS,
-        counterMetric = ClientMetric.HTTP_INTEGRATION_REQUEST_TOTAL,
-        descriptor = HttpCallDescriptor(
-            destinationService = IAG,
-            endpoint = FUNCTION_CALL_ENDPOINT
-        )
-    ) {
-        delegate.executeFunctionCall(conversationId, agentConfiguration, functionCalling, contextData)
+        contextData: Context,
+        endpoint: String?
+    ): FunctionCallResult {
+        val functionCallEndpoint = endpoint ?: FUNCTION_CALL_ENDPOINT
+
+        return metricFactory.monitorHttpCall(
+            timerMetric = ClientMetric.HTTP_INTEGRATION_REQUEST_DURATION_SECONDS,
+            counterMetric = ClientMetric.HTTP_INTEGRATION_REQUEST_TOTAL,
+            descriptor = HttpCallDescriptor(
+                destinationService = IAG,
+                endpoint = functionCallEndpoint
+            )
+        ) {
+            delegate.executeFunctionCall(
+                conversationId = conversationId,
+                agentConfiguration = agentConfiguration,
+                functionCalling = functionCalling,
+                contextData = contextData,
+                endpoint = functionCallEndpoint
+            )
+        }
     }
 
     /** Destination service identifier. */

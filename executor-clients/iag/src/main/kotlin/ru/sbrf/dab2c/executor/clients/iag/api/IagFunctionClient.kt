@@ -17,6 +17,7 @@ interface IagFunctionClient {
         conversationId: String,
         agentConfiguration: AgentConfiguration,
         functionCalling: FunctionCalling,
-        contextData: Context
+        contextData: Context,
+        endpoint: String? = null
     ): FunctionCallResult
 }

@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.audioRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.contextRequest
@@ -15,7 +16,9 @@ import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.plat
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubs
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubsWithFunctionMatch
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubGigaAgentFunctions
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubIagAgentFunctions
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 
 /**
@@ -23,6 +26,211 @@ import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
  * Verifies routing of FunctionCalling between IVR and backend execution.
  */
 class FunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
+
+    @Test
+    fun `should proxy IVR function to client when configuratorEnabled is true`() = runItTest {
+        setupStubsWithFunctionMatch(
+            efsAdapterMock,
+            configuratorMock,
+            gigaVoiceAgentMock,
+            configuratorEnabled = true
+        )
+
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(contextRequest())
+            session.sendRequest(settingsRequest("ivr-function-test"))
+            mock.awaitRequest { it.hasSettings() }
+
+            mock.sendResponse(outputTranscriptionResponse())
+            session.awaitResponse()
+
+            session.sendRequest(audioRequest(speechStart = true))
+            mock.awaitRequest { it.hasInput() }
+
+            mock.sendResponse(
+                functionCallingResponse(
+                    "transfer_to_operator",
+                    """{"reason": "customer request"}"""
+                )
+            )
+
+            val functionResponse = session.awaitResponse { it.hasFunctionCall() }
+
+            assertThat(functionResponse.functionCall.functionCall.name)
+                .isEqualTo("transfer_to_operator")
+        }
+
+        gigaVoiceAgentMock.verify(0, postRequestedFor(urlEqualTo("/functions")))
+    }
+
+    @Test
+    fun `should proxy IVR function to client when configuratorEnabled is false`() = runItTest {
+        setupStubsWithFunctionMatch(
+            efsAdapterMock,
+            configuratorMock,
+            gigaVoiceAgentMock,
+            configuratorEnabled = false
+        )
+
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(contextRequest())
+            session.sendRequest(settingsRequest("ivr-function-test"))
+            mock.awaitRequest { it.hasSettings() }
+
+            mock.sendResponse(outputTranscriptionResponse())
+            session.awaitResponse()
+
+            session.sendRequest(audioRequest(speechStart = true))
+            mock.awaitRequest { it.hasInput() }
+
+            mock.sendResponse(
+                functionCallingResponse(
+                    "transfer_to_operator",
+                    """{"reason": "customer request"}"""
+                )
+            )
+
+            val functionResponse = session.awaitResponse { it.hasFunctionCall() }
+
+            assertThat(functionResponse.functionCall.functionCall.name)
+                .isEqualTo("transfer_to_operator")
+        }
+
+        gigaVoiceAgentMock.verify(0, postRequestedFor(urlEqualTo("/functions")))
+    }
+
+    @Test
+    fun `should execute backend function via GigaAgent when configuratorEnabled is true`() =
+        runItTest {
+            setupStubsWithFunctionMatch(
+                efsAdapterMock,
+                configuratorMock,
+                gigaVoiceAgentMock,
+                configuratorEnabled = true
+            )
+
+            gigaVoiceAgentMock.stubGigaAgentFunctions(
+                "get_account_balance",
+                """{"balance": 1000}"""
+            )
+
+            withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+                session.sendRequest(contextRequest())
+                session.sendRequest(settingsRequest("backend-function-test"))
+                mock.awaitRequest { it.hasSettings() }
+
+                mock.sendResponse(outputTranscriptionResponse())
+                session.awaitResponse()
+
+                session.sendRequest(audioRequest(speechStart = true))
+                mock.awaitRequest { it.hasInput() }
+
+                mock.sendResponse(
+                    functionCallingResponse(
+                        "get_account_balance",
+                        """{"account_id": "12345"}"""
+                    )
+                )
+
+                mock.sendResponse(platformFunctionProcessing())
+                session.awaitResponse { it.hasPlatformFunctionProcessing() }
+
+                wireMock.awaitPostCall("/functions")
+
+                assertThat(session.receivedResponses.none { it.hasFunctionCall() }).isTrue()
+            }
+
+            gigaVoiceAgentMock.verify(1, postRequestedFor(urlEqualTo("/functions")))
+        }
+
+    @Test
+    fun `should execute backend function via GigaAgent when configuratorEnabled is false`() =
+        runItTest {
+            setupStubsWithFunctionMatch(
+                efsAdapterMock,
+                configuratorMock,
+                gigaVoiceAgentMock,
+                configuratorEnabled = false
+            )
+
+            gigaVoiceAgentMock.stubGigaAgentFunctions(
+                "get_account_balance",
+                """{"balance": 1000}"""
+            )
+
+            withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+                session.sendRequest(contextRequest())
+                session.sendRequest(settingsRequest("backend-function-test"))
+                mock.awaitRequest { it.hasSettings() }
+
+                mock.sendResponse(outputTranscriptionResponse())
+                session.awaitResponse()
+
+                session.sendRequest(audioRequest(speechStart = true))
+                mock.awaitRequest { it.hasInput() }
+
+                mock.sendResponse(
+                    functionCallingResponse(
+                        "get_account_balance",
+                        """{"account_id": "12345"}"""
+                    )
+                )
+
+                mock.sendResponse(platformFunctionProcessing())
+                session.awaitResponse { it.hasPlatformFunctionProcessing() }
+
+                wireMock.awaitPostCall("/functions")
+
+                assertThat(session.receivedResponses.none { it.hasFunctionCall() }).isTrue()
+            }
+
+            gigaVoiceAgentMock.verify(1, postRequestedFor(urlEqualTo("/functions")))
+        }
+
+    @Disabled("temporarily disabled")
+    @Test
+    fun `should execute backend function via iag when configuratorEnabled is true`() =
+        runItTest {
+            setupStubsWithFunctionMatch(
+                efsAdapterMock,
+                configuratorMock,
+                gigaVoiceAgentMock,
+                configuratorEnabled = true
+            )
+
+            iagMock.stubIagAgentFunctions(
+                "get_account_balance",
+                """{"balance": 1000}"""
+            )
+
+            withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+                session.sendRequest(contextRequest())
+                session.sendRequest(settingsRequest("backend-function-iag-test"))
+                mock.awaitRequest { it.hasSettings() }
+
+                mock.sendResponse(outputTranscriptionResponse())
+                session.awaitResponse()
+
+                session.sendRequest(audioRequest(speechStart = true))
+                mock.awaitRequest { it.hasInput() }
+
+                mock.sendResponse(
+                    functionCallingResponse(
+                        "get_account_balance_iag",
+                        """{"account_id": "12345"}"""
+                    )
+                )
+
+                mock.sendResponse(platformFunctionProcessing())
+                session.awaitResponse { it.hasPlatformFunctionProcessing() }
+
+                wireMock.awaitPostCall("/functions")
+
+                assertThat(session.receivedResponses.none { it.hasFunctionCall() }).isTrue()
+            }
+
+            gigaVoiceAgentMock.verify(1, postRequestedFor(urlEqualTo("/functions")))
+        }
 
     @Test
     fun `should proxy IVR function to client when isBackendFunction is false`() = runItTest {

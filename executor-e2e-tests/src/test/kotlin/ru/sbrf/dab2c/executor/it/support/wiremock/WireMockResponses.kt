@@ -29,6 +29,37 @@ object WireMockResponses {
     """.trimIndent()
 
     /**
+     * EFS Adapter response for configurator function metadata.
+     */
+    val EFS_ADAPTER_CONFIGURATOR_FUNCTION_RESPONSE = """
+    {
+      "success": true,
+      "body": {
+        "get_account_balance_iag": {
+          "type": "IAG",
+          "path": "/bh",
+          "modality": [
+            "voice"
+          ]
+        },
+        "transfer_to_operator": {
+          "type": "DIVR",
+          "modality": [
+            "text"
+          ]
+        },
+        "get_account_balance": {
+          "type": "BACKEND",
+          "modality": [
+            "text",
+            "voice"
+          ]
+        }
+      }
+    }
+    """.trimIndent()
+
+    /**
      * Configurator function list response with function settings,
      * interruption rules and audio stub configuration.
      */

@@ -44,8 +44,10 @@ class IagFunctionClientImpl(
         conversationId: String,
         agentConfiguration: AgentConfiguration,
         functionCalling: FunctionCalling,
-        contextData: Context
+        contextData: Context,
+        endpoint: String?
     ): FunctionCallResult {
+        val functionCallEndpoint = endpoint ?: FUNCTION_CALL_ENDPOINT
         val daSessionInfo = currentSessionInfo()
         val context = GigaAgentContextBuilder.buildRequestContext(conversationId, daSessionInfo, currentHeaders())
         logger.debug { "Executing IAG function call for session: ${context.ufsSession}" }
@@ -57,7 +59,7 @@ class IagFunctionClientImpl(
 
         val response = IntegrationLogger.logHttpCallSuspend(
             destinationSystem = baseUrl,
-            destinationService = FUNCTION_CALL_ENDPOINT,
+            destinationService = functionCallEndpoint,
             rqMessage = requestJson,
             className = CLASS_NAME,
             responseExtractor = { resp: IagFunctionResponse ->

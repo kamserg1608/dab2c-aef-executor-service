@@ -62,7 +62,7 @@ class FunctionCallServiceImpl(
 
             FUNCTION_TYPE_IAG -> {
                 logger.debug { "Executing IAG function '$functionName' by configurator (async)" }
-                executeIagFunctionAsync(state, functionCalling)
+                executeIagFunctionAsync(state, functionCalling, functionConfig)
                 null
             }
 
@@ -111,12 +111,14 @@ class FunctionCallServiceImpl(
 
     private suspend fun executeIagFunctionAsync(
         state: ProcessingState.Serving,
-        functionCalling: FunctionCalling
+        functionCalling: FunctionCalling,
+        functionConfig: FunctionConfig
     ) {
         executeFunctionAsync(
             state = state,
             functionCalling = functionCalling,
-            executorName = EXECUTOR_IAG
+            executorName = EXECUTOR_IAG,
+            endpoint = functionConfig.path
         )
     }
 
@@ -124,7 +126,8 @@ class FunctionCallServiceImpl(
     private suspend fun executeFunctionAsync(
         state: ProcessingState.Serving,
         functionCalling: FunctionCalling,
-        executorName: String
+        executorName: String,
+        endpoint: String? = null
     ) {
         val headers = currentHeaders()
         val functionName = functionCalling.functionCall.name
@@ -144,7 +147,8 @@ class FunctionCallServiceImpl(
                         conversationId = state.conversationId,
                         agentConfiguration = state.agentConfiguration,
                         functionCalling = functionCalling,
-                        contextData = state.contextData
+                        contextData = state.contextData,
+                        endpoint = endpoint
                     )
 
                     else -> error("Unsupported function executor: $executorName")

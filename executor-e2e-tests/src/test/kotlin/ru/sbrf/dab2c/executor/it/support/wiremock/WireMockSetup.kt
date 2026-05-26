@@ -19,6 +19,18 @@ object WireMockSetup {
         )
     }
 
+    fun WireMockServer.stubEfsAdapterConfiguratorFunction() {
+        stubFor(
+            post(urlEqualTo("/configurator/function"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.EFS_ADAPTER_CONFIGURATOR_FUNCTION_RESPONSE)
+                )
+        )
+    }
+
     fun WireMockServer.stubConfiguratorFunctionList() {
         stubFor(
             post(urlEqualTo("/function/list/v1"))
@@ -187,6 +199,18 @@ object WireMockSetup {
         )
     }
 
+    fun WireMockServer.stubIagAgentFunctions(functionName: String, resultContent: String) {
+        stubFor(
+            post(urlEqualTo("/functions"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.gigaVoiceFunctionsResponse(functionName, resultContent))
+                )
+        )
+    }
+
     fun WireMockServer.stubGigaAgentFunctionsWithDelay(
         functionName: String,
         resultContent: String,
@@ -261,8 +285,8 @@ object WireMockSetup {
         efsAdapter: WireMockServer,
         configurator: WireMockServer,
         gigaAgent: WireMockServer,
-        withFunctions: Boolean = true,
         configuratorEnabled: Boolean = true,
+        withFunctions: Boolean = true,
     ) {
         with(efsAdapter) {
             stubEfsRestAgent()
@@ -273,6 +297,7 @@ object WireMockSetup {
             stubRetrieveParams(
                 "aef.executor.toggles.configurator.function-match" to "true"
             )
+            stubEfsAdapterConfiguratorFunction()
         }
         with(configurator) {
             stubConfiguratorFunctionList()
