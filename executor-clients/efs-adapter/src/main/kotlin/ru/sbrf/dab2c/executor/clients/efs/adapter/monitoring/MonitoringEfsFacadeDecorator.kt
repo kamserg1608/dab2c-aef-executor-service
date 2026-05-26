@@ -49,7 +49,7 @@ class MonitoringEfsFacadeDecorator(
             delegate.getDaSessionCommon()
         }
 
-    override suspend fun getFunction(agentName: String, functionName: String): Map<String, FunctionConfig>  =
+    override suspend fun getFunction(agentName: String, functionName: String): Map<String, FunctionConfig> =
         monitorCall(FUNCTION_ENDPOINT) {
             delegate.getFunction(agentName, functionName)
         }

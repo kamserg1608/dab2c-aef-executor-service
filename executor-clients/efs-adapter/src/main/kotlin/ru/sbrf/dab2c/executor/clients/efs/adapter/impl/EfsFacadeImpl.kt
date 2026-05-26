@@ -142,19 +142,33 @@ class EfsFacadeImpl(
         agentName: String,
         functionName: String
     ): Map<String, FunctionConfig> {
-        val cookie = currentUfsCookie()
         logger.debug {
             "Getting function config for agent: $agentName function: $functionName"
         }
 
-        val request = FunctionConfigRequest(
-            agentName = agentName,
-            functionName = functionName
+        val response = executeFunctionRequest(
+            FunctionConfigRequest(
+                agentName = agentName,
+                functionName = functionName
+            )
         )
 
+        checkSuccess(response.success, "getFunction")
+
+        return response.body
+            ?.mapValues { (_, functionConfig) ->
+                functionConfigMapper.toDomain(functionConfig)
+            }
+            ?: emptyMap()
+    }
+
+    private suspend fun executeFunctionRequest(
+        request: FunctionConfigRequest
+    ): BaseResponseMapStringFunctionConfig {
+        val cookie = currentUfsCookie()
         val requestJson = objectMapper.writeValueAsString(request)
 
-        val response = IntegrationLogger.logHttpCallSuspend(
+        return IntegrationLogger.logHttpCallSuspend(
             destinationSystem = baseUrl,
             destinationService = FUNCTION_ENDPOINT,
             rqMessage = requestJson,
@@ -170,14 +184,6 @@ class EfsFacadeImpl(
                 setBody(request)
             }.body<BaseResponseMapStringFunctionConfig>()
         }
-
-        checkSuccess(response.success, "getFunction")
-
-        return response.body
-            ?.mapValues { (_, functionConfig) ->
-                functionConfigMapper.toDomain(functionConfig)
-            }
-            ?: emptyMap()
     }
 
     override suspend fun getDaSessionCommon(): DaSessionCommon {

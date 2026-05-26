@@ -3,11 +3,13 @@ package ru.sbrf.dab2c.executor.voice.service.impl
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.ClosedSendChannelException
+import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionResult
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceRequest
 import ru.sbrf.dab2c.executor.clients.iag.api.IagFunctionClient
+import ru.sbrf.dab2c.executor.domain.configuration.FunctionConfig
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
@@ -21,11 +23,13 @@ class FunctionCallServiceImpl(
     private val session: VoiceSession,
     private val gigaVoiceAgentClient: GigaVoiceAgentClient,
     private val iagFunctionClient: IagFunctionClient,
+    private val configuratorClient: ConfiguratorClient,
     private val analyticsPublisher: AnalyticsPublisher
 ) : FunctionCallService {
 
     private val logger = KotlinLogging.logger {}
 
+    @Suppress("LongMethod")
     override suspend fun callFunction(functionCalling: FunctionCalling): FunctionCalling? {
         val state = session.state.value
         check(state is ProcessingState.Serving) {
@@ -35,7 +39,45 @@ class FunctionCallServiceImpl(
         val functionName = functionCalling.functionCall.name
         val functionOptions = state.functionRegistry.functions[functionName]
 
-        if (functionOptions?.isBackendFunction != true) {
+        if (!currentFeatureToggles().configuratorFunctionMatch) {
+            return callFunctionByPerformers(state, functionCalling, functionOptions?.isBackendFunction)
+        }
+
+        val functionConfig = getFunctionConfigOrNull(
+            agentName = state.agentConfiguration.name,
+            functionName = functionName
+        )
+
+        return when (functionConfig?.type?.uppercase()) {
+            FUNCTION_TYPE_DIVR -> {
+                logger.debug { "Function '$functionName' proxied to SmartIVR by configurator" }
+                functionCalling
+            }
+
+            FUNCTION_TYPE_BACKEND -> {
+                logger.debug { "Executing backend function '$functionName' by configurator (async)" }
+                executeBackendFunctionAsync(state, functionCalling)
+                null
+            }
+
+            FUNCTION_TYPE_IAG -> {
+                logger.debug { "Executing IAG function '$functionName' by configurator (async)" }
+                executeIagFunctionAsync(state, functionCalling)
+                null
+            }
+
+            else -> callFunctionByPerformers(state, functionCalling, functionOptions?.isBackendFunction)
+        }
+    }
+
+    private suspend fun callFunctionByPerformers(
+        state: ProcessingState.Serving,
+        functionCalling: FunctionCalling,
+        isBackendFunction: Boolean?
+    ): FunctionCalling? {
+        val functionName = functionCalling.functionCall.name
+
+        if (isBackendFunction != true) {
             logger.debug { "Function '$functionName' proxied to IVR" }
             return functionCalling
         }
@@ -45,10 +87,44 @@ class FunctionCallServiceImpl(
         return null
     }
 
-    @Suppress("LongMethod")
+    private suspend fun getFunctionConfigOrNull(
+        agentName: String,
+        functionName: String
+    ): FunctionConfig? =
+        try {
+            configuratorClient.getFunction(agentName, functionName)[functionName]
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to get function config for '$functionName' from configurator" }
+            null
+        }
+
     private suspend fun executeBackendFunctionAsync(
         state: ProcessingState.Serving,
         functionCalling: FunctionCalling
+    ) {
+        executeFunctionAsync(
+            state = state,
+            functionCalling = functionCalling,
+            executorName = EXECUTOR_BACKEND
+        )
+    }
+
+    private suspend fun executeIagFunctionAsync(
+        state: ProcessingState.Serving,
+        functionCalling: FunctionCalling
+    ) {
+        executeFunctionAsync(
+            state = state,
+            functionCalling = functionCalling,
+            executorName = EXECUTOR_IAG
+        )
+    }
+
+    @Suppress("LongMethod")
+    private suspend fun executeFunctionAsync(
+        state: ProcessingState.Serving,
+        functionCalling: FunctionCalling,
+        executorName: String
     ) {
         val headers = currentHeaders()
         val functionName = functionCalling.functionCall.name
@@ -56,24 +132,26 @@ class FunctionCallServiceImpl(
 
         session.launch {
             try {
-                val functionCallResult = if (currentFeatureToggles().configuratorFunctionMatch) {
-                    iagFunctionClient.executeFunctionCall(
+                val functionCallResult = when (executorName) {
+                    EXECUTOR_BACKEND -> gigaVoiceAgentClient.executeFunctionCall(
                         conversationId = state.conversationId,
                         agentConfiguration = state.agentConfiguration,
                         functionCalling = functionCalling,
                         contextData = state.contextData
                     )
-                } else {
-                    gigaVoiceAgentClient.executeFunctionCall(
+
+                    EXECUTOR_IAG -> iagFunctionClient.executeFunctionCall(
                         conversationId = state.conversationId,
                         agentConfiguration = state.agentConfiguration,
                         functionCalling = functionCalling,
                         contextData = state.contextData
                     )
+
+                    else -> error("Unsupported function executor: $executorName")
                 }
 
                 val elapsed = System.currentTimeMillis() - startTime
-                logger.info { "Backend function '$functionName' completed in ${elapsed}ms" }
+                logger.info { "$executorName function '$functionName' completed in ${elapsed}ms" }
 
                 analyticsPublisher.publishAnalytics(
                     functionCallResult.analytics,
@@ -88,25 +166,44 @@ class FunctionCallServiceImpl(
             } catch (e: ClosedSendChannelException) {
                 logger.debug(e) { "Channel closed, session ended before function '$functionName' completed" }
             } catch (e: Exception) {
-                val elapsed = System.currentTimeMillis() - startTime
-                logger.error { "Failed to execute backend function '$functionName' after ${elapsed}ms: ${e.message}" }
-                val escapedMessage = e.message?.replace("\"", "\\\"") ?: "Function execution failed"
-                val errorContent = """{"error":{"code":500,"message":"$escapedMessage"}}"""
-                try {
-                    session.callbackChannels.downstream.send(
-                        gigaVoiceRequest {
-                            functionResult = functionResult {
-                                this.content = errorContent
-                                this.functionName = functionCalling.functionCall.name
-                            }
-                        }
-                    )
-                } catch (ex: CancellationException) {
-                    throw ex
-                } catch (ex: ClosedSendChannelException) {
-                    logger.debug(ex) { "Channel closed, session ended before error for '$functionName' could be sent" }
-                }
+                sendFunctionError(functionCalling, functionName, startTime, e)
             }
         }
+    }
+
+    private suspend fun sendFunctionError(
+        functionCalling: FunctionCalling,
+        functionName: String,
+        startTime: Long,
+        e: Exception
+    ) {
+        val elapsed = System.currentTimeMillis() - startTime
+        logger.error { "Failed to execute backend function '$functionName' after ${elapsed}ms: ${e.message}" }
+
+        val escapedMessage = e.message?.replace("\"", "\\\"") ?: "Function execution failed"
+        val errorContent = """{"error":{"code":500,"message":"$escapedMessage"}}"""
+
+        try {
+            session.callbackChannels.downstream.send(
+                gigaVoiceRequest {
+                    functionResult = functionResult {
+                        this.content = errorContent
+                        this.functionName = functionCalling.functionCall.name
+                    }
+                }
+            )
+        } catch (ex: CancellationException) {
+            throw ex
+        } catch (ex: ClosedSendChannelException) {
+            logger.debug(ex) { "Channel closed, session ended before error for '$functionName' could be sent" }
+        }
+    }
+
+    private companion object {
+        private const val FUNCTION_TYPE_DIVR = "DIVR"
+        private const val FUNCTION_TYPE_BACKEND = "BACKEND"
+        private const val FUNCTION_TYPE_IAG = "IAG"
+        private const val EXECUTOR_BACKEND = "backend"
+        private const val EXECUTOR_IAG = "iag"
     }
 }

@@ -91,6 +91,7 @@ class ChunkProcessingServiceFactoryImpl(
                 session,
                 gigaVoiceAgentClient,
                 iagFunctionClient,
+                configuratorClient,
                 analyticsPublisher
             )
         )
