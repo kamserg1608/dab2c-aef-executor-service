@@ -5,7 +5,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.audioRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.contextRequest
@@ -15,6 +14,7 @@ import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.outp
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.platformFunctionProcessing
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockAwaiter
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubs
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubsWithFunctionMatch
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubsWithFunctionMatchIag
@@ -187,7 +187,6 @@ class FunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
             gigaVoiceAgentMock.verify(1, postRequestedFor(urlEqualTo("/functions")))
         }
 
-    @Disabled("temporarily disabled")
     @Test
     fun `should execute backend function via iag when configuratorEnabled is true`() =
         runItTest {
@@ -219,7 +218,7 @@ class FunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
 
                 mock.sendResponse(platformFunctionProcessing())
                 session.awaitResponse { it.hasPlatformFunctionProcessing() }
-
+                val wireMock = WireMockAwaiter(iagMock)
                 wireMock.awaitPostCall("/bh")
 
                 assertThat(session.receivedResponses.none { it.hasFunctionCall() }).isTrue()
