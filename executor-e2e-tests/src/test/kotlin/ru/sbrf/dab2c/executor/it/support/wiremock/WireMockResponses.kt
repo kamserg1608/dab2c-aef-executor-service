@@ -35,7 +35,7 @@ object WireMockResponses {
     {
       "success": true,
       "body": {
-        "get_account_balance_iag": {
+        "find_bank_office_iag": {
           "type": "IAG",
           "path": "/bh",
           "modality": [
@@ -158,6 +158,164 @@ object WireMockResponses {
                 }
             }
         }
+    }
+    """.trimIndent()
+
+    /**
+     * Successful find_bank_office function call response with analytics and context.
+     */
+    val FIND_BANK_OFFICE_FUNCTION_CALL_RESPONSE = """
+    {
+      "success": true,
+      "body": {
+        "function_result": {
+          "content": "{\"status\": \"success\", \"city\": \"Волгоград\", \"segment_office\": \"КБ, КК, КЛМ, МБ, МКБ, МС, РГС, СБ, ФИ\", \"address_office\": \"пр-кт им. В.И. Ленина 1 б\", \"working_hours\": \"Пн-Пт: 09:00-18:30, Сб: 09:00-14:30, Вс: выходной\", \"today_hours\": \"09:00 - 18:30\", \"is_open_now\": \"true\", \"time_until_closing\": 296, \"next_offices\": \"[{address_office=ул. Новороссийская 14 б, working_hours=Пн-Чт: 09:00-18:00, Пт-Вс: выходной}, {address_office=ул. Коммунистическая 40, working_hours=Пн-Пт: 09:00-18:30, Сб: 09:30-14:30, Вс: 10:00-13:00}]\", \"sms_notification_status\": true, \"sms_notification_office\": \"Офис по адресу: пр-кт им. В.И. Ленина 1 б работает Пн-Пт: 09:00-18:30, Сб: 09:00-14:30, Вс: выходной.\"}",
+          "function_name": "find_bank_office_iag"
+        },
+        "agent_analytics": [
+          {
+            "data_version": "1.0.0",
+            "data": {
+              "skill": {
+                "sessionId": "EB_3mMMXRn6KuMKBLFdCAJK79K-npYxd1bT0k8qp5XEP29AcDXOKB-e11bCba2yz",
+                "requestId": "e7af6830-cf40-408d-bdf2-fb14f823a87e",
+                "statData": {
+                  "id": "CI11659972",
+                  "name": "ivr900humanagent",
+                  "name_rus": "Агент на Skillflow",
+                  "version": "D-01.002.01-141",
+                  "dateIn": "2026-05-21 10:33:35.274972",
+                  "dateOut": "2026-05-21 10:33:35.944300",
+                  "type": "ai-agent"
+                },
+                "dataType": "skill"
+              },
+              "services": {
+                "sessionId": "EB_3mMMXRn6KuMKBLFdCAJK79K-npYxd1bT0k8qp5XEP29AcDXOKB-e11bCba2yz",
+                "requestId": "e7af6830-cf40-408d-bdf2-fb14f823a87e",
+                "statData": [
+                  {
+                    "id": "Activity_0bpxopg",
+                    "code": "ServiceTask",
+                    "name": "findBankOffice",
+                    "blockType": "SkillflowUfsRequest",
+                    "dateOut": "2026-05-21 10:33:35.929228",
+                    "dateIn": "2026-05-21 10:33:35.283181",
+                    "url": "http://sflkc-ift-b3-eag001.sberbank.ru/basic-function/rest/api/find_bank_office/1.0",
+                    "method": "POST",
+                    "requestHeaders": {
+                      "host": "sflkc-ift-b3-eag001.sberbank.ru",
+                      "accept": "*/*",
+                      "accept-encoding": "gzip, deflate, zstd",
+                      "connection": "keep-alive",
+                      "user-agent": "python-httpx/0.28.1",
+                      "x-agent-id": "CI11659972",
+                      "request-source": "da-platform:ivr:ivr900humanagent:848c1377bb3c46e089472649622ebbeb:e0aef8f0-c850-43cc-97eb-c074732b98fa:1e0c90bc-45ec-4853-9f3d-4985b7f5abdb",
+                      "da-request-id": "e7af6830-cf40-408d-bdf2-fb14f823a87e",
+                      "da-session-id": "EB_3mMMXRn6KuMKBLFdCAJK79K-npYxd1bT0k8qp5XEP29AcDXOKB-e11bCba2yz",
+                      "da-channel": "IVR",
+                      "da-platform": "GSM",
+                      "da-ucp-id": "2178793330187907212",
+                      "x-trace-id": "25e911e6-e37c-450c-8696-7bbd265f512f",
+                      "ufs-session": "***",
+                      "x-request-id": "1a4b0fd1-306c-4935-8566-a7405db66c90",
+                      "rq-tm": "2026-05-21T10:33:35+00:00",
+                      "cookie": "***",
+                      "content-length": "104",
+                      "content-type": "application/json",
+                      "traceparent": "00-60c0a0f73230ae093cc6e5f02e9159be-94ee422b9c0a8d56-01"
+                    },
+                    "queryParams": {},
+                    "requestBody": "{\"data\":{\"address\":\"Сович\",\"city\":\"Волгоград\",\"metro\":\"\",\"specific_date\":\"\",\"subject\":\"\"}}",
+                    "timeout": "6.0",
+                    "responseDuration": "0.6460468769073486",
+                    "responseCode": "200",
+                    "responseHeaders": {
+                      "server": "envoy",
+                      "date": "Thu, 21 May 2026 10:33:35 GMT",
+                      "content-type": "application/json",
+                      "x-envoy-upstream-service-time": "627",
+                      "set-cookie": "***",
+                      "transfer-encoding": "chunked"
+                    },
+                    "responseBody": "{\"success\":true,\"body\":{\"city\":\"Волгоград\",\"segment_office\":\"КБ, КК, КЛМ, МБ, МКБ, МС, РГС, СБ, ФИ\",\"address_office\":\"пр-кт им. В.И. Ленина 1 б\",\"working_hours\":\"Пн-Пт: 09:00-18:30, Сб: 09:00-14:30, Вс: выходной\",\"today_hours\":\"09:00 - 18:30\",\"specific_day_hours\":\"\",\"is_open_now\":\"true\",\"time_until_closing\":296,\"next_offices\":\"[{address_office=ул. Новороссийская 14 б, working_hours=Пн-Чт: 09:00-18:00, Пт-Вс: выходной}, {address_office=ул. Коммунистическая 40, working_hours=Пн-Пт: 09:00-18:30, Сб: 09:30-14:30, Вс: 10:00-13:00}]\",\"sms_notification_status\":true,\"sms_notification_office\":\"Офис по адресу: пр-кт им. В.И. Ленина 1 б работает Пн-Пт: 09:00-18:30, Сб: 09:00-14:30, Вс: выходной.\"},\"messages\":[{\"title\":\"Успешный ответ\",\"type\":\"info\",\"uuid\":\"fa2493d4-de9d-4ca5-b4f6-0e4392efd67a\"}]}",
+                    "systemRole": "no-role"
+                  }
+                ],
+                "dataType": "services"
+              },
+              "bvs": {
+                "sessionId": "EB_3mMMXRn6KuMKBLFdCAJK79K-npYxd1bT0k8qp5XEP29AcDXOKB-e11bCba2yz",
+                "requestId": "e7af6830-cf40-408d-bdf2-fb14f823a87e",
+                "statData": [
+                  {
+                    "id": "Event_1xa905t",
+                    "code": "StartEvent",
+                    "blockType": "StartEvent",
+                    "dateIn": "2026-05-21 10:33:35.280490",
+                    "dateOut": "2026-05-21 10:33:35.280626",
+                    "bvs": [
+                      {
+                        "businessSectionId": "af71667b-03ce-4cc4-a536-4c19ef62fc5a",
+                        "businessSectionName": "GigaVoice ЦА.Функция поиска ВСП",
+                        "businessValueId": "7afadae7-deb5-4a79-b651-b9501332bb54",
+                        "businessValueName": "GigaVoice.Функция поиска ВСП.Вызов функции",
+                        "businessValueVariables": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": "Activity_0bpxopg",
+                    "code": "ServiceTask",
+                    "name": "findBankOffice",
+                    "blockType": "SkillflowUfsRequest",
+                    "dateIn": "2026-05-21 10:33:35.282368",
+                    "dateOut": "2026-05-21 10:33:35.930212",
+                    "bvs": []
+                  },
+                  {
+                    "id": "Activity_1cbi50o",
+                    "code": "ScriptTask",
+                    "name": "Результат функции find_bank_office",
+                    "blockType": "PythonScriptTask",
+                    "dateIn": "2026-05-21 10:33:35.933326",
+                    "dateOut": "2026-05-21 10:33:35.937575",
+                    "bvs": [
+                      {
+                        "businessSectionId": "af71667b-03ce-4cc4-a536-4c19ef62fc5a",
+                        "businessSectionName": "GigaVoice ЦА.Функция поиска ВСП",
+                        "businessValueId": "a7e4ca43-c327-4ac5-a127-3f488b6dd35e",
+                        "businessValueName": "GigaVoice.Функция поиска ВСП.Получен результат интеграции",
+                        "businessValueVariables": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": "Activity_01u5ga4",
+                    "code": "SendTask",
+                    "blockType": "SkillflowGigaVoiceFunctionResultAnswer",
+                    "dateIn": "2026-05-21 10:33:35.939950",
+                    "dateOut": "2026-05-21 10:33:35.940748",
+                    "bvs": []
+                  },
+                  {
+                    "id": "Event_0wonlbn",
+                    "code": "EndEvent",
+                    "blockType": "EndEvent",
+                    "dateIn": "2026-05-21 10:33:35.942806",
+                    "dateOut": "2026-05-21 10:33:35.942971",
+                    "bvs": []
+                  }
+                ],
+                "dataType": "bvs"
+              }
+            }
+          }
+        ],
+        "context": {
+          "disabled_functions": []
+        }
+      }
     }
     """.trimIndent()
 

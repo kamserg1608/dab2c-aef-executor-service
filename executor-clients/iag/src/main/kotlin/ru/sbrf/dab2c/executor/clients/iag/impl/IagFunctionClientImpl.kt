@@ -66,7 +66,7 @@ class IagFunctionClientImpl(
                 objectMapper.writeValueAsString(resp) to HTTP_OK
             }
         ) {
-            httpClient.post(buildFullUrl(baseUrl, FUNCTION_CALL_ENDPOINT)) {
+            httpClient.post(buildFullUrl(baseUrl, functionCallEndpoint)) {
                 contentType(ContentType.Application.Json)
                 with(context) { applyHeaders() }
                 with(context) { applyCookies() }

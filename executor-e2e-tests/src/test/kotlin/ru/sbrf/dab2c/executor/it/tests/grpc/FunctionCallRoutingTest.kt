@@ -17,8 +17,8 @@ import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubs
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubsWithFunctionMatch
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubsWithFunctionMatchIag
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubGigaAgentFunctions
-import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubIagAgentFunctions
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 
 /**
@@ -191,16 +191,12 @@ class FunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
     @Test
     fun `should execute backend function via iag when configuratorEnabled is true`() =
         runItTest {
-            setupStubsWithFunctionMatch(
+            setupStubsWithFunctionMatchIag(
                 efsAdapterMock,
                 configuratorMock,
                 gigaVoiceAgentMock,
+                iagMock,
                 configuratorEnabled = true
-            )
-
-            iagMock.stubIagAgentFunctions(
-                "get_account_balance",
-                """{"balance": 1000}"""
             )
 
             withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
@@ -216,7 +212,7 @@ class FunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
 
                 mock.sendResponse(
                     functionCallingResponse(
-                        "get_account_balance_iag",
+                        "find_bank_office_iag",
                         """{"account_id": "12345"}"""
                     )
                 )
@@ -224,12 +220,13 @@ class FunctionCallRoutingTest : BaseGigaVoiceIntegrationTest() {
                 mock.sendResponse(platformFunctionProcessing())
                 session.awaitResponse { it.hasPlatformFunctionProcessing() }
 
-                wireMock.awaitPostCall("/functions")
+                wireMock.awaitPostCall("/bh")
 
                 assertThat(session.receivedResponses.none { it.hasFunctionCall() }).isTrue()
             }
 
-            gigaVoiceAgentMock.verify(1, postRequestedFor(urlEqualTo("/functions")))
+            gigaVoiceAgentMock.verify(0, postRequestedFor(urlEqualTo("/functions")))
+            iagMock.verify(1, postRequestedFor(urlEqualTo("/bh")))
         }
 
     @Test
