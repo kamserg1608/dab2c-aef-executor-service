@@ -94,7 +94,7 @@ logging:
 aef:
   tracing:
     mode: ${AEF_TRACING_MODE:KAFKA}
-    voice-enabled: ${AEF_TRACING_ENABLED:true}
+    voice-enabled: ${AEF_TRACING_ENABLED:false}
     grpc-enabled: false
     websocket-enabled: false
     http-filter-patterns: []
