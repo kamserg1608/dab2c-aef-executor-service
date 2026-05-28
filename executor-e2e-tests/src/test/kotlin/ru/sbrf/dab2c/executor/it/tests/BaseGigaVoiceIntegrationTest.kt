@@ -114,6 +114,7 @@ abstract class BaseGigaVoiceIntegrationTest {
         mockGigaVoiceService.reset()
         gigaVoiceAgentMock.resetAll()
         configuratorMock.resetAll()
+        iagMock.resetAll()
         efsAdapterMock.resetAll()
         efsAdapterMock.stubSdsSessionReadData()
         efsAdapterMock.stubConfiguratorSession()

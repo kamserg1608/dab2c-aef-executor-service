@@ -5,6 +5,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.ClosedSendChannelException
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCallResult
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionResult
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceRequest
@@ -29,24 +30,49 @@ class FunctionCallServiceImpl(
 
     private val logger = KotlinLogging.logger {}
 
-    @Suppress("LongMethod")
     override suspend fun callFunction(functionCalling: FunctionCalling): FunctionCalling? {
-        val state = session.state.value
-        check(state is ProcessingState.Serving) {
-            "Expected Serving state for function calls, but was ${state::class.simpleName}"
-        }
-
+        val state = getServingState()
         val functionName = functionCalling.functionCall.name
         val functionOptions = state.functionRegistry.functions[functionName]
 
         if (!currentFeatureToggles().configuratorFunctionMatch) {
-            return callFunctionByPerformers(state, functionCalling, functionOptions?.isBackendFunction)
+            return callFunctionByPerformers(
+                state,
+                functionCalling,
+                functionOptions?.isBackendFunction
+            )
         }
 
         val functionConfig = getFunctionConfigOrNull(
             agentName = state.agentConfiguration.name,
             functionName = functionName
         )
+
+        return callFunctionByConfigurator(
+            state = state,
+            functionCalling = functionCalling,
+            functionConfig = functionConfig,
+            isBackendFunction = functionOptions?.isBackendFunction
+        )
+    }
+
+    private fun getServingState(): ProcessingState.Serving {
+        val state = session.state.value
+
+        check(state is ProcessingState.Serving) {
+            "Expected Serving state for function calls, but was ${state::class.simpleName}"
+        }
+
+        return state
+    }
+
+    private suspend fun callFunctionByConfigurator(
+        state: ProcessingState.Serving,
+        functionCalling: FunctionCalling,
+        functionConfig: FunctionConfig?,
+        isBackendFunction: Boolean?
+    ): FunctionCalling? {
+        val functionName = functionCalling.functionCall.name
 
         return when (functionConfig?.type?.uppercase()) {
             FUNCTION_TYPE_DIVR -> {
@@ -55,19 +81,67 @@ class FunctionCallServiceImpl(
             }
 
             FUNCTION_TYPE_BACKEND -> {
-                logger.debug { "Executing backend function '$functionName' by configurator (async)" }
-                executeBackendFunctionAsync(state, functionCalling)
+                executeBackendFunction(state, functionCalling, functionName)
                 null
             }
 
             FUNCTION_TYPE_IAG -> {
-                logger.debug { "Executing IAG function '$functionName' by configurator (async)" }
-                executeIagFunctionAsync(state, functionCalling, functionConfig)
+                executeIagFunction(state, functionCalling, functionName, functionConfig)
                 null
             }
 
-            else -> callFunctionByPerformers(state, functionCalling, functionOptions?.isBackendFunction)
+            else -> callFunctionByPerformers(
+                state,
+                functionCalling,
+                isBackendFunction
+            )
         }
+    }
+
+    private suspend fun executeBackendFunction(
+        state: ProcessingState.Serving,
+        functionCalling: FunctionCalling,
+        functionName: String
+    ) {
+        logger.debug { "Executing backend function '$functionName' by configurator (async)" }
+
+        executeFunctionAsync(
+            functionCalling = functionCalling,
+            functionName = functionName,
+            executorType = EXECUTOR_BACKEND,
+            executor = {
+                gigaVoiceAgentClient.executeFunctionCall(
+                    conversationId = state.conversationId,
+                    agentConfiguration = state.agentConfiguration,
+                    functionCalling = functionCalling,
+                    contextData = state.contextData
+                )
+            }
+        )
+    }
+
+    private suspend fun executeIagFunction(
+        state: ProcessingState.Serving,
+        functionCalling: FunctionCalling,
+        functionName: String,
+        functionConfig: FunctionConfig
+    ) {
+        logger.debug { "Executing IAG function '$functionName' by configurator (async)" }
+
+        executeFunctionAsync(
+            functionCalling = functionCalling,
+            functionName = functionName,
+            executorType = EXECUTOR_IAG,
+            executor = {
+                iagFunctionClient.executeFunctionCall(
+                    conversationId = state.conversationId,
+                    agentConfiguration = state.agentConfiguration,
+                    functionCalling = functionCalling,
+                    contextData = state.contextData,
+                    endpoint = functionConfig.path
+                )
+            }
+        )
     }
 
     private suspend fun callFunctionByPerformers(
@@ -83,7 +157,21 @@ class FunctionCallServiceImpl(
         }
 
         logger.debug { "Executing backend function '$functionName' via agent (async)" }
-        executeBackendFunctionAsync(state, functionCalling)
+
+        executeFunctionAsync(
+            functionCalling = functionCalling,
+            functionName = functionName,
+            executorType = EXECUTOR_BACKEND,
+            executor = {
+                gigaVoiceAgentClient.executeFunctionCall(
+                    conversationId = state.conversationId,
+                    agentConfiguration = state.agentConfiguration,
+                    functionCalling = functionCalling,
+                    contextData = state.contextData
+                )
+            }
+        )
+
         return null
     }
 
@@ -93,69 +181,30 @@ class FunctionCallServiceImpl(
     ): FunctionConfig? =
         try {
             configuratorClient.getFunction(agentName, functionName)[functionName]
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             logger.error(e) { "Failed to get function config for '$functionName' from configurator" }
             null
         }
 
-    private suspend fun executeBackendFunctionAsync(
-        state: ProcessingState.Serving,
-        functionCalling: FunctionCalling
-    ) {
-        executeFunctionAsync(
-            state = state,
-            functionCalling = functionCalling,
-            executorName = EXECUTOR_BACKEND
-        )
-    }
-
-    private suspend fun executeIagFunctionAsync(
-        state: ProcessingState.Serving,
-        functionCalling: FunctionCalling,
-        functionConfig: FunctionConfig
-    ) {
-        executeFunctionAsync(
-            state = state,
-            functionCalling = functionCalling,
-            executorName = EXECUTOR_IAG,
-            endpoint = functionConfig.path
-        )
-    }
-
-    @Suppress("LongMethod")
     private suspend fun executeFunctionAsync(
-        state: ProcessingState.Serving,
         functionCalling: FunctionCalling,
-        executorName: String,
-        endpoint: String? = null
+        functionName: String,
+        executorType: String,
+        executor: suspend () -> FunctionCallResult
     ) {
         val headers = currentHeaders()
-        val functionName = functionCalling.functionCall.name
         val startTime = System.currentTimeMillis()
 
         session.launch {
             try {
-                val functionCallResult = when (executorName) {
-                    EXECUTOR_BACKEND -> gigaVoiceAgentClient.executeFunctionCall(
-                        conversationId = state.conversationId,
-                        agentConfiguration = state.agentConfiguration,
-                        functionCalling = functionCalling,
-                        contextData = state.contextData
-                    )
-
-                    EXECUTOR_IAG -> iagFunctionClient.executeFunctionCall(
-                        conversationId = state.conversationId,
-                        agentConfiguration = state.agentConfiguration,
-                        functionCalling = functionCalling,
-                        contextData = state.contextData,
-                        endpoint = endpoint
-                    )
-
-                    else -> error("Unsupported function executor: $executorName")
-                }
+                val functionCallResult = executor()
 
                 val elapsed = System.currentTimeMillis() - startTime
-                logger.info { "$executorName function '$functionName' completed in ${elapsed}ms" }
+                logger.info {
+                    "$executorType function '$functionName' completed in ${elapsed}ms"
+                }
 
                 analyticsPublisher.publishAnalytics(
                     functionCallResult.analytics,

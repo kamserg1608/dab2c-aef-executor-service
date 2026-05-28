@@ -95,19 +95,16 @@ class SettingsServiceImpl(
         val configuratorFunctionMatch =
             currentFeatureToggles().configuratorFunctionMatch
 
-        val functionCallSettings = if (configuratorFunctionMatch) {
-            directConfiguratorClient.fetchFunctionRegistry(
+        logger.debug { "Configurator: configuratorFunctionMatch=$configuratorFunctionMatch" }
+
+        val resolvedSettings = if (configuratorFunctionMatch) {
+            val functionCallSettings = directConfiguratorClient.fetchFunctionRegistry(
                 agentName = FUNCTION_CALL_AGENT_NAME,
                 modality = FUNCTION_CALL_MODALITY
             )
-        } else {
-            null
-        }
 
-        logger.debug { "Configurator: configuratorFunctionMatch=$configuratorFunctionMatch" }
-        logger.debug { "functionCall: functionCall=$functionCallSettings" }
+            logger.debug { "functionCall: functionCall=$functionCallSettings" }
 
-        val resolvedSettings = if (configuratorFunctionMatch && functionCallSettings != null) {
             functionCallSettingsProtoMapper.enrich(
                 protoSettings = settings,
                 restSettings = functionCallSettings.settings
