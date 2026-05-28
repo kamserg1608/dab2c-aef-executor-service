@@ -20,6 +20,9 @@ import ru.sbrf.dab2c.executor.library.context.HeadersElement
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.SessionInfoElement
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
+import ru.sbrf.dab2c.executor.library.tracing.TracingParentElement
+import ru.sbrf.dab2c.executor.library.tracing.aef.AefRequestContextElement
+import ru.sbrf.dab2c.executor.library.tracing.grpc.OtelGrpcBridge
 import ru.sbrf.dab2c.executor.logging.MaskingCollector
 import ru.sbrf.dab2c.executor.voice.logging.VoiceMdcInitializer
 import ru.sbrf.dab2c.executor.voice.model.VoiceSessionFeatureToggles
@@ -33,7 +36,7 @@ class SessionInitServiceImpl(
     private val sdsClient: SdsClient,
     private val configuratorClient: ConfiguratorClient,
     private val profileClient: ProfileClient,
-    private val parametersClient: ParametersClient
+    private val parametersClient: ParametersClient,
 ) : SessionInitService {
 
     private val logger = KotlinLogging.logger {}
@@ -74,7 +77,11 @@ class SessionInitServiceImpl(
     override fun <T> Flow<T>.withSessionContext(headers: Headers): Flow<T> {
         val upstream = this
         return flow {
-            val baseContext = HeadersElement(headers) + MDCContext()
+            val baseContext = HeadersElement(headers) +
+                MDCContext() +
+                OtelGrpcBridge.coroutineContextElement() +
+                AefRequestContextElement() +
+                TracingParentElement()
             val (result, mdc) = withContext(baseContext) { initialize() to MDC.getCopyOfContextMap() }
             val fullContext = baseContext +
                 SessionInfoElement(result.sessionInfo) +

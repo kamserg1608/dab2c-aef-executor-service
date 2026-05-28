@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":executor-services:voice-executor"))
     implementation(project(":executor-libraries:jackson"))
 
+    implementation(libs.aef.sdk.spring.boot.starter)
     implementation(libs.spring.boot.starter.actuator)
 
     // JSON logging for PROM profile

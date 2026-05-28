@@ -164,13 +164,7 @@ exceptions:
     active: true
     ignoreLabeled: false
   SwallowedException:
-    active: true
-    ignoredExceptionTypes:
-      - 'NumberFormatException'
-      - 'InterruptedException'
-      - 'ParseException'
-      - 'MalformedURLException'
-    allowedExceptionNameRegex: '_|(ignore|expected).*'
+    active: false
   ThrowingExceptionFromFinally:
     active: true
   ThrowingExceptionInMain:

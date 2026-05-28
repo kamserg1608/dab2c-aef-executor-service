@@ -80,7 +80,7 @@ class VoiceSessionObserverPrimitiveEmissionsTest {
 
         val slot = slot<VoiceSettings>()
         coVerify(exactly = 1) { observer.onSettingsReceived(capture(slot)) }
-        assertThat(slot.captured.voiceCallId).isEqualTo("call-42")
+        assertThat(slot.captured.settingsData["voiceCallId"]).isEqualTo("call-42")
     }
 
     @Test

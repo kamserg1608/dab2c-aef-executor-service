@@ -1,5 +1,6 @@
 package ru.sbrf.dab2c.executor.voice.service.impl
 
+import com.fasterxml.jackson.core.type.TypeReference
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onCompletion
@@ -15,6 +16,7 @@ import ru.sbrf.dab2c.executor.clients.gigavoice.proto.InputTranscription
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.OutputTranscription
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Settings
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Warning
+import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.library.time.TimeProvider
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.session.observer.ErrorEmitted
@@ -92,7 +94,9 @@ class VoiceSessionObserverDelegate(
     }
 
     private suspend fun handleSettingsRequest(settings: Settings) {
-        observer.onSettingsReceived(VoiceSettings(voiceCallId = settings.voiceCallId))
+        val json = ObjectMappers.MAPPER.writeValueAsString(settings)
+        val settingsMap: Map<String, Any?> = ObjectMappers.MAPPER.readValue(json, SETTINGS_MAP_TYPE)
+        observer.onSettingsReceived(VoiceSettings(settingsData = settingsMap))
     }
 
     private suspend fun handleAudioRequest() {
@@ -240,5 +244,6 @@ class VoiceSessionObserverDelegate(
 
     private companion object {
         private val logger = KotlinLogging.logger {}
+        private val SETTINGS_MAP_TYPE = object : TypeReference<Map<String, Any?>>() {}
     }
 }

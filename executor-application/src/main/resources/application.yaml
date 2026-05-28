@@ -1,8 +1,25 @@
+
+
 spring:
   webflux:
     base-path: /
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:PROM}
+  autoconfigure:
+    # AEF SDK starter declares its own OpenTelemetrySdk / SdkTracerProvider beans
+    # (see AefAutoConfiguration). Spring Boot Actuator's OpenTelemetry auto-configs
+    # declare competing ones, which makes @Autowired OpenTelemetrySdk ambiguous and
+    # creates further wiring conflicts. We use AEF's stack, so disable Spring's.
+#    exclude:
+#      - org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryAutoConfiguration
+#      - org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryTracingAutoConfiguration
+#      - org.springframework.boot.actuate.autoconfigure.logging.OpenTelemetryLoggingAutoConfiguration
+
+aef:
+  tracing:
+    session-id-headers:
+      - x-session-id
+      - x-session
 
 management:
   endpoint:
@@ -19,3 +36,4 @@ management:
     metrics:
       export:
         enabled: true
+debug: true
