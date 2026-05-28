@@ -20,4 +20,11 @@ interface IagFunctionClient {
         contextData: Context,
         endpoint: String? = null
     ): FunctionCallResult
+
+    /**
+     * IAG endpoint constants.
+     */
+    companion object {
+        const val FUNCTION_CALL_ENDPOINT = "/function/call"
+    }
 }

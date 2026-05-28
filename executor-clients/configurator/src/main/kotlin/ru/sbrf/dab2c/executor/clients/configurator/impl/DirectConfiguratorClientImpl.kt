@@ -12,8 +12,8 @@ import io.ktor.http.contentType
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.common.util.buildFullUrl
-import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorFacade
-import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorFacade.Companion.FUNCTION_LIST_ENDPOINT
+import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorClient
+import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorClient.Companion.FUNCTION_LIST_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.configurator.configuration.DirectConfiguratorClientConfiguration.Companion.CONFIGURATOR_HTTP_CLIENT_BEAN_NAME
 import ru.sbrf.dab2c.executor.clients.configurator.configuration.properties.DirectConfiguratorClientConfigurationProperties
 import ru.sbrf.dab2c.executor.clients.configurator.mapper.FunctionListResponseMapper
@@ -31,12 +31,12 @@ private const val CLASS_NAME = "ConfiguratorFacade"
 /**
  * Merged implementation of all Configurator API calls.
  */
-@Service("configuratorFacadeImpl")
-class DirectConfiguratorFacadeImpl(
+@Service("directConfiguratorClientImpl")
+class DirectConfiguratorClientImpl(
     @Qualifier(CONFIGURATOR_HTTP_CLIENT_BEAN_NAME)
     private val httpClient: HttpClient,
     properties: DirectConfiguratorClientConfigurationProperties
-) : DirectConfiguratorFacade {
+) : DirectConfiguratorClient {
 
     private val baseUrl = properties.baseUrl
     private val objectMapper = ObjectMappers.MAPPER

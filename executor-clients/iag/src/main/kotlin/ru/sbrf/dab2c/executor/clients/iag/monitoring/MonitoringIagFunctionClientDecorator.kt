@@ -5,7 +5,7 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCallResult
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
 import ru.sbrf.dab2c.executor.clients.iag.api.IagFunctionClient
-import ru.sbrf.dab2c.executor.clients.iag.api.IagFunctionFacade.Companion.FUNCTION_CALL_ENDPOINT
+import ru.sbrf.dab2c.executor.clients.iag.api.IagFunctionClient.Companion.FUNCTION_CALL_ENDPOINT
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.HttpCallDescriptor
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricFactory
