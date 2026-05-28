@@ -26,9 +26,11 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.impl.GigaVoiceAgentClientImpl
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceFunctionCallRequestBuilder
 import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceSettingsRequestBuilder
 import ru.sbrf.dab2c.executor.clients.giga.agent.monitoring.MonitoringGigaVoiceAgentClientDecorator
+import ru.sbrf.dab2c.executor.clients.giga.agent.tracing.TracingGigaVoiceAgentClientDecorator
 import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricFactory
+import ru.sbrf.dab2c.executor.library.tracing.facade.AefTracingFacade
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import kotlin.math.pow
@@ -59,7 +61,8 @@ class GigaVoiceAgentClientConfiguration {
         settingsRequestBuilder: GigaVoiceSettingsRequestBuilder,
         functionCallRequestBuilder: GigaVoiceFunctionCallRequestBuilder,
         metricFactory: MetricFactory,
-        agentInteractionAuditor: InteractionAuditor
+        agentInteractionAuditor: InteractionAuditor,
+        tracingFacade: AefTracingFacade
     ): GigaVoiceAgentClient {
 
         val impl = GigaVoiceAgentClientImpl(
@@ -70,9 +73,11 @@ class GigaVoiceAgentClientConfiguration {
             impl, metricFactory
         )
 
-        return AuditedGigaVoiceAgentClientDecorator(
+        val audited = AuditedGigaVoiceAgentClientDecorator(
             monitored, agentInteractionAuditor, ObjectMappers.MAPPER, properties.baseUrl
         )
+
+        return TracingGigaVoiceAgentClientDecorator(audited, tracingFacade, ObjectMappers.MAPPER)
     }
 
     internal companion object {

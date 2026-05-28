@@ -7,6 +7,8 @@ dependencies {
     api(project(":executor-libraries:context"))
     api(project(":executor-libraries:monitoring"))
     api(project(":executor-libraries:audit"))
+    api(project(":executor-libraries:tracing"))
+    implementation(project(":executor-libraries:common"))
     implementation(project(":executor-clients:common-converters"))
     implementation(project(":executor-clients:giga-voice"))
     implementation(project(":executor-libraries:jackson"))
@@ -15,6 +17,8 @@ dependencies {
     implementation(libs.kotlin.logging.jvm)
 
     testImplementation(project(":executor-libraries:test-support"))
+    testImplementation(libs.opentelemetry.sdk)
+    testImplementation(libs.opentelemetry.sdk.testing)
 }
 
 val generateGigaVoiceAgent = tasks

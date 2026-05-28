@@ -15,6 +15,12 @@ spring:
 #      - org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryTracingAutoConfiguration
 #      - org.springframework.boot.actuate.autoconfigure.logging.OpenTelemetryLoggingAutoConfiguration
 
+aef:
+  tracing:
+    session-id-headers:
+      - x-session-id
+      - x-session
+
 management:
   endpoint:
     health:

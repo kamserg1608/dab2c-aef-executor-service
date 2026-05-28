@@ -95,9 +95,14 @@ aef:
   tracing:
     mode: ${AEF_TRACING_MODE:KAFKA}
     voice-enabled: ${AEF_TRACING_ENABLED:true}
-    grpc-enabled: true
+    grpc-enabled: false
     websocket-enabled: false
     http-filter-patterns: []
     topic: ${AEF_TRACING_TOPIC:no_topic}
     kafka:
       bootstrap-servers: ${AEF_TRACING_BROKERS:no_brokers}
+  agent:
+    agentId: ${AGENT_ID:prototype-agent}
+    distributive: ${DISTRIBUTIVE:prototype-distributive}
+    clusterId: ${CLUSTER_ID:prototype-cluster-id}
+    namespace: ${POD_NAMESPACE:prototype-namespace}
