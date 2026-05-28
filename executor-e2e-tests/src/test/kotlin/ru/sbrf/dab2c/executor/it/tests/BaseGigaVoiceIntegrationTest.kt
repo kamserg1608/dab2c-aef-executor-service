@@ -55,7 +55,7 @@ import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubSdsSessionRe
 )
 @EmbeddedKafka(
     partitions = 1,
-    topics = ["dab2c-core-dialogs", "dab2c-agents"]
+    topics = ["dab2c-core-dialogs", "dab2c-agents", "aef-tracing-test"]
 )
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class BaseGigaVoiceIntegrationTest {
@@ -140,6 +140,7 @@ abstract class BaseGigaVoiceIntegrationTest {
     @Suppress("LongParameterList")
     protected fun testStub(
         session: String = "test-session",
+        sessionId: String? = "test-session-id",
         token: String = "test-token",
         eduId: String = "test-edu-id",
         channel: String = "test-channel",
@@ -147,14 +148,15 @@ abstract class BaseGigaVoiceIntegrationTest {
         traceId: String = "test-trace-id"
     ): GigaVoiceServiceCoroutineStub = clientStub.withInterceptors(
         MetadataInterceptor(
-            mapOf(
-                "x-session" to session,
-                "x-token" to token,
-                "x-eduid" to eduId,
-                "x-channel" to channel,
-                "x-platform" to platform,
-                "x-trace-id" to traceId
-            )
+            buildMap {
+                put("x-session", session)
+                if (sessionId != null) put("x-session-id", sessionId)
+                put("x-token", token)
+                put("x-eduid", eduId)
+                put("x-channel", channel)
+                put("x-platform", platform)
+                put("x-trace-id", traceId)
+            }
         )
     )
 }

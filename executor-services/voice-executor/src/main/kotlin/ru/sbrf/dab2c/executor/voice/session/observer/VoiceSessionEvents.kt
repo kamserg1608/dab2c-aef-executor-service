@@ -52,5 +52,5 @@ data class TurnCompleted(
 
 /** Voice settings observed at session bootstrap. */
 data class VoiceSettings(
-    val voiceCallId: String,
+    val settingsData: Map<String, Any?>,
 )

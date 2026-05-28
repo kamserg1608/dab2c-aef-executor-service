@@ -10,9 +10,11 @@ import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.ConnectionMetrics
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricFactory
 import ru.sbrf.dab2c.executor.library.time.TimeProvider
+import ru.sbrf.dab2c.executor.library.tracing.facade.AefTracingFacade
 import ru.sbrf.dab2c.executor.voice.audit.DialogTurnAuditor
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
+import ru.sbrf.dab2c.executor.voice.mapper.FunctionCallSettingsProtoMapper
 import ru.sbrf.dab2c.executor.voice.mapper.FunctionCallSettingsProtoMapper
 import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
 import ru.sbrf.dab2c.executor.voice.model.VoiceSession
@@ -29,6 +31,7 @@ import ru.sbrf.dab2c.executor.voice.service.impl.SettingsServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.VoiceSessionObserverDelegate
 import ru.sbrf.dab2c.executor.voice.session.observer.CompositeVoiceSessionObserver
 import ru.sbrf.dab2c.executor.voice.session.observer.VoiceSessionObserver
+import ru.sbrf.dab2c.executor.voice.tracing.DialogTracingPublisher
 
 /** Default implementation of ChunkProcessingServiceFactory. */
 @Suppress("LongParameterList")
@@ -43,6 +46,7 @@ class ChunkProcessingServiceFactoryImpl(
     private val iagFunctionClient: IagFunctionClient,
     private val externalInteractionAuditor: InteractionAuditor,
     private val timeProvider: TimeProvider,
+    private val tracingFacade: AefTracingFacade,
     private val functionCallSettingsProtoMapper: FunctionCallSettingsProtoMapper
 ) : ChunkProcessingServiceFactory {
 
@@ -71,6 +75,7 @@ class ChunkProcessingServiceFactoryImpl(
     private fun buildSessionObservers(session: VoiceSession): List<VoiceSessionObserver> = listOf(
         KapDialogTurnPublisher(kapProducerClient, session),
         DialogTurnAuditor(externalInteractionAuditor),
+        DialogTracingPublisher(tracingFacade),
     )
 
     private fun createCoreService(session: VoiceSession): ChunkProcessingService {

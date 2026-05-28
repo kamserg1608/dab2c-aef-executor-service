@@ -18,6 +18,8 @@ include("executor-libraries:monitoring")
 include("executor-libraries:audit")
 include("executor-libraries:time")
 include("executor-libraries:test-support")
+include("executor-libraries:tracing")
+include("executor-libraries:common")
 
 pluginManagement {
     repositories {

@@ -15,10 +15,13 @@ dependencies {
     api(project(":executor-clients:iag"))
     api(project(":executor-libraries:logging"))
     api(project(":executor-libraries:time"))
+    api(project(":executor-libraries:tracing"))
     implementation(project(":executor-libraries:jackson"))
     implementation(libs.grpc.server.spring.boot.starter)
     implementation(libs.grpc.client.spring.boot.starter)
     implementation(libs.grpc.services)
     implementation(libs.kotlin.logging.jvm)
     testImplementation(project(":executor-libraries:test-support"))
+    testImplementation(libs.opentelemetry.sdk)
+    testImplementation(libs.opentelemetry.sdk.testing)
 }

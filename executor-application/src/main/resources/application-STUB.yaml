@@ -121,6 +121,13 @@ logging:
     net.devh.boot.grpc: INFO
     io.ktor: DEBUG
 
+aef:
+  tracing:
+    mode: LOG
+    voice-enabled: true
+    grpc-enabled: true
+    websocket-enabled: false
+
 management:
   endpoints:
     web:

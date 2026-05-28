@@ -6,4 +6,6 @@ description = "Shared test helpers — assertions, fixtures, and other testing u
 
 dependencies {
     api(project(":executor-libraries:jackson"))
+    api(libs.opentelemetry.proto)
+    api(libs.spring.boot.starter.test)
 }
