@@ -14,7 +14,6 @@ import ru.sbrf.dab2c.executor.library.tracing.facade.AefTracingFacade
 import ru.sbrf.dab2c.executor.voice.audit.DialogTurnAuditor
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
 import ru.sbrf.dab2c.executor.voice.factory.api.ChunkProcessingServiceFactory
-import ru.sbrf.dab2c.executor.voice.mapper.FunctionCallSettingsProtoMapper
 import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
 import ru.sbrf.dab2c.executor.voice.model.VoiceSession
 import ru.sbrf.dab2c.executor.voice.monitoring.MonitoringChunksProcessingDecorator
@@ -45,8 +44,7 @@ class ChunkProcessingServiceFactoryImpl(
     private val iagFunctionClient: IagFunctionClient,
     private val externalInteractionAuditor: InteractionAuditor,
     private val timeProvider: TimeProvider,
-    private val tracingFacade: AefTracingFacade,
-    private val functionCallSettingsProtoMapper: FunctionCallSettingsProtoMapper
+    private val tracingFacade: AefTracingFacade
 ) : ChunkProcessingServiceFactory {
 
     private val connectionMetrics = ConnectionMetrics(
@@ -88,8 +86,7 @@ class ChunkProcessingServiceFactoryImpl(
                 directConfiguratorClient,
                 configuratorClient,
                 voiceExecutorConfigurationProperties,
-                analyticsPublisher,
-                functionCallSettingsProtoMapper
+                analyticsPublisher
             ),
             functionCallService = FunctionCallServiceImpl(
                 session,

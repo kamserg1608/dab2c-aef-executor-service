@@ -11,6 +11,7 @@ import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionResult
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceRequest
 import ru.sbrf.dab2c.executor.clients.iag.api.IagFunctionClient
 import ru.sbrf.dab2c.executor.domain.configuration.FunctionConfig
+import ru.sbrf.dab2c.executor.library.common.runCatchingCancellable
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
@@ -179,14 +180,13 @@ class FunctionCallServiceImpl(
         agentName: String,
         functionName: String
     ): FunctionConfig? =
-        try {
+        runCatchingCancellable {
             configuratorClient.getFunction(agentName, functionName)[functionName]
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            logger.error(e) { "Failed to get function config for '$functionName' from configurator" }
-            null
-        }
+        }.onFailure { e ->
+            logger.error(e) {
+                "Failed to get function config for '$functionName' from configurator"
+            }
+        }.getOrNull()
 
     private suspend fun executeFunctionAsync(
         functionCalling: FunctionCalling,

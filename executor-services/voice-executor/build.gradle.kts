@@ -17,6 +17,7 @@ dependencies {
     api(project(":executor-libraries:time"))
     api(project(":executor-libraries:tracing"))
     implementation(project(":executor-libraries:jackson"))
+    implementation(project(":executor-libraries:common"))
     implementation(libs.grpc.server.spring.boot.starter)
     implementation(libs.grpc.client.spring.boot.starter)
     implementation(libs.grpc.services)

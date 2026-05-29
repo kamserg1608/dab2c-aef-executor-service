@@ -1,6 +1,5 @@
 package ru.sbrf.dab2c.executor.voice.mapper
 
-import org.springframework.stereotype.Component
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.AudioSettings
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.DisableInterruption
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionRanker
@@ -17,8 +16,7 @@ import ru.sbrf.dab2c.executor.domain.configuration.Settings as RestSettings
 /**
  * Maps Configurator REST settings into GigaVoice protobuf Settings.
  */
-@Component
-class FunctionCallSettingsProtoMapper {
+object FunctionCallSettingsProtoMapper {
     /**
      * Enriches existing protobuf settings with function call settings from Configurator REST response.
      */

@@ -36,8 +36,7 @@ class SettingsServiceImpl(
     private val directConfiguratorClient: DirectConfiguratorClient,
     private val configuratorClient: ConfiguratorClient,
     private val configProperties: VoiceExecutorConfigurationProperties,
-    private val analyticsPublisher: AnalyticsPublisher,
-    private val functionCallSettingsProtoMapper: FunctionCallSettingsProtoMapper
+    private val analyticsPublisher: AnalyticsPublisher
 ) : SettingsService {
 
     private val logger = KotlinLogging.logger {}
@@ -105,7 +104,7 @@ class SettingsServiceImpl(
 
             logger.debug { "functionCall: functionCall=$functionCallSettings" }
 
-            functionCallSettingsProtoMapper.enrich(
+            FunctionCallSettingsProtoMapper.enrich(
                 protoSettings = settings,
                 restSettings = functionCallSettings.settings
             )
