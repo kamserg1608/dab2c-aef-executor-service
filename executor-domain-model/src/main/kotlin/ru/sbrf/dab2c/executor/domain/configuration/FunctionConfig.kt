@@ -6,5 +6,5 @@ package ru.sbrf.dab2c.executor.domain.configuration
 data class FunctionConfig(
     val type: String,
     val path: String?,
-    val modality: List<String>? = null
+    val modality: List<String> = emptyList()
 )

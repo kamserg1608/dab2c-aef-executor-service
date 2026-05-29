@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.common.model.ClientMetric
 import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorClient.Companion.FUNCTION_LIST_ENDPOINT
-import ru.sbrf.dab2c.executor.domain.configuration.FunctionListResponse
+import ru.sbrf.dab2c.executor.domain.configuration.FunctionList
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.HttpCallDescriptor
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricFactory
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.monitorHttpCall
@@ -24,7 +24,7 @@ class MonitoringDirectConfiguratorClientDecorator(
     override suspend fun fetchFunctionRegistry(
         agentName: String,
         modality: String
-    ): FunctionListResponse =
+    ): FunctionList =
         monitorCall(FUNCTION_LIST_ENDPOINT) {
             delegate.fetchFunctionRegistry(agentName, modality)
         }

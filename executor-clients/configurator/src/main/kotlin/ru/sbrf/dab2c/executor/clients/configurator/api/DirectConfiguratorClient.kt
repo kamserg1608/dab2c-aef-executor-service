@@ -1,6 +1,6 @@
 package ru.sbrf.dab2c.executor.clients.configurator.api
 
-import ru.sbrf.dab2c.executor.domain.configuration.FunctionListResponse
+import ru.sbrf.dab2c.executor.domain.configuration.FunctionList
 
 /**
  * Client interface for Configurator API.
@@ -13,7 +13,7 @@ interface DirectConfiguratorClient {
     suspend fun fetchFunctionRegistry(
         agentName: String,
         modality: String
-    ): FunctionListResponse
+    ): FunctionList
 
     /**
      * Configurator endpoint constants.

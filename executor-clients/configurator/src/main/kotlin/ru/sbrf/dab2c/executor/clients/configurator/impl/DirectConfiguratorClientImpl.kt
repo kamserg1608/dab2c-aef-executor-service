@@ -18,7 +18,7 @@ import ru.sbrf.dab2c.executor.clients.configurator.configuration.DirectConfigura
 import ru.sbrf.dab2c.executor.clients.configurator.configuration.properties.DirectConfiguratorClientConfigurationProperties
 import ru.sbrf.dab2c.executor.clients.configurator.mapper.FunctionListResponseMapper
 import ru.sbrf.dab2c.executor.clients.configurator.model.BaseResponseFunctionListResponse
-import ru.sbrf.dab2c.executor.domain.configuration.FunctionListResponse
+import ru.sbrf.dab2c.executor.domain.configuration.FunctionList
 import ru.sbrf.dab2c.executor.library.context.currentUfsCookie
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
@@ -45,7 +45,7 @@ class DirectConfiguratorClientImpl(
     override suspend fun fetchFunctionRegistry(
         agentName: String,
         modality: String
-    ): FunctionListResponse {
+    ): FunctionList {
         val request = mapOf(
             "agentName" to agentName,
             "modality" to modality

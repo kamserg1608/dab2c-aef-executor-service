@@ -20,7 +20,7 @@ import ru.sbrf.dab2c.executor.domain.configuration.AudioOutputSettings as Domain
 import ru.sbrf.dab2c.executor.domain.configuration.AudioSettings as DomainAudioSettings
 import ru.sbrf.dab2c.executor.domain.configuration.DisableInterruptionSettings as DomainDisableInterruptionSettings
 import ru.sbrf.dab2c.executor.domain.configuration.Function as DomainFunction
-import ru.sbrf.dab2c.executor.domain.configuration.FunctionListResponse as DomainFunctionListResponse
+import ru.sbrf.dab2c.executor.domain.configuration.FunctionList as DomainFunctionListResponse
 import ru.sbrf.dab2c.executor.domain.configuration.FunctionRanker as DomainFunctionRanker
 import ru.sbrf.dab2c.executor.domain.configuration.FunctionSoundRule as DomainFunctionSoundRule
 import ru.sbrf.dab2c.executor.domain.configuration.GigachatSettings as DomainGigachatSettings

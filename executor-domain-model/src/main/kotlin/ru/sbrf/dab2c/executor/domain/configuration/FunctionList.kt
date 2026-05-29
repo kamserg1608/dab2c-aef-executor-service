@@ -3,7 +3,7 @@ package ru.sbrf.dab2c.executor.domain.configuration
 /**
  * Response with agent function settings.
  */
-data class FunctionListResponse(
+data class FunctionList(
     val settings: Settings
 )
 
