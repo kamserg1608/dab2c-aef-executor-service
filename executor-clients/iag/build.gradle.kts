@@ -1,5 +1,3 @@
-import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
-
 plugins {
     id("ru.sbrf.ufs.dab2c.core.openapi-conventions")
 }
@@ -16,11 +14,3 @@ dependencies {
     implementation(libs.bundles.ktor.client)
     implementation(libs.kotlin.logging.jvm)
 }
-
-tasks.register<GenerateTask>("generateIagOpenApi") {
-    configureOpenApi(
-        specFile = "$projectDir/src/main/resources/openapi/iag.yaml",
-        basePackage = "ru.sbrf.dab2c.executor.clients.iag"
-    )
-}
-

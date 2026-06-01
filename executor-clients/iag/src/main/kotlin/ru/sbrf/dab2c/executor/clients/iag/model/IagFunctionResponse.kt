@@ -10,8 +10,5 @@ import com.fasterxml.jackson.databind.JsonNode
 data class IagFunctionResponse(
     val success: Boolean? = null,
     val body: JsonNode? = null,
-    val context: JsonNode? = null,
-    val messages: JsonNode? = null,
-    val error: JsonNode? = null,
-    val alerts: JsonNode? = null
+    val error: JsonNode? = null
 )
