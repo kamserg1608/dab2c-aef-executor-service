@@ -44,7 +44,7 @@ class FunctionCallServiceImpl(
             )
         }
 
-        val functionConfig = getFunctionConfigOrNull(
+        val functionConfig = getFunctionConfig(
             agentName = state.agentConfiguration.name,
             functionName = functionName
         )
@@ -176,17 +176,21 @@ class FunctionCallServiceImpl(
         return null
     }
 
-    private suspend fun getFunctionConfigOrNull(
+    private suspend fun getFunctionConfig(
         agentName: String,
         functionName: String
-    ): FunctionConfig? =
+    ): FunctionConfig =
         runCatchingCancellable {
             configuratorClient.getFunction(agentName, functionName)[functionName]
-        }.onFailure { e ->
+                ?: error(
+                    "Function config '$functionName' not found for agent '$agentName'"
+                )
+        }.getOrElse { e ->
             logger.error(e) {
                 "Failed to get function config for '$functionName' from configurator"
             }
-        }.getOrNull()
+            throw e
+        }
 
     private suspend fun executeFunctionAsync(
         functionCalling: FunctionCalling,
