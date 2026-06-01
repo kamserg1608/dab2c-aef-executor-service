@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.common.util.buildFullUrl
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.AUDIT_EVENT_ENDPOINT
+import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.FUNCTION_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.PERSON_INFO_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.READ_DATA_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.REST_AGENT_ENDPOINT
@@ -24,17 +25,21 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.configuration.EfsAdapterClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.configuration.properties.EfsAdapterClientConfigurationProperties
 import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.AgentConfigurationMapper
 import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.ConfiguratorMapper
+import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.FunctionConfigMapper
 import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.PersonInfoMapper
 import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.SdsSectionMapper
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.AppSourceRequest
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.AuditEventServiceEvent
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseListSdsSectionData
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseMapStringAgentConfig
+import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseMapStringFunctionConfig
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseParameters
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseProfile
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseSessionConfig
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseVoid
+import ru.sbrf.dab2c.executor.clients.efs.adapter.model.FunctionConfigRequest
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
+import ru.sbrf.dab2c.executor.domain.configuration.FunctionConfig
 import ru.sbrf.dab2c.executor.domain.session.DaSessionCommon
 import ru.sbrf.dab2c.executor.domain.session.DaSessionUserInfo
 import ru.sbrf.dab2c.executor.domain.session.SdsSection
@@ -63,6 +68,7 @@ class EfsFacadeImpl(
     private val baseUrl = properties.baseUrl
     private val objectMapper = ObjectMappers.MAPPER
     private val agentConfigMapper = AgentConfigurationMapper.INSTANCE
+    private val functionConfigMapper = FunctionConfigMapper.INSTANCE
     private val configuratorMapper = ConfiguratorMapper.INSTANCE
     private val personInfoMapper = PersonInfoMapper.INSTANCE
     private val sdsSectionMapper = SdsSectionMapper.INSTANCE
@@ -130,6 +136,54 @@ class EfsFacadeImpl(
             ?: throw NoSuchElementException("Agent config not found for agent: $agentName")
 
         return agentConfigMapper.toDomain(agentConfig)
+    }
+
+    override suspend fun getFunction(
+        agentName: String,
+        functionName: String
+    ): Map<String, FunctionConfig> {
+        logger.debug {
+            "Getting function config for agent: $agentName function: $functionName"
+        }
+
+        val response = executeFunctionRequest(
+            FunctionConfigRequest(
+                agentName = agentName,
+                functionName = functionName
+            )
+        )
+
+        checkSuccess(response.success, "getFunction")
+
+        return response.body
+            ?.mapValues { (_, functionConfig) ->
+                functionConfigMapper.toDomain(functionConfig)
+            }
+            ?: emptyMap()
+    }
+
+    private suspend fun executeFunctionRequest(
+        request: FunctionConfigRequest
+    ): BaseResponseMapStringFunctionConfig {
+        val cookie = currentUfsCookie()
+        val requestJson = objectMapper.writeValueAsString(request)
+
+        return IntegrationLogger.logHttpCallSuspend(
+            destinationSystem = baseUrl,
+            destinationService = FUNCTION_ENDPOINT,
+            rqMessage = requestJson,
+            className = CLASS_NAME,
+            responseExtractor = { resp: BaseResponseMapStringFunctionConfig ->
+                objectMapper.writeValueAsString(resp) to HTTP_OK
+            }
+        ) {
+            httpClient.post(buildFullUrl(baseUrl, FUNCTION_ENDPOINT)) {
+                contentType(ContentType.Application.Json)
+                header(HttpHeaders.Cookie, cookie)
+                applyTracingHeaders()
+                setBody(request)
+            }.body<BaseResponseMapStringFunctionConfig>()
+        }
     }
 
     override suspend fun getDaSessionCommon(): DaSessionCommon {

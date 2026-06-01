@@ -19,6 +19,42 @@ object WireMockSetup {
         )
     }
 
+    fun WireMockServer.stubEfsAdapterConfiguratorFunction() {
+        stubFor(
+            post(urlEqualTo("/configurator/function"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.EFS_ADAPTER_CONFIGURATOR_FUNCTION_RESPONSE)
+                )
+        )
+    }
+
+    fun WireMockServer.stubConfiguratorFunctionList() {
+        stubFor(
+            post(urlEqualTo("/function/list/v1"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.CONFIGURATOR_FUNCTION_LIST_RESPONSE)
+                )
+        )
+    }
+
+    fun WireMockServer.stubConfiguratorFunctionListIag() {
+        stubFor(
+            post(urlEqualTo("/bh"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.FIND_BANK_OFFICE_FUNCTION_CALL_RESPONSE)
+                )
+        )
+    }
+
     fun WireMockServer.stubSdsSessionReadData() {
         stubFor(
             post(urlEqualTo("/session/readData"))
@@ -83,12 +119,24 @@ object WireMockSetup {
         )
     }
 
-    fun WireMockServer.stubGigaAgentSettings(withFunctions: Boolean = false) {
-        val responseBody = if (withFunctions) {
-            WireMockResponses.GIGA_VOICE_SETTINGS_WITH_FUNCTIONS_RESPONSE
-        } else {
-            WireMockResponses.GIGA_VOICE_SETTINGS_RESPONSE
+    fun WireMockServer.stubGigaAgentSettings(
+        withFunctions: Boolean = false,
+        configuratorEnabled: Boolean = false
+    ) {
+        val responseBody = when {
+            configuratorEnabled -> {
+                WireMockResponses.GIGA_VOICE_SETTINGS_CONFIGURATOR_RESPONSE
+            }
+
+            withFunctions -> {
+                WireMockResponses.GIGA_VOICE_SETTINGS_WITH_FUNCTIONS_RESPONSE
+            }
+
+            else -> {
+                WireMockResponses.GIGA_VOICE_SETTINGS_RESPONSE
+            }
         }
+
         stubFor(
             post(urlEqualTo("/settings"))
                 .willReturn(
@@ -118,6 +166,7 @@ object WireMockSetup {
         } else {
             WireMockResponses.GIGA_VOICE_SETTINGS_RESPONSE
         }
+
         stubFor(
             post(urlEqualTo("/settings"))
                 .willReturn(
@@ -230,6 +279,59 @@ object WireMockSetup {
             stubRetrieveParams("aef.executor.toggles.kap.send.extra" to "true")
         }
         gigaAgent.stubGigaAgentSettings(withFunctions)
+    }
+
+    fun setupStubsWithFunctionMatch(
+        efsAdapter: WireMockServer,
+        configurator: WireMockServer,
+        gigaAgent: WireMockServer,
+        configuratorEnabled: Boolean = true,
+        withFunctions: Boolean = true,
+    ) {
+        with(efsAdapter) {
+            stubEfsRestAgent()
+            stubSdsSessionReadData()
+            stubConfiguratorSession()
+            stubEfsAuditEvent()
+            stubPersonInfo()
+            stubRetrieveParams(
+                "aef.executor.toggles.configurator.function-match" to "true"
+            )
+            stubEfsAdapterConfiguratorFunction()
+        }
+        with(configurator) {
+            stubConfiguratorFunctionList()
+        }
+        gigaAgent.stubGigaAgentSettings(withFunctions, configuratorEnabled)
+    }
+
+    @Suppress("LongParameterList")
+    fun setupStubsWithFunctionMatchIag(
+        efsAdapter: WireMockServer,
+        configurator: WireMockServer,
+        gigaAgent: WireMockServer,
+        iag: WireMockServer,
+        configuratorEnabled: Boolean = true,
+        withFunctions: Boolean = true,
+    ) {
+        with(efsAdapter) {
+            stubEfsRestAgent()
+            stubSdsSessionReadData()
+            stubConfiguratorSession()
+            stubEfsAuditEvent()
+            stubPersonInfo()
+            stubRetrieveParams(
+                "aef.executor.toggles.configurator.function-match" to "true"
+            )
+            stubEfsAdapterConfiguratorFunction()
+        }
+        with(configurator) {
+            stubConfiguratorFunctionList()
+        }
+        with(iag) {
+            stubConfiguratorFunctionListIag()
+        }
+        gigaAgent.stubGigaAgentSettings(withFunctions, configuratorEnabled)
     }
 
     fun setupStubsWithAnalytics(

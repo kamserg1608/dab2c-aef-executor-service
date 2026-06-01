@@ -4,6 +4,7 @@ detekt = "1.23.7"
 spotbugs-plugin = "6.2.0"
 spotbugs-tool = "4.9.3"
 spring-boot = "3.5.4"
+springdoc-openapi = "2.8.0"
 openapi-generator = "7.10.0"
 micrometer = "1.13.4"
 
@@ -44,6 +45,9 @@ spring-boot-dependencies = { module = "org.springframework.boot:spring-boot-depe
 spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+
+# 🔹 Springdoc OpenAPI (не управляется Spring Boot BOM)
+springdoc-openapi-starter-webflux-ui = { module = "org.springdoc:springdoc-openapi-starter-webflux-ui", version.ref = "springdoc-openapi" }
 
 # Spring Kafka (versions managed by BOM)
 spring-kafka = { module = "org.springframework.kafka:spring-kafka" }

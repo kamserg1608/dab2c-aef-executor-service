@@ -3,6 +3,7 @@ package ru.sbrf.dab2c.executor.voice.service.impl
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.ClosedSendChannelException
+import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context
@@ -15,18 +16,24 @@ import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.voice.config.properties.VoiceExecutorConfigurationProperties
+import ru.sbrf.dab2c.executor.voice.mapper.FunctionCallSettingsProtoMapper
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
 import ru.sbrf.dab2c.executor.voice.model.VoiceSession
+import ru.sbrf.dab2c.executor.voice.model.currentFeatureToggles
 import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
 import ru.sbrf.dab2c.executor.voice.service.api.SettingsService
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.error as protoError
 
 private const val SETTINGS_CALCULATION_ERROR_STATUS = 1501
+private const val FUNCTION_CALL_AGENT_NAME = "ivr900humanagent"
+private const val FUNCTION_CALL_MODALITY = "voice"
 
 /** Implementation of [SettingsService] that resolves voice settings via EFS and GigaAgent. */
+@Suppress("LongParameterList")
 class SettingsServiceImpl(
     private val session: VoiceSession,
     private val gigaVoiceAgentClient: GigaVoiceAgentClient,
+    private val directConfiguratorClient: DirectConfiguratorClient,
     private val configuratorClient: ConfiguratorClient,
     private val configProperties: VoiceExecutorConfigurationProperties,
     private val analyticsPublisher: AnalyticsPublisher
@@ -81,15 +88,34 @@ class SettingsServiceImpl(
     ): SettingsData {
         val headers = currentHeaders()
         val agentConfiguration = configuratorClient.getRestAgentConfig(configProperties.agentName)
-
         logger.debug { "Fetched agent configuration: ${agentConfiguration.name}" }
 
         val conversationId = settings.voiceCallId
+        val configuratorFunctionMatch =
+            currentFeatureToggles().configuratorFunctionMatch
+
+        logger.debug { "Configurator: configuratorFunctionMatch=$configuratorFunctionMatch" }
+
+        val resolvedSettings = if (configuratorFunctionMatch) {
+            val functionCallSettings = directConfiguratorClient.fetchFunctionRegistry(
+                agentName = FUNCTION_CALL_AGENT_NAME,
+                modality = FUNCTION_CALL_MODALITY
+            )
+
+            logger.debug { "functionCall: functionCall=$functionCallSettings" }
+
+            FunctionCallSettingsProtoMapper.enrich(
+                protoSettings = settings,
+                restSettings = functionCallSettings.settings
+            )
+        } else {
+            settings
+        }
 
         val settingsResult = gigaVoiceAgentClient.getSettings(
             conversationId = conversationId,
             agentConfiguration = agentConfiguration,
-            voiceSettings = settings,
+            voiceSettings = resolvedSettings,
             contextData = contextData
         )
 

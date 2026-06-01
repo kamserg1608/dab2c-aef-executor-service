@@ -1,0 +1,291 @@
+openapi: 3.0.1
+info:
+  title: Configurator Service API
+  description: API документация для всех зарегистрированных контроллеров в Configurator сервисе
+  version: "1.0"
+servers:
+  - url: http://localhost:8080
+paths:
+  /function/list/v1:
+    post:
+      summary: Получение настроек функций агента
+      description: Получает рассчитанную конфигурацию функций агента из ССД
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FunctionListRequest'
+        required: true
+      responses:
+        "200":
+          description: Возвращает настройки функций агента
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseFunctionListResponse'
+components:
+  schemas:
+    Alert:
+      type: object
+      properties:
+        title:
+          type: string
+        text:
+          type: string
+        type:
+          type: string
+          enum:
+            - ERROR
+            - WARNING
+            - INFO
+            - VALIDATION
+            - FRAUD
+            - DIALOG
+            - CUSTOM
+        data:
+          type: object
+          additionalProperties:
+            type: string
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        stacktrace:
+          type: string
+    Context:
+      type: object
+      properties:
+        mediaType:
+          type: object
+          properties:
+            type:
+              type: string
+            subtype:
+              type: string
+            parameters:
+              type: object
+              additionalProperties:
+                type: string
+            wildcardSubtype:
+              type: boolean
+            wildcardType:
+              type: boolean
+        cookies:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+              version:
+                type: integer
+                format: int32
+              path:
+                type: string
+              domain:
+                type: string
+              comment:
+                type: string
+              maxAge:
+                type: integer
+                format: int32
+              expiry:
+                type: string
+                format: date-time
+              secure:
+                type: boolean
+              httpOnly:
+                type: boolean
+        headers:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+    Message:
+      type: object
+      properties:
+        title:
+          type: string
+        text:
+          type: string
+        type:
+          type: string
+        code:
+          type: string
+        uuid:
+          type: string
+    FunctionListRequest:
+      type: object
+      properties:
+        agentName:
+          type: string
+          description: Имя агента
+        modality:
+          type: string
+          description: Модальность
+      description: Запрос на получение настроек функций агента
+
+    BaseResponseFunctionListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        body:
+          $ref: '#/components/schemas/FunctionListResponse'
+        context:
+          $ref: '#/components/schemas/Context'
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        error:
+          $ref: '#/components/schemas/Error'
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alert'
+
+    FunctionListResponse:
+      type: object
+      properties:
+        settings:
+          $ref: '#/components/schemas/Settings'
+
+    Settings:
+      type: object
+      properties:
+        gigachat:
+          $ref: '#/components/schemas/GigachatSettings'
+        audio:
+          $ref: '#/components/schemas/AudioSettings'
+        disable_interruption:
+          $ref: '#/components/schemas/DisableInterruptionSettings'
+
+    GigachatSettings:
+      type: object
+      properties:
+        function_ranker:
+          $ref: '#/components/schemas/FunctionRanker'
+        functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Function'
+
+    FunctionRanker:
+      type: object
+      properties:
+        ignored_functions:
+          type: array
+          items:
+            type: string
+
+    Function:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        parameters:
+          type: string
+        few_shot_examples:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnyExample'
+        return_parameters:
+          type: string
+
+    AnyExample:
+      type: object
+      properties:
+        request:
+          type: string
+        params:
+          $ref: '#/components/schemas/Params'
+
+    Params:
+      type: object
+      properties:
+        pairs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pair'
+
+    Pair:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: object
+          nullable: true
+
+    AudioSettings:
+      type: object
+      properties:
+        output:
+          $ref: '#/components/schemas/AudioOutputSettings'
+
+    AudioOutputSettings:
+      type: object
+      properties:
+        stub_sounds:
+          $ref: '#/components/schemas/StubSounds'
+
+    StubSounds:
+      type: object
+      properties:
+        trigger_function:
+          $ref: '#/components/schemas/TriggerFunction'
+
+    TriggerFunction:
+      type: object
+      properties:
+        function_names:
+          type: array
+          items:
+            type: string
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/FunctionSoundRule'
+
+    FunctionSoundRule:
+      type: object
+      properties:
+        function_names:
+          type: array
+          items:
+            type: string
+        sounds:
+          type: array
+          items:
+            type: string
+
+    DisableInterruptionSettings:
+      type: object
+      properties:
+        functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/LockFunctionExecution'
+
+    LockFunctionExecution:
+      type: object
+      properties:
+        name:
+          type: string
+        on_execution:
+          type: boolean
+        after_result:
+          type: boolean

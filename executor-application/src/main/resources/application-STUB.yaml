@@ -1,10 +1,10 @@
 server:
-  port: 8080
+  port: 8083
 
 # gRPC Configuration
 grpc:
   server:
-    port: 9090
+    port: 9093
     reflection-service-enabled: true
     security:
       enabled: false
@@ -73,6 +73,37 @@ efs:
       multiplier: 2.0
       statusCodes: 502,503,504
 
+# Configurator HTTP Client
+configurator:
+  baseUrl: http://localhost:8080
+  connectionTimeout: 5000
+  requestTimeout: 15000
+  socketTimeout: 15000
+  pool:
+    maxConnections: 50
+  retry:
+    maxRetries: 2
+    delay: 500
+    maxDelay: 5000
+    multiplier: 2.0
+    statusCodes: 502,503,504
+
+# IAG HTTP Client
+iag:
+  client:
+    baseUrl: http://localhost:8080
+    connectionTimeout: 5000
+    requestTimeout: 15000
+    socketTimeout: 15000
+    pool:
+      maxConnections: 50
+    retry:
+      maxRetries: 2
+      delay: 500
+      maxDelay: 5000
+      multiplier: 2.0
+      statusCodes: 502,503,504
+
 # KAP Producer (disabled in STUB mode)
 kafka:
   kap:
@@ -96,3 +127,9 @@ aef:
     voice-enabled: true
     grpc-enabled: true
     websocket-enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

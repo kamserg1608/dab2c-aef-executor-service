@@ -1,8 +1,10 @@
 package ru.sbrf.dab2c.executor.voice.factory.impl
 
 import org.springframework.stereotype.Service
+import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
+import ru.sbrf.dab2c.executor.clients.iag.api.IagFunctionClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.ConnectionMetrics
@@ -35,12 +37,14 @@ import ru.sbrf.dab2c.executor.voice.tracing.DialogTracingPublisher
 class ChunkProcessingServiceFactoryImpl(
     private val voiceExecutorConfigurationProperties: VoiceExecutorConfigurationProperties,
     private val gigaVoiceAgentClient: GigaVoiceAgentClient,
+    private val directConfiguratorClient: DirectConfiguratorClient,
     private val configuratorClient: ConfiguratorClient,
     private val metricFactory: MetricFactory,
     private val kapProducerClient: KapProducerClient,
+    private val iagFunctionClient: IagFunctionClient,
     private val externalInteractionAuditor: InteractionAuditor,
     private val timeProvider: TimeProvider,
-    private val tracingFacade: AefTracingFacade,
+    private val tracingFacade: AefTracingFacade
 ) : ChunkProcessingServiceFactory {
 
     private val connectionMetrics = ConnectionMetrics(
@@ -79,6 +83,7 @@ class ChunkProcessingServiceFactoryImpl(
             settingsService = SettingsServiceImpl(
                 session,
                 gigaVoiceAgentClient,
+                directConfiguratorClient,
                 configuratorClient,
                 voiceExecutorConfigurationProperties,
                 analyticsPublisher
@@ -86,6 +91,8 @@ class ChunkProcessingServiceFactoryImpl(
             functionCallService = FunctionCallServiceImpl(
                 session,
                 gigaVoiceAgentClient,
+                iagFunctionClient,
+                configuratorClient,
                 analyticsPublisher
             )
         )
