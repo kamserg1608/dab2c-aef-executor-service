@@ -49,6 +49,30 @@ class TolerantExceptionRegistryTest {
         }
 
         @Test
+        fun `StatusException with unexpected EOS description is tolerant`() {
+            val ex = StatusException(
+                Status.INTERNAL.withDescription("Received unexpected EOS on empty DATA frame from server")
+            )
+            assertThat(TolerantExceptionRegistry.isTolerant(ex)).isTrue()
+        }
+
+        @Test
+        fun `StatusRuntimeException with unexpected EOS description is tolerant`() {
+            val ex = StatusRuntimeException(
+                Status.INTERNAL.withDescription("Received unexpected EOS on empty DATA frame from server")
+            )
+            assertThat(TolerantExceptionRegistry.isTolerant(ex)).isTrue()
+        }
+
+        @Test
+        fun `unexpected EOS marker match is case insensitive`() {
+            val ex = StatusRuntimeException(
+                Status.UNKNOWN.withDescription("RECEIVED UNEXPECTED EOS ON EMPTY DATA FRAME from server")
+            )
+            assertThat(TolerantExceptionRegistry.isTolerant(ex)).isTrue()
+        }
+
+        @Test
         fun `StatusException UNKNOWN is not tolerant`() {
             val ex = StatusException(Status.UNKNOWN)
             assertThat(TolerantExceptionRegistry.isTolerant(ex)).isFalse()

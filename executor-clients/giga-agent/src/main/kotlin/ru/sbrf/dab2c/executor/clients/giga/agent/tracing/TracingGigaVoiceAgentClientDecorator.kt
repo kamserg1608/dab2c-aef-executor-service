@@ -5,7 +5,9 @@ package ru.sbrf.dab2c.executor.clients.giga.agent.tracing
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.opentelemetry.api.trace.Span
+import io.opentelemetry.extension.kotlin.asContextElement
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.withContext
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient.Companion.FUNCTIONS_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient.Companion.SETTINGS_ENDPOINT
@@ -19,6 +21,7 @@ import ru.sbrf.dab2c.executor.library.common.runCatchingCancellable
 import ru.sbrf.dab2c.executor.library.tracing.facade.AefAttributeKeys
 import ru.sbrf.dab2c.executor.library.tracing.facade.AefTracingFacade
 import ru.sbrf.dab2c.executor.library.tracing.mapper.ObserverEventMappers
+import io.opentelemetry.context.Context as OtelContext
 
 private val logger = KotlinLogging.logger {}
 
@@ -73,7 +76,7 @@ class TracingGigaVoiceAgentClientDecorator(
     ): T {
         val span: Span? = openSpan(spanName, path, request)
         return try {
-            val result = block()
+            val result = invokeInSpanContext(span, block)
             closeOnSuccess(span, path, result)
             result
         } catch (e: CancellationException) {
@@ -85,6 +88,13 @@ class TracingGigaVoiceAgentClientDecorator(
             throw e
         }
     }
+
+    private suspend fun <T : Any> invokeInSpanContext(span: Span?, block: suspend () -> T): T =
+        if (span != null && span.spanContext.isValid) {
+            withContext(OtelContext.current().with(span).asContextElement()) { block() }
+        } else {
+            block()
+        }
 
     private suspend fun openSpan(spanName: String, path: String, request: Any): Span? =
         runCatchingCancellable {
