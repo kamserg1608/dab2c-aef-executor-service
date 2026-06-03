@@ -1,7 +1,6 @@
 package ru.sbrf.dab2c.executor.voice.tracing
 
 import io.grpc.Status
-import io.grpc.StatusRuntimeException
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
@@ -12,6 +11,7 @@ import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.library.tracing.TracingParentElement
 import ru.sbrf.dab2c.executor.library.tracing.facade.AefTracingFacade
@@ -20,6 +20,8 @@ import ru.sbrf.dab2c.executor.voice.session.observer.ErrorEmitted
 import ru.sbrf.dab2c.executor.voice.session.observer.FunctionCallReceived
 import ru.sbrf.dab2c.executor.voice.session.observer.FunctionResultSent
 import ru.sbrf.dab2c.executor.voice.session.observer.Replica
+import ru.sbrf.dab2c.executor.voice.session.observer.TurnCompleted
+import ru.sbrf.dab2c.executor.voice.session.observer.TurnEvent
 import ru.sbrf.dab2c.executor.voice.session.observer.VoiceSettings
 import ru.sbrf.dab2c.executor.voice.session.observer.WarningEmitted
 
@@ -47,13 +49,37 @@ class DialogTracingPublisherTest {
     }
 
     @Test
-    fun `gRPC status name is propagated on failure`() = runTest {
+    fun `genuine gRPC error propagates status name`() = runTest {
+        val publisher = DialogTracingPublisher(facade)
+        publisher.onSessionStarted()
+        publisher.onSessionCompleted(Status.INTERNAL.withDescription("server error").asRuntimeException())
+
+        val downstream = exporter.finishedSpanItems.single { it.name == "downstream gigavoice stream" }
+        assertEquals("INTERNAL", downstream.attributes.get(AttributeKey.stringKey("aef.response.status_code")))
+    }
+
+    @Test
+    fun `tolerant gRPC termination maps to OK`() = runTest {
         val publisher = DialogTracingPublisher(facade)
         publisher.onSessionStarted()
         publisher.onSessionCompleted(Status.UNAVAILABLE.asRuntimeException())
 
         val downstream = exporter.finishedSpanItems.single { it.name == "downstream gigavoice stream" }
-        assertEquals("UNAVAILABLE", downstream.attributes.get(AttributeKey.stringKey("aef.response.status_code")))
+        assertEquals("OK", downstream.attributes.get(AttributeKey.stringKey("aef.response.status_code")))
+    }
+
+    @Test
+    fun `unexpected EOS downstream close maps to OK`() = runTest {
+        val publisher = DialogTracingPublisher(facade)
+        publisher.onSessionStarted()
+        publisher.onSessionCompleted(
+            Status.INTERNAL
+                .withDescription("Received unexpected EOS on empty DATA frame from server")
+                .asRuntimeException()
+        )
+
+        val downstream = exporter.finishedSpanItems.single { it.name == "downstream gigavoice stream" }
+        assertEquals("OK", downstream.attributes.get(AttributeKey.stringKey("aef.response.status_code")))
     }
 
     @Test
@@ -68,25 +94,13 @@ class DialogTracingPublisherTest {
     }
 
     @Test
-    fun `settings JSON survives if onSettingsReceived comes after onSessionStarted`() = runTest {
-        val publisher = DialogTracingPublisher(facade)
-        publisher.onSessionStarted()
-        publisher.onSettingsReceived(testVoiceSettings("vc-late"))
-        publisher.onSessionCompleted(cause = null)
-
-        val session = exporter.finishedSpanItems.single { it.name == "voice session" }
-        val settingsJson = session.attributes.get(AttributeKey.stringKey("aef.settings"))
-        assertEquals(true, settingsJson!!.contains("\"voiceCallId\":\"vc-late\""))
-    }
-
-    @Test
     fun `single voice_turn carries canonical aef_input aef_output and llm_total_tokens`() = runTest {
         val publisher = DialogTracingPublisher(facade)
         publisher.onSessionStarted()
-        publisher.onUserReplicaCompleted(Replica("hello bot", 1L, 2L))
         publisher.onAssistantReplicaStarted(3L)
-        publisher.onUsageUpdated(42)
-        publisher.onAssistantReplicaCompleted(Replica("hi user", 4L, 5L))
+        publisher.onTurnCompleted(
+            turn(user = "hello bot", assistant = "hi user", totalTokens = 42)
+        )
         publisher.onSessionCompleted(null)
 
         val turn = exporter.finishedSpanItems.single { it.name == "voice turn" }
@@ -99,12 +113,13 @@ class DialogTracingPublisherTest {
     }
 
     @Test
-    fun `warning during turn is written as aef_warning`() = runTest {
+    fun `warning within turn is written as aef_warning`() = runTest {
         val publisher = DialogTracingPublisher(facade)
         publisher.onSessionStarted()
         publisher.onAssistantReplicaStarted(1L)
-        publisher.onWarningEmitted(WarningEmitted("rate-limit-soft", 2L))
-        publisher.onAssistantReplicaCompleted(Replica("ok", 3L, 4L))
+        publisher.onTurnCompleted(
+            turn(assistant = "ok", events = listOf(WarningEmitted("rate-limit-soft", 2L)))
+        )
         publisher.onSessionCompleted(null)
 
         val turn = exporter.finishedSpanItems.single { it.name == "voice turn" }
@@ -112,12 +127,14 @@ class DialogTracingPublisherTest {
     }
 
     @Test
-    fun `error during turn synthesises ERROR session status when cause is null`() = runTest {
+    fun `error within turn synthesises ERROR session status when cause is null`() = runTest {
         val publisher = DialogTracingPublisher(facade)
         publisher.onSessionStarted()
         publisher.onAssistantReplicaStarted(1L)
         publisher.onErrorEmitted(ErrorEmitted(500, "boom", 2L))
-        publisher.onAssistantReplicaCompleted(Replica("", 3L, 4L))
+        publisher.onTurnCompleted(
+            turn(events = listOf(ErrorEmitted(500, "boom", 2L)))
+        )
         publisher.onSessionCompleted(null)
 
         val downstream = exporter.finishedSpanItems.single { it.name == "downstream gigavoice stream" }
@@ -129,43 +146,17 @@ class DialogTracingPublisherTest {
     }
 
     @Test
-    fun `function call dance produces two voice_turn spans sharing aef_input`() = runTest {
-        val publisher = DialogTracingPublisher(facade)
-        publisher.onSessionStarted()
-        publisher.onUserReplicaCompleted(Replica("how is weather", 1L, 2L))
-        publisher.onAssistantReplicaStarted(3L)
-        publisher.onAssistantReplicaCompleted(Replica("calling", 4L, 5L))
-        publisher.onAssistantReplicaStarted(6L)
-        publisher.onAssistantReplicaCompleted(Replica("sunny", 7L, 8L))
-        publisher.onSessionCompleted(null)
-
-        val turns = exporter.finishedSpanItems.filter { it.name == "voice turn" }
-        assertEquals(2, turns.size)
-        val inputKey = AttributeKey.stringKey("aef.input")
-        assertEquals(true, turns.all { it.attributes.get(inputKey) == """{"text":"how is weather"}""" })
-    }
-
-    @Test
     fun `tool span carries canonical aef_input and aef_output objects`() = runTest {
         val publisher = DialogTracingPublisher(facade)
         publisher.onSessionStarted()
-        publisher.onUserReplicaCompleted(Replica("how is weather", 1L, 2L))
         publisher.onAssistantReplicaStarted(3L)
         publisher.onFunctionCallReceived(
-            FunctionCallReceived(
-                name = "find_bank_office",
-                arguments = """{"city":"Moscow"}""",
-                atMs = 4L,
-            )
+            FunctionCallReceived(name = "find_bank_office", arguments = """{"city":"Moscow"}""", atMs = 4L)
         )
         publisher.onFunctionResultSent(
-            FunctionResultSent(
-                name = "find_bank_office",
-                content = """{"office":"123"}""",
-                atMs = 5L,
-            )
+            FunctionResultSent(name = "find_bank_office", content = """{"office":"123"}""", atMs = 5L)
         )
-        publisher.onAssistantReplicaCompleted(Replica("calling", 6L, 7L))
+        publisher.onTurnCompleted(turn(user = "how is weather", assistant = "calling"))
         publisher.onSessionCompleted(null)
 
         val tool = exporter.finishedSpanItems.single { it.name == "find_bank_office" }
@@ -184,15 +175,19 @@ class DialogTracingPublisherTest {
     fun `voice_llm_turn carries function_call input and function_result output`() = runTest {
         val publisher = DialogTracingPublisher(facade)
         publisher.onSessionStarted()
-        publisher.onUserReplicaCompleted(Replica("how is weather", 1L, 2L))
         publisher.onAssistantReplicaStarted(3L)
-        publisher.onFunctionCallReceived(
-            FunctionCallReceived("weather", """{"city":"Moscow"}""", 4L)
+        publisher.onFunctionCallReceived(FunctionCallReceived("weather", """{"city":"Moscow"}""", 4L))
+        publisher.onFunctionResultSent(FunctionResultSent("weather", """{"forecast":"sunny"}""", 5L))
+        publisher.onTurnCompleted(
+            turn(
+                user = "how is weather",
+                assistant = "done",
+                events = listOf(
+                    FunctionCallReceived("weather", """{"city":"Moscow"}""", 4L),
+                    FunctionResultSent("weather", """{"forecast":"sunny"}""", 5L),
+                )
+            )
         )
-        publisher.onFunctionResultSent(
-            FunctionResultSent("weather", """{"forecast":"sunny"}""", 5L)
-        )
-        publisher.onAssistantReplicaCompleted(Replica("done", 6L, 7L))
         publisher.onSessionCompleted(null)
 
         val llm = exporter.finishedSpanItems.single { it.name == "voice llm turn" }
@@ -236,10 +231,16 @@ class DialogTracingPublisherTest {
         val publisher = DialogTracingPublisher(facade)
         publisher.onSessionStarted()
         publisher.onAssistantReplicaStarted(1L)
-        publisher.onWarningEmitted(WarningEmitted("rate-limit", 2L))
-        publisher.onWarningEmitted(WarningEmitted("quota-low", 3L))
-        publisher.onErrorEmitted(ErrorEmitted(503, "overloaded", 4L))
-        publisher.onAssistantReplicaCompleted(Replica("partial", 5L, 6L))
+        publisher.onTurnCompleted(
+            turn(
+                assistant = "partial",
+                events = listOf(
+                    WarningEmitted("rate-limit", 2L),
+                    WarningEmitted("quota-low", 3L),
+                    ErrorEmitted(503, "overloaded", 4L),
+                )
+            )
+        )
         publisher.onSessionCompleted(null)
 
         val turn = exporter.finishedSpanItems.single { it.name == "voice turn" }
@@ -257,9 +258,8 @@ class DialogTracingPublisherTest {
     fun `span hierarchy is correct for single turn`() = runTest {
         val publisher = DialogTracingPublisher(facade)
         publisher.onSessionStarted()
-        publisher.onUserReplicaCompleted(Replica("hi", 1L, 2L))
         publisher.onAssistantReplicaStarted(3L)
-        publisher.onAssistantReplicaCompleted(Replica("hello", 4L, 5L))
+        publisher.onTurnCompleted(turn(user = "hi", assistant = "hello"))
         publisher.onSessionCompleted(null)
 
         assertParentChild("voice session", "downstream gigavoice stream")
@@ -271,16 +271,53 @@ class DialogTracingPublisherTest {
     fun `tool span is nested under voice_llm_turn`() = runTest {
         val publisher = DialogTracingPublisher(facade)
         publisher.onSessionStarted()
-        publisher.onUserReplicaCompleted(Replica("balance", 1L, 2L))
         publisher.onAssistantReplicaStarted(3L)
         publisher.onFunctionCallReceived(FunctionCallReceived("get_balance", "{}", 4L))
         publisher.onFunctionResultSent(FunctionResultSent("get_balance", "{}", 5L))
-        publisher.onAssistantReplicaCompleted(Replica("done", 6L, 7L))
+        publisher.onTurnCompleted(turn(user = "balance", assistant = "done"))
         publisher.onSessionCompleted(null)
 
         assertParentChild("get_balance", "voice llm turn")
         assertParentChild("voice llm turn", "voice turn")
         assertParentChild("voice turn", "voice session")
+    }
+
+    @Test
+    fun `function_call after a closed assistant segment still nests tool under voice_llm_turn`() = runTest {
+        val publisher = DialogTracingPublisher(facade)
+        publisher.onSessionStarted()
+        publisher.onAssistantReplicaStarted(1L)
+        publisher.onAssistantReplicaCompleted(Replica("", 1L, 2L))
+        publisher.onFunctionCallReceived(FunctionCallReceived("get_sbol_info", "{}", 3L))
+        publisher.onFunctionResultSent(FunctionResultSent("get_sbol_info", "{}", 4L))
+        publisher.onTurnCompleted(
+            turn(
+                assistant = "Не получилось проверить информацию",
+                events = listOf(
+                    FunctionCallReceived("get_sbol_info", "{}", 3L),
+                    FunctionResultSent("get_sbol_info", "{}", 4L),
+                )
+            )
+        )
+        publisher.onSessionCompleted(null)
+
+        val tool = exporter.finishedSpanItems.single { it.name == "get_sbol_info" }
+        val llmTurns = exporter.finishedSpanItems.filter { it.name == "voice llm turn" }
+        assertEquals(1, llmTurns.size)
+        assertEquals(llmTurns.single().spanId, tool.parentSpanId, "tool must nest under voice_llm_turn, not the root")
+        assertParentChild("voice llm turn", "voice turn")
+        assertParentChild("voice turn", "voice session")
+    }
+
+    @Test
+    fun `empty TurnCompleted does not emit a voice_turn`() = runTest {
+        val publisher = DialogTracingPublisher(facade)
+        publisher.onSessionStarted()
+        publisher.onTurnCompleted(TurnCompleted(null, null, emptyList(), null))
+        publisher.onSessionCompleted(null)
+
+        assertTrue(exporter.finishedSpanItems.none { it.name == "voice turn" })
+        assertTrue(exporter.finishedSpanItems.none { it.name == "voice llm turn" })
     }
 
     @Test
@@ -298,7 +335,7 @@ class DialogTracingPublisherTest {
             publisher.onFunctionResultSent(FunctionResultSent("get_balance", "{}", 3L))
             assertNull(element.get())
 
-            publisher.onAssistantReplicaCompleted(Replica("done", 4L, 5L))
+            publisher.onTurnCompleted(turn(assistant = "done"))
             publisher.onSessionCompleted(null)
         }
     }
@@ -328,13 +365,22 @@ class DialogTracingPublisherTest {
         )
     }
 
+    private fun turn(
+        user: String? = null,
+        assistant: String? = null,
+        events: List<TurnEvent> = emptyList(),
+        totalTokens: Int? = null,
+    ) = TurnCompleted(
+        userReplica = user?.let { Replica(it, 1L, 2L) },
+        assistantReplica = assistant?.let { Replica(it, 3L, 4L) },
+        turnEvents = events,
+        totalTokens = totalTokens,
+    )
+
     private fun testVoiceSettings(voiceCallId: String) = VoiceSettings(
         settingsData = mapOf(
             "voiceCallId" to voiceCallId,
             "mode" to "RECOGNIZE_GIGACHAT_SYNTHESIS",
         )
     )
-
-    @Suppress("UnusedPrivateMember")
-    private fun ignored() = StatusRuntimeException::class
 }

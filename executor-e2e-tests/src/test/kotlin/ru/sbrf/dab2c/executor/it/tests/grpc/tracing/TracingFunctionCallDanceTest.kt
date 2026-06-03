@@ -1,5 +1,7 @@
 package ru.sbrf.dab2c.executor.it.tests.grpc.tracing
 
+import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.audioRequest
@@ -68,6 +70,54 @@ class TracingFunctionCallDanceTest : BaseGigaVoiceIntegrationTest() {
             assertNestedUnder(functionsHttp, "tool")
             assertAttributeEquals(tool, "aef.session_id", "test-session-id")
             assertAttributeEquals(functionsHttp, "aef.session_id", "test-session-id")
+        }
+
+        val traceparent = gigaVoiceAgentMock
+            .findAll(postRequestedFor(urlEqualTo("/functions")))
+            .first()
+            .getHeader("traceparent")
+        assertThat(traceparent).withFailMessage("Agent /functions call must carry W3C traceparent").isNotNull
+        assertThat(traceparent).matches("00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}")
+        val parts = traceparent.split("-")
+        assertThat(parts[1]).`as`("non-zero trace-id").isNotEqualTo("0".repeat(32))
+        assertThat(parts[2]).`as`("non-zero parent span-id").isNotEqualTo("0".repeat(16))
+    }
+
+    @Test
+    fun `function_call without preceding output_transcription still nests tool under voice_llm_turn`() = runItTest {
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock, withFunctions = true)
+        gigaVoiceAgentMock.stubGigaAgentFunctions("get_account_balance", """{"balance": 1000}""")
+
+        val spans = embeddedKafkaBroker.collectTraceSpans(voiceCallId = "function-nogap") {
+            runItTest {
+                withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+                    session.sendRequest(contextRequest())
+                    session.sendRequest(settingsRequest("function-nogap"))
+                    mock.awaitRequest { it.hasSettings() }
+
+                    mock.sendResponse(inputTranscriptionResponse("check my profile"))
+                    session.awaitResponse { it.hasInputTranscription() }
+
+                    mock.sendResponse(functionCallingResponse("get_account_balance", """{"account_id": "12345"}"""))
+                    mock.sendResponse(platformFunctionProcessing())
+                    session.awaitResponse { it.hasPlatformFunctionProcessing() }
+                    wireMock.awaitPostCall("/functions")
+
+                    mock.sendResponse(outputTranscriptionResponse("could not check your profile"))
+                    session.awaitResponse { it.hasOutputTranscription() }
+                }
+            }
+        }
+
+        assertThat(spans).isNotEmpty
+        assertSpans(spans) {
+            val tool = allOfKind("tool").firstOrNull { it.name == "get_account_balance" }
+            assertThat(tool).withFailMessage("Expected tool span for get_account_balance").isNotNull
+            assertNestedUnder(tool!!, "voice_llm_turn")
+
+            val functionsHttp = allOfKind("output_request").firstOrNull { it.name == "agent /functions" }
+            assertThat(functionsHttp).withFailMessage("Expected HTTP output_request for /functions").isNotNull
+            assertNestedUnder(functionsHttp!!, "tool")
         }
     }
 }

@@ -32,6 +32,7 @@ object TracingTestSupport {
         spanId = proto.spanId.toByteArray().toHexString(),
         parentSpanId = proto.parentSpanId?.toByteArray()
             ?.takeIf { it.any { byte -> byte.toInt() != 0 } }?.toHexString(),
+        statusCode = proto.status.code.name,
         attributes = proto.attributesList.associate { it.key to attributeValue(it.value) }
     )
 
@@ -51,6 +52,7 @@ data class ParsedSpan(
     val traceId: String,
     val spanId: String,
     val parentSpanId: String?,
+    val statusCode: String,
     val attributes: Map<String, String>,
 ) {
     /** Convenience accessor for the AEF span-type attribute. */

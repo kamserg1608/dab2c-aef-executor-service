@@ -6,6 +6,7 @@ import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.ResponseException
+import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.DEFAULT
 import io.ktor.client.plugins.logging.LogLevel
@@ -15,6 +16,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.isSuccess
 import io.ktor.serialization.jackson.JacksonConverter
+import io.opentelemetry.context.Context
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
@@ -31,6 +33,7 @@ import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricFactory
 import ru.sbrf.dab2c.executor.library.tracing.facade.AefTracingFacade
+import ru.sbrf.dab2c.executor.library.tracing.propagation.W3CTraceContextInjector
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import kotlin.math.pow
@@ -85,10 +88,20 @@ class GigaVoiceAgentClientConfiguration {
     }
 }
 
+private val otelTraceparentPlugin = createClientPlugin("OtelTraceparent") {
+    onRequest { request, _ ->
+        W3CTraceContextInjector.inject(Context.current()) { key, value ->
+            request.headers.remove(key)
+            request.headers.append(key, value)
+        }
+    }
+}
+
 @Suppress("LongMethod")
 private fun io.ktor.client.HttpClientConfig<*>.installPlugins(
     properties: GigaVoiceAgentClientConfigurationProperties
 ) {
+    install(otelTraceparentPlugin)
     install(ContentNegotiation) { register(ContentType.Application.Json, JacksonConverter(ObjectMappers.MAPPER)) }
     install(Logging) {
         logger = Logger.DEFAULT

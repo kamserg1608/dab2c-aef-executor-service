@@ -207,6 +207,40 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
         assertThat(failedAudit).isNull()
     }
 
+    @Test
+    fun `should not emit failed audit when downstream closes with unexpected EOS`() = runItTest {
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock)
+        val auditAwaiter = WireMockAwaiter(efsAdapterMock)
+
+        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+            session.sendRequest(contextRequest())
+            session.sendRequest(settingsRequest("audit-eos"))
+            mock.awaitRequest { it.hasSettings() }
+
+            mock.sendResponse(inputTranscriptionResponse("Hello"))
+            session.awaitResponse { it.hasInputTranscription() }
+
+            mock.sendResponse(outputTranscriptionResponse("World"))
+            session.awaitResponse { it.hasOutputTranscription() }
+
+            mock.completeResponsesWithError(
+                StatusRuntimeException(
+                    Status.INTERNAL.withDescription("Received unexpected EOS on empty DATA frame from server")
+                )
+            )
+        }
+
+        val auditRequests = auditAwaiter.awaitPostCalls(AUDIT_EVENT_URL, 2)
+        val successAudit = findAuditEvent(auditRequests, "DAB2C_EXTERNAL_INTERACTION")
+        assertThat(successAudit).isNotNull
+        assertThat(successAudit!!.success()).isTrue()
+
+        delay(500)
+        val allAuditRequests = efsAdapterMock.findAll(postRequestedFor(urlEqualTo(AUDIT_EVENT_URL)))
+        val failedAudit = findAuditEvent(allAuditRequests, "DAB2C_EXTERNAL_INTERACTION_FAILED")
+        assertThat(failedAudit).isNull()
+    }
+
     // --- Agent Interaction Audit Tests ---
 
     @Test
