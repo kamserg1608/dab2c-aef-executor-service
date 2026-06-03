@@ -1,6 +1,7 @@
 package ru.sbrf.dab2c.executor.it.tests.grpc
 
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -12,6 +13,8 @@ import ru.sbrf.dab2c.executor.clients.kap.producer.model.DialogEnvelope
 import ru.sbrf.dab2c.executor.clients.kap.producer.model.UserMessage
 import ru.sbrf.dab2c.executor.it.support.kafka.KafkaTestSupport.awaitRecords
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
+import ru.sbrf.dab2c.executor.library.context.Headers
+import ru.sbrf.dab2c.executor.library.context.HeadersElement
 import java.util.UUID
 
 private const val DIALOGS_TOPIC = "dab2c-core-dialogs"
@@ -29,7 +32,18 @@ class KapProducerClientIntegrationTest : BaseGigaVoiceIntegrationTest() {
     fun `should publish dialog to dialogs topic`() = runTest {
         val dialog = createTestDialogEnvelope()
 
-        kapProducerClient.publishDialog(dialog)
+        withContext(
+            HeadersElement(
+                Headers(
+                    mapOf(
+                        "x-platform" to "ios",
+                        "x-channel" to "sbol"
+                    )
+                )
+            )
+        ) {
+            kapProducerClient.publishDialog(dialog)
+        }
 
         val matchingRecords = embeddedKafkaBroker.awaitRecords<DialogEnvelope>(
             topic = DIALOGS_TOPIC,
@@ -49,7 +63,18 @@ class KapProducerClientIntegrationTest : BaseGigaVoiceIntegrationTest() {
     fun `should publish agent analytics to agents topic`() = runTest {
         val analytics = createTestAgentAnalyticsEnvelope()
 
-        kapProducerClient.publishAgentAnalytics(analytics)
+        withContext(
+            HeadersElement(
+                Headers(
+                    mapOf(
+                        "x-platform" to "ios",
+                        "x-channel" to "sbol"
+                    )
+                )
+            )
+        ) {
+            kapProducerClient.publishAgentAnalytics(analytics)
+        }
 
         val matchingRecords = embeddedKafkaBroker.awaitRecords<AgentAnalyticsEnvelope>(
             topic = AGENTS_TOPIC,

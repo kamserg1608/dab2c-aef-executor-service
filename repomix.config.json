@@ -11,45 +11,101 @@
     "**/src/main/java/**",
     "**/src/main/kotlin/**",
     "**/src/main/resources/**",
+
     "**/src/test/java/**",
     "**/src/test/kotlin/**",
+    "**/src/test/resources/**",
+
     "pom.xml",
     "**/pom.xml",
+
     "build.gradle",
+    "**/build.gradle",
+
     "build.gradle.kts",
+    "**/build.gradle.kts",
+
     "settings.gradle",
+    "**/settings.gradle",
+
     "settings.gradle.kts",
+    "**/settings.gradle.kts",
+
     "gradle.properties",
+    "**/gradle.properties",
+
+    "buildSrc/**",
+
+    "config/**",
+
     "**/application.yml",
     "**/application.yaml",
     "**/application.properties",
+
     "**/bootstrap.yml",
     "**/bootstrap.yaml",
-    "**/logback*.xml",
+    "**/bootstrap.properties",
+
+    "**/logback.xml",
+    "**/logback-*.xml",
+
+    "**/openapi/**",
     "**/openapi*.yml",
-    "**/openapi*.yaml"
+    "**/openapi*.yaml",
+
+    "**/swagger*.yml",
+    "**/swagger*.yaml",
+
+    "**/db/changelog/**",
+    "**/liquibase/**",
+
+    "**/*.proto",
+
+    ".editorconfig",
+    "**/.editorconfig",
+
+    "README.md",
+    "**/README.md",
+
+    "CONTRIBUTING.md",
+    "**/CONTRIBUTING.md"
   ],
   "ignore": {
     "customPatterns": [
       "**/target/**",
       "**/build/**",
+
       "**/.gradle/**",
       "**/.mvn/**",
-      "**/node_modules/**",
       "**/.idea/**",
+      "**/.settings/**",
+      "**/.kotlin/**",
       "**/.git/**",
+      "**/.github/**",
+
+      "**/node_modules/**",
+
       "**/out/**",
+      "**/dist/**",
+
       "**/generated/**",
       "**/generated-sources/**",
       "**/generated-test-sources/**",
+
       "**/*.class",
       "**/*.jar",
       "**/*.war",
       "**/*.ear",
       "**/*.iml",
+
       "**/*.log",
       "**/logs/**",
       "**/tmp/**",
+
+      "**/coverage/**",
+      "**/.cache/**",
+      "**/.scannerwork/**",
+
       "**/.DS_Store"
     ]
   }

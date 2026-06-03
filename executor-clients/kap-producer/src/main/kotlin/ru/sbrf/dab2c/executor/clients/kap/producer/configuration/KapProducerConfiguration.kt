@@ -18,7 +18,9 @@ import ru.sbrf.dab2c.executor.clients.kap.producer.api.KapProducerClient
 import ru.sbrf.dab2c.executor.clients.kap.producer.configuration.properties.KapProducerConfigurationProperties
 import ru.sbrf.dab2c.executor.clients.kap.producer.impl.AsyncKapProducerClientDecorator
 import ru.sbrf.dab2c.executor.clients.kap.producer.impl.KapProducerClientImpl
+import ru.sbrf.dab2c.executor.clients.kap.producer.monitoring.MonitoringKapProducerClientDecorator
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
+import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricFactory
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -58,11 +60,22 @@ class KapProducerConfiguration {
     internal fun kapProducerClient(
         properties: KapProducerConfigurationProperties,
         @Qualifier(KAP_KAFKA_TEMPLATE_BEAN_NAME) kafkaTemplate: KafkaTemplate<String, Any>,
-        @Qualifier(KAP_PRODUCER_SCOPE_BEAN_NAME) scope: CoroutineScope
-    ): KapProducerClient = AsyncKapProducerClientDecorator(
-        delegate = KapProducerClientImpl(properties, kafkaTemplate),
-        scope = scope
-    )
+        @Qualifier(KAP_PRODUCER_SCOPE_BEAN_NAME) scope: CoroutineScope,
+        metricFactory: MetricFactory
+    ): KapProducerClient {
+        val impl = KapProducerClientImpl(properties, kafkaTemplate)
+
+        val async = AsyncKapProducerClientDecorator(
+            delegate = impl,
+            scope = scope
+        )
+
+        return MonitoringKapProducerClientDecorator(
+            delegate = async,
+            properties = properties,
+            metricFactory = metricFactory
+        )
+    }
 
     internal companion object {
         internal const val KAP_PRODUCER_FACTORY_BEAN_NAME = "kapProducerFactory"
