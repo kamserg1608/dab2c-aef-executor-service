@@ -41,8 +41,6 @@ class MonitoringKapProducerClientDecoratorTest {
     @Test
     fun `should publish dialog and record success metrics`() = runTest {
         val dialog = dialogEnvelope()
-        val baseTags = dialogBaseTags()
-        val successTags = baseTags + (KapProducerMetricTags.STATUS to KapProducerMetricTags.SUCCESS)
 
         coEvery { delegate.publishDialog(dialog) } returns Unit
 
@@ -51,7 +49,7 @@ class MonitoringKapProducerClientDecoratorTest {
         coVerify(exactly = 1) {
             metricFactory.incrementCounter(
                 metric = KapProducerMetric.ANALYTICS_PREPARED_MESSAGES_TOTAL,
-                tags = baseTags
+                tags = preparedTags(DIALOGS_TOPIC)
             )
         }
         coVerify(exactly = 1) {
@@ -60,14 +58,14 @@ class MonitoringKapProducerClientDecoratorTest {
         coVerify(exactly = 1) {
             metricFactory.incrementCounter(
                 metric = KapProducerMetric.ANALYTICS_PUBLISHED_MESSAGES_TOTAL,
-                tags = successTags
+                tags = publishedTags(DIALOGS_TOPIC)
             )
         }
         coVerify(exactly = 1) {
             metricFactory.recordDuration(
                 metric = KapProducerMetric.ANALYTICS_PUBLISHED_MESSAGES_DURATION_SECONDS,
                 durationNs = any(),
-                tags = successTags
+                tags = durationTags(DIALOGS_TOPIC)
             )
         }
 
@@ -77,8 +75,6 @@ class MonitoringKapProducerClientDecoratorTest {
     @Test
     fun `should publish agent analytics and record success metrics`() = runTest {
         val analytics = agentAnalyticsEnvelope()
-        val baseTags = agentAnalyticsBaseTags()
-        val successTags = baseTags + (KapProducerMetricTags.STATUS to KapProducerMetricTags.SUCCESS)
 
         coEvery { delegate.publishAgentAnalytics(analytics) } returns Unit
 
@@ -87,7 +83,7 @@ class MonitoringKapProducerClientDecoratorTest {
         coVerify(exactly = 1) {
             metricFactory.incrementCounter(
                 metric = KapProducerMetric.ANALYTICS_PREPARED_MESSAGES_TOTAL,
-                tags = baseTags
+                tags = preparedTags(AGENTS_TOPIC)
             )
         }
         coVerify(exactly = 1) {
@@ -96,14 +92,14 @@ class MonitoringKapProducerClientDecoratorTest {
         coVerify(exactly = 1) {
             metricFactory.incrementCounter(
                 metric = KapProducerMetric.ANALYTICS_PUBLISHED_MESSAGES_TOTAL,
-                tags = successTags
+                tags = publishedTags(AGENTS_TOPIC)
             )
         }
         coVerify(exactly = 1) {
             metricFactory.recordDuration(
                 metric = KapProducerMetric.ANALYTICS_PUBLISHED_MESSAGES_DURATION_SECONDS,
                 durationNs = any(),
-                tags = successTags
+                tags = durationTags(AGENTS_TOPIC)
             )
         }
 
@@ -114,12 +110,6 @@ class MonitoringKapProducerClientDecoratorTest {
     fun `should record exception metrics and rethrow on dialog publish error`() = runTest {
         val dialog = dialogEnvelope()
         val exception = IllegalStateException("dialog failed")
-        val baseTags = dialogBaseTags()
-        val exceptionCounterTags = baseTags + mapOf(
-            KapProducerMetricTags.STATUS to KapProducerMetricTags.EXCEPTION,
-            KapProducerMetricTags.EXCEPTION to IllegalStateException::class.simpleName.orEmpty()
-        )
-        val exceptionDurationTags = baseTags + (KapProducerMetricTags.STATUS to KapProducerMetricTags.EXCEPTION)
 
         coEvery { delegate.publishDialog(dialog) } throws exception
 
@@ -132,7 +122,7 @@ class MonitoringKapProducerClientDecoratorTest {
         coVerify(exactly = 1) {
             metricFactory.incrementCounter(
                 metric = KapProducerMetric.ANALYTICS_PREPARED_MESSAGES_TOTAL,
-                tags = baseTags
+                tags = preparedTags(DIALOGS_TOPIC)
             )
         }
         coVerify(exactly = 1) {
@@ -141,14 +131,17 @@ class MonitoringKapProducerClientDecoratorTest {
         coVerify(exactly = 1) {
             metricFactory.incrementCounter(
                 metric = KapProducerMetric.ANALYTICS_PUBLISHED_MESSAGES_EXCEPTIONS_TOTAL,
-                tags = exceptionCounterTags
+                tags = exceptionTags(
+                    destination = DIALOGS_TOPIC,
+                    exceptionType = IllegalStateException::class.simpleName.orEmpty()
+                )
             )
         }
         coVerify(exactly = 1) {
             metricFactory.recordDuration(
                 metric = KapProducerMetric.ANALYTICS_PUBLISHED_MESSAGES_DURATION_SECONDS,
                 durationNs = any(),
-                tags = exceptionDurationTags
+                tags = durationTags(DIALOGS_TOPIC)
             )
         }
 
@@ -159,12 +152,6 @@ class MonitoringKapProducerClientDecoratorTest {
     fun `should record exception metrics and rethrow on agent analytics publish error`() = runTest {
         val analytics = agentAnalyticsEnvelope()
         val exception = IllegalArgumentException("analytics failed")
-        val baseTags = agentAnalyticsBaseTags()
-        val exceptionCounterTags = baseTags + mapOf(
-            KapProducerMetricTags.STATUS to KapProducerMetricTags.EXCEPTION,
-            KapProducerMetricTags.EXCEPTION to IllegalArgumentException::class.simpleName.orEmpty()
-        )
-        val exceptionDurationTags = baseTags + (KapProducerMetricTags.STATUS to KapProducerMetricTags.EXCEPTION)
 
         coEvery { delegate.publishAgentAnalytics(analytics) } throws exception
 
@@ -177,7 +164,7 @@ class MonitoringKapProducerClientDecoratorTest {
         coVerify(exactly = 1) {
             metricFactory.incrementCounter(
                 metric = KapProducerMetric.ANALYTICS_PREPARED_MESSAGES_TOTAL,
-                tags = baseTags
+                tags = preparedTags(AGENTS_TOPIC)
             )
         }
         coVerify(exactly = 1) {
@@ -186,14 +173,17 @@ class MonitoringKapProducerClientDecoratorTest {
         coVerify(exactly = 1) {
             metricFactory.incrementCounter(
                 metric = KapProducerMetric.ANALYTICS_PUBLISHED_MESSAGES_EXCEPTIONS_TOTAL,
-                tags = exceptionCounterTags
+                tags = exceptionTags(
+                    destination = AGENTS_TOPIC,
+                    exceptionType = IllegalArgumentException::class.simpleName.orEmpty()
+                )
             )
         }
         coVerify(exactly = 1) {
             metricFactory.recordDuration(
                 metric = KapProducerMetric.ANALYTICS_PUBLISHED_MESSAGES_DURATION_SECONDS,
                 durationNs = any(),
-                tags = exceptionDurationTags
+                tags = durationTags(AGENTS_TOPIC)
             )
         }
 
@@ -201,10 +191,9 @@ class MonitoringKapProducerClientDecoratorTest {
     }
 
     @Test
-    fun `should rethrow cancellation and not record exception metrics`() = runTest {
+    fun `should rethrow cancellation and not record publish metrics`() = runTest {
         val analytics = agentAnalyticsEnvelope()
         val exception = CancellationException("cancelled")
-        val baseTags = agentAnalyticsBaseTags()
 
         coEvery { delegate.publishAgentAnalytics(analytics) } throws exception
 
@@ -217,7 +206,7 @@ class MonitoringKapProducerClientDecoratorTest {
         coVerify(exactly = 1) {
             metricFactory.incrementCounter(
                 metric = KapProducerMetric.ANALYTICS_PREPARED_MESSAGES_TOTAL,
-                tags = baseTags
+                tags = preparedTags(AGENTS_TOPIC)
             )
         }
         coVerify(exactly = 1) {
@@ -225,13 +214,13 @@ class MonitoringKapProducerClientDecoratorTest {
         }
         coVerify(exactly = 0) {
             metricFactory.incrementCounter(
-                metric = KapProducerMetric.ANALYTICS_PUBLISHED_MESSAGES_EXCEPTIONS_TOTAL,
+                metric = KapProducerMetric.ANALYTICS_PUBLISHED_MESSAGES_TOTAL,
                 tags = any()
             )
         }
         coVerify(exactly = 0) {
             metricFactory.incrementCounter(
-                metric = KapProducerMetric.ANALYTICS_PUBLISHED_MESSAGES_TOTAL,
+                metric = KapProducerMetric.ANALYTICS_PUBLISHED_MESSAGES_EXCEPTIONS_TOTAL,
                 tags = any()
             )
         }
@@ -254,17 +243,29 @@ class MonitoringKapProducerClientDecoratorTest {
             e
         }
 
-    private fun dialogBaseTags(): Map<String, String> =
+    private fun preparedTags(destination: String): Map<String, String> =
         mapOf(
-            KapProducerMetricTags.MESSAGE_TYPE to KapProducerMetricTags.DIALOG,
-            KapProducerMetricTags.TOPIC to DIALOGS_TOPIC
+            KapProducerMetricTags.DESTINATION to destination,
+            KapProducerMetricTags.STATUS to KapProducerMetricTags.SUCCESS
         )
 
-    private fun agentAnalyticsBaseTags(): Map<String, String> =
+    private fun publishedTags(destination: String): Map<String, String> =
         mapOf(
-            KapProducerMetricTags.MESSAGE_TYPE to KapProducerMetricTags.AGENT_ANALYTICS,
-            KapProducerMetricTags.TOPIC to AGENTS_TOPIC
+            KapProducerMetricTags.DESTINATION to destination,
+            KapProducerMetricTags.STATUS to KapProducerMetricTags.SUCCESS
         )
+
+    private fun exceptionTags(
+        destination: String,
+        exceptionType: String
+    ): Map<String, String> =
+        mapOf(
+            KapProducerMetricTags.DESTINATION to destination,
+            KapProducerMetricTags.EXCEPTION_TYPE to exceptionType
+        )
+
+    private fun durationTags(destination: String): Map<String, String> =
+        mapOf(KapProducerMetricTags.DESTINATION to destination)
 
     private fun agentAnalyticsEnvelope(): AgentAnalyticsEnvelope =
         AgentAnalyticsEnvelope(
@@ -290,7 +291,7 @@ class MonitoringKapProducerClientDecoratorTest {
         )
 
     private companion object {
-        const val DIALOGS_TOPIC = "dialogs-topic"
-        const val AGENTS_TOPIC = "agents-topic"
+        const val DIALOGS_TOPIC = "dab2c-dialogs"
+        const val AGENTS_TOPIC = "dab2c-agents"
     }
 }

@@ -17,99 +17,83 @@ class MonitoringKapProducerClientDecorator(
 ) : KapProducerClient {
 
     override suspend fun publishDialog(dialog: DialogEnvelope) {
-        monitorPublish(
-            messageType = KapProducerMetricTags.DIALOG,
-            topic = properties.dialogsTopic
-        ) {
+        monitorPublish(destination = properties.dialogsTopic) {
             delegate.publishDialog(dialog)
         }
     }
 
     override suspend fun publishAgentAnalytics(analytics: AgentAnalyticsEnvelope) {
-        monitorPublish(
-            messageType = KapProducerMetricTags.AGENT_ANALYTICS,
-            topic = properties.agentsTopic
-        ) {
+        monitorPublish(destination = properties.agentsTopic) {
             delegate.publishAgentAnalytics(analytics)
         }
     }
 
     private suspend fun monitorPublish(
-        messageType: String,
-        topic: String,
+        destination: String,
         block: suspend () -> Unit
     ) {
-        val baseTags = baseTags(messageType, topic)
         val startTime = System.nanoTime()
 
-        incrementPrepared(baseTags)
+        incrementPrepared(destination)
 
         try {
             block()
-            recordSuccess(baseTags, startTime)
+            recordSuccess(destination, startTime)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            recordException(baseTags, startTime, e)
+            recordException(destination, startTime, e)
             throw e
         }
     }
 
-    private fun baseTags(
-        messageType: String,
-        topic: String
-    ): Map<String, String> =
-        mapOf(
-            KapProducerMetricTags.MESSAGE_TYPE to messageType,
-            KapProducerMetricTags.TOPIC to topic
-        )
-
-    private suspend fun incrementPrepared(tags: Map<String, String>) {
+    private suspend fun incrementPrepared(destination: String) {
         metricFactory.incrementCounter(
             metric = KapProducerMetric.ANALYTICS_PREPARED_MESSAGES_TOTAL,
-            tags = tags
+            tags = mapOf(
+                KapProducerMetricTags.DESTINATION to destination,
+                KapProducerMetricTags.STATUS to KapProducerMetricTags.SUCCESS
+            )
         )
     }
 
     private suspend fun recordSuccess(
-        tags: Map<String, String>,
+        destination: String,
         startTime: Long
     ) {
-        val successTags = tags + (KapProducerMetricTags.STATUS to KapProducerMetricTags.SUCCESS)
-
         metricFactory.incrementCounter(
             metric = KapProducerMetric.ANALYTICS_PUBLISHED_MESSAGES_TOTAL,
-            tags = successTags
+            tags = mapOf(
+                KapProducerMetricTags.DESTINATION to destination,
+                KapProducerMetricTags.STATUS to KapProducerMetricTags.SUCCESS
+            )
         )
-        recordDuration(successTags, startTime)
+        recordDuration(destination, startTime)
     }
 
     private suspend fun recordException(
-        tags: Map<String, String>,
+        destination: String,
         startTime: Long,
-        e: Exception
+        exception: Exception
     ) {
         metricFactory.incrementCounter(
             metric = KapProducerMetric.ANALYTICS_PUBLISHED_MESSAGES_EXCEPTIONS_TOTAL,
-            tags = tags + mapOf(
-                KapProducerMetricTags.STATUS to KapProducerMetricTags.EXCEPTION,
-                KapProducerMetricTags.EXCEPTION to e::class.simpleName.orEmpty()
+            tags = mapOf(
+                KapProducerMetricTags.DESTINATION to destination,
+                KapProducerMetricTags.EXCEPTION_TYPE to exception::class.simpleName.orEmpty()
             )
         )
-        recordDuration(
-            tags = tags + (KapProducerMetricTags.STATUS to KapProducerMetricTags.EXCEPTION),
-            startTime = startTime
-        )
+        recordDuration(destination, startTime)
     }
 
     private suspend fun recordDuration(
-        tags: Map<String, String>,
+        destination: String,
         startTime: Long
     ) {
         metricFactory.recordDuration(
             metric = KapProducerMetric.ANALYTICS_PUBLISHED_MESSAGES_DURATION_SECONDS,
             durationNs = System.nanoTime() - startTime,
-            tags = tags
+            tags = mapOf(KapProducerMetricTags.DESTINATION to destination)
         )
     }
 }
