@@ -48,10 +48,10 @@ import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubSdsSessionRe
 )
 @ActiveProfiles(profiles = ["STUB", "stubMode", "test"])
 @EnableWireMock(
-    ConfigureWireMock(name = "gigaVoiceAgent", baseUrlProperties = ["giga.voice.agent.client.baseUrl"]),
-    ConfigureWireMock(name = "efsAdapter", baseUrlProperties = ["efs.adapter.baseUrl"]),
-    ConfigureWireMock(name = "configurator", baseUrlProperties = ["configurator.baseUrl"]),
-    ConfigureWireMock(name = "iag", baseUrlProperties = ["iag.client.baseUrl"])
+    ConfigureWireMock(name = "gigaVoiceAgent", baseUrlProperties = ["http.clients.giga-agent.baseUrl"]),
+    ConfigureWireMock(name = "efsAdapter", baseUrlProperties = ["http.clients.efs-adapter.baseUrl"]),
+    ConfigureWireMock(name = "configurator", baseUrlProperties = ["http.clients.configurator.baseUrl"]),
+    ConfigureWireMock(name = "iag", baseUrlProperties = ["http.clients.iag.baseUrl"])
 )
 @EmbeddedKafka(
     partitions = 1,

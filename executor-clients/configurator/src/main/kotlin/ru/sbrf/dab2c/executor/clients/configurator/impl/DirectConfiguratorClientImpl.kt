@@ -14,10 +14,11 @@ import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.common.util.buildFullUrl
 import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorClient.Companion.FUNCTION_LIST_ENDPOINT
+import ru.sbrf.dab2c.executor.clients.configurator.configuration.DirectConfiguratorClientConfiguration.Companion.CONFIGURATOR_CLIENT_NAME
 import ru.sbrf.dab2c.executor.clients.configurator.configuration.DirectConfiguratorClientConfiguration.Companion.CONFIGURATOR_HTTP_CLIENT_BEAN_NAME
-import ru.sbrf.dab2c.executor.clients.configurator.configuration.properties.DirectConfiguratorClientConfigurationProperties
 import ru.sbrf.dab2c.executor.clients.configurator.mapper.FunctionListResponseMapper
 import ru.sbrf.dab2c.executor.clients.configurator.model.BaseResponseFunctionListResponse
+import ru.sbrf.dab2c.executor.clients.http.factory.HttpClientFactory
 import ru.sbrf.dab2c.executor.domain.configuration.FunctionList
 import ru.sbrf.dab2c.executor.library.context.currentUfsCookie
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
@@ -35,10 +36,10 @@ private const val CLASS_NAME = "ConfiguratorFacade"
 class DirectConfiguratorClientImpl(
     @Qualifier(CONFIGURATOR_HTTP_CLIENT_BEAN_NAME)
     private val httpClient: HttpClient,
-    properties: DirectConfiguratorClientConfigurationProperties
+    httpClientFactory: HttpClientFactory
 ) : DirectConfiguratorClient {
 
-    private val baseUrl = properties.baseUrl
+    private val baseUrl = httpClientFactory.propertiesFor(CONFIGURATOR_CLIENT_NAME).baseUrl
     private val objectMapper = ObjectMappers.MAPPER
     private val functionListResponseMapper = FunctionListResponseMapper.INSTANCE
 

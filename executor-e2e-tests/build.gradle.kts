@@ -12,7 +12,7 @@ dependencies {
     implementation(project(":executor-services:voice-executor"))
     implementation(project(":executor-libraries:monitoring"))
     implementation(project(":executor-clients:kap-producer"))
-    implementation(project(":executor-clients:common-converters"))
+    implementation(project(":executor-clients:http-client-factory"))
 
     testImplementation(libs.bundles.grpc)
     testImplementation(libs.kotlinx.coroutines.test)

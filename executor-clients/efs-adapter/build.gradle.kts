@@ -7,7 +7,7 @@ dependencies {
     api(project(":executor-domain-model"))
     api(project(":executor-libraries:context"))
     api(project(":executor-libraries:audit"))
-    implementation(project(":executor-clients:common-converters"))
+    implementation(project(":executor-clients:http-client-factory"))
     implementation(project(":executor-libraries:monitoring"))
     implementation(project(":executor-libraries:jackson"))
     implementation(project(":executor-libraries:logging"))
