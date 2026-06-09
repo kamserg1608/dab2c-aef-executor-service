@@ -9,7 +9,7 @@ dependencies {
     api(project(":executor-libraries:audit"))
     api(project(":executor-libraries:tracing"))
     implementation(project(":executor-libraries:common"))
-    implementation(project(":executor-clients:common-converters"))
+    implementation(project(":executor-clients:http-client-factory"))
     implementation(project(":executor-clients:giga-voice"))
     implementation(project(":executor-libraries:jackson"))
     implementation(project(":executor-libraries:logging"))

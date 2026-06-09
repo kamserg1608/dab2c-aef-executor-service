@@ -1,4 +1,4 @@
-package ru.sbrf.dab2c.executor.clients.converter
+package ru.sbrf.dab2c.executor.clients.giga.agent.converter
 
 import com.google.protobuf.Duration
 import kotlin.time.Duration.Companion.nanoseconds

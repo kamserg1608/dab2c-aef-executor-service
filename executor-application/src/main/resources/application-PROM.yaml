@@ -37,70 +37,65 @@ executor:
       - '(?<=\\"firstName\\":\\")[^\\"]*'
       - '(?<=\\"patrName\\":\\")[^\\"]*'
 
-# GigaAgent HTTP Client
-giga:
-  voice:
-    agent:
-      client:
-        baseUrl: ${GIGA_AGENT_BASE_URL}
-        connectionTimeout: ${GIGA_AGENT_CONNECT_TIMEOUT_MS:10000}
-        requestTimeout: ${GIGA_AGENT_REQUEST_TIMEOUT_MS:30000}
-        socketTimeout: ${GIGA_AGENT_SOCKET_TIMEOUT_MS:30000}
-        pool:
-          maxConnections: ${GIGA_AGENT_POOL_MAX_CONNECTIONS:100}
-        retry:
-          maxRetries: ${GIGA_AGENT_RETRY_MAX_RETRIES:3}
-          delay: ${GIGA_AGENT_RETRY_DELAY_MS:1000}
-          maxDelay: ${GIGA_AGENT_RETRY_MAX_DELAY_MS:10000}
-          multiplier: ${GIGA_AGENT_RETRY_MULTIPLIER:2.0}
-          statusCodes: ${GIGA_AGENT_RETRY_STATUS_CODES:502,503,504}
-
-# EFS Adapter HTTP Client
-efs:
-  adapter:
-    baseUrl: ${EFS_ADAPTER_BASE_URL}
-    connectionTimeout: ${EFS_ADAPTER_CONNECT_TIMEOUT_MS:5000}
-    requestTimeout: ${EFS_ADAPTER_REQUEST_TIMEOUT_MS:15000}
-    socketTimeout: ${EFS_ADAPTER_SOCKET_TIMEOUT_MS:15000}
-    pool:
-      maxConnections: ${EFS_ADAPTER_POOL_MAX_CONNECTIONS:50}
-    retry:
-      maxRetries: ${EFS_ADAPTER_RETRY_MAX_RETRIES:2}
-      delay: ${EFS_ADAPTER_RETRY_DELAY_MS:500}
-      maxDelay: ${EFS_ADAPTER_RETRY_MAX_DELAY_MS:5000}
-      multiplier: ${EFS_ADAPTER_RETRY_MULTIPLIER:2.0}
-      statusCodes: ${EFS_ADAPTER_RETRY_STATUS_CODES:502,503,504}
-
-# Configurator HTTP Client
-configurator:
-  baseUrl: ${CONFIGURATOR_BASE_URL:http://project78750.sbermock.sigma.sbrf.ru:8080}
-  connectionTimeout: ${CONFIGURATOR_CONNECT_TIMEOUT_MS:5000}
-  requestTimeout: ${CONFIGURATOR_REQUEST_TIMEOUT_MS:15000}
-  socketTimeout: ${CONFIGURATOR_SOCKET_TIMEOUT_MS:15000}
-  pool:
-    maxConnections: ${CONFIGURATOR_POOL_MAX_CONNECTIONS:50}
-  retry:
-    maxRetries: ${CONFIGURATOR_RETRY_MAX_RETRIES:2}
-    delay: ${CONFIGURATOR_RETRY_DELAY_MS:500}
-    maxDelay: ${CONFIGURATOR_RETRY_MAX_DELAY_MS:5000}
-    multiplier: ${CONFIGURATOR_RETRY_MULTIPLIER:2.0}
-    statusCodes: ${CONFIGURATOR_RETRY_STATUS_CODES:502,503,504}
-
-# IAG HTTP Client
-iag:
-  client:
-    baseUrl: ${IAG_BASE_URL:http://project78750.sbermock.sigma.sbrf.ru:8080}
-    connectionTimeout: ${IAG_CONNECT_TIMEOUT_MS:5000}
-    requestTimeout: ${IAG_REQUEST_TIMEOUT_MS:15000}
-    socketTimeout: ${IAG_SOCKET_TIMEOUT_MS:15000}
-    pool:
-      maxConnections: ${IAG_POOL_MAX_CONNECTIONS:50}
-    retry:
-      maxRetries: ${IAG_RETRY_MAX_RETRIES:2}
-      delay: ${IAG_RETRY_DELAY_MS:500}
-      maxDelay: ${IAG_RETRY_MAX_DELAY_MS:5000}
-      multiplier: ${IAG_RETRY_MULTIPLIER:2.0}
-      statusCodes: ${IAG_RETRY_STATUS_CODES:502,503,504}
+# Outbound HTTP Clients
+http:
+  clients:
+    giga-agent:
+      logLevel: ${GIGA_AGENT_LOG_LEVEL:ALL}
+      baseUrl: ${GIGA_AGENT_BASE_URL}
+      connectionTimeout: ${GIGA_AGENT_CONNECT_TIMEOUT_MS:10000}
+      requestTimeout: ${GIGA_AGENT_REQUEST_TIMEOUT_MS:30000}
+      socketTimeout: ${GIGA_AGENT_SOCKET_TIMEOUT_MS:30000}
+      pool:
+        maxConnections: ${GIGA_AGENT_POOL_MAX_CONNECTIONS:100}
+      retry:
+        maxRetries: ${GIGA_AGENT_RETRY_MAX_RETRIES:3}
+        delay: ${GIGA_AGENT_RETRY_DELAY_MS:1000}
+        maxDelay: ${GIGA_AGENT_RETRY_MAX_DELAY_MS:10000}
+        multiplier: ${GIGA_AGENT_RETRY_MULTIPLIER:2.0}
+        statusCodes: ${GIGA_AGENT_RETRY_STATUS_CODES:502,503,504}
+    efs-adapter:
+      logLevel: ${EFS_ADAPTER_LOG_LEVEL:ALL}
+      baseUrl: ${EFS_ADAPTER_BASE_URL}
+      connectionTimeout: ${EFS_ADAPTER_CONNECT_TIMEOUT_MS:5000}
+      requestTimeout: ${EFS_ADAPTER_REQUEST_TIMEOUT_MS:15000}
+      socketTimeout: ${EFS_ADAPTER_SOCKET_TIMEOUT_MS:15000}
+      pool:
+        maxConnections: ${EFS_ADAPTER_POOL_MAX_CONNECTIONS:50}
+      retry:
+        maxRetries: ${EFS_ADAPTER_RETRY_MAX_RETRIES:2}
+        delay: ${EFS_ADAPTER_RETRY_DELAY_MS:500}
+        maxDelay: ${EFS_ADAPTER_RETRY_MAX_DELAY_MS:5000}
+        multiplier: ${EFS_ADAPTER_RETRY_MULTIPLIER:2.0}
+        statusCodes: ${EFS_ADAPTER_RETRY_STATUS_CODES:502,503,504}
+    configurator:
+      logLevel: ${CONFIGURATOR_LOG_LEVEL:ALL}
+      baseUrl: ${CONFIGURATOR_BASE_URL:http://project78750.sbermock.sigma.sbrf.ru:8080}
+      connectionTimeout: ${CONFIGURATOR_CONNECT_TIMEOUT_MS:5000}
+      requestTimeout: ${CONFIGURATOR_REQUEST_TIMEOUT_MS:15000}
+      socketTimeout: ${CONFIGURATOR_SOCKET_TIMEOUT_MS:15000}
+      pool:
+        maxConnections: ${CONFIGURATOR_POOL_MAX_CONNECTIONS:50}
+      retry:
+        maxRetries: ${CONFIGURATOR_RETRY_MAX_RETRIES:2}
+        delay: ${CONFIGURATOR_RETRY_DELAY_MS:500}
+        maxDelay: ${CONFIGURATOR_RETRY_MAX_DELAY_MS:5000}
+        multiplier: ${CONFIGURATOR_RETRY_MULTIPLIER:2.0}
+        statusCodes: ${CONFIGURATOR_RETRY_STATUS_CODES:502,503,504}
+    iag:
+      logLevel: ${IAG_LOG_LEVEL:ALL}
+      baseUrl: ${IAG_BASE_URL:http://project78750.sbermock.sigma.sbrf.ru:8080}
+      connectionTimeout: ${IAG_CONNECT_TIMEOUT_MS:5000}
+      requestTimeout: ${IAG_REQUEST_TIMEOUT_MS:15000}
+      socketTimeout: ${IAG_SOCKET_TIMEOUT_MS:15000}
+      pool:
+        maxConnections: ${IAG_POOL_MAX_CONNECTIONS:50}
+      retry:
+        maxRetries: ${IAG_RETRY_MAX_RETRIES:2}
+        delay: ${IAG_RETRY_DELAY_MS:500}
+        maxDelay: ${IAG_RETRY_MAX_DELAY_MS:5000}
+        multiplier: ${IAG_RETRY_MULTIPLIER:2.0}
+        statusCodes: ${IAG_RETRY_STATUS_CODES:502,503,504}
 
 # KAP Producer
 kafka:

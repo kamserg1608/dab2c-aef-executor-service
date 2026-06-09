@@ -39,70 +39,65 @@ executor:
       - '(?<=\\"firstName\\":\\")[^\\"]*'
       - '(?<=\\"patrName\\":\\")[^\\"]*'
 
-# GigaAgent HTTP Client
-giga:
-  voice:
-    agent:
-      client:
-        baseUrl: http://localhost:8080
-        connectionTimeout: 10000
-        requestTimeout: 30000
-        socketTimeout: 30000
-        pool:
-          maxConnections: 100
-        retry:
-          maxRetries: 3
-          delay: 1000
-          maxDelay: 10000
-          multiplier: 2.0
-          statusCodes: 502,503,504
-
-# EFS Adapter HTTP Client
-efs:
-  adapter:
-    baseUrl: http://localhost:8080
-    connectionTimeout: 5000
-    requestTimeout: 15000
-    socketTimeout: 15000
-    pool:
-      maxConnections: 50
-    retry:
-      maxRetries: 2
-      delay: 500
-      maxDelay: 5000
-      multiplier: 2.0
-      statusCodes: 502,503,504
-
-# Configurator HTTP Client
-configurator:
-  baseUrl: http://localhost:8080
-  connectionTimeout: 5000
-  requestTimeout: 15000
-  socketTimeout: 15000
-  pool:
-    maxConnections: 50
-  retry:
-    maxRetries: 2
-    delay: 500
-    maxDelay: 5000
-    multiplier: 2.0
-    statusCodes: 502,503,504
-
-# IAG HTTP Client
-iag:
-  client:
-    baseUrl: http://localhost:8080
-    connectionTimeout: 5000
-    requestTimeout: 15000
-    socketTimeout: 15000
-    pool:
-      maxConnections: 50
-    retry:
-      maxRetries: 2
-      delay: 500
-      maxDelay: 5000
-      multiplier: 2.0
-      statusCodes: 502,503,504
+# Outbound HTTP Clients
+http:
+  clients:
+    giga-agent:
+      logLevel: ALL
+      baseUrl: http://localhost:8080
+      connectionTimeout: 10000
+      requestTimeout: 30000
+      socketTimeout: 30000
+      pool:
+        maxConnections: 100
+      retry:
+        maxRetries: 3
+        delay: 1000
+        maxDelay: 10000
+        multiplier: 2.0
+        statusCodes: 502,503,504
+    efs-adapter:
+      logLevel: ALL
+      baseUrl: http://localhost:8080
+      connectionTimeout: 5000
+      requestTimeout: 15000
+      socketTimeout: 15000
+      pool:
+        maxConnections: 50
+      retry:
+        maxRetries: 2
+        delay: 500
+        maxDelay: 5000
+        multiplier: 2.0
+        statusCodes: 502,503,504
+    configurator:
+      logLevel: ALL
+      baseUrl: http://localhost:8080
+      connectionTimeout: 5000
+      requestTimeout: 15000
+      socketTimeout: 15000
+      pool:
+        maxConnections: 50
+      retry:
+        maxRetries: 2
+        delay: 500
+        maxDelay: 5000
+        multiplier: 2.0
+        statusCodes: 502,503,504
+    iag:
+      logLevel: ALL
+      baseUrl: http://localhost:8080
+      connectionTimeout: 5000
+      requestTimeout: 15000
+      socketTimeout: 15000
+      pool:
+        maxConnections: 50
+      retry:
+        maxRetries: 2
+        delay: 500
+        maxDelay: 5000
+        multiplier: 2.0
+        statusCodes: 502,503,504
 
 # KAP Producer (disabled in STUB mode)
 kafka:

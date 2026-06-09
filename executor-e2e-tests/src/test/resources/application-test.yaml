@@ -25,17 +25,6 @@ grpc:
     downstream:
       address: static://localhost:29091
 
-# WireMock URL injection
-giga:
-  voice:
-    agent:
-      client:
-        baseUrl: ${wiremock.server.gigaVoiceAgent.baseUrl:http://localhost:8080}
-
-efs:
-  adapter:
-    baseUrl: ${wiremock.server.efsAdapter.baseUrl:http://localhost:8081}
-
 # KAP Producer configuration
 kafka:
   kap:

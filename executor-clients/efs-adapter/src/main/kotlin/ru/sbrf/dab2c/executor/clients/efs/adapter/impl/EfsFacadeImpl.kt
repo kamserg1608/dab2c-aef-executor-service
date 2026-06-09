@@ -21,8 +21,8 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.REST_A
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.RETRIEVE_PARAMS_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.SESSION_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade.Companion.WRITE_DATA_ENDPOINT
+import ru.sbrf.dab2c.executor.clients.efs.adapter.configuration.EfsAdapterClientConfiguration.Companion.EFS_ADAPTER_CLIENT_NAME
 import ru.sbrf.dab2c.executor.clients.efs.adapter.configuration.EfsAdapterClientConfiguration.Companion.EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME
-import ru.sbrf.dab2c.executor.clients.efs.adapter.configuration.properties.EfsAdapterClientConfigurationProperties
 import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.AgentConfigurationMapper
 import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.ConfiguratorMapper
 import ru.sbrf.dab2c.executor.clients.efs.adapter.mapper.FunctionConfigMapper
@@ -38,6 +38,7 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseProfile
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseSessionConfig
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.BaseResponseVoid
 import ru.sbrf.dab2c.executor.clients.efs.adapter.model.FunctionConfigRequest
+import ru.sbrf.dab2c.executor.clients.http.factory.HttpClientFactory
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.configuration.FunctionConfig
 import ru.sbrf.dab2c.executor.domain.session.DaSessionCommon
@@ -62,10 +63,10 @@ private const val CLASS_NAME = "EfsFacade"
 @Service("efsFacadeImpl")
 class EfsFacadeImpl(
     @Qualifier(EFS_ADAPTER_HTTP_CLIENT_BEAN_NAME) private val httpClient: HttpClient,
-    properties: EfsAdapterClientConfigurationProperties
+    httpClientFactory: HttpClientFactory
 ) : EfsFacade {
 
-    private val baseUrl = properties.baseUrl
+    private val baseUrl = httpClientFactory.propertiesFor(EFS_ADAPTER_CLIENT_NAME).baseUrl
     private val objectMapper = ObjectMappers.MAPPER
     private val agentConfigMapper = AgentConfigurationMapper.INSTANCE
     private val functionConfigMapper = FunctionConfigMapper.INSTANCE

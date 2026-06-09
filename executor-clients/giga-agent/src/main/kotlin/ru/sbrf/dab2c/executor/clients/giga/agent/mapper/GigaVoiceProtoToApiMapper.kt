@@ -2,7 +2,7 @@
 
 package ru.sbrf.dab2c.executor.clients.giga.agent.mapper
 
-import ru.sbrf.dab2c.executor.clients.converter.ProtoTypeConverters
+import ru.sbrf.dab2c.executor.clients.giga.agent.converter.ProtoTypeConverters
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.AnyExampleInput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.AudioSettingsInput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionInput
