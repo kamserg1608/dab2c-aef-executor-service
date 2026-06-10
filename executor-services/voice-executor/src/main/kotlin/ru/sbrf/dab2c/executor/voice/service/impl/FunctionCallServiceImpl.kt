@@ -181,10 +181,10 @@ class FunctionCallServiceImpl(
         functionName: String
     ): FunctionConfig =
         runCatchingCancellable {
-            configuratorClient.getFunction(agentName, functionName)[functionName]
-                ?: error(
-                    "Function config '$functionName' not found for agent '$agentName'"
-                )
+            configuratorClient.getFunction(
+                agentName = agentName,
+                functionName = functionName
+            )
         }.getOrElse { e ->
             logger.error(e) {
                 "Failed to get function config for '$functionName' from configurator"

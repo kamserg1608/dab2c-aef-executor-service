@@ -2116,9 +2116,7 @@ components:
         success:
           type: boolean
         body:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/FunctionConfig'
+          $ref: '#/components/schemas/FunctionConfig'
         context:
           $ref: '#/components/schemas/Context'
         messages:

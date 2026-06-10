@@ -2,6 +2,8 @@ package ru.sbrf.dab2c.executor.it.support.wiremock
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 
@@ -19,14 +21,31 @@ object WireMockSetup {
         )
     }
 
-    fun WireMockServer.stubEfsAdapterConfiguratorFunction() {
+    fun WireMockServer.stubEfsAdapterConfiguratorFunction(
+        functionName: String,
+        type: String,
+        path: String? = null
+    ) {
+        val pathJson = path?.let { ",\n        \"path\": \"$it\"" } ?: ""
+
         stubFor(
             post(urlEqualTo("/configurator/function"))
+                .withRequestBody(matchingJsonPath("$.functionName", equalTo(functionName)))
                 .willReturn(
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody(WireMockResponses.EFS_ADAPTER_CONFIGURATOR_FUNCTION_RESPONSE)
+                        .withBody(
+                            """
+                            {
+                              "success": true,
+                              "body": {
+                                "type": "$type"$pathJson,
+                                "modality": ["text", "voice"]
+                              }
+                            }
+                            """.trimIndent()
+                        )
                 )
         )
     }
@@ -295,13 +314,20 @@ object WireMockSetup {
             stubEfsAuditEvent()
             stubPersonInfo()
             stubRetrieveParams(
-                "aef.executor.toggles.configurator.function-match" to "true"
+                "aef.executor.toggles.configurator.function-match" to configuratorEnabled.toString()
             )
-            stubEfsAdapterConfiguratorFunction()
+
+            if (configuratorEnabled) {
+                stubEfsAdapterConfiguratorFunction("transfer_to_operator", "DIVR")
+                stubEfsAdapterConfiguratorFunction("get_account_balance", "BACKEND")
+                stubEfsAdapterConfiguratorFunction("find_bank_office_iag", "IAG", "/bh")
+            }
         }
-        with(configurator) {
-            stubConfiguratorFunctionList()
+
+        if (configuratorEnabled) {
+            configurator.stubConfiguratorFunctionList()
         }
+
         gigaAgent.stubGigaAgentSettings(withFunctions, configuratorEnabled)
     }
 
@@ -321,16 +347,21 @@ object WireMockSetup {
             stubEfsAuditEvent()
             stubPersonInfo()
             stubRetrieveParams(
-                "aef.executor.toggles.configurator.function-match" to "true"
+                "aef.executor.toggles.configurator.function-match" to configuratorEnabled.toString()
             )
-            stubEfsAdapterConfiguratorFunction()
+
+            if (configuratorEnabled) {
+                stubEfsAdapterConfiguratorFunction("transfer_to_operator", "DIVR")
+                stubEfsAdapterConfiguratorFunction("get_account_balance", "BACKEND")
+                stubEfsAdapterConfiguratorFunction("find_bank_office_iag", "IAG", "/bh")
+            }
         }
-        with(configurator) {
-            stubConfiguratorFunctionList()
+
+        if (configuratorEnabled) {
+            configurator.stubConfiguratorFunctionList()
+            iag.stubConfiguratorFunctionListIag()
         }
-        with(iag) {
-            stubConfiguratorFunctionListIag()
-        }
+
         gigaAgent.stubGigaAgentSettings(withFunctions, configuratorEnabled)
     }
 
