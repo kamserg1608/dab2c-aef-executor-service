@@ -142,7 +142,7 @@ class EfsFacadeImpl(
     override suspend fun getFunction(
         agentName: String,
         functionName: String
-    ): Map<String, FunctionConfig> {
+    ): FunctionConfig {
         logger.debug {
             "Getting function config for agent: $agentName function: $functionName"
         }
@@ -157,10 +157,10 @@ class EfsFacadeImpl(
         checkSuccess(response.success, "getFunction")
 
         return response.body
-            ?.mapValues { (_, functionConfig) ->
-                functionConfigMapper.toDomain(functionConfig)
-            }
-            ?: emptyMap()
+            ?.let(functionConfigMapper::toDomain)
+            ?: throw NoSuchElementException(
+                "Function config not found for agent: $agentName function: $functionName"
+            )
     }
 
     private suspend fun executeFunctionRequest(

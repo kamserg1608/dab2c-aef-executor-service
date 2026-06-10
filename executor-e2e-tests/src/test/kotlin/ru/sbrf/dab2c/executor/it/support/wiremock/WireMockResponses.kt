@@ -35,26 +35,11 @@ object WireMockResponses {
     {
       "success": true,
       "body": {
-        "find_bank_office_iag": {
-          "type": "IAG",
-          "path": "/bh",
-          "modality": [
-            "voice"
-          ]
-        },
-        "transfer_to_operator": {
-          "type": "DIVR",
-          "modality": [
-            "text"
-          ]
-        },
-        "get_account_balance": {
-          "type": "BACKEND",
-          "modality": [
-            "text",
-            "voice"
-          ]
-        }
+        "type": "BACKEND",
+        "modality": [
+          "text",
+          "voice"
+        ]
       }
     }
     """.trimIndent()

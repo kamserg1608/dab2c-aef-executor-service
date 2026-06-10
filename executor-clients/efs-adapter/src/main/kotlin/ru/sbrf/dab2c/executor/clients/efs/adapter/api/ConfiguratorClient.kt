@@ -24,5 +24,5 @@ interface ConfiguratorClient {
     suspend fun getFunction(
         agentName: String,
         functionName: String
-    ): Map<String, FunctionConfig>
+    ): FunctionConfig
 }
