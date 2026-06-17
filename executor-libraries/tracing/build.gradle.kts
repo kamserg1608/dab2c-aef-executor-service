@@ -3,7 +3,12 @@ plugins {
 }
 
 dependencies {
-    api(libs.aef.sdk.spring.boot.starter)
+    api(libs.aef.sdk.spring.boot.starter) {
+        exclude(
+            group = "ru.sbrf.aef",
+            module = "skill-sdk-cmis"
+        )
+    }
     api(libs.opentelemetry.extension.kotlin)
     implementation(project(":executor-domain-model"))
     implementation(project(":executor-libraries:context"))

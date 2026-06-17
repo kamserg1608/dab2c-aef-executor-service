@@ -33,7 +33,7 @@ ktor = "3.1.2"
 konvert = "4.1.0"
 ksp = "2.1.20-1.0.32"
 
-aef-sdk = "1.1.69-SNAPSHOT"
+aef-sdk = "1.1.70-SNAPSHOT"
 opentelemetry = "1.42.1"
 opentelemetry-proto = "1.3.2-alpha"
 

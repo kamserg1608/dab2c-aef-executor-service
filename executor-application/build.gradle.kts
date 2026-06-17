@@ -15,7 +15,12 @@ dependencies {
     implementation(project(":executor-libraries:jackson"))
 
     implementation(libs.springdoc.openapi.starter.webflux.ui)
-    implementation(libs.aef.sdk.spring.boot.starter)
+    implementation(libs.aef.sdk.spring.boot.starter) {
+        exclude(
+            group = "ru.sbrf.aef",
+            module = "skill-sdk-cmis"
+        )
+    }
     implementation(libs.spring.boot.starter.actuator)
 
     // JSON logging for PROM profile
