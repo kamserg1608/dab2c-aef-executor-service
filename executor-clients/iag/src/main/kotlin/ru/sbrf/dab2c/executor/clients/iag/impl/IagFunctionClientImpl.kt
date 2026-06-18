@@ -18,8 +18,10 @@ import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionResult
 import ru.sbrf.dab2c.executor.clients.iag.api.IagFunctionClient
 import ru.sbrf.dab2c.executor.clients.iag.api.IagFunctionClient.Companion.FUNCTION_CALL_ENDPOINT
+import ru.sbrf.dab2c.executor.clients.iag.model.IagAgentAnalytics
 import ru.sbrf.dab2c.executor.clients.iag.model.IagFunctionResponse
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
+import ru.sbrf.dab2c.executor.domain.voice.AgentAnalytics
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.library.context.currentSessionInfo
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
@@ -74,25 +76,43 @@ class IagFunctionClientImpl(
             }.body<IagFunctionResponse>()
         }
 
-        checkSuccess(response)
+        checkError(response)
+
+        val iagFunctionResult = response.content?.functionResult
 
         return FunctionCallResult(
             result = functionResult {
-                content = serializeBody(response.body)
-                functionName = functionCalling.functionCall.name
-            }
+                content = serializeBody(iagFunctionResult?.content)
+                functionName = iagFunctionResult?.name ?: functionCalling.functionCall.name
+            },
+            analytics = response.xAnalytics
+                .flatMap { it.agentAnalytics }
+                .map { it.toDomain() }
         )
     }
 
-    private fun checkSuccess(response: IagFunctionResponse) {
-        if (response.success == false) {
-            error("IAG function call failed: success=false, error=${serializeBody(response.error)}")
+    private fun checkError(response: IagFunctionResponse) {
+        response.xContext?.error?.let { error ->
+            error(
+                "IAG function call failed: " +
+                    "type=${error.type}, " +
+                    "label=${error.label}, " +
+                    "description=${error.description}, " +
+                    "payload=${serializeBody(error.payload)}"
+            )
         }
     }
+
+    private fun IagAgentAnalytics.toDomain(): AgentAnalytics = AgentAnalytics(
+        dataVersion = dataVersion,
+        data = objectMapper.writeValueAsString(data)
+    )
 
     private fun serializeBody(body: JsonNode?): String =
         if (body == null || body.isNull) {
             "null"
+        } else if (body.isTextual) {
+            body.asText()
         } else {
             objectMapper.writeValueAsString(body)
         }
