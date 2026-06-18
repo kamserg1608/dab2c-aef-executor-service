@@ -4,10 +4,10 @@ import io.ktor.client.HttpClient
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceFunctionCallRequestBuilder
 import ru.sbrf.dab2c.executor.clients.http.factory.HttpClientFactory
 import ru.sbrf.dab2c.executor.clients.iag.api.IagFunctionClient
 import ru.sbrf.dab2c.executor.clients.iag.impl.IagFunctionClientImpl
+import ru.sbrf.dab2c.executor.clients.iag.mapper.IagFunctionRequestBuilder
 import ru.sbrf.dab2c.executor.clients.iag.monitoring.MonitoringIagFunctionClientDecorator
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricFactory
@@ -26,7 +26,7 @@ class IagClientConfiguration {
     internal fun iagFunctionCallClient(
         @Qualifier(IAG_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient,
         httpClientFactory: HttpClientFactory,
-        functionCallRequestBuilder: GigaVoiceFunctionCallRequestBuilder,
+        functionCallRequestBuilder: IagFunctionRequestBuilder,
         metricFactory: MetricFactory
     ): IagFunctionClient {
         val baseUrl = httpClientFactory.propertiesFor(IAG_CLIENT_NAME).baseUrl

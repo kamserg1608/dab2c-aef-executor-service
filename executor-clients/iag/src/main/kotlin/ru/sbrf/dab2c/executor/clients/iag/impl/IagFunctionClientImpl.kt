@@ -10,7 +10,6 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import ru.sbrf.dab2c.executor.clients.common.util.buildFullUrl
-import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceFunctionCallRequestBuilder
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCallResult
 import ru.sbrf.dab2c.executor.clients.giga.agent.util.GigaAgentContextBuilder
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context
@@ -18,6 +17,7 @@ import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionResult
 import ru.sbrf.dab2c.executor.clients.iag.api.IagFunctionClient
 import ru.sbrf.dab2c.executor.clients.iag.api.IagFunctionClient.Companion.FUNCTION_CALL_ENDPOINT
+import ru.sbrf.dab2c.executor.clients.iag.mapper.IagFunctionRequestBuilder
 import ru.sbrf.dab2c.executor.clients.iag.model.IagAgentAnalytics
 import ru.sbrf.dab2c.executor.clients.iag.model.IagFunctionResponse
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
@@ -38,7 +38,7 @@ class IagFunctionClientImpl(
     private val httpClient: HttpClient,
     private val objectMapper: ObjectMapper,
     private val baseUrl: String,
-    private val functionCallRequestBuilder: GigaVoiceFunctionCallRequestBuilder
+    private val functionCallRequestBuilder: IagFunctionRequestBuilder
 ) : IagFunctionClient {
 
     @Suppress("LongMethod")
