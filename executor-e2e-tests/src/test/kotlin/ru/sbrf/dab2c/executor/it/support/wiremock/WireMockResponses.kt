@@ -29,22 +29,6 @@ object WireMockResponses {
     """.trimIndent()
 
     /**
-     * EFS Adapter response for configurator function metadata.
-     */
-    val EFS_ADAPTER_CONFIGURATOR_FUNCTION_RESPONSE = """
-    {
-      "success": true,
-      "body": {
-        "type": "BACKEND",
-        "modality": [
-          "text",
-          "voice"
-        ]
-      }
-    }
-    """.trimIndent()
-
-    /**
      * Configurator function list response with function settings,
      * interruption rules and audio stub configuration.
      */
