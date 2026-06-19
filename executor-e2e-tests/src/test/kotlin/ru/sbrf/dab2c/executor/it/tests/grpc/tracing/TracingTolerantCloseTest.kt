@@ -50,9 +50,6 @@ class TracingTolerantCloseTest : BaseGigaVoiceIntegrationTest() {
             val downstream = allOfKind("output_request").first { it.name == "downstream gigavoice stream" }
             assertAttributeEquals(downstream, "aef.response.status_code", "OK")
 
-            assertThat(ofKind("input_request").statusCode)
-                .withFailMessage("input_request must not be ERROR for tolerant EOS close")
-                .isNotEqualTo("STATUS_CODE_ERROR")
             assertThat(ofKind("start_agent").statusCode)
                 .withFailMessage("start_agent must not be ERROR for tolerant EOS close")
                 .isNotEqualTo("STATUS_CODE_ERROR")

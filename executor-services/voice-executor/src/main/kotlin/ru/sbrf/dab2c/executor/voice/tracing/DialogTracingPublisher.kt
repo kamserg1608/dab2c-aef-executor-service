@@ -48,12 +48,14 @@ class DialogTracingPublisher(
         settingsPayload = settings.settingsData
     }
 
-    override suspend fun onAssistantReplicaStarted(atMs: Long) {
-        ensureLlmTurnOpen()
-    }
-
     override suspend fun onFunctionCallReceived(event: FunctionCallReceived) {
-        ensureLlmTurnOpen()
+        val inputJson = ObserverEventMappers.llmTurnInputFunctionCall(
+            name = event.name,
+            argumentsJson = event.arguments,
+        )
+
+        ensureLlmTurnOpen(inputJson)
+
         toolSpan = facade.startTool(
             functionName = event.name,
             arguments = event.arguments,
@@ -90,39 +92,88 @@ class DialogTracingPublisher(
         outputRequestSpan = null
     }
 
-    private suspend fun ensureLlmTurnOpen() {
+    private suspend fun ensureVoiceTurnOpen(
+        inputJson: String = ObserverEventMappers.EMPTY_OBJECT,
+    ) {
         if (voiceTurnSpan == null) {
-            voiceTurnSpan = facade.startVoiceTurn(SPAN_VOICE_TURN, voiceSessionSpan)
+            startVoiceTurn(inputJson)
         }
+    }
+
+    private suspend fun ensureLlmTurnOpen(
+        inputJson: String = ObserverEventMappers.EMPTY_OBJECT,
+    ) {
+        ensureVoiceTurnOpen(inputJson)
+
         if (voiceLlmTurnSpan == null) {
-            voiceLlmTurnSpan = facade.startVoiceLlmTurn(SPAN_VOICE_LLM_TURN, voiceTurnSpan)
+            startVoiceLlmTurn(inputJson)
         }
+    }
+
+    private suspend fun startVoiceTurn(inputJson: String) {
+        voiceTurnSpan = facade.startVoiceTurn(
+            spanName = SPAN_VOICE_TURN,
+            inputJson = inputJson,
+            parent = voiceSessionSpan,
+        )
+    }
+
+    private suspend fun startVoiceLlmTurn(inputJson: String) {
+        voiceLlmTurnSpan = facade.startVoiceLlmTurn(
+            spanName = SPAN_VOICE_LLM_TURN,
+            inputJson = inputJson,
+            parent = voiceTurnSpan,
+        )
     }
 
     private suspend fun finalizeTurn(event: TurnCompleted) {
         val hasData = event.userReplica != null || event.assistantReplica != null || event.turnEvents.isNotEmpty()
         if (!hasData && voiceTurnSpan == null && voiceLlmTurnSpan == null) return
 
-        ensureLlmTurnOpen()
-        val warning = event.turnEvents.filterIsInstance<WarningEmitted>()
-            .joinToString("; ") { it.message }.takeIf { it.isNotEmpty() }
-        val error = event.turnEvents.filterIsInstance<ErrorEmitted>().firstOrNull()
-            ?.let { ObserverEventMappers.toVoiceErrorJson(it.status, it.message) }
+        val warning = warning(event)
+        val error = error(event)
+
+        ensureVoiceTurnOpen(ObserverEventMappers.voiceTurnInput(event.userReplica?.text))
+        ensureLlmTurnOpen(llmInputJson(event))
 
         closeLlmTurn(event, warning, error)
         closeVoiceTurn(event, warning, error)
     }
 
+    private fun llmInputJson(event: TurnCompleted): String =
+        event.turnEvents
+            .filterIsInstance<FunctionCallReceived>()
+            .firstOrNull()
+            ?.let {
+                ObserverEventMappers.llmTurnInputFunctionCall(
+                    it.name,
+                    it.arguments,
+                )
+            } ?: ObserverEventMappers.EMPTY_OBJECT
+
+    private fun warning(event: TurnCompleted): String? =
+        event.turnEvents
+            .filterIsInstance<WarningEmitted>()
+            .joinToString("; ") { it.message }
+            .takeIf { it.isNotEmpty() }
+
+    private fun error(event: TurnCompleted): String? =
+        event.turnEvents
+            .filterIsInstance<ErrorEmitted>()
+            .firstOrNull()
+            ?.let {
+                ObserverEventMappers.toVoiceErrorJson(
+                    it.status,
+                    it.message,
+                )
+            }
+
     private fun closeLlmTurn(event: TurnCompleted, warning: String?, error: String?) {
-        val functionCall = event.turnEvents.filterIsInstance<FunctionCallReceived>().firstOrNull()
         val functionResult = event.turnEvents.filterIsInstance<FunctionResultSent>().firstOrNull()
         voiceLlmTurnSpan?.let {
             facade.endVoiceLlmTurn(
                 it,
                 VoiceLlmTurnOutput(
-                    inputJson = functionCall
-                        ?.let { fc -> ObserverEventMappers.llmTurnInputFunctionCall(fc.name, fc.arguments) }
-                        ?: ObserverEventMappers.EMPTY_OBJECT,
                     outputJson = functionResult
                         ?.let { fr -> ObserverEventMappers.llmTurnOutputFunctionResult(fr.name, fr.content) }
                         ?: ObserverEventMappers.EMPTY_OBJECT,
@@ -140,8 +191,9 @@ class DialogTracingPublisher(
             facade.endVoiceTurn(
                 it,
                 VoiceTurnOutput(
-                    inputJson = ObserverEventMappers.voiceTurnInput(event.userReplica?.text),
-                    outputJson = ObserverEventMappers.voiceTurnOutput(event.assistantReplica?.text),
+                    outputJson = ObserverEventMappers.voiceTurnOutput(
+                        event.assistantReplica?.text,
+                    ),
                     warning = warning,
                     error = error,
                 )
@@ -168,13 +220,11 @@ class DialogTracingPublisher(
         const val SPAN_VOICE_LLM_TURN = "voice llm turn"
 
         val EMPTY_TURN_OUTPUT = VoiceTurnOutput(
-            inputJson = ObserverEventMappers.EMPTY_OBJECT,
             outputJson = ObserverEventMappers.EMPTY_OBJECT,
             warning = null,
             error = null,
         )
         val EMPTY_LLM_TURN_OUTPUT = VoiceLlmTurnOutput(
-            inputJson = ObserverEventMappers.EMPTY_OBJECT,
             outputJson = ObserverEventMappers.EMPTY_OBJECT,
             totalTokens = null,
             warning = null,

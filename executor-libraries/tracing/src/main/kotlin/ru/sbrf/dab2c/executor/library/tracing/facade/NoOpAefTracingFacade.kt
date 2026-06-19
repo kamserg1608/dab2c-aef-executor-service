@@ -17,11 +17,19 @@ class NoOpAefTracingFacade : AefTracingFacade {
 
     override fun endVoiceSession(span: Span, settings: Any) = Unit
 
-    override suspend fun startVoiceTurn(spanName: String, parent: Span?): Span = Span.getInvalid()
+    override suspend fun startVoiceTurn(
+        spanName: String,
+        inputJson: String,
+        parent: Span?,
+    ): Span = Span.getInvalid()
 
     override fun endVoiceTurn(span: Span, output: VoiceTurnOutput) = Unit
 
-    override suspend fun startVoiceLlmTurn(spanName: String, parent: Span?): Span = Span.getInvalid()
+    override suspend fun startVoiceLlmTurn(
+        spanName: String,
+        inputJson: String,
+        parent: Span?,
+    ): Span = Span.getInvalid()
 
     override fun endVoiceLlmTurn(span: Span, output: VoiceLlmTurnOutput) = Unit
 

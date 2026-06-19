@@ -31,29 +31,43 @@ class AefTracingFacadeImpl(private val tracer: Tracer) : AefTracingFacade {
         VoiceTracing.endVoiceSession(span, settings)
     }
 
-    override suspend fun startVoiceTurn(spanName: String, parent: Span?): Span {
+    override suspend fun startVoiceTurn(
+        spanName: String,
+        inputJson: String,
+        parent: Span?,
+    ): Span {
         val parentContext = parent?.let { Context.current().with(it) } ?: Context.current()
-        return VoiceTracing.startVoiceTurn(tracer, spanName, EMPTY_INPUT, parentContext)
+        return VoiceTracing.startVoiceTurn(
+            tracer,
+            spanName,
+            parseJsonOrWrap(inputJson),
+            parentContext
+        )
     }
 
     override fun endVoiceTurn(span: Span, output: VoiceTurnOutput) {
         if (span.isRecording) {
-            span.setAttribute(AefAttributeKeys.INPUT, output.inputJson)
             if (!output.warning.isNullOrEmpty()) span.setAttribute(AefAttributeKeys.WARNING, output.warning)
             if (!output.error.isNullOrEmpty()) span.setAttribute(AefAttributeKeys.ERROR, output.error)
         }
         VoiceTracing.endVoiceTurn(span, parseJsonOrWrap(output.outputJson))
     }
 
-    override suspend fun startVoiceLlmTurn(spanName: String, parent: Span?): Span {
+    override suspend fun startVoiceLlmTurn(
+        spanName: String,
+        inputJson: String,
+        parent: Span?,
+    ): Span {
         val parentContext = parent?.let { Context.current().with(it) } ?: Context.current()
-        return VoiceTracing.startVoiceLlmTurn(tracer, spanName, EMPTY_INPUT, parentContext)
+        return VoiceTracing.startVoiceLlmTurn(
+            tracer,
+            spanName,
+            parseJsonOrWrap(inputJson),
+            parentContext
+        )
     }
 
     override fun endVoiceLlmTurn(span: Span, output: VoiceLlmTurnOutput) {
-        if (span.isRecording) {
-            span.setAttribute(AefAttributeKeys.INPUT, output.inputJson)
-        }
         VoiceTracing.endVoiceLlmTurn(
             span,
             VoiceLlmTurnOutputAttributes.builder()

@@ -1,10 +1,10 @@
 package ru.sbrf.dab2c.executor.library.tracing.facade
 
 import io.opentelemetry.api.trace.Span
+import ru.sbrf.dab2c.executor.library.tracing.mapper.ObserverEventMappers
 
-/** Closing payload for a `voice_turn` span — already-encoded JSON for `aef.input` / `aef.output`. */
+/** Closing payload for a `voice_turn` span — already-encoded JSON for `aef.output`. */
 data class VoiceTurnOutput(
-    val inputJson: String,
     val outputJson: String,
     val warning: String?,
     val error: String?,
@@ -12,7 +12,6 @@ data class VoiceTurnOutput(
 
 /** Closing payload for a `voice_llm_turn` span. */
 data class VoiceLlmTurnOutput(
-    val inputJson: String,
     val outputJson: String,
     val totalTokens: Long?,
     val warning: String?,
@@ -29,7 +28,7 @@ interface AefTracingFacade {
     /** Opens an `output_request` span over the downstream GigaVoice gRPC stream. */
     suspend fun startDownstreamGrpcOutputRequest(spanName: String, path: String, settings: Any): Span
 
-    /** Closes the downstream `output_request` span with a status code (e.g. `OK`, `UNAVAILABLE`). */
+    /** Closes the downstream `output_request` span with a status code. */
     fun endDownstreamGrpcOutputRequest(span: Span, statusCode: String)
 
     /** Opens a `voice_session` span; [parent] overrides the implicit `Context.current()` when set. */
@@ -38,14 +37,22 @@ interface AefTracingFacade {
     /** Closes a `voice_session` span. */
     fun endVoiceSession(span: Span, settings: Any)
 
-    /** Opens a `voice_turn` span. */
-    suspend fun startVoiceTurn(spanName: String, parent: Span? = null): Span
+    /** Opens a `voice_turn` span with canonical `aef.input`. */
+    suspend fun startVoiceTurn(
+        spanName: String,
+        inputJson: String = ObserverEventMappers.EMPTY_OBJECT,
+        parent: Span? = null,
+    ): Span
 
-    /** Closes a `voice_turn` span; writes `aef.input`, `aef.output`, plus optional warning/error. */
+    /** Closes a `voice_turn` span; SDK writes `aef.output`, optional warning/error are added manually. */
     fun endVoiceTurn(span: Span, output: VoiceTurnOutput)
 
     /** Opens a `voice_llm_turn` span. */
-    suspend fun startVoiceLlmTurn(spanName: String, parent: Span? = null): Span
+    suspend fun startVoiceLlmTurn(
+        spanName: String,
+        inputJson: String = ObserverEventMappers.EMPTY_OBJECT,
+        parent: Span? = null,
+    ): Span
 
     /** Closes a `voice_llm_turn` span; writes `aef.input`, `aef.output`, plus optional `aef.llm.total_tokens`. */
     fun endVoiceLlmTurn(span: Span, output: VoiceLlmTurnOutput)

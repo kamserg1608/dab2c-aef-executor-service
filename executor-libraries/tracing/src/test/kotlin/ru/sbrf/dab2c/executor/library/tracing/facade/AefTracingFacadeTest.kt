@@ -35,11 +35,13 @@ class AefTracingFacadeTest {
     @Test
     fun `endVoiceTurn writes canonical aef_input and aef_output objects`() = runTest {
         withContext(sessionContext("sess-1")) {
-            val span = facade.startVoiceTurn("voice turn")
+            val span = facade.startVoiceTurn(
+                spanName = "voice turn",
+                inputJson = """{"text":"hello"}"""
+            )
             facade.endVoiceTurn(
                 span,
                 VoiceTurnOutput(
-                    inputJson = """{"text":"hello"}""",
                     outputJson = """{"text":"world"}""",
                     warning = null,
                     error = null,
@@ -49,14 +51,14 @@ class AefTracingFacadeTest {
         val data = exporter.finishedSpanItems.single()
         assertEquals("sess-1", data.attributes.get(AttributeKey.stringKey("aef.session_id")))
         assertEquals("voice_turn", data.attributes.get(AttributeKey.stringKey("aef.kind")))
-//        assertEquals("""{"text":"hello"}""", data.attributes.get(AttributeKey.stringKey("aef.input")))
+        assertEquals("""{"text":"hello"}""", data.attributes.get(AttributeKey.stringKey("aef.input")))
         assertEquals("""{"text":"world"}""", data.attributes.get(AttributeKey.stringKey("aef.output")))
     }
 
     @Test
     fun `startVoiceTurn without session element leaves session_id empty`() = runTest {
         val span = facade.startVoiceTurn("voice turn")
-        facade.endVoiceTurn(span, VoiceTurnOutput("{}", "{}", null, null))
+        facade.endVoiceTurn(span, VoiceTurnOutput("{}", "{}", null))
 
         val data = exporter.finishedSpanItems.single()
         assertNull(data.attributes.get(AttributeKey.stringKey("aef.session_id")))
@@ -65,7 +67,7 @@ class AefTracingFacadeTest {
     @Test
     fun `endVoiceLlmTurn writes input output and tokens`() = runTest {
         val span = facade.startVoiceLlmTurn("voice llm turn")
-        facade.endVoiceLlmTurn(span, VoiceLlmTurnOutput("{}", "{}", totalTokens = 42L, null, null))
+        facade.endVoiceLlmTurn(span, VoiceLlmTurnOutput("{}", totalTokens = 42L, null, null))
 
         val data = exporter.finishedSpanItems.single()
         assertEquals("voice_llm_turn", data.attributes.get(AttributeKey.stringKey("aef.kind")))
@@ -125,7 +127,6 @@ class AefTracingFacadeTest {
         facade.endVoiceLlmTurn(
             span,
             VoiceLlmTurnOutput(
-                inputJson = "{}",
                 outputJson = "{}",
                 totalTokens = null,
                 warning = "soft-limit; hard-limit",

@@ -190,10 +190,18 @@ class DialogTracingPublisherTest {
         )
         publisher.onSessionCompleted(null)
 
+        println(
+            exporter.finishedSpanItems
+                .single { it.name == "voice llm turn" }
+                .attributes
+        )
+
         val llm = exporter.finishedSpanItems.single { it.name == "voice llm turn" }
+
         val input = llm.attributes.get(AttributeKey.stringKey("aef.input"))
         assertEquals(true, input!!.contains("\"function_call\":{"))
         assertEquals(true, input.contains("\"name\":\"weather\""))
+
         val output = llm.attributes.get(AttributeKey.stringKey("aef.output"))
         assertEquals(true, output!!.contains("\"result\":{\"content\":\"{\\\"forecast\\\":\\\"sunny\\\"}\"}"))
         assertEquals(true, output.contains("\"function_name\":\"weather\""))
