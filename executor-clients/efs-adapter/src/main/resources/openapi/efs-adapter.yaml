@@ -307,16 +307,16 @@ paths:
                 success: true
                 body:
                   function_1:
-                    type: IAG
+                    type: iag
                     path: /example-1
                     modality:
                       - voice
                   function_2:
-                    type: DIVR
+                    type: divr
                     modality:
                       - text
                   function_n:
-                    type: BACKEND
+                    type: backend
                     modality:
                       - text
                       - voice
@@ -2096,11 +2096,8 @@ components:
         type:
           type: string
           enum:
-            - IAG
             - iag
-            - DIVR
             - divr
-            - BACKEND
             - backend
         path:
           type: string
