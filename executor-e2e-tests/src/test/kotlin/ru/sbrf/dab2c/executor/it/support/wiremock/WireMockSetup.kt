@@ -318,9 +318,9 @@ object WireMockSetup {
             )
 
             if (configuratorEnabled) {
-                stubEfsAdapterConfiguratorFunction("transfer_to_operator", "DIVR")
-                stubEfsAdapterConfiguratorFunction("get_account_balance", "BACKEND")
-                stubEfsAdapterConfiguratorFunction("find_bank_office_iag", "IAG", "/bh")
+                stubEfsAdapterConfiguratorFunction("transfer_to_operator", "divr")
+                stubEfsAdapterConfiguratorFunction("get_account_balance", "backend")
+                stubEfsAdapterConfiguratorFunction("find_bank_office_iag", "iag", "/bh")
             }
         }
 
@@ -351,9 +351,9 @@ object WireMockSetup {
             )
 
             if (configuratorEnabled) {
-                stubEfsAdapterConfiguratorFunction("transfer_to_operator", "DIVR")
-                stubEfsAdapterConfiguratorFunction("get_account_balance", "BACKEND")
-                stubEfsAdapterConfiguratorFunction("find_bank_office_iag", "IAG", "/bh")
+                stubEfsAdapterConfiguratorFunction("transfer_to_operator", "divr")
+                stubEfsAdapterConfiguratorFunction("get_account_balance", "backend")
+                stubEfsAdapterConfiguratorFunction("find_bank_office_iag", "iag", "/bh")
             }
         }
 
