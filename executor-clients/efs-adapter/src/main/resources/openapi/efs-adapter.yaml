@@ -2097,8 +2097,11 @@ components:
           type: string
           enum:
             - IAG
+            - iag
             - DIVR
+            - divr
             - BACKEND
+            - backend
         path:
           type: string
           description: Endpoint/path для вызова функции

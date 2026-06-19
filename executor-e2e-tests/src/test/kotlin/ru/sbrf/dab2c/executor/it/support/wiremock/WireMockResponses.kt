@@ -151,13 +151,18 @@ object WireMockResponses {
      */
     val FIND_BANK_OFFICE_FUNCTION_CALL_RESPONSE = """
     {
-      "success": true,
-      "body": {
+      "content": {
         "function_result": {
-          "content": "{\"status\": \"success\", \"city\": \"Волгоград\", \"segment_office\": \"КБ, КК, КЛМ, МБ, МКБ, МС, РГС, СБ, ФИ\", \"address_office\": \"пр-кт им. В.И. Ленина 1 б\", \"working_hours\": \"Пн-Пт: 09:00-18:30, Сб: 09:00-14:30, Вс: выходной\", \"today_hours\": \"09:00 - 18:30\", \"is_open_now\": \"true\", \"time_until_closing\": 296, \"next_offices\": \"[{address_office=ул. Новороссийская 14 б, working_hours=Пн-Чт: 09:00-18:00, Пт-Вс: выходной}, {address_office=ул. Коммунистическая 40, working_hours=Пн-Пт: 09:00-18:30, Сб: 09:30-14:30, Вс: 10:00-13:00}]\", \"sms_notification_status\": true, \"sms_notification_office\": \"Офис по адресу: пр-кт им. В.И. Ленина 1 б работает Пн-Пт: 09:00-18:30, Сб: 09:00-14:30, Вс: выходной.\"}",
-          "function_name": "find_bank_office_iag"
-        },
-        "agent_analytics": [
+          "name": "find_bank_office_iag",
+          "content": "{\"status\": \"success\", \"city\": \"Волгоград\", \"segment_office\": \"КБ, КК, КЛМ, МБ, МКБ, МС, РГС, СБ, ФИ\", \"address_office\": \"пр-кт им. В.И. Ленина 1 б\", \"working_hours\": \"Пн-Пт: 09:00-18:30, Сб: 09:00-14:30, Вс: выходной\", \"today_hours\": \"09:00 - 18:30\", \"is_open_now\": \"true\", \"time_until_closing\": 296, \"next_offices\": \"[{address_office=ул. Новороссийская 14 б, working_hours=Пн-Чт: 09:00-18:00, Пт-Вс: выходной}, {address_office=ул. Коммунистическая 40, working_hours=Пн-Пт: 09:00-18:30, Сб: 09:30-14:30, Вс: 10:00-13:00}]\", \"sms_notification_status\": true, \"sms_notification_office\": \"Офис по адресу: пр-кт им. В.И. Ленина 1 б работает Пн-Пт: 09:00-18:30, Сб: 09:00-14:30, Вс: выходной.\"}"
+        }
+      },
+      "x_context": {
+        "error": null
+      },
+      "x_analytics": [
+        {
+          "agent_analytics": [
           {
             "data_version": "1.0.0",
             "data": {
@@ -296,11 +301,9 @@ object WireMockResponses {
               }
             }
           }
-        ],
-        "context": {
-          "disabled_functions": []
+          ]
         }
-      }
+      ]
     }
     """.trimIndent()
 

@@ -16,6 +16,9 @@
     "**/src/test/kotlin/**",
     "**/src/test/resources/**",
 
+    "**/build/generated/openapi/src/main/**/model/**",
+    "**/generated/openapi/src/main/**/model/**",
+
     "pom.xml",
     "**/pom.xml",
 
@@ -73,7 +76,14 @@
   "ignore": {
     "customPatterns": [
       "**/target/**",
+
       "**/build/**",
+      "!**/build/generated/",
+      "!**/build/generated/openapi/",
+      "!**/build/generated/openapi/src/",
+      "!**/build/generated/openapi/src/main/",
+      "!**/build/generated/openapi/src/main/**/",
+      "!**/build/generated/openapi/src/main/**/model/**",
 
       "**/.gradle/**",
       "**/.mvn/**",
@@ -89,6 +99,12 @@
       "**/dist/**",
 
       "**/generated/**",
+      "!**/generated/openapi/",
+      "!**/generated/openapi/src/",
+      "!**/generated/openapi/src/main/",
+      "!**/generated/openapi/src/main/**/",
+      "!**/generated/openapi/src/main/**/model/**",
+
       "**/generated-sources/**",
       "**/generated-test-sources/**",
 
