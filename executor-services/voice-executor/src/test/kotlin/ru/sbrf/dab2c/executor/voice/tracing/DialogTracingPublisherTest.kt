@@ -190,12 +190,6 @@ class DialogTracingPublisherTest {
         )
         publisher.onSessionCompleted(null)
 
-        println(
-            exporter.finishedSpanItems
-                .single { it.name == "voice llm turn" }
-                .attributes
-        )
-
         val llm = exporter.finishedSpanItems.single { it.name == "voice llm turn" }
 
         val input = llm.attributes.get(AttributeKey.stringKey("aef.input"))
