@@ -14,6 +14,8 @@ import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
 import ru.sbrf.dab2c.executor.voice.exception.TolerantExceptionRegistry
+import ru.sbrf.dab2c.executor.voice.logging.CompletionOutcome
+import ru.sbrf.dab2c.executor.voice.logging.completionOutcome
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 
 /** Decorator that adds request/response logging to chunk processing. */
@@ -28,28 +30,51 @@ class LoggingChunkProcessingServiceDelegate(
         val observedChunks = requestsChunks
             .onStart { logSessionStart() }
             .onEach { request -> logRequest(DIRECTION_IN, request) }
+            .onCompletion { cause -> logInboundEnd(cause) }
         return delegate.processRequestChunks(observedChunks)
             .onEach { request -> logRequest(DIRECTION_OUT, request) }
     }
 
     override fun processResponseChunks(responsesChunks: Flow<GigaVoiceResponse>): Flow<GigaVoiceResponse> {
         val observedChunks = responsesChunks
+            .onStart { IntegrationLogger.logGrpcEvent(message = "Downstream stream opened") }
             .onEach { response -> logResponse(DIRECTION_IN, response) }
+            .onCompletion { cause -> logDownstreamEnd(cause) }
         return delegate.processResponseChunks(observedChunks)
             .onEach { response -> logResponse(DIRECTION_OUT, response) }
             .onCompletion { error -> logSessionEnd(error) }
     }
 
-    private fun logRequest(direction: String, request: GigaVoiceRequest) {
-        val sanitized = if (
-            request.requestCase == GigaVoiceRequest.RequestCase.INPUT &&
-            request.input.hasAudioContent()
-        ) {
-            request.toBuilder().apply { inputBuilder.audioContentBuilder.clearAudioChunk() }.build()
-        } else {
-            request
+    private fun logInboundEnd(cause: Throwable?) {
+        val message = when (completionOutcome(cause)) {
+            CompletionOutcome.NORMAL -> "IVR inbound completed (graceful half-close)"
+            CompletionOutcome.CANCELLED -> "IVR inbound cancelled (client disconnect/RST)"
+            CompletionOutcome.FAILED -> "IVR inbound failed"
         }
-        logger.debug { "$direction$REQUEST_PREFIX${toJson(sanitized)}" }
+        IntegrationLogger.logGrpcEvent(message = message, error = failureOrNull(cause))
+    }
+
+    private fun logDownstreamEnd(cause: Throwable?) {
+        val outcome = completionOutcome(cause)
+        IntegrationLogger.logGrpcEvent(
+            message = "Downstream stream closed: ${outcome.name.lowercase()}",
+            error = failureOrNull(cause)
+        )
+    }
+
+    private fun failureOrNull(cause: Throwable?): Throwable? =
+        cause?.takeIf { completionOutcome(it) == CompletionOutcome.FAILED }
+
+    private fun logRequest(direction: String, request: GigaVoiceRequest) {
+        if (direction == DIRECTION_IN && request.requestCase == GigaVoiceRequest.RequestCase.SETTINGS) {
+            IntegrationLogger.logGrpcEvent(message = "Session settings received")
+        }
+        if (request.requestCase == GigaVoiceRequest.RequestCase.INPUT && request.input.hasAudioContent()) {
+            val stripped = request.toBuilder().apply { inputBuilder.audioContentBuilder.clearAudioChunk() }.build()
+            logger.debug { "$direction$REQUEST_PREFIX${toJson(stripped)}" }
+        } else {
+            logger.info { "$direction$REQUEST_PREFIX${toJson(request)}" }
+        }
     }
 
     private fun logResponse(direction: String, response: GigaVoiceResponse) {
@@ -57,15 +82,15 @@ class LoggingChunkProcessingServiceDelegate(
             logSessionInfo(response)
             return
         }
-        val sanitized = if (
+        if (
             response.responseCase == GigaVoiceResponse.ResponseCase.OUTPUT &&
             response.output.responseCase == ContentFromModel.ResponseCase.AUDIO
         ) {
-            response.toBuilder().apply { outputBuilder.audioBuilder.clearAudioChunk() }.build()
+            val stripped = response.toBuilder().apply { outputBuilder.audioBuilder.clearAudioChunk() }.build()
+            logger.debug { "$direction$RESPONSE_PREFIX${toJson(stripped)}" }
         } else {
-            response
+            logger.info { "$direction$RESPONSE_PREFIX${toJson(response)}" }
         }
-        logger.debug { "$direction$RESPONSE_PREFIX${toJson(sanitized)}" }
     }
 
     private fun toJson(message: Message): String = ObjectMappers.MAPPER.writeValueAsString(message)
