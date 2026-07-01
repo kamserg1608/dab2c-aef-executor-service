@@ -15,7 +15,7 @@ class AefTracingFacadeImpl(private val tracer: Tracer) : AefTracingFacade {
 
     override suspend fun startDownstreamGrpcOutputRequest(spanName: String, path: String, settings: Any): Span =
         VoiceTracing.startOutputRequest(
-            tracer, spanName, GRPC_METHOD, path, settings, Context.current()
+            tracer, spanName, GRPC_METHOD, path, settings, resolveParentContext()
         )
 
     override fun endDownstreamGrpcOutputRequest(span: Span, statusCode: String) {
@@ -37,11 +37,9 @@ class AefTracingFacadeImpl(private val tracer: Tracer) : AefTracingFacade {
     }
 
     override fun endVoiceTurn(span: Span, output: VoiceTurnOutput) {
-        if (span.isRecording) {
-            span.setAttribute(AefAttributeKeys.INPUT, output.inputJson)
-            if (!output.warning.isNullOrEmpty()) span.setAttribute(AefAttributeKeys.WARNING, output.warning)
-            if (!output.error.isNullOrEmpty()) span.setAttribute(AefAttributeKeys.ERROR, output.error)
-        }
+        span.setAttribute(AefAttributeKeys.INPUT, output.inputJson)
+        if (!output.warning.isNullOrEmpty()) span.setAttribute(AefAttributeKeys.WARNING, output.warning)
+        if (!output.error.isNullOrEmpty()) span.setAttribute(AefAttributeKeys.ERROR, output.error)
         VoiceTracing.endVoiceTurn(span, parseJsonOrWrap(output.outputJson))
     }
 
@@ -51,9 +49,7 @@ class AefTracingFacadeImpl(private val tracer: Tracer) : AefTracingFacade {
     }
 
     override fun endVoiceLlmTurn(span: Span, output: VoiceLlmTurnOutput) {
-        if (span.isRecording) {
-            span.setAttribute(AefAttributeKeys.INPUT, output.inputJson)
-        }
+        span.setAttribute(AefAttributeKeys.INPUT, output.inputJson)
         VoiceTracing.endVoiceLlmTurn(
             span,
             VoiceLlmTurnOutputAttributes.builder()
@@ -107,8 +103,9 @@ class AefTracingFacadeImpl(private val tracer: Tracer) : AefTracingFacade {
     }
 
     private suspend fun resolveParentContext(): Context {
-        val activeSpan = currentCoroutineContext()[TracingParentElement]?.get()
-        return if (activeSpan != null) Context.current().with(activeSpan) else Context.current()
+        val element = currentCoroutineContext()[TracingParentElement]
+        val base = element?.root() ?: Context.current()
+        return element?.get()?.let { base.with(it) } ?: base
     }
 
     private fun parseJsonOrWrap(json: String): Any =

@@ -16,9 +16,13 @@ object OtelGrpcBridge {
 
     /** Coroutine context element carrying the captured OTel Context, or no-op if unavailable. */
     fun coroutineContextElement(): CoroutineContext =
+        capturedContext()?.asContextElement() ?: EmptyCoroutineContext
+
+    /** The captured OTel Context for use as an explicit span parent, or null if unavailable. */
+    fun capturedContext(): Context? =
         try {
-            OTEL_CTX_KEY.get()?.asContextElement() ?: EmptyCoroutineContext
+            OTEL_CTX_KEY.get()
         } catch (e: Exception) {
-            EmptyCoroutineContext
+            null
         }
 }

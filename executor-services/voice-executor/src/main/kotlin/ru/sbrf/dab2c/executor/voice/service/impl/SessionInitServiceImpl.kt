@@ -77,11 +77,14 @@ class SessionInitServiceImpl(
     override fun <T> Flow<T>.withSessionContext(headers: Headers): Flow<T> {
         val upstream = this
         return flow {
+            val tracingParent = TracingParentElement().apply {
+                OtelGrpcBridge.capturedContext()?.let(::setRoot)
+            }
             val baseContext = HeadersElement(headers) +
                 MDCContext() +
                 OtelGrpcBridge.coroutineContextElement() +
                 AefRequestContextElement() +
-                TracingParentElement()
+                tracingParent
             val (result, mdc) = withContext(baseContext) { initialize() to MDC.getCopyOfContextMap() }
             val fullContext = baseContext +
                 SessionInfoElement(result.sessionInfo) +

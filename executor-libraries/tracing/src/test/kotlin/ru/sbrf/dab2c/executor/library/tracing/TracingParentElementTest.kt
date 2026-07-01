@@ -1,6 +1,7 @@
 package ru.sbrf.dab2c.executor.library.tracing
 
 import io.opentelemetry.api.trace.Span
+import io.opentelemetry.context.Context
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
@@ -29,6 +30,26 @@ class TracingParentElementTest {
         val element = TracingParentElement()
         element.set(Span.getInvalid())
         element.clear()
+        assertNull(element.get())
+    }
+
+    @Test
+    fun `root is null initially and returned after setRoot`() {
+        val element = TracingParentElement()
+        assertNull(element.root())
+        val root = Context.root()
+        element.setRoot(root)
+        assertSame(root, element.root())
+    }
+
+    @Test
+    fun `clear keeps root and drops active span`() {
+        val element = TracingParentElement()
+        val root = Context.root()
+        element.setRoot(root)
+        element.set(Span.getInvalid())
+        element.clear()
+        assertSame(root, element.root())
         assertNull(element.get())
     }
 

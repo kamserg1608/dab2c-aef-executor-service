@@ -1,6 +1,7 @@
 package ru.sbrf.dab2c.executor.library.tracing.facade
 
 import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.context.Context
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.trace.SdkTracerProvider
@@ -158,6 +159,21 @@ class AefTracingFacadeTest {
         val httpData = exporter.finishedSpanItems.single { it.name == "agent /functions" }
         val toolData = exporter.finishedSpanItems.single { it.name == "parent_tool" }
         assertEquals(toolData.spanId, httpData.parentSpanId)
+    }
+
+    @Test
+    fun `startDownstreamGrpcOutputRequest parents under root from TracingParentElement`() = runTest {
+        val root = tracer.spanBuilder("agent start").startSpan()
+        val element = TracingParentElement().apply { setRoot(Context.root().with(root)) }
+        withContext(sessionContext("sess-root") + element) {
+            val span = facade.startDownstreamGrpcOutputRequest("downstream", "/svc", emptyMap<String, Any>())
+            facade.endDownstreamGrpcOutputRequest(span, "OK")
+        }
+        root.end()
+
+        val downstream = exporter.finishedSpanItems.single { it.name == "downstream" }
+        val agentStart = exporter.finishedSpanItems.single { it.name == "agent start" }
+        assertEquals(agentStart.spanId, downstream.parentSpanId)
     }
 
     @Test
