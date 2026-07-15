@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import ru.sbrf.aef.starter.voice.VoiceGrpcServerInterceptor
+import ru.sbrf.aef.voice.grpc.VoiceGrpcServerInterceptor
 import ru.sbrf.dab2c.executor.library.tracing.facade.AefTracingFacade
 import ru.sbrf.dab2c.executor.library.tracing.facade.AefTracingFacadeImpl
 import ru.sbrf.dab2c.executor.library.tracing.facade.NoOpAefTracingFacade
