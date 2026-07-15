@@ -76,7 +76,6 @@ class EfsFacadeImpl(
 
     @Suppress("LongMethod")
     override suspend fun sendEvent(event: AuditEvent) {
-        val cookie = currentUfsCookie()
         logger.debug { "Sending audit event: ${event.event} params: ${event.params}" }
 
         val request = AuditEventServiceEvent(
@@ -96,7 +95,6 @@ class EfsFacadeImpl(
         ) {
             httpClient.post(buildFullUrl(baseUrl, AUDIT_EVENT_ENDPOINT)) {
                 contentType(ContentType.Application.Json)
-                header(HttpHeaders.Cookie, cookie)
                 applyTracingHeaders()
                 setBody(request)
             }.body<BaseResponseVoid>()
