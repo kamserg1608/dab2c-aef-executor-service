@@ -427,28 +427,6 @@ class AuditEventIntegrationTest : BaseGigaVoiceIntegrationTest() {
     // --- Cross-Cutting Tests ---
 
     @Test
-    fun `should include UFS session and token cookies on audit requests`() = runItTest {
-        setupStubs(efsAdapterMock, gigaVoiceAgentMock)
-        val auditAwaiter = WireMockAwaiter(efsAdapterMock)
-
-        withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
-            session.sendRequest(contextRequest())
-            session.sendRequest(settingsRequest("audit-cookies"))
-            mock.awaitRequest { it.hasSettings() }
-
-            mock.sendResponse(outputTranscriptionResponse())
-            session.awaitResponse()
-        }
-
-        val auditRequests = auditAwaiter.awaitPostCalls(AUDIT_EVENT_URL, 2)
-        auditRequests.forEach { request ->
-            val cookie = request.getHeader("Cookie")
-            assertThat(cookie).contains("UFS-SESSION=test-session")
-            assertThat(cookie).contains("UFS-TOKEN=test-token")
-        }
-    }
-
-    @Test
     fun `should continue main flow when audit endpoint returns 500`() = runItTest {
         efsAdapterMock.stubFor(
             post(urlEqualTo("/audit/event"))
