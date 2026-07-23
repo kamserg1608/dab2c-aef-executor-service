@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     api(libs.aef.sdk.spring.boot.starter)
+    api(libs.aef.sdk.voice)
     api(libs.opentelemetry.extension.kotlin)
     implementation(project(":executor-domain-model"))
     implementation(project(":executor-libraries:context"))

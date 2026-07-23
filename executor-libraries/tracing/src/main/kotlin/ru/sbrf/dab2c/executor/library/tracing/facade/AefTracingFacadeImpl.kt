@@ -4,9 +4,9 @@ import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.context.Context
 import kotlinx.coroutines.currentCoroutineContext
-import ru.sbrf.aef.model.voice.VoiceLlmTurnOutputAttributes
 import ru.sbrf.aef.observability.utils.HeadersUtils
-import ru.sbrf.aef.observability.voice.VoiceTracing
+import ru.sbrf.aef.voice.model.VoiceLlmTurnOutputAttributes
+import ru.sbrf.aef.voice.tracing.VoiceTracing
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.library.tracing.TracingParentElement
 
