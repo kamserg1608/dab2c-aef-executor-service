@@ -1,7 +1,6 @@
 package ru.sbrf.dab2c.executor.clients.configurator.monitoring
 
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.context.annotation.Primary
 import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.common.model.ClientMetric
 import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorClient
@@ -14,8 +13,7 @@ import ru.sbrf.dab2c.executor.library.monitoring.service.api.monitorHttpCall
 /**
  * Monitoring decorator that records HTTP integration metrics for all Configurator calls.
  */
-@Service
-@Primary
+@Service("monitoringConfiguratorClientDecorator")
 class MonitoringDirectConfiguratorClientDecorator(
     @Qualifier("directConfiguratorClientImpl") private val delegate: DirectConfiguratorClient,
     private val metricFactory: MetricFactory

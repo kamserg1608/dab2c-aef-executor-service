@@ -9,6 +9,7 @@ dependencies {
     implementation(project(":executor-domain-model"))
     implementation(project(":executor-libraries:context"))
     implementation(project(":executor-libraries:jackson"))
+    implementation(project(":executor-libraries:common"))
     implementation(libs.kotlin.logging.jvm)
     implementation(libs.jackson.module.kotlin)
     implementation(libs.kotlinx.coroutines.core)

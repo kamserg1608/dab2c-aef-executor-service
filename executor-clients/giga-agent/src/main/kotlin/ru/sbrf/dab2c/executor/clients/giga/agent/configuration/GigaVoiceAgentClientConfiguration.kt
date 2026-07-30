@@ -15,7 +15,7 @@ import ru.sbrf.dab2c.executor.clients.http.factory.HttpClientFactory
 import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricFactory
-import ru.sbrf.dab2c.executor.library.tracing.facade.AefTracingFacade
+import ru.sbrf.dab2c.executor.library.tracing.facade.AefHttpOutgoingRequestTracing
 
 /**
  * Spring configuration for GigaVoice Agent API client.
@@ -36,7 +36,7 @@ class GigaVoiceAgentClientConfiguration {
         functionCallRequestBuilder: GigaVoiceFunctionCallRequestBuilder,
         metricFactory: MetricFactory,
         agentInteractionAuditor: InteractionAuditor,
-        tracingFacade: AefTracingFacade
+        aefTracing: AefHttpOutgoingRequestTracing
     ): GigaVoiceAgentClient {
 
         val baseUrl = httpClientFactory.propertiesFor(GIGA_VOICE_AGENT_CLIENT_NAME).baseUrl
@@ -53,7 +53,7 @@ class GigaVoiceAgentClientConfiguration {
             monitored, agentInteractionAuditor, ObjectMappers.MAPPER, baseUrl
         )
 
-        return TracingGigaVoiceAgentClientDecorator(audited, tracingFacade, ObjectMappers.MAPPER)
+        return TracingGigaVoiceAgentClientDecorator(audited, aefTracing)
     }
 
     internal companion object {

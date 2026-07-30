@@ -1,5 +1,6 @@
 package ru.sbrf.dab2c.executor.library.tracing
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.opentelemetry.api.trace.Tracer
 import net.devh.boot.grpc.server.interceptor.GlobalServerInterceptorConfigurer
 import org.springframework.beans.factory.ObjectProvider
@@ -8,6 +9,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import ru.sbrf.aef.voice.grpc.VoiceGrpcServerInterceptor
+import ru.sbrf.dab2c.executor.library.tracing.facade.AefHttpOutgoingRequestTracing
+import ru.sbrf.dab2c.executor.library.tracing.facade.AefHttpOutgoingRequestTracingImpl
 import ru.sbrf.dab2c.executor.library.tracing.facade.AefTracingFacade
 import ru.sbrf.dab2c.executor.library.tracing.facade.AefTracingFacadeImpl
 import ru.sbrf.dab2c.executor.library.tracing.facade.NoOpAefTracingFacade
@@ -36,4 +39,11 @@ class TracingConfiguration {
     ): GlobalServerInterceptorConfigurer = GlobalServerInterceptorConfigurer { registry ->
         sdkInterceptorProvider.ifAvailable?.let(registry::add)
     }
+
+    /**
+     * AEF `outgoing_request` wrapper.
+     */
+    @Bean
+    fun aefHttpOutgoingRequestTracing(facade: AefTracingFacade, mapper: ObjectMapper): AefHttpOutgoingRequestTracing =
+        AefHttpOutgoingRequestTracingImpl(facade, mapper)
 }

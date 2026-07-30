@@ -9,8 +9,10 @@ import ru.sbrf.dab2c.executor.clients.iag.api.IagFunctionClient
 import ru.sbrf.dab2c.executor.clients.iag.impl.IagFunctionClientImpl
 import ru.sbrf.dab2c.executor.clients.iag.mapper.IagFunctionRequestBuilder
 import ru.sbrf.dab2c.executor.clients.iag.monitoring.MonitoringIagFunctionClientDecorator
+import ru.sbrf.dab2c.executor.clients.iag.tracing.TracingIagFunctionClientDecorator
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricFactory
+import ru.sbrf.dab2c.executor.library.tracing.facade.AefHttpOutgoingRequestTracing
 
 /**
  * Spring configuration for IAG API client.
@@ -27,14 +29,17 @@ class IagClientConfiguration {
         @Qualifier(IAG_HTTP_CLIENT_BEAN_NAME) httpClient: HttpClient,
         httpClientFactory: HttpClientFactory,
         functionCallRequestBuilder: IagFunctionRequestBuilder,
-        metricFactory: MetricFactory
+        metricFactory: MetricFactory,
+        aefTracing: AefHttpOutgoingRequestTracing
     ): IagFunctionClient {
         val baseUrl = httpClientFactory.propertiesFor(IAG_CLIENT_NAME).baseUrl
         val impl = IagFunctionClientImpl(
             httpClient, ObjectMappers.MAPPER, baseUrl, functionCallRequestBuilder
         )
 
-        return MonitoringIagFunctionClientDecorator(impl, metricFactory)
+        val monitoring = MonitoringIagFunctionClientDecorator(impl, metricFactory)
+
+        return TracingIagFunctionClientDecorator(monitoring, aefTracing)
     }
 
     /** Bean and client name constants. */

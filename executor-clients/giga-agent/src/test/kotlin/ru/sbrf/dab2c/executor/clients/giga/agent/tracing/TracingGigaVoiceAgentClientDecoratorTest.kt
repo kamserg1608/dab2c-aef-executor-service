@@ -25,6 +25,7 @@ import ru.sbrf.dab2c.executor.library.context.Headers
 import ru.sbrf.dab2c.executor.library.context.HeadersElement
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.library.tracing.aef.AefRequestContextElement
+import ru.sbrf.dab2c.executor.library.tracing.facade.AefHttpOutgoingRequestTracingImpl
 import ru.sbrf.dab2c.executor.library.tracing.facade.AefTracingFacade
 import ru.sbrf.dab2c.executor.library.tracing.facade.AefTracingFacadeImpl
 
@@ -39,8 +40,9 @@ class TracingGigaVoiceAgentClientDecoratorTest {
         .build()
         .getTracer("test")
     private val facade: AefTracingFacade = AefTracingFacadeImpl(tracer)
+    private val aefTracing = AefHttpOutgoingRequestTracingImpl(facade, ObjectMappers.MAPPER)
     private val delegate: GigaVoiceAgentClient = mockk()
-    private val decorator = TracingGigaVoiceAgentClientDecorator(delegate, facade, ObjectMappers.MAPPER)
+    private val decorator = TracingGigaVoiceAgentClientDecorator(delegate, aefTracing)
 
     @AfterEach
     fun resetSdkTl() {
