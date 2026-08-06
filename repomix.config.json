@@ -8,6 +8,11 @@
     "showLineNumbers": true
   },
   "include": [
+    "repomix.config.json",
+    ".lsp.json",
+    ".gigacode/**",
+    ".serena/project.yml",
+
     "**/src/main/java/**",
     "**/src/main/kotlin/**",
     "**/src/main/resources/**",
@@ -15,10 +20,8 @@
     "**/src/test/java/**",
     "**/src/test/kotlin/**",
     "**/src/test/resources/**",
-
     "**/build/generated/openapi/src/main/**/model/**",
     "**/generated/openapi/src/main/**/model/**",
-
     "pom.xml",
     "**/pom.xml",
 
@@ -40,6 +43,10 @@
     "buildSrc/**",
 
     "config/**",
+    "jenkins/**",
+    "docs/**",
+    "openspec/**",
+    "gradle/**",
 
     "**/application.yml",
     "**/application.yaml",
@@ -70,13 +77,16 @@
     "README.md",
     "**/README.md",
 
+    "AGENTS.md",
+    "**/AGENTS.md",
+
     "CONTRIBUTING.md",
     "**/CONTRIBUTING.md"
   ],
   "ignore": {
+    "useGitignore": false,
     "customPatterns": [
       "**/target/**",
-
       "**/build/**",
       "!**/build/generated/",
       "!**/build/generated/openapi/",
@@ -121,6 +131,14 @@
       "**/coverage/**",
       "**/.cache/**",
       "**/.scannerwork/**",
+
+      ".serena/cache",
+      ".serena/cache/**",
+      "**/.serena/cache",
+      "**/.serena/cache/**",
+      "**/*.pkl",
+      ".serena/memories/**",
+      ".serena/project.local.yml",
 
       "**/.DS_Store"
     ]

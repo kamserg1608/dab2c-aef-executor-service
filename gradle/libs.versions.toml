@@ -2,6 +2,7 @@
 kotlin = "2.1.20"
 detekt = "1.23.7"
 spotbugs-plugin = "6.2.0"
+sonarqube = "7.2.1.6560"
 spotbugs-tool = "4.9.3"
 spring-boot = "3.5.16"
 springdoc-openapi = "2.8.0"
@@ -81,6 +82,7 @@ logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-enc
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }
 spring-boot-gradle-plugin = { module = "org.springframework.boot:spring-boot-gradle-plugin", version.ref = "spring-boot" }
+sonarqube-gradle-plugin = { module = "org.sonarqube:org.sonarqube.gradle.plugin", version.ref = "sonarqube" }
 detekt-gradle-plugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 spotbugs-gradle-plugin = { module = "com.github.spotbugs:com.github.spotbugs.gradle.plugin", version.ref = "spotbugs-plugin" }
