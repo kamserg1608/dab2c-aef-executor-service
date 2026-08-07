@@ -5,7 +5,7 @@ spotbugs-plugin = "6.2.0"
 sonarqube = "7.2.1.6560"
 spotbugs-tool = "4.9.3"
 spring-boot = "3.5.16"
-springdoc-openapi = "2.8.0"
+springdoc-openapi = "2.8.17"
 openapi-generator = "7.10.0"
 micrometer = "1.13.4"
 

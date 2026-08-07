@@ -39,8 +39,8 @@ data class GigaAgentRequestContext(
      * Applies cookies from this context to the request builder.
      */
     fun HttpRequestBuilder.applyCookies() {
-        cookie(UFS_SESSION, ufsSession)
-        cookie(UFS_TOKEN, ufsToken)
+        cookie(UFS_SESSION, ufsSession, httpOnly = true)
+        cookie(UFS_TOKEN, ufsToken, httpOnly = true)
     }
 
     /** Returns HTTP headers as a map, matching the headers applied by [applyHeaders]. */
