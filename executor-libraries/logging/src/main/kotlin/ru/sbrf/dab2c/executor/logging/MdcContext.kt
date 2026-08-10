@@ -25,6 +25,11 @@ object MdcContext {
         platform: String? = null,
         userLogin: String? = null
     ) {
+        // gRPC executor threads are reused between sessions. Without clearing MDC,
+        // optional fields and MaskingCollector values (including tokens) from the
+        // previous session remain in the ThreadLocal and grow on every request.
+        MDC.clear()
+
         MDC.put(MdcKeys.TYPE, DEFAULT_TYPE)
         MDC.put(MdcKeys.SERVICE_NAME, serviceName)
         MDC.put(MdcKeys.TENANT_CODE, DEFAULT_TENANT_CODE)
