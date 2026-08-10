@@ -110,7 +110,8 @@ spec:
             name: @config-fp-name1@-config-cm-${distrib.release.version}
             defaultMode: 256
         - name: tmpdir
-          emptyDir: {}
+          emptyDir:
+            sizeLimit: 1Gi
         - name: @fpi-name@-app-params-conf
           configMap:
             name: @fpi-name@-app-params-conf
