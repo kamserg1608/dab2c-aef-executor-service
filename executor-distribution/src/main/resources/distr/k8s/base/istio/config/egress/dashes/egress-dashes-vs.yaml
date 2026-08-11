@@ -1,0 +1,31 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: egressgateway-dashes-@fpi-name@-unver
+spec:
+  exportTo:
+    - .
+  hosts:
+    - '${@fpi-name@.ctr.istio.egress.se.http.dashes.host}'
+  gateways:
+    - mesh
+    - egressgateway-dashes-@fpi-name@-unver
+  http:
+    - match:
+        - gateways:
+            - mesh
+          port: 80
+      route:
+        - destination:
+            host: egressgateway-dashes-@fpi-name@-unver
+            port:
+              number: 2003
+    - match:
+        - gateways:
+            - egressgateway-dashes-@fpi-name@-unver
+          port: 2003
+      route:
+        - destination:
+            host: ${@fpi-name@.ctr.istio.egress.se.http.dashes.host}
+            port:
+              number: ${@fpi-name@.ctr.istio.egress.se.http.dashes.port}

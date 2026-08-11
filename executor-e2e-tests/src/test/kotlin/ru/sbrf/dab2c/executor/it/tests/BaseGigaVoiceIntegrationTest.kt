@@ -1,0 +1,163 @@
+package ru.sbrf.dab2c.executor.it.tests
+
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.github.tomakehurst.wiremock.WireMockServer
+import io.grpc.ManagedChannel
+import io.grpc.ManagedChannelBuilder
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.plugins.logging.DEFAULT
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.http.URLProtocol
+import io.ktor.serialization.jackson.jackson
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.TestInstance
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.web.server.LocalServerPort
+import org.springframework.kafka.test.EmbeddedKafkaBroker
+import org.springframework.kafka.test.context.EmbeddedKafka
+import org.springframework.test.context.ActiveProfiles
+import org.wiremock.spring.ConfigureWireMock
+import org.wiremock.spring.EnableWireMock
+import org.wiremock.spring.InjectWireMock
+import ru.sbrf.dab2c.executor.application.ApplicationEntryPoint
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceServiceGrpcKt.GigaVoiceServiceCoroutineStub
+import ru.sbrf.dab2c.executor.it.mock.MockGigaVoiceService
+import ru.sbrf.dab2c.executor.it.support.grpc.MetadataInterceptor
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubConfiguratorSession
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubEfsAuditEvent
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubPersonInfo
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubRetrieveParams
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubSdsSessionReadData
+
+/**
+ * Base class for integration tests.
+ * Provides Spring context, gRPC client, HTTP client, and WireMock configuration.
+ */
+@SpringBootTest(
+    classes = [ApplicationEntryPoint::class],
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+)
+@ActiveProfiles(profiles = ["STUB", "stubMode", "test"])
+@EnableWireMock(
+    ConfigureWireMock(name = "gigaVoiceAgent", baseUrlProperties = ["http.clients.giga-agent.baseUrl"]),
+    ConfigureWireMock(name = "efsAdapter", baseUrlProperties = ["http.clients.efs-adapter.baseUrl"]),
+    ConfigureWireMock(name = "configurator", baseUrlProperties = ["http.clients.configurator.baseUrl"]),
+    ConfigureWireMock(name = "iag", baseUrlProperties = ["http.clients.iag.baseUrl"])
+)
+@EmbeddedKafka(
+    partitions = 1,
+    topics = ["dab2c-core-dialogs", "dab2c-agents", "aef-tracing-test"]
+)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+abstract class BaseGigaVoiceIntegrationTest {
+
+    @InjectWireMock("gigaVoiceAgent")
+    protected lateinit var gigaVoiceAgentMock: WireMockServer
+
+    @InjectWireMock("configurator")
+    protected lateinit var configuratorMock: WireMockServer
+
+    @InjectWireMock("efsAdapter")
+    protected lateinit var efsAdapterMock: WireMockServer
+
+    @InjectWireMock("iag")
+    protected lateinit var iagMock: WireMockServer
+
+    @Value("\${grpc.server.port}")
+    private var grpcServerPort: Int = 0
+
+    @LocalServerPort
+    var port: Int = 0
+
+    @Value("\${spring.webflux.base-path:}")
+    protected lateinit var basePath: String
+
+    @Autowired
+    protected lateinit var mockGigaVoiceService: MockGigaVoiceService
+
+    @Autowired
+    protected lateinit var embeddedKafkaBroker: EmbeddedKafkaBroker
+
+    private lateinit var clientChannel: ManagedChannel
+    protected lateinit var clientStub: GigaVoiceServiceCoroutineStub
+
+    protected val httpClient: HttpClient by lazy {
+        HttpClient(CIO) {
+            install(ContentNegotiation) {
+                jackson {
+                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                }
+            }
+            install(Logging) {
+                logger = Logger.DEFAULT
+                level = LogLevel.HEADERS
+            }
+            defaultRequest {
+                url.protocol = URLProtocol.HTTP
+                url.host = "localhost"
+                url.port = this@BaseGigaVoiceIntegrationTest.port
+            }
+        }
+    }
+
+    @BeforeEach
+    fun resetState() {
+        mockGigaVoiceService.reset()
+        gigaVoiceAgentMock.resetAll()
+        configuratorMock.resetAll()
+        iagMock.resetAll()
+        efsAdapterMock.resetAll()
+        efsAdapterMock.stubSdsSessionReadData()
+        efsAdapterMock.stubConfiguratorSession()
+        efsAdapterMock.stubPersonInfo()
+        efsAdapterMock.stubEfsAuditEvent()
+        efsAdapterMock.stubRetrieveParams()
+    }
+
+    @BeforeAll
+    fun setup() {
+        clientChannel = ManagedChannelBuilder
+            .forAddress("localhost", grpcServerPort)
+            .usePlaintext()
+            .build()
+        clientStub = GigaVoiceServiceCoroutineStub(clientChannel)
+    }
+
+    @AfterAll
+    fun teardown() {
+        clientChannel.shutdown()
+    }
+
+    /** Creates a stub with standard test metadata headers. */
+    @Suppress("LongParameterList")
+    protected fun testStub(
+        session: String = "test-session",
+        sessionId: String? = "test-session-id",
+        token: String = "test-token",
+        eduId: String = "test-edu-id",
+        channel: String = "test-channel",
+        platform: String = "test-platform",
+        traceId: String = "test-trace-id"
+    ): GigaVoiceServiceCoroutineStub = clientStub.withInterceptors(
+        MetadataInterceptor(
+            buildMap {
+                put("x-session", session)
+                if (sessionId != null) put("x-session-id", sessionId)
+                put("x-token", token)
+                put("x-eduid", eduId)
+                put("x-channel", channel)
+                put("x-platform", platform)
+                put("x-trace-id", traceId)
+            }
+        )
+    )
+}

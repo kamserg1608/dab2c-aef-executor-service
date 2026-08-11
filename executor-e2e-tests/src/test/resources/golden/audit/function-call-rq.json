@@ -1,0 +1,30 @@
+{
+  "endpoint" : "/functions",
+  "receiver" : "<MASKED>",
+  "conversationId" : "audit-function-call",
+  "eduId" : "test-edu-id",
+  "ufsSession" : "test-session",
+  "channel" : "test-channel",
+  "agentConfiguration" : {
+    "name" : "test-agent",
+    "type" : "voice",
+    "functionalSubsystemCi" : "test-ci",
+    "description" : "Test agent",
+    "entryPoints" : [ ],
+    "ufsServiceAvailable" : true,
+    "canAccessUserInfo" : true,
+    "toolsMeta" : [ ],
+    "neighboursAgentMeta" : [ ],
+    "toggles" : { }
+  },
+  "contextData" : {
+    "content" : "{}"
+  },
+  "functionCalling" : {
+    "functionCall" : {
+      "name" : "get_account_balance",
+      "arguments" : "{\"account_id\": \"12345\"}"
+    },
+    "timestamp" : "<MASKED>"
+  }
+}

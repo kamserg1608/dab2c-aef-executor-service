@@ -1,0 +1,10 @@
+{
+  "functions" : {
+    "get_balance" : {
+      "isBackendFunction" : true
+    },
+    "transfer_money" : {
+      "isBackendFunction" : false
+    }
+  }
+}

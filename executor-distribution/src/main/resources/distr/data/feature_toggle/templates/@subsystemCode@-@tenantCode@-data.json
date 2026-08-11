@@ -1,0 +1,40 @@
+{
+  "version": "1",
+  "subsystem": {
+    "name": "@app.support.description@",
+    "code": "EXAMPLE",
+    "masterMode": "AUTHORIZATION",
+    "modules": [
+      {
+        "key": "EXAMPLE.SOME_SERVICE",
+        "name": "@app.support.description@ - Тестовый сервис",
+        "features": [
+          {
+            "key": "EXAMPLE.SOME_SERVICE.ANNOTATION_SECURED",
+            "name": "Провека доступа с помощью аннотации",
+            "autzMigrated": true,
+            "channelPlatforms": [
+              {
+                "channel": "INTERNET_BANK"
+              },
+              {
+                "channel": "MOB_BANK"
+              }
+            ]
+          },
+          {
+            "key": "EXAMPLE.SOME_SERVICE.API_SECURED",
+            "name": "Проверка доступа с помощью api-метода",
+            "autzMigrated": true,
+            "channelPlatforms": [
+              {
+                "channel": "INTERNET_BANK"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "distribVersion": "{{ env.DISTRIB_VERSION }}"
+}

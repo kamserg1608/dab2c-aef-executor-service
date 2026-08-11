@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: egressgateway-daconf-@fpi-name@-unver
+spec:
+  selector:
+    istio: egressgateway-@fpi-name@-unver
+  servers:
+    - hosts:
+        - '${@fpi-name@.ctr.istio.egress.se.http.daconf.host}'
+      port:
+        name: http-2000
+        number: 2000
+        protocol: HTTP

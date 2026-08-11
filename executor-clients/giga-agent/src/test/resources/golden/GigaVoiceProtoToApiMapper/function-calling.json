@@ -1,0 +1,7 @@
+{
+  "function_call" : {
+    "name" : "transfer_money",
+    "arguments" : "{\"amount\":100,\"currency\":\"RUB\"}"
+  },
+  "timestamp" : 1730000000
+}

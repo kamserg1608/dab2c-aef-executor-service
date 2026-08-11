@@ -1,0 +1,2723 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "GigaVoice Agent HTTP API",
+    "description": "API для взаимодействия с агентом для GigaVoice через HTTP.",
+    "version": "0.1.2"
+  },
+  "paths": {
+    "/settings": {
+      "post": {
+        "summary": "Обработка настроек GigaVoice",
+        "description": "Принимает запрос с конфигурацией настроек GigaVoice и контекстом выполнения. Делегирует обработку настроек агенту и возвращает объект с настройками.",
+        "operationId": "_post_settings_settings_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GigaVoiceSettingsRequestSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GigaVoiceSettingsResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/functions": {
+      "post": {
+        "summary": "Вызов функций GigaVoice",
+        "description": "Принимает запрос с информацией о доступных функциях и контексте выполнения. Делегирует обработку агенту и возвращает список performers — систем-исполнителей функций.",
+        "operationId": "_post_functions_functions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GigaVoiceFunctionsRequestSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GigaVoiceFunctionsResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actuator/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": " Get Readiness",
+        "description": "Проверка готовности сервиса (readiness probe)",
+        "operationId": "_get_readiness_actuator_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actuator/health/liveness": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": " Get Liveness",
+        "description": "Healthcheck - Liveness probe",
+        "operationId": "_get_liveness_actuator_health_liveness_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actuator/health/readiness": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": " Get Readiness",
+        "description": "Healthcheck - Readiness probe",
+        "operationId": "_get_readiness_actuator_health_readiness_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actuator/health/{name}": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": " Get Health Component",
+        "description": "Проверка состояния отдельного компонента по его имени",
+        "operationId": "_get_health_component_actuator_health__name__get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actuator/metrics": {
+      "get": {
+        "tags": [
+          "metrics"
+        ],
+        "summary": " Get Metrics",
+        "description": "Метрики приложения в текстовом формате Prometheus.",
+        "operationId": "_get_metrics_actuator_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ACLAgentAnalytics": {
+        "properties": {
+          "data_version": {
+            "type": "string",
+            "title": "Data Version",
+            "description": "Версия структуры данных в поле data."
+          },
+          "data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Data",
+            "description": "Данные агентовПолезные данные для анализа в КАП, заполняет любой агент так, как хочет,в зависимости от того, что необходимо увидть в КАПе"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data_version",
+          "data"
+        ],
+        "title": "ACLAgentAnalytics",
+        "description": "Данные объекта аналитики агента для отправки событий."
+      },
+      "ACLConfig": {
+        "properties": {
+          "agent_config": {
+            "$ref": "#/components/schemas/AgentConfig"
+          },
+          "session_config": {
+            "$ref": "#/components/schemas/SessionConfig"
+          }
+        },
+        "type": "object",
+        "required": [
+          "agent_config",
+          "session_config"
+        ],
+        "title": "ACLConfig",
+        "description": "Конфигурация запроса."
+      },
+      "AgentConfig": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "functional_subsystem_ci": {
+            "type": "string",
+            "title": "Functional Subsystem Ci"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "ufs_service_available": {
+            "type": "boolean",
+            "title": "Ufs Service Available"
+          },
+          "can_access_user_info": {
+            "type": "boolean",
+            "title": "Can Access User Info",
+            "default": true
+          },
+          "can_access_dialog_history": {
+            "type": "boolean",
+            "title": "Can Access Dialog History",
+            "default": true
+          },
+          "tools_meta": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Tools Meta"
+          },
+          "neighbours_agent_meta": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Neighbours Agent Meta"
+          },
+          "toggles": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Toggles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "type",
+          "functional_subsystem_ci",
+          "description",
+          "ufs_service_available",
+          "tools_meta",
+          "neighbours_agent_meta",
+          "toggles"
+        ],
+        "title": "AgentConfig",
+        "description": "Конфигурация агента, содержащая его настройки и параметры поведения."
+      },
+      "AnyExample-Input": {
+        "properties": {
+          "request": {
+            "type": "string",
+            "title": "Request",
+            "description": "Запрос пользователя"
+          },
+          "params": {
+            "$ref": "#/components/schemas/Params",
+            "description": "Параметры запроса"
+          }
+        },
+        "type": "object",
+        "required": [
+          "request",
+          "params"
+        ],
+        "title": "AnyExample",
+        "description": "Пример вызова функции и её результат."
+      },
+      "AnyExample-Output": {
+        "properties": {
+          "request": {
+            "type": "string",
+            "title": "Request",
+            "description": "Запрос пользователя"
+          },
+          "params": {
+            "$ref": "#/components/schemas/Params",
+            "description": "Параметры запроса"
+          }
+        },
+        "type": "object",
+        "required": [
+          "request",
+          "params"
+        ],
+        "title": "AnyExample",
+        "description": "Пример вызова функции и её результат."
+      },
+      "AudioEncoding": {
+        "type": "integer",
+        "format": "int32",
+        "title": "AudioEncoding",
+        "description": "Набор поддерживаемых форматов аудио данных."
+      },
+      "AudioSettings-Input": {
+        "properties": {
+          "input": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Настройки аудио входа (asr)"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Output-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Настройки аудио выхода (tts)"
+          }
+        },
+        "type": "object",
+        "title": "AudioSettings",
+        "description": "Настройки звука."
+      },
+      "AudioSettings-Output": {
+        "properties": {
+          "input": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Настройки аудио входа (asr)"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Output-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Настройки аудио выхода (tts)"
+          }
+        },
+        "type": "object",
+        "title": "AudioSettings",
+        "description": "Настройки звука."
+      },
+      "DisableInterruption": {
+        "properties": {
+          "functions": {
+            "items": {
+              "$ref": "#/components/schemas/LockFunctionExecution"
+            },
+            "type": "array",
+            "title": "Functions",
+            "description": "Точечные правила для функций"
+          }
+        },
+        "type": "object",
+        "title": "DisableInterruption",
+        "description": "Отключение перебивания глобально или для отдельных функций."
+      },
+      "FilterSettings": {
+        "properties": {
+          "request_content": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RequestContentSettings"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Проверка пользовательского запроса"
+          },
+          "response_content": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResponseContentSettings"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Проверка ответа модели"
+          }
+        },
+        "type": "object",
+        "title": "FilterSettings",
+        "description": "Настройки фильтра Gigachat."
+      },
+      "FirstSpeaker": {
+        "properties": {
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type",
+            "description": "Тип первого спикера"
+          },
+          "lock_first_in": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lock First In",
+            "description": "Блокировка первой реплики от перебиваний."
+          }
+        },
+        "type": "object",
+        "title": "FirstSpeaker",
+        "description": "Информация о том, кто первый должен начинать взаимодействие."
+      },
+      "Function-Input": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Название функции"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Описание функции"
+          },
+          "parameters": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parameters",
+            "description": "Список параметров функции в виде Json Shema"
+          },
+          "few_shot_examples": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/AnyExample-Input"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Few Shot Examples",
+            "description": "Примеры вызовов функции"
+          },
+          "return_parameters": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Return Parameters",
+            "description": "Список возвращаемых параметров функции в виде Json Shema"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "Function",
+        "description": "Функция, которая может быть вызвана моделью."
+      },
+      "Function-Output": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Название функции"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Описание функции"
+          },
+          "parameters": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parameters",
+            "description": "Список параметров функции в виде Json Shema"
+          },
+          "few_shot_examples": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/AnyExample-Output"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Few Shot Examples",
+            "description": "Примеры вызовов функции"
+          },
+          "return_parameters": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Return Parameters",
+            "description": "Список возвращаемых параметров функции в виде Json Shema"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "Function",
+        "description": "Функция, которая может быть вызвана моделью."
+      },
+      "FunctionCall": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Название функции"
+          },
+          "arguments": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Arguments",
+            "description": "Аргументы функции. Содержат в себе описание в JSON формате"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "FunctionCall",
+        "description": "Вызов функции"
+      },
+      "FunctionCalling": {
+        "properties": {
+          "function_call": {
+            "$ref": "#/components/schemas/FunctionCall",
+            "description": "Объект вызова функции"
+          },
+          "timestamp": {
+            "type": "integer",
+            "title": "Timestamp",
+            "description": "Время генерации в unix time"
+          }
+        },
+        "type": "object",
+        "required": [
+          "function_call",
+          "timestamp"
+        ],
+        "title": "FunctionCalling",
+        "description": "Схема для вызова функции"
+      },
+      "FunctionRanker": {
+        "properties": {
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled",
+            "description": "Включён ли ранжировщик функций"
+          },
+          "top_n": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top N",
+            "description": "Топ-N функций после ранжирования"
+          },
+          "embedder_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedder Model",
+            "description": "Модель эмбеддера для ранжирования функций"
+          },
+          "ignored_functions": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ignored Functions",
+            "description": "Список функций, которые следует игнорировать при ранжировании"
+          }
+        },
+        "type": "object",
+        "title": "FunctionRanker",
+        "description": "Настройки ранжирования функций."
+      },
+      "FunctionRegistry": {
+        "properties": {
+          "profile": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile",
+            "description": "Профиль пользователя, по которому нужно получить функции"
+          },
+          "labels": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Labels",
+            "description": "Список меток (тегов) для получения определённой категории функций"
+          },
+          "ab_flags": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ab Flags",
+            "description": "Параметры А/Б-тестирования для проведения А/Б-тестов. Строка с валидной json структурой внутри"
+          }
+        },
+        "type": "object",
+        "title": "FunctionRegistry",
+        "description": "Параметры запроса для function registry service."
+      },
+      "FunctionResult": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "Содержимое выполнения функции. Должен содержать валидный json"
+          },
+          "function_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Function Name",
+            "description": "Имя функции"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "title": "FunctionResult",
+        "description": "Результат выполнения функции"
+      },
+      "FunctionSoundRule": {
+        "properties": {
+          "function_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Function Names",
+            "description": "Список имен функций"
+          },
+          "sounds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sounds",
+            "description": "Список звуков-заглушек для этих функций"
+          }
+        },
+        "type": "object",
+        "title": "FunctionSoundRule",
+        "description": "Правило для вставки звуков-заглушек в зависимости от вызываемой функции."
+      },
+      "GigaChatSettings-Input": {
+        "properties": {
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model",
+            "description": "Алиас модели"
+          },
+          "temperature": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temperature",
+            "description": "Температура выборки значения > 0"
+          },
+          "top_p": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top P",
+            "description": "Вероятностная масса, кот. нужна для учета результатов токенов. Значения от 0 до 1"
+          },
+          "repetition_penalty": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Repetition Penalty",
+            "description": "Количество повторений слов. Допустимое значение > 0"
+          },
+          "update_interval": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Update Interval",
+            "description": "Интервал обновления"
+          },
+          "profanity_check": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profanity Check",
+            "description": "Включение фильтрации провокационного контента"
+          },
+          "filters_settings": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/FilterSettings"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filters Settings",
+            "description": "Настройки фильтра"
+          },
+          "functions": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Function-Input"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Functions",
+            "description": "Массив описаний функций"
+          },
+          "function_registry": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FunctionRegistry"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Параметры запроса для function registry service"
+          },
+          "filter_stub_phrases": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filter Stub Phrases",
+            "description": "Фразы-заглушки при срабатывании фильтра"
+          },
+          "current_time": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Time",
+            "description": "Текущее время (timestamp)"
+          },
+          "function_ranker": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FunctionRanker"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Настройки ранжирования функций"
+          },
+          "preset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset",
+            "description": "Пресет/шаблон модели Gigachat"
+          }
+        },
+        "type": "object",
+        "title": "GigaChatSettings",
+        "description": "Настройки модели Gigachat."
+      },
+      "GigaChatSettings-Output": {
+        "properties": {
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model",
+            "description": "Алиас модели"
+          },
+          "temperature": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temperature",
+            "description": "Температура выборки значения > 0"
+          },
+          "top_p": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top P",
+            "description": "Вероятностная масса, кот. нужна для учета результатов токенов. Значения от 0 до 1"
+          },
+          "repetition_penalty": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Repetition Penalty",
+            "description": "Количество повторений слов. Допустимое значение > 0"
+          },
+          "update_interval": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Update Interval",
+            "description": "Интервал обновления"
+          },
+          "profanity_check": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profanity Check",
+            "description": "Включение фильтрации провокационного контента"
+          },
+          "filters_settings": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/FilterSettings"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filters Settings",
+            "description": "Настройки фильтра"
+          },
+          "functions": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Function-Output"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Functions",
+            "description": "Массив описаний функций"
+          },
+          "function_registry": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FunctionRegistry"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Параметры запроса для function registry service"
+          },
+          "filter_stub_phrases": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filter Stub Phrases",
+            "description": "Фразы-заглушки при срабатывании фильтра"
+          },
+          "current_time": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Time",
+            "description": "Текущее время (timestamp)"
+          },
+          "function_ranker": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FunctionRanker"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Настройки ранжирования функций"
+          },
+          "preset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset",
+            "description": "Пресет/шаблон модели Gigachat"
+          }
+        },
+        "type": "object",
+        "title": "GigaChatSettings",
+        "description": "Настройки модели Gigachat."
+      },
+      "GigaVoiceFunction": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "is_backend_function": {
+            "type": "boolean",
+            "title": "Is Backend Function",
+            "description": "Признак принадлежности функции агенту"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "is_backend_function"
+        ],
+        "title": "GigaVoiceFunction",
+        "description": "Функции GigaVoice с параметрами."
+      },
+      "GigaVoiceFunctionsRequestSchema": {
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "title": "Conversation Id",
+            "description": "Уникальный ID диалога."
+          },
+          "edu_id": {
+            "type": "string",
+            "title": "Edu Id",
+            "description": "Идентификатор звонка EDU ID."
+          },
+          "config": {
+            "$ref": "#/components/schemas/ACLConfig",
+            "description": "Конфигурация агента, содержащая его настройки и параметры поведения"
+          },
+          "session_info": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SessionInfo"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Информация о сессии клиента"
+          },
+          "user_info": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserInfo"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Информация о клиенте."
+          },
+          "function_calling": {
+            "$ref": "#/components/schemas/FunctionCalling",
+            "description": "Схема для вызова функции на стороне АВ IVR"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context",
+            "description": "Дополнительные данные передаваемые в запросе, необходимые для работы агента."
+          }
+        },
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "edu_id",
+          "config",
+          "function_calling"
+        ],
+        "title": "GigaVoiceFunctionsRequestSchema",
+        "description": "Схема запроса к эндпоинту /functions."
+      },
+      "GigaVoiceFunctionsResponseSchema": {
+        "properties": {
+          "function_result": {
+            "$ref": "#/components/schemas/FunctionResult",
+            "description": "Результат ответа на вызов функции от АВ IVR"
+          },
+          "agent_analytics": {
+            "items": {
+              "$ref": "#/components/schemas/ACLAgentAnalytics"
+            },
+            "type": "array",
+            "title": "Agent Analytics",
+            "description": "Список данных агента для отправки событий в КАП.Каждый объект отправляется как отдельное событие."
+          },
+          "context": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context",
+            "description": "Дополнительные данные передаваемые в запросе, необходимые для работы агента."
+          }
+        },
+        "type": "object",
+        "required": [
+          "function_result"
+        ],
+        "title": "GigaVoiceFunctionsResponseSchema",
+        "description": "Схема ответа от эндпоинта /functions."
+      },
+      "GigaVoiceMode": {
+        "type": "integer",
+        "format": "int32",
+        "title": "GigaVoiceMode",
+        "description": "Режим работы Gigavoice."
+      },
+      "GigaVoiceSettingsRequestSchema": {
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "title": "Conversation Id",
+            "description": "Уникальный ID диалога."
+          },
+          "edu_id": {
+            "type": "string",
+            "title": "Edu Id",
+            "description": "Идентификатор звонка EDU ID."
+          },
+          "config": {
+            "$ref": "#/components/schemas/ACLConfig",
+            "description": "Конфигурация агента, содержащая его настройки и параметры поведения"
+          },
+          "session_info": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SessionInfo"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Информация о сессии клиента"
+          },
+          "user_info": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserInfo"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Информация о клиенте."
+          },
+          "settings": {
+            "$ref": "#/components/schemas/Settings-Input",
+            "description": "Список настроек поступающих на вход в GigaVoice"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context",
+            "description": "Дополнительные данные передаваемые в запросе, необходимые для работы агента."
+          }
+        },
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "edu_id",
+          "config",
+          "settings"
+        ],
+        "title": "GigaVoiceSettingsRequestSchema",
+        "description": "Схема запроса к эндпоинту /settings."
+      },
+      "GigaVoiceSettingsResponseSchema": {
+        "properties": {
+          "settings": {
+            "$ref": "#/components/schemas/Settings-Output",
+            "description": "Список настроек поступающих на вход в GigaVoice"
+          },
+          "performers": {
+            "$ref": "#/components/schemas/Performers",
+            "description": "Реестр функций GigaVoice"
+          },
+          "agent_analytics": {
+            "items": {
+              "$ref": "#/components/schemas/ACLAgentAnalytics"
+            },
+            "type": "array",
+            "title": "Agent Analytics",
+            "description": "Список данных агента для отправки событий в КАП.Каждый объект отправляется как отдельное событие."
+          },
+          "context": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context",
+            "description": "Дополнительные данные передаваемые в запросе, необходимые для работы агента."
+          }
+        },
+        "type": "object",
+        "required": [
+          "settings",
+          "performers"
+        ],
+        "title": "GigaVoiceSettingsResponseSchema",
+        "description": "Схема ответа от эндпоинта /settings."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResult": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/HealthStatus",
+            "default": "UNKNOWN"
+          },
+          "components": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/HealthResult"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Components"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "title": "HealthResult",
+        "description": "Модель результата проверки здоровья компонента."
+      },
+      "HealthStatus": {
+        "type": "string",
+        "enum": [
+          "UNKNOWN",
+          "UP",
+          "DOWN",
+          "OUT_OF_SERVICE"
+        ],
+        "title": "HealthStatus",
+        "description": "Перечисление возможных состояний здоровья компонента."
+      },
+      "InitialContext-Input": {
+        "properties": {
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "type": "array",
+            "title": "Messages",
+            "description": "Массив сообщений"
+          }
+        },
+        "type": "object",
+        "required": [
+          "messages"
+        ],
+        "title": "InitialContext",
+        "description": "Стартовый контекст."
+      },
+      "InitialContext-Output": {
+        "properties": {
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "type": "array",
+            "title": "Messages",
+            "description": "Массив сообщений"
+          }
+        },
+        "type": "object",
+        "required": [
+          "messages"
+        ],
+        "title": "InitialContext",
+        "description": "Стартовый контекст."
+      },
+      "Input": {
+        "properties": {
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model",
+            "description": "Модель ASR"
+          },
+          "audio_encoding": {
+            "$ref": "#/components/schemas/AudioEncoding",
+            "description": "Формат входного аудио (для распознавания)",
+            "default": 0
+          },
+          "sample_rate": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 96000.0,
+                "minimum": 8000.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sample Rate",
+            "description": "Частота дискретизации"
+          },
+          "silence_phrases": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Silence Phrases",
+            "description": "Список фраз, одну из которых необходимо озвучить, если пользователь молчит"
+          },
+          "silence_phrases_timeout": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Silence Phrases Timeout",
+            "description": "Время молчания (без речи) после которого GigaVoice необходимо озвучить фразу (silence_phrases)"
+          },
+          "silence_timeout": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Silence Timeout",
+            "description": "Время молчания (без речи) после которого GigaVoice необходимо закрыть соединение"
+          },
+          "stop_phrases": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop Phrases",
+            "description": "Список фраз остановки проигрывания ответа"
+          },
+          "ignore_phrases": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ignore Phrases",
+            "description": "Список фраз, которые необходимо игнорировать от пользователя в момент проигрывания ответа модели"
+          }
+        },
+        "type": "object",
+        "title": "Input",
+        "description": "Настройки аудио входа."
+      },
+      "LockFunctionExecution": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Название функции"
+          },
+          "on_execution": {
+            "type": "boolean",
+            "title": "On Execution",
+            "description": "Нельзя перебивать функцию во время выполнения",
+            "default": false
+          },
+          "after_result": {
+            "type": "boolean",
+            "title": "After Result",
+            "description": "Нельзя перебивать, пока озвучивается результат функции",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "LockFunctionExecution",
+        "description": "Правило блокировки перебивания для конкретной функции."
+      },
+      "Message": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "description": "Роль автора сообщения"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "Текст сообщения"
+          },
+          "function_call": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FunctionCall"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Вызов функции"
+          },
+          "function_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Function Name",
+            "description": "Имя функции с role = function"
+          },
+          "functions_state_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Functions State Id",
+            "description": "ID сообщений функций генерирующий изображения/видео"
+          },
+          "attachments": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attachments",
+            "description": "Идентификаторы предзагруженных ранее файлов"
+          },
+          "inline_data": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inline Data",
+            "description": "Данные для функций поиска; значения — валидный JSON в виде строки"
+          },
+          "functions": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Function-Input"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Functions",
+            "description": "Массив описаний функций с role = user || role = function"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "Message",
+        "description": "Сообщение"
+      },
+      "Output-Input": {
+        "properties": {
+          "voice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice",
+            "description": "Имя голоса из TTS"
+          },
+          "audio_encoding": {
+            "$ref": "#/components/schemas/AudioEncoding",
+            "description": "Формат выходного аудио (для синтеза речи)",
+            "default": 0
+          },
+          "stub_sounds": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StubSounds-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Настройки звуков-заглушек при вызове функций"
+          },
+          "speed": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Speed"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Скорость синтеза речи"
+          }
+        },
+        "type": "object",
+        "title": "Output",
+        "description": "Настройки аудио выхода."
+      },
+      "Output-Output": {
+        "properties": {
+          "voice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice",
+            "description": "Имя голоса из TTS"
+          },
+          "audio_encoding": {
+            "$ref": "#/components/schemas/AudioEncoding",
+            "description": "Формат выходного аудио (для синтеза речи)",
+            "default": 0
+          },
+          "stub_sounds": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StubSounds-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Настройки звуков-заглушек при вызове функций"
+          },
+          "speed": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Speed"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Скорость синтеза речи"
+          }
+        },
+        "type": "object",
+        "title": "Output",
+        "description": "Настройки аудио выхода."
+      },
+      "OutputModalities": {
+        "type": "integer",
+        "format": "int32",
+        "title": "OutputModalities",
+        "description": "Определяют формат ответа Gigavoice."
+      },
+      "Pair": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "Ключ параметра"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value",
+            "description": "Значение параметра"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "value"
+        ],
+        "title": "Pair",
+        "description": "Пары параметров функций - ключ: значение."
+      },
+      "Params": {
+        "properties": {
+          "pairs": {
+            "items": {
+              "$ref": "#/components/schemas/Pair"
+            },
+            "type": "array",
+            "title": "Pairs",
+            "description": "Параметры функции"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pairs"
+        ],
+        "title": "Params",
+        "description": "Параметры функции."
+      },
+      "Performers": {
+        "properties": {
+          "functions": {
+            "items": {
+              "$ref": "#/components/schemas/GigaVoiceFunction"
+            },
+            "type": "array",
+            "title": "Functions",
+            "description": "Функции GigaVoice с параметрами"
+          }
+        },
+        "type": "object",
+        "required": [
+          "functions"
+        ],
+        "title": "Performers",
+        "description": "Схема для фиксирования списка функций GigaVoice и соответствующих систем-исполнителей"
+      },
+      "RequestContentSettings": {
+        "properties": {
+          "neuro": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Neuro",
+            "description": ""
+          },
+          "blacklist": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blacklist",
+            "description": ""
+          },
+          "whitelist": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Whitelist",
+            "description": ""
+          }
+        },
+        "type": "object",
+        "title": "RequestContentSettings",
+        "description": "Проверка пользовательского запроса к Gigachat."
+      },
+      "ResponseContentSettings": {
+        "properties": {
+          "blacklist": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blacklist",
+            "description": ""
+          }
+        },
+        "type": "object",
+        "title": "ResponseContentSettings",
+        "description": "Проверка ответа модели Gigachat."
+      },
+      "SessionConfig": {
+        "properties": {
+          "block": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Block"
+          },
+          "channel": {
+            "type": "string",
+            "title": "Channel"
+          },
+          "surface": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Surface"
+          },
+          "platform": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform"
+          },
+          "app_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "App Source"
+          },
+          "sdk_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sdk Version"
+          },
+          "entry_point": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entry Point"
+          },
+          "app_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "App Version"
+          },
+          "channel_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel Version"
+          },
+          "time_zone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time Zone"
+          }
+        },
+        "type": "object",
+        "required": [
+          "channel"
+        ],
+        "title": "SessionConfig",
+        "description": "Содержит конфигурацию конкретного запроса"
+      },
+      "SessionInfo": {
+        "properties": {
+          "ufs_host": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ufs Host",
+            "description": "Хост ЕФС связанный с сессией клиента который используется для запросов в VA-BACK (пример: http://va-bn-ufsuko-sowa-ift-b1.testonline.sberbank.ru)"
+          },
+          "cookies": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cookies",
+            "description": "Cookies переданные инфраструктурой в процессе установки сессии пользователя"
+          },
+          "headers": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headers",
+            "description": "Headers переданные инфраструктурой"
+          }
+        },
+        "type": "object",
+        "title": "SessionInfo",
+        "description": "Данные сессии пользователя, необходимые для взаимодействия с ЕФС.\nВключаются параметром 'ufs_service_available' в AgentConfig"
+      },
+      "Settings-Input": {
+        "properties": {
+          "gigachat": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GigaChatSettings-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Настройки модели"
+          },
+          "audio": {
+            "$ref": "#/components/schemas/AudioSettings-Input",
+            "description": "Настройки звука"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InitialContext-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Стартовый контекст"
+          },
+          "disable_vad": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disable Vad",
+            "description": "Выключает VAD, встроенный в GigaVoice"
+          },
+          "enable_transcribe_input": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enable Transcribe Input",
+            "description": "Транскрибация пользовательского голосового ввода"
+          },
+          "flags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flags",
+            "description": "Флаги"
+          },
+          "output_modalities": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OutputModalities"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Определяет формат ответа ассистента"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GigaVoiceMode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Режим работы Gigavoice"
+          },
+          "voice_call_id": {
+            "type": "string",
+            "title": "Voice Call Id",
+            "description": "Уникальный идентификатор звонка в GigaVoice в формате UUID."
+          },
+          "first_speaker": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FirstSpeaker"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Информация о том, кто первый должен начинать взаимодействие"
+          },
+          "enable_denoiser": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enable Denoiser",
+            "description": "Включение шумоподавления"
+          },
+          "enable_prefetch": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enable Prefetch",
+            "description": "Включение префетча"
+          },
+          "enable_person_identity": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enable Person Identity",
+            "description": "Включение определения пола/возраста"
+          },
+          "enable_whisper": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enable Whisper",
+            "description": "Включение детекции шепота"
+          },
+          "enable_emotion": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enable Emotion",
+            "description": "Включение анализа эмоций"
+          },
+          "enable_transcribe_silence_phrases": {
+            "type": "boolean",
+            "description": "Отсылать дополнительно транскрипцию для is_silent фраз. По умолчанию false",
+            "default": false
+          },
+          "disable_interruption": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DisableInterruption"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Отключение перебивания глобально или для отдельных функций"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audio",
+          "voice_call_id"
+        ],
+        "title": "Settings",
+        "description": "Схема для передачи списка настроек поступающих на вход в GigaVoice."
+      },
+      "Settings-Output": {
+        "properties": {
+          "gigachat": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GigaChatSettings-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Настройки модели"
+          },
+          "audio": {
+            "$ref": "#/components/schemas/AudioSettings-Output",
+            "description": "Настройки звука"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InitialContext-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Стартовый контекст"
+          },
+          "disable_vad": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disable Vad",
+            "description": "Выключает VAD, встроенный в GigaVoice"
+          },
+          "enable_transcribe_input": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enable Transcribe Input",
+            "description": "Транскрибация пользовательского голосового ввода"
+          },
+          "flags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flags",
+            "description": "Флаги"
+          },
+          "output_modalities": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OutputModalities"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Определяет формат ответа ассистента"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GigaVoiceMode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Режим работы Gigavoice"
+          },
+          "voice_call_id": {
+            "type": "string",
+            "title": "Voice Call Id",
+            "description": "Уникальный идентификатор звонка в GigaVoice в формате UUID."
+          },
+          "first_speaker": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FirstSpeaker"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Информация о том, кто первый должен начинать взаимодействие"
+          },
+          "enable_denoiser": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enable Denoiser",
+            "description": "Включение шумоподавления"
+          },
+          "enable_prefetch": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enable Prefetch",
+            "description": "Включение префетча"
+          },
+          "enable_person_identity": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enable Person Identity",
+            "description": "Включение определения пола/возраста"
+          },
+          "enable_whisper": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enable Whisper",
+            "description": "Включение детекции шепота"
+          },
+          "enable_emotion": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enable Emotion",
+            "description": "Включение анализа эмоций"
+          },
+          "enable_transcribe_silence_phrases": {
+            "type": "boolean",
+            "description": "Отсылать дополнительно транскрипцию для is_silent фраз. По умолчанию false",
+            "default": false
+          },
+          "disable_interruption": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DisableInterruption"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Отключение перебивания глобально или для отдельных функций"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audio",
+          "voice_call_id"
+        ],
+        "title": "Settings",
+        "description": "Схема для передачи списка настроек поступающих на вход в GigaVoice."
+      },
+      "Speed": {
+        "type": "integer",
+        "format": "int32",
+        "title": "Speed",
+        "description": "Скорость синтеза речи."
+      },
+      "StubSounds-Input": {
+        "properties": {
+          "trigger_generation": {
+            "$ref": "#/components/schemas/TriggerGeneration",
+            "description": "Настройки триггера по времени для вставки заглушек"
+          },
+          "trigger_function": {
+            "$ref": "#/components/schemas/TriggerFunction",
+            "description": "Настройки триггера для вставки заглушек при вызове функций"
+          },
+          "sounds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Список звуков-заглушек (например, ID звуков)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sounds"
+        ],
+        "title": "StubSounds",
+        "description": "Запись разговорных фрагментов вместо реальных слов."
+      },
+      "StubSounds-Output": {
+        "properties": {
+          "trigger_generation": {
+            "$ref": "#/components/schemas/TriggerGeneration",
+            "description": "Настройки триггера по времени для вставки заглушек"
+          },
+          "trigger_function": {
+            "$ref": "#/components/schemas/TriggerFunction",
+            "description": "Настройки триггера для вставки заглушек при вызове функций"
+          },
+          "sounds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Список звуков-заглушек (например, ID звуков)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sounds"
+        ],
+        "title": "StubSounds",
+        "description": "Запись разговорных фрагментов вместо реальных слов."
+      },
+      "TriggerFunction": {
+        "properties": {
+          "enable": {
+            "type": "boolean",
+            "title": "Enable",
+            "description": "Включён ли триггер"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/TriggerFunctionMode",
+            "description": "Режим фильтрации: белый или чёрный список"
+          },
+          "function_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Function Names",
+            "description": "Список имён функций для триггера"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/FunctionSoundRule"
+            },
+            "type": "array",
+            "title": "Rules",
+            "description": "Правила для вставки звуков-заглушек в зависимости от вызываемой функции"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enable"
+        ],
+        "title": "TriggerFunction",
+        "description": "Триггер функции."
+      },
+      "TriggerFunctionMode": {
+        "type": "integer",
+        "format": "int32",
+        "title": "TriggerFunctionMode",
+        "description": "Режим триггера функции: 0 - MODE_UNSPECIFIED, 1 - WHITELIST, 2 - BLACKLIST"
+      },
+      "TriggerGeneration": {
+        "properties": {
+          "timeout": {
+            "type": "string",
+            "description": "Время ожидания перед началом проигрывания мелодии."
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "Включение проигрывания звука при долгом ответе. По дефолту выключено."
+          }
+        },
+        "title": "TriggerGeneration",
+        "description": "Настройки звуков при долгом ожидании ответа модели"
+      },
+      "UserInfo": {
+        "properties": {
+          "first_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name",
+            "description": "Имя пользователя"
+          },
+          "patr_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Patr Name",
+            "description": "Отчество пользователя"
+          },
+          "birth_day": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birth Day",
+            "description": "Дата рождения пользователя, в формате: \"1975-02-26T14:50:00.000+0300\""
+          },
+          "segment_code_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Segment Code Type",
+            "description": "Тип сегмента пользователя, в формате: \"1\""
+          },
+          "ucp_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ucp Id",
+            "description": "ЕПК ID клиента"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "UserInfo",
+        "description": "Информация о пользователе из сессии.\nВключается параметром `can_access_user_info` в AgentConfig"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: @fpi-name@-app-params-conf
+data:
+  ufs_blocks_mapping.yaml: |
+{%- set sbol_data = (sbol if sbol is defined else None) or (SBOL if SBOL is defined else None) %}
+{%- if sbol_data %}
+    SBOL:
+{%-   for key, value in sbol_data.items() %}
+      {{ key }}: "{{ value }}"
+{%-   endfor %}
+{%- endif %}
+{%- set sberkids_data = (sberkids if sberkids is defined else None) or (SBERKIDS if SBERKIDS is defined else None) %}
+{%- if sberkids_data %}
+    SBERKIDS:
+{%-   for key, value in sberkids_data.items() %}
+      {{ key }}: "{{ value }}"
+{%-   endfor %}
+{%- endif %}
+{%- set sberkids_guest_data = (sberkids_guest if sberkids_guest is defined else None) or (SBERKIDS_GUEST if SBERKIDS_GUEST is defined else None) %}
+{%- if sberkids_guest_data %}
+    SBERKIDS_GUEST:
+{%-   for key, value in sberkids_guest_data.items() %}
+      {{ key }}: "{{ value }}"
+{%-   endfor %}
+{%- endif %}
+{%- set investor_data = (investor if investor is defined else None) or (INVESTOR if INVESTOR is defined else None) %}
+{%- if investor_data %}
+    INVESTOR:
+{%-   for key, value in investor_data.items() %}
+      {{ key }}: "{{ value }}"
+{%-   endfor %}
+{%- endif %}
+{%- set ccivr_data = (ccivr if ccivr is defined else None) or (CCIVR if CCIVR is defined else None) %}
+{%- if ccivr_data %}
+    CCIVR:
+{%-   for key, value in ccivr_data.items() %}
+      {{ key }}: "{{ value }}"
+{%-   endfor %}
+{%- endif %}
+{%- set ivr_data = (ivr if ivr is defined else None) or (IVR if IVR is defined else None) %}
+{%- if ivr_data %}
+    IVR:
+{%-   for key, value in ivr_data.items() %}
+      {{ key }}: "{{ value }}"
+{%-   endfor %}
+{%- endif %}
+{%- set sbol_pro_data = (sbol_pro if sbol_pro is defined else None) or (SBOL_PRO if SBOL_PRO is defined else None) %}
+{%- if sbol_pro_data %}
+    SBOL_PRO:
+{%-   for key, value in sbol_pro_data.items() %}
+      {{ key }}: "{{ value }}"
+{%-   endfor %}
+{%- endif %}
+{%- set mob_bank_data = (mob_bank if mob_bank is defined else None) or (MOB_BANK if MOB_BANK is defined else None) %}
+{%- if mob_bank_data %}
+    MOB_BANK:
+{%-   for key, value in mob_bank_data.items() %}
+      {{ key }}: "{{ value }}"
+{%-   endfor %}
+{%- endif %}
+{%- set internet_bank_data = (internet_bank if internet_bank is defined else None) or (INTERNET_BANK if INTERNET_BANK is defined else None) %}
+{%- if internet_bank_data %}
+    INTERNET_BANK:
+{%-   for key, value in internet_bank_data.items() %}
+      {{ key }}: "{{ value }}"
+{%-   endfor %}
+{%- endif %}

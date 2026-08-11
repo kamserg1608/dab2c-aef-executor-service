@@ -1,0 +1,28 @@
+{
+  "endpoint" : "/settings",
+  "receiver" : "<MASKED>",
+  "conversationId" : "audit-agent-settings",
+  "eduId" : "test-edu-id",
+  "ufsSession" : "test-session",
+  "channel" : "test-channel",
+  "agentConfiguration" : {
+    "name" : "test-agent",
+    "type" : "voice",
+    "functionalSubsystemCi" : "test-ci",
+    "description" : "Test agent",
+    "entryPoints" : [ ],
+    "ufsServiceAvailable" : true,
+    "canAccessUserInfo" : true,
+    "toolsMeta" : [ ],
+    "neighboursAgentMeta" : [ ],
+    "toggles" : { }
+  },
+  "contextData" : {
+    "content" : "{}"
+  },
+  "voiceSettings" : {
+    "audio" : { },
+    "flags" : [ ],
+    "voiceCallId" : "audit-agent-settings"
+  }
+}

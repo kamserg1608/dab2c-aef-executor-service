@@ -1,0 +1,134 @@
+server:
+  port: 8080
+
+# gRPC Configuration
+grpc:
+  server:
+    port: ${GRPC_SERVER_PORT}
+    reflection-service-enabled: true
+  client:
+    downstream:
+      address: static://${GRPC_DOWNSTREAM_HOST}:${GRPC_DOWNSTREAM_PORT}
+      negotiation-type: plaintext
+      keep-alive-time: ${GRPC_DOWNSTREAM_KEEPALIVE_TIME_MS:30000}ms
+      keep-alive-timeout: ${GRPC_DOWNSTREAM_KEEPALIVE_TIMEOUT_MS:10000}ms
+      keep-alive-without-calls: ${GRPC_DOWNSTREAM_KEEPALIVE_WITHOUT_CALLS:true}
+      max-inbound-message-size: ${GRPC_DOWNSTREAM_MAX_INBOUND_MESSAGE_SIZE:4194304}
+      max-outbound-message-size: ${GRPC_DOWNSTREAM_MAX_OUTBOUND_MESSAGE_SIZE:4194304}
+
+# Voice Executor
+executor:
+  voice:
+    agentName: ${EXECUTOR_VOICE_AGENT_NAME}
+    channel: ${EXECUTOR_VOICE_CHANNEL}
+  additional-mdc-keys:
+    deploymentUnit: ${APP_DEPLOYMENT_UNIT:executor}
+    block: ${block.id:none}
+  masking:
+    key-masking-enabled: ${EXECUTOR_MASKING_KEY_ENABLED:true}
+    regex-masking-enabled: ${EXECUTOR_MASKING_REGEX_ENABLED:true}
+    regex-patterns:
+      - '(?<="first_name":")[^"]*'
+      - '(?<="patr_name":")[^"]*'
+      - '(?<="firstName":")[^"]*'
+      - '(?<="patrName":")[^"]*'
+      - '(?<=\\"first_name\\":\\")[^\\"]*'
+      - '(?<=\\"patr_name\\":\\")[^\\"]*'
+      - '(?<=\\"firstName\\":\\")[^\\"]*'
+      - '(?<=\\"patrName\\":\\")[^\\"]*'
+
+# Outbound HTTP Clients
+http:
+  clients:
+    giga-agent:
+      logLevel: ${GIGA_AGENT_LOG_LEVEL:ALL}
+      baseUrl: ${GIGA_AGENT_BASE_URL}
+      connectionTimeout: ${GIGA_AGENT_CONNECT_TIMEOUT_MS:10000}
+      requestTimeout: ${GIGA_AGENT_REQUEST_TIMEOUT_MS:30000}
+      socketTimeout: ${GIGA_AGENT_SOCKET_TIMEOUT_MS:30000}
+      pool:
+        maxConnections: ${GIGA_AGENT_POOL_MAX_CONNECTIONS:100}
+      retry:
+        maxRetries: ${GIGA_AGENT_RETRY_MAX_RETRIES:3}
+        delay: ${GIGA_AGENT_RETRY_DELAY_MS:1000}
+        maxDelay: ${GIGA_AGENT_RETRY_MAX_DELAY_MS:10000}
+        multiplier: ${GIGA_AGENT_RETRY_MULTIPLIER:2.0}
+        statusCodes: ${GIGA_AGENT_RETRY_STATUS_CODES:502,503,504}
+    efs-adapter:
+      logLevel: ${EFS_ADAPTER_LOG_LEVEL:ALL}
+      baseUrl: ${EFS_ADAPTER_BASE_URL}
+      connectionTimeout: ${EFS_ADAPTER_CONNECT_TIMEOUT_MS:5000}
+      requestTimeout: ${EFS_ADAPTER_REQUEST_TIMEOUT_MS:15000}
+      socketTimeout: ${EFS_ADAPTER_SOCKET_TIMEOUT_MS:15000}
+      pool:
+        maxConnections: ${EFS_ADAPTER_POOL_MAX_CONNECTIONS:50}
+      retry:
+        maxRetries: ${EFS_ADAPTER_RETRY_MAX_RETRIES:2}
+        delay: ${EFS_ADAPTER_RETRY_DELAY_MS:500}
+        maxDelay: ${EFS_ADAPTER_RETRY_MAX_DELAY_MS:5000}
+        multiplier: ${EFS_ADAPTER_RETRY_MULTIPLIER:2.0}
+        statusCodes: ${EFS_ADAPTER_RETRY_STATUS_CODES:502,503,504}
+    configurator:
+      logLevel: ${CONFIGURATOR_LOG_LEVEL:ALL}
+      baseUrl: ${CONFIGURATOR_BASE_URL:http://project78750.sbermock.sigma.sbrf.ru:8080}
+      connectionTimeout: ${CONFIGURATOR_CONNECT_TIMEOUT_MS:5000}
+      requestTimeout: ${CONFIGURATOR_REQUEST_TIMEOUT_MS:15000}
+      socketTimeout: ${CONFIGURATOR_SOCKET_TIMEOUT_MS:15000}
+      pool:
+        maxConnections: ${CONFIGURATOR_POOL_MAX_CONNECTIONS:50}
+      retry:
+        maxRetries: ${CONFIGURATOR_RETRY_MAX_RETRIES:2}
+        delay: ${CONFIGURATOR_RETRY_DELAY_MS:500}
+        maxDelay: ${CONFIGURATOR_RETRY_MAX_DELAY_MS:5000}
+        multiplier: ${CONFIGURATOR_RETRY_MULTIPLIER:2.0}
+        statusCodes: ${CONFIGURATOR_RETRY_STATUS_CODES:502,503,504}
+    iag:
+      logLevel: ${IAG_LOG_LEVEL:ALL}
+      baseUrl: ${IAG_BASE_URL:http://project78750.sbermock.sigma.sbrf.ru:8080}
+      connectionTimeout: ${IAG_CONNECT_TIMEOUT_MS:5000}
+      requestTimeout: ${IAG_REQUEST_TIMEOUT_MS:15000}
+      socketTimeout: ${IAG_SOCKET_TIMEOUT_MS:15000}
+      pool:
+        maxConnections: ${IAG_POOL_MAX_CONNECTIONS:50}
+      retry:
+        maxRetries: ${IAG_RETRY_MAX_RETRIES:2}
+        delay: ${IAG_RETRY_DELAY_MS:500}
+        maxDelay: ${IAG_RETRY_MAX_DELAY_MS:5000}
+        multiplier: ${IAG_RETRY_MULTIPLIER:2.0}
+        statusCodes: ${IAG_RETRY_STATUS_CODES:502,503,504}
+
+# KAP Producer
+kafka:
+  kap:
+    producer:
+      enabled: ${KAFKA_KAP_PRODUCER_ENABLED:true}
+      bootstrapServers: ${KAFKA_KAP_BOOTSTRAP_SERVERS}
+      dialogsTopic: ${KAFKA_KAP_DIALOGS_TOPIC:dab2c-core-dialogs}
+      agentsTopic: ${KAFKA_KAP_AGENTS_TOPIC:dab2c-agents}
+      clientId: ${KAFKA_KAP_CLIENT_ID:AVG}
+      acks: ${KAFKA_KAP_ACKS:all}
+      retries: ${KAFKA_KAP_RETRIES:3}
+
+# Logging
+logging:
+  level:
+    root: ${LOG_LEVEL_ROOT:INFO}
+    ru.sbrf.dab2c: ${LOG_LEVEL_DAB2C:INFO}
+    net.devh.boot.grpc: ${LOG_LEVEL_GRPC:WARN}
+    io.ktor: ${LOG_LEVEL_KTOR:WARN}
+
+aef:
+  tracing:
+    mode: ${AEF_TRACING_MODE:LOG}
+    voice-enabled: ${AEF_TRACING_ENABLED:true}
+    grpc-enabled: false
+    websocket-enabled: false
+    http-filter-patterns: []
+    topic: ${AEF_TRACING_TOPIC:no_topic}
+    kafka:
+      bootstrap-servers: ${AEF_TRACING_BROKERS:no_brokers}
+  agent:
+    agentId: ${AGENT_ID:prototype-agent}
+    distributive: ${DISTRIBUTIVE:prototype-distributive}
+    clusterId: ${CLUSTER_ID:prototype-cluster-id}
+    namespace: ${POD_NAMESPACE:prototype-namespace}

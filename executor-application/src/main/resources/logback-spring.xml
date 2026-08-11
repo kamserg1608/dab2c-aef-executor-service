@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <conversionRule conversionWord="presentMdc"
+                    converterClass="ru.sbrf.dab2c.executor.application.logging.PresentMdcConverter"/>
+
+    <!-- Text console appender - used by ALL profiles. Uses MaskingPatternLayout to redact sensitive data. -->
+    <appender name="CONSOLE_TEXT" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ru.sbrf.dab2c.executor.application.logging.MaskingPatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}%presentMdc %msg%n</pattern>
+        </layout>
+    </appender>
+
+    <!-- PROM profile: Text to console + JSON to file -->
+    <springProfile name="PROM">
+        <appender name="FILE_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>/app/log/executor.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>/app/log/executor.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                <maxFileSize>100MB</maxFileSize>
+                <maxHistory>7</maxHistory>
+                <totalSizeCap>1GB</totalSizeCap>
+            </rollingPolicy>
+            <encoder class="ru.sbrf.dab2c.executor.application.logging.MaskingLogstashEncoder">
+                <includeMdc>true</includeMdc>
+                <excludeMdcKeyName>__maskingValues</excludeMdcKeyName>
+                <includeCallerData>false</includeCallerData>
+                <fieldNames>
+                    <timestamp>serverEventDatetime</timestamp>
+                    <message>message</message>
+                    <level>logLevel</level>
+                    <version>[ignore]</version>
+                    <levelValue>[ignore]</levelValue>
+                </fieldNames>
+                <timestampPattern>[UNIX_TIMESTAMP_AS_NUMBER]</timestampPattern>
+                <customFields>{"serviceName":"dab2c-executor","tenantCode":"DAB2C"}</customFields>
+                <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                    <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                    <maxLength>4096</maxLength>
+                    <rootCauseFirst>true</rootCauseFirst>
+                </throwableConverter>
+            </encoder>
+        </appender>
+        <appender name="ASYNC_FILE_JSON" class="ch.qos.logback.classic.AsyncAppender">
+            <appender-ref ref="FILE_JSON"/>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE_TEXT"/>
+            <appender-ref ref="ASYNC_FILE_JSON"/>
+        </root>
+    </springProfile>
+
+    <!-- Non-PROM profiles: Text to console only -->
+    <springProfile name="!PROM">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE_TEXT"/>
+        </root>
+    </springProfile>
+</configuration>

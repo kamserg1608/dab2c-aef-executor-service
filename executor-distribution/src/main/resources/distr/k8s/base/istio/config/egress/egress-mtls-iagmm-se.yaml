@@ -1,0 +1,18 @@
+﻿apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: egressgateway-mtls-@fpi-name@-iagmm-unver
+spec:
+  exportTo:
+    - .
+  hosts:
+    - ${@fpi-name@.ctr.istio.egress.se.http.iag-mm.host}
+  location: MESH_EXTERNAL
+  ports:
+    - name: http
+      number: ${@fpi-name@.ctr.istio.egress.common.internal-port}
+      protocol: HTTP
+    - name: https-iagmm
+      number: ${@fpi-name@.ctr.istio.egress.se.http.iag-mm.port}
+      protocol: HTTPS
+  resolution: DNS

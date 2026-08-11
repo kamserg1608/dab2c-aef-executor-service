@@ -1,0 +1,130 @@
+server:
+  port: 8083
+
+# gRPC Configuration
+grpc:
+  server:
+    port: 9093
+    reflection-service-enabled: true
+    security:
+      enabled: false
+  client:
+    downstream:
+      address: static://localhost:9091
+      negotiation-type: plaintext
+      keep-alive-time: 30s
+      keep-alive-timeout: 10s
+      keep-alive-without-calls: true
+      max-inbound-message-size: 4194304
+      max-outbound-message-size: 4194304
+
+# Voice Executor
+executor:
+  voice:
+    agentName: voice-executor-stub
+    channel: voice
+  additional-mdc-keys:
+    deploymentUnit: executor
+    block: none
+  masking:
+    key-masking-enabled: true
+    regex-masking-enabled: true
+    regex-patterns:
+      - '(?<="first_name":")[^"]*'
+      - '(?<="patr_name":")[^"]*'
+      - '(?<="firstName":")[^"]*'
+      - '(?<="patrName":")[^"]*'
+      - '(?<=\\"first_name\\":\\")[^\\"]*'
+      - '(?<=\\"patr_name\\":\\")[^\\"]*'
+      - '(?<=\\"firstName\\":\\")[^\\"]*'
+      - '(?<=\\"patrName\\":\\")[^\\"]*'
+
+# Outbound HTTP Clients
+http:
+  clients:
+    giga-agent:
+      logLevel: ALL
+      baseUrl: http://localhost:8080
+      connectionTimeout: 10000
+      requestTimeout: 30000
+      socketTimeout: 30000
+      pool:
+        maxConnections: 100
+      retry:
+        maxRetries: 3
+        delay: 1000
+        maxDelay: 10000
+        multiplier: 2.0
+        statusCodes: 502,503,504
+    efs-adapter:
+      logLevel: ALL
+      baseUrl: http://localhost:8080
+      connectionTimeout: 5000
+      requestTimeout: 15000
+      socketTimeout: 15000
+      pool:
+        maxConnections: 50
+      retry:
+        maxRetries: 2
+        delay: 500
+        maxDelay: 5000
+        multiplier: 2.0
+        statusCodes: 502,503,504
+    configurator:
+      logLevel: ALL
+      baseUrl: http://localhost:8080
+      connectionTimeout: 5000
+      requestTimeout: 15000
+      socketTimeout: 15000
+      pool:
+        maxConnections: 50
+      retry:
+        maxRetries: 2
+        delay: 500
+        maxDelay: 5000
+        multiplier: 2.0
+        statusCodes: 502,503,504
+    iag:
+      logLevel: ALL
+      baseUrl: http://localhost:8080
+      connectionTimeout: 5000
+      requestTimeout: 15000
+      socketTimeout: 15000
+      pool:
+        maxConnections: 50
+      retry:
+        maxRetries: 2
+        delay: 500
+        maxDelay: 5000
+        multiplier: 2.0
+        statusCodes: 502,503,504
+
+# KAP Producer (disabled in STUB mode)
+kafka:
+  kap:
+    producer:
+      enabled: false
+      bootstrapServers: localhost:9092
+      dialogsTopic: dab2c-core-dialogs
+      agentsTopic: dab2c-agents
+
+# Logging
+logging:
+  level:
+    root: INFO
+    ru.sbrf.dab2c: DEBUG
+    net.devh.boot.grpc: INFO
+    io.ktor: DEBUG
+
+aef:
+  tracing:
+    mode: LOG
+    voice-enabled: true
+    grpc-enabled: true
+    websocket-enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

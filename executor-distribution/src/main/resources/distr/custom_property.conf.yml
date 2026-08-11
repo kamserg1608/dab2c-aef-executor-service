@@ -1,0 +1,100 @@
+SBOL:
+  nginx-ios-ift-b1.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b1.testonline.sberbank.ru
+  nginx-and-ift-b1.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b1.testonline.sberbank.ru
+  nginx-ios-ift-b3.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b3.testonline.sberbank.ru
+  nginx-and-ift-b3.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b3.testonline.sberbank.ru
+  nginx-ios-ift-b5.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b5.testonline.sberbank.ru
+  nginx-and-ift-b5.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b5.testonline.sberbank.ru
+  nginx-and-ift-si1.testonline.sberbank.ru:4433: http://va-bn-ufsuko-sowa-ift-si1.testonline.sberbank.ru
+  nginx-and-ift-si3.testonline.sberbank.ru:4433: http://va-bn-ufsuko-sowa-ift-si3.testonline.sberbank.ru
+  bn-ufsuko-sowa-ift-b1.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b1.testonline.sberbank.ru
+  bn-ufsuko-sowa-ift-b3.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b3.testonline.sberbank.ru
+  bn-ufsuko-sowa-ift-b5.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b5.testonline.sberbank.ru
+  bn-ufsuko-sowa-ift-b7.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b7.testonline.sberbank.ru
+  nginx-ios-ift-b7.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b7.testonline.sberbank.ru
+  nginx-and-ift-b7.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b7.testonline.sberbank.ru
+  test-va-back-block-no-agent: http://dab2c-core-va-back-mock.sbermock.sigma.sbrf.ru
+  test-va-back-block: http://dab2c-core-va-back-mock.sbermock.sigma.sbrf.ru
+  test-va-back-block-private: http://dab2c-core-va-back-mock.sbermock.sigma.sbrf.ru/private
+  test-lt-va-back-block: http://mock:16001/mock
+  test-va-back-block-error: https://example.com
+CCIVR:
+  sflkc-ift-b1-eag001.sberbank.ru: http://sflkc-ift-b1-eag001.sberbank.ru
+  sflkc-ift-b3-eag001.sberbank.ru: http://sflkc-ift-b3-eag001.sberbank.ru
+  sflkc-ift-b5-eag001.sberbank.ru: http://sflkc-ift-b5-eag001.sberbank.ru
+  test-va-back-block: http://dab2c-core-va-back-mock.sbermock.sigma.sbrf.ru
+  test-lt-va-back-block: http://mock:16001/mock
+  test-va-back-block-error: https://example.com
+MOB_BANK:
+  nginx-ios-ift-b1.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b1.testonline.sberbank.ru
+  nginx-and-ift-b1.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b1.testonline.sberbank.ru
+  nginx-ios-ift-b3.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b3.testonline.sberbank.ru
+  nginx-and-ift-b3.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b3.testonline.sberbank.ru
+  nginx-ios-ift-b5.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b5.testonline.sberbank.ru
+  nginx-and-ift-b5.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b5.testonline.sberbank.ru
+  nginx-and-ift-si1.testonline.sberbank.ru:4433: http://va-bn-ufsuko-sowa-ift-si1.testonline.sberbank.ru
+  nginx-and-ift-si3.testonline.sberbank.ru:4433: http://va-bn-ufsuko-sowa-ift-si3.testonline.sberbank.ru
+  bn-ufsuko-sowa-ift-b1.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b1.testonline.sberbank.ru
+  bn-ufsuko-sowa-ift-b3.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b3.testonline.sberbank.ru
+  bn-ufsuko-sowa-ift-b5.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b5.testonline.sberbank.ru
+  bn-ufsuko-sowa-ift-b7.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b7.testonline.sberbank.ru
+  test-va-back-block-no-agent: http://dab2c-core-va-back-mock.sbermock.sigma.sbrf.ru
+  test-va-back-block: http://dab2c-core-va-back-mock.sbermock.sigma.sbrf.ru
+  test-va-back-block-private: http://dab2c-core-va-back-mock.sbermock.sigma.sbrf.ru/private
+  test-lt-va-back-block: http://mock:16001/mock
+  test-va-back-block-error: https://example.com
+  p3: http://va-bn-ufsuko-sowa-ift-b3.testonline.sberbank.ru
+  p5: http://va-bn-ufsuko-sowa-ift-b5.testonline.sberbank.ru
+  p7: http://va-bn-ufsuko-sowa-ift-b7.testonline.sberbank.ru
+INTERNET_BANK:
+  bn-ufsuko-sowa-ift-b1.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b1.testonline.sberbank.ru
+  bn-ufsuko-sowa-ift-b3.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b3.testonline.sberbank.ru
+  bn-ufsuko-sowa-ift-b5.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b5.testonline.sberbank.ru
+  bn-ufsuko-sowa-ift-b7.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b7.testonline.sberbank.ru
+  test-va-back-block-no-agent: http://dab2c-core-va-back-mock.sbermock.sigma.sbrf.ru
+  test-va-back-block: http://dab2c-core-va-back-mock.sbermock.sigma.sbrf.ru
+  test-va-back-block-private: http://dab2c-core-va-back-mock.sbermock.sigma.sbrf.ru/private
+  test-lt-va-back-block: http://mock:16001/mock
+  test-va-back-block-error: https://example.com
+INVESTOR:
+  investor-nginx-ift-b1.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b1.testonline.sberbank.ru
+  investor-nginx-ift-b3.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b3.testonline.sberbank.ru
+  investor-nginx-ift-b5.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b5.testonline.sberbank.ru
+  investor-nginx-ift-si1.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-si1.testonline.sberbank.ru
+  investor-nginx-ift-si3.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-si3.testonline.sberbank.ru
+  test-va-back-block-no-agent: http://dab2c-core-va-back-mock.sbermock.sigma.sbrf.ru
+  test-va-back-block: http://dab2c-core-va-back-mock.sbermock.sigma.sbrf.ru
+  test-lt-va-back-block: http://mock:16001/mock
+  test-va-back-block-error: https://example.com
+SBERKIDS:
+  sberkids-nginx-and-ift-b1.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b1.testonline.sberbank.ru
+  sberkids-nginx-ios-ift-b1.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b1.testonline.sberbank.ru
+  sberkids-nginx-and-ift-b3.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b3.testonline.sberbank.ru
+  sberkids-nginx-ios-ift-b3.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b3.testonline.sberbank.ru
+  sberkids-nginx-and-ift-b5.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b5.testonline.sberbank.ru
+  sberkids-nginx-ios-ift-b5.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-b5.testonline.sberbank.ru
+  sberkids-nginx-and-ift-si1.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-si1.testonline.sberbank.ru
+  sberkids-nginx-ios-ift-si1.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-si1.testonline.sberbank.ru
+  sberkids-nginx-and-ift-si3.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-si3.testonline.sberbank.ru
+  sberkids-nginx-ios-ift-si3.testonline.sberbank.ru: http://va-bn-ufsuko-sowa-ift-si3.testonline.sberbank.ru
+  test-va-back-block-no-agent: http://dab2c-core-va-back-mock.sbermock.sigma.sbrf.ru
+  test-va-back-block: http://dab2c-core-va-back-mock.sbermock.sigma.sbrf.ru
+  test-lt-va-back-block: http://mock:16001/mock
+  test-va-back-block-error: https://example.com
+SBOL_PRO:
+  ex-b1.ift-fl.sbolpro.sberbank.ru: http://ex-b1.ift-fl.sbolpro.sberbank.ru
+  ex-b3.ift-fl.sbolpro.sberbank.ru: http://ex-b3.ift-fl.sbolpro.sberbank.ru
+  ex-b5.ift-fl.sbolpro.sberbank.ru: http://ex-b5.ift-fl.sbolpro.sberbank.ru
+  ex-b7.ift-fl.sbolpro.sberbank.ru: http://ex-b7.ift-fl.sbolpro.sberbank.ru
+  ex-si1.ift-fl.sbolpro.sberbank.ru: http://ex-si1.ift-fl.sbolpro.sberbank.ru
+  ex-si3.ift-fl.sbolpro.sberbank.ru: http://ex-si3.ift-fl.sbolpro.sberbank.ru
+  test-va-back-block: http://dab2c-core-va-back-mock.sbermock.sigma.sbrf.ru
+  test-va-back-block-error: https://example.com
+IVR:
+  sflkc-ift-b1-eag001.sberbank.ru: http://sflkc-ift-b1-eag001.sberbank.ru
+  sflkc-ift-b3-eag001.sberbank.ru: http://sflkc-ift-b3-eag001.sberbank.ru
+  sflkc-ift-b5-eag001.sberbank.ru: http://sflkc-ift-b5-eag001.sberbank.ru
+  test-va-back-block: http://dab2c-core-va-back-mock.sbermock.sigma.sbrf.ru
+  test-lt-va-back-block: http://mock:16001/mock
+  test-va-back-block-error: https://example.com
+storage_custom_schema: "storage"

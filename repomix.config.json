@@ -1,0 +1,146 @@
+{
+  "output": {
+    "filePath": "repomix-output.md",
+    "style": "markdown",
+    "compress": false,
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "showLineNumbers": true
+  },
+  "include": [
+    "repomix.config.json",
+    ".lsp.json",
+    ".gigacode/**",
+    ".serena/project.yml",
+
+    "**/src/main/java/**",
+    "**/src/main/kotlin/**",
+    "**/src/main/resources/**",
+
+    "**/src/test/java/**",
+    "**/src/test/kotlin/**",
+    "**/src/test/resources/**",
+    "**/build/generated/openapi/src/main/**/model/**",
+    "**/generated/openapi/src/main/**/model/**",
+    "pom.xml",
+    "**/pom.xml",
+
+    "build.gradle",
+    "**/build.gradle",
+
+    "build.gradle.kts",
+    "**/build.gradle.kts",
+
+    "settings.gradle",
+    "**/settings.gradle",
+
+    "settings.gradle.kts",
+    "**/settings.gradle.kts",
+
+    "gradle.properties",
+    "**/gradle.properties",
+
+    "buildSrc/**",
+
+    "config/**",
+    "jenkins/**",
+    "docs/**",
+    "openspec/**",
+    "gradle/**",
+
+    "**/application.yml",
+    "**/application.yaml",
+    "**/application.properties",
+
+    "**/bootstrap.yml",
+    "**/bootstrap.yaml",
+    "**/bootstrap.properties",
+
+    "**/logback.xml",
+    "**/logback-*.xml",
+
+    "**/openapi/**",
+    "**/openapi*.yml",
+    "**/openapi*.yaml",
+
+    "**/swagger*.yml",
+    "**/swagger*.yaml",
+
+    "**/db/changelog/**",
+    "**/liquibase/**",
+
+    "**/*.proto",
+
+    ".editorconfig",
+    "**/.editorconfig",
+
+    "README.md",
+    "**/README.md",
+
+    "AGENTS.md",
+    "**/AGENTS.md",
+
+    "CONTRIBUTING.md",
+    "**/CONTRIBUTING.md"
+  ],
+  "ignore": {
+    "useGitignore": false,
+    "customPatterns": [
+      "**/target/**",
+      "**/build/**",
+      "!**/build/generated/",
+      "!**/build/generated/openapi/",
+      "!**/build/generated/openapi/src/",
+      "!**/build/generated/openapi/src/main/",
+      "!**/build/generated/openapi/src/main/**/",
+      "!**/build/generated/openapi/src/main/**/model/**",
+
+      "**/.gradle/**",
+      "**/.mvn/**",
+      "**/.idea/**",
+      "**/.settings/**",
+      "**/.kotlin/**",
+      "**/.git/**",
+      "**/.github/**",
+
+      "**/node_modules/**",
+
+      "**/out/**",
+      "**/dist/**",
+
+      "**/generated/**",
+      "!**/generated/openapi/",
+      "!**/generated/openapi/src/",
+      "!**/generated/openapi/src/main/",
+      "!**/generated/openapi/src/main/**/",
+      "!**/generated/openapi/src/main/**/model/**",
+
+      "**/generated-sources/**",
+      "**/generated-test-sources/**",
+
+      "**/*.class",
+      "**/*.jar",
+      "**/*.war",
+      "**/*.ear",
+      "**/*.iml",
+
+      "**/*.log",
+      "**/logs/**",
+      "**/tmp/**",
+
+      "**/coverage/**",
+      "**/.cache/**",
+      "**/.scannerwork/**",
+
+      ".serena/cache",
+      ".serena/cache/**",
+      "**/.serena/cache",
+      "**/.serena/cache/**",
+      "**/*.pkl",
+      ".serena/memories/**",
+      ".serena/project.local.yml",
+
+      "**/.DS_Store"
+    ]
+  }
+}

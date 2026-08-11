@@ -1,0 +1,16 @@
+{
+  "version": "2.1.0",
+  "service": [
+    {
+      "SERVICE_NAME": "UcpId2Sub",
+      "SERVICE_VERSION": "001",
+      "SERVICE_VERSION_ID": "ECA_SUB_UcpId2Sub_001",
+      "PROVIDER_CODE": "ECA_SUB",
+      "PROVIDER_AS": "ЕСА",
+      "DESCRIPTION": "Конвертация ЕПК ид клиента в Sub ID",
+      "KSSH": false,
+      "TERBANK": false,
+      "SECTIONS": []
+    }
+  ]
+}

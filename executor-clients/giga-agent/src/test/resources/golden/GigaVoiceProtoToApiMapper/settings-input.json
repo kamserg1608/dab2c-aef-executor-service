@@ -1,0 +1,130 @@
+{
+  "audio" : {
+    "input" : {
+      "model" : "asr-v2",
+      "audio_encoding" : 1,
+      "sample_rate" : 16000,
+      "silence_phrases" : [ "silence-a", "silence-b" ],
+      "silence_phrases_timeout" : "5s",
+      "silence_timeout" : "3s",
+      "stop_phrases" : [ "stop-it" ],
+      "ignore_phrases" : [ "ignore-me" ]
+    },
+    "output" : {
+      "voice" : "Nina",
+      "audio_encoding" : 2,
+      "stub_sounds" : {
+        "sounds" : [ "intro-sound" ],
+        "trigger_generation" : {
+          "timeout" : "2s",
+          "enable" : true
+        },
+        "trigger_function" : {
+          "enable" : true,
+          "mode" : 1,
+          "function_names" : [ "get_balance" ],
+          "rules" : [ {
+            "function_names" : [ "transfer_money" ],
+            "sounds" : [ "sound-1" ]
+          } ]
+        }
+      },
+      "speed" : 3
+    }
+  },
+  "voice_call_id" : "call-uuid-1",
+  "gigachat" : {
+    "model" : "GigaChat-Pro",
+    "temperature" : 0.699999988079071,
+    "top_p" : 0.8999999761581421,
+    "repetition_penalty" : 1.100000023841858,
+    "update_interval" : 0.5,
+    "profanity_check" : true,
+    "filters_settings" : {
+      "filter-key" : {
+        "request_content" : {
+          "neuro" : true,
+          "blacklist" : false,
+          "whitelist" : true
+        },
+        "response_content" : {
+          "blacklist" : true
+        }
+      }
+    },
+    "functions" : [ {
+      "name" : "get_balance",
+      "description" : "Returns user balance",
+      "parameters" : "{\"type\":\"object\"}",
+      "few_shot_examples" : [ {
+        "request" : "What is my balance?",
+        "params" : {
+          "pairs" : [ {
+            "key" : "user_id",
+            "value" : "42"
+          } ]
+        }
+      } ],
+      "return_parameters" : "{\"type\":\"number\"}"
+    } ],
+    "function_registry" : {
+      "profile" : "default",
+      "labels" : [ "voice", "rus" ],
+      "ab_flags" : "{\"experiment\":\"on\"}"
+    },
+    "filter_stub_phrases" : [ "заглушка" ],
+    "current_time" : 1730000000,
+    "function_ranker" : {
+      "enabled" : true,
+      "top_n" : 5,
+      "embedder_model" : "embedder-v1",
+      "ignored_functions" : [ "noop" ]
+    },
+    "preset" : "preset-a"
+  },
+  "context" : {
+    "messages" : [ {
+      "role" : "user",
+      "content" : "Hi there",
+      "function_call" : {
+        "name" : "ping",
+        "arguments" : "{\"x\":1}"
+      },
+      "function_name" : "ping",
+      "functions_state_id" : "state-1",
+      "attachments" : [ "att-1" ],
+      "inline_data" : {
+        "key-1" : "value-1"
+      },
+      "functions" : [ {
+        "name" : "ping",
+        "description" : "Ping",
+        "parameters" : null,
+        "few_shot_examples" : [ ],
+        "return_parameters" : null
+      } ]
+    } ]
+  },
+  "disable_vad" : true,
+  "enable_transcribe_input" : true,
+  "flags" : [ "flag-a", "flag-b" ],
+  "output_modalities" : 2,
+  "mode" : 1,
+  "first_speaker" : {
+    "type" : "agent",
+    "lock_first_in" : true
+  },
+  "enable_denoiser" : true,
+  "enable_prefetch" : true,
+  "enable_person_identity" : true,
+  "enable_whisper" : true,
+  "enable_emotion" : true,
+  "enable_transcribe_silence_phrases" : true,
+  "disable_interruption" : {
+    "functions" : [ {
+      "name" : "transfer",
+      "on_execution" : true,
+      "after_result" : false
+    } ]
+  }
+}

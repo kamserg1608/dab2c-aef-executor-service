@@ -1,0 +1,164 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "IAG Function API",
+    "version": "1.0"
+  },
+  "paths": {
+    "/function/call": {
+      "post": {
+        "operationId": "executeFunctionCall",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IagFunctionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "IagFunctionRequest": {
+        "type": "object",
+        "required": [
+          "message",
+          "config"
+        ],
+        "properties": {
+          "message": {
+            "$ref": "#/components/schemas/IagMessage"
+          },
+          "config": {
+            "$ref": "#/components/schemas/ACLConfig"
+          }
+        }
+      },
+
+      "IagMessage": {
+        "type": "object",
+        "required": [
+          "message_id",
+          "conversation_id",
+          "edu_id",
+          "content",
+          "x_meta"
+        ],
+        "properties": {
+          "message_id": {
+            "type": "string"
+          },
+          "conversation_id": {
+            "type": "string"
+          },
+          "edu_id": {
+            "type": "string"
+          },
+          "content": {
+            "$ref": "#/components/schemas/IagContent"
+          },
+          "x_meta": {
+            "$ref": "#/components/schemas/IagXMeta"
+          }
+        }
+      },
+
+      "IagContent": {
+        "type": "object",
+        "required": [
+          "message",
+          "function_call",
+          "timestamp"
+        ],
+        "properties": {
+          "message": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IagMessageContent"
+            }
+          },
+          "function_call": {
+            "$ref": "#/components/schemas/IagFunctionCall"
+          },
+          "timestamp": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+
+      "IagMessageContent": {
+        "type": "object",
+        "required": [
+          "type",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+
+      "IagFunctionCall": {
+        "type": "object",
+        "required": [
+          "name",
+          "arguments"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "arguments": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+
+      "IagXMeta": {
+        "type": "object",
+        "required": [
+          "user_info",
+          "session_info"
+        ],
+        "properties": {
+          "user_info": {
+            "$ref": "#/components/schemas/UserInfo"
+          },
+          "session_info": {
+            "$ref": "#/components/schemas/SessionInfo"
+          }
+        }
+      },
+
+      "ACLConfig": {
+        "type": "object",
+        "additionalProperties": true
+      },
+
+      "UserInfo": {
+        "type": "object",
+        "additionalProperties": true
+      },
+
+      "SessionInfo": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  }
+}

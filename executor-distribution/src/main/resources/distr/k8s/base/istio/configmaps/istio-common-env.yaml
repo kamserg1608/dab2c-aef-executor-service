@@ -1,0 +1,10 @@
+apiVersion: "v1"
+kind: "ConfigMap"
+metadata:
+  name: istio-common-env.unver
+data:
+  CLUSTER_ID: {{ lookup('custom_vars', 'global.multiClusters.openshiftNewRoute') }}
+  AI_HUB_ID: @as-conf-item.uppercase@
+  AGENT_ID: @app-conf-item.uppercase@
+  AI_HUB_NAME: DIGITAL_ASSISITANT_B2C
+  BLOCK_ID: "${ufs-logger.block_id}"

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <conversionRule conversionWord="presentMdc"
+                    converterClass="ru.sbrf.dab2c.executor.application.logging.PresentMdcConverter"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ru.sbrf.dab2c.executor.application.logging.MaskingPatternLayout">
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36}%presentMdc %msg%n</pattern>
+        </layout>
+    </appender>
+
+    <!-- Suppress noisy debug logs from JDK and ByteBuddy -->
+    <logger name="java.lang.ProcessBuilder" level="INFO"/>
+    <logger name="net.bytebuddy" level="INFO"/>
+
+    <root level="DEBUG">
+        <appender-ref ref="STDOUT" />
+    </root>
+
+</configuration>

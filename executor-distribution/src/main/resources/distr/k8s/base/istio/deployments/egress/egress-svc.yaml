@@ -1,0 +1,39 @@
+﻿apiVersion: v1
+kind: Service
+metadata:
+  name: egressgateway-@fpi-name@-unver
+  labels:
+    app: istio-egressgateway-@fpi-name@-unver
+    istio: egressgateway-@fpi-name@-unver
+    maistra.io/owner: ${@fpi-name@.ctr.istio.control-plane-project}
+    release: istio
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+    - name: http2
+      protocol: TCP
+      port: 80
+      targetPort: 8080
+    - name: http-ose
+      protocol: TCP
+      port: ${@fpi-name@.ctr.istio.egress.common.internal-port}
+      targetPort: ${@fpi-name@.ctr.istio.egress.common.internal-port}
+    - name: http-tls
+      protocol: TCP
+      port: 13443
+      targetPort: 13443
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: ${@fpi-name@.ctr.istio.egress.se.http.iag-mm.port}
+    - name: http-monitoring
+      protocol: TCP
+      port: ${global.monitoring.store.port}
+      targetPort: ${global.monitoring.store.port}
+  selector:
+    app: istio-egressgateway-@fpi-name@-unver
+  sessionAffinity: None
+  type: ClusterIP
