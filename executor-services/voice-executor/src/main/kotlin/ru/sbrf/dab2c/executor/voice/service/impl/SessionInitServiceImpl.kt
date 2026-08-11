@@ -15,6 +15,7 @@ import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ProfileClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.SdsClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.impl.readDaSessionMeta
 import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
+import ru.sbrf.dab2c.executor.domain.session.DaSessionUserInfo
 import ru.sbrf.dab2c.executor.library.context.Headers
 import ru.sbrf.dab2c.executor.library.context.HeadersElement
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
@@ -53,7 +54,12 @@ class SessionInitServiceImpl(
         val daSessionCommon = configuratorClient.getDaSessionCommon()
         logger.debug { "Fetched DaSessionCommon. $daSessionCommon" }
 
-        val daSessionUserInfo = profileClient.getPersonInfo()
+        val daSessionUserInfo = if (daSessionMeta.ucpId == null) {
+            logger.info { "Session has no ucpId, person info request skipped" }
+            DaSessionUserInfo()
+        } else {
+            profileClient.getPersonInfo()
+        }
         daSessionUserInfo.firstName?.let { MaskingCollector.register(it) }
         daSessionUserInfo.patrName?.let { MaskingCollector.register(it) }
         logger.debug { "Fetched DaSessionUserInfo. $daSessionUserInfo" }

@@ -21,8 +21,8 @@ object VoiceMdcInitializer {
     }
 
     /** Updates MDC context with session and user identifiers. */
-    fun updateWithSessionInfo(sessionId: String, ucpId: String) {
+    fun updateWithSessionInfo(sessionId: String, ucpId: String?) {
         MdcContext.updateSessionId(sessionId)
-        MdcContext.updateUserLogin(ucpId)
+        ucpId?.let(MdcContext::updateUserLogin)
     }
 }

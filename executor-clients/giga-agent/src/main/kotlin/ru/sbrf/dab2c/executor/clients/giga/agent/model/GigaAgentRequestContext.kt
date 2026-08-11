@@ -19,7 +19,7 @@ data class GigaAgentRequestContext(
     val daSessionId: String,
     val daChannel: String,
     val daPlatform: String,
-    val daUcpId: String
+    val daUcpId: String?
 ) {
 
     /**
@@ -32,7 +32,7 @@ data class GigaAgentRequestContext(
         header(DA_SESSION_ID_HEADER, daSessionId)
         header(DA_CHANNEL_HEADER, daChannel)
         header(DA_PLATFORM_HEADER, daPlatform)
-        header(DA_UCP_ID_HEADER, daUcpId)
+        daUcpId?.let { header(DA_UCP_ID_HEADER, it) }
     }
 
     /**
@@ -44,15 +44,15 @@ data class GigaAgentRequestContext(
     }
 
     /** Returns HTTP headers as a map, matching the headers applied by [applyHeaders]. */
-    fun toHeadersMap(): Map<String, String> = mapOf(
-        UFS_SESSION to ufsSession,
-        X_TRACE_ID_HEADER to traceId,
-        DA_REQUEST_ID_HEADER to daRequestId,
-        DA_SESSION_ID_HEADER to daSessionId,
-        DA_CHANNEL_HEADER to daChannel,
-        DA_PLATFORM_HEADER to daPlatform,
-        DA_UCP_ID_HEADER to daUcpId
-    )
+    fun toHeadersMap(): Map<String, String> = buildMap {
+        put(UFS_SESSION, ufsSession)
+        put(X_TRACE_ID_HEADER, traceId)
+        put(DA_REQUEST_ID_HEADER, daRequestId)
+        put(DA_SESSION_ID_HEADER, daSessionId)
+        put(DA_CHANNEL_HEADER, daChannel)
+        put(DA_PLATFORM_HEADER, daPlatform)
+        daUcpId?.let { put(DA_UCP_ID_HEADER, it) }
+    }
 
     /** Returns HTTP cookies as a map, matching the cookies applied by [applyCookies]. */
     fun toCookiesMap(): Map<String, String> = mapOf(

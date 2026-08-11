@@ -52,6 +52,7 @@ class AgentAnalyticsEnvelopeMapperTest {
     @Test
     fun `should default nullable fields to empty string`() {
         val turnData = createTurnData(
+            ucpId = null,
             block = null,
             appSource = null,
             platform = null,
@@ -61,6 +62,7 @@ class AgentAnalyticsEnvelopeMapperTest {
         val envelope = AgentAnalyticsEnvelopeMapper.toAgentAnalyticsEnvelope(turnData)
 
         val parsed = ObjectMappers.MAPPER.readValue<AgentAnalyticsData>(envelope.data!!)
+        assertEquals("", parsed.ucpId)
         assertEquals("", parsed.block)
         assertEquals("", parsed.appSource)
         assertEquals("", parsed.platform)
@@ -69,6 +71,7 @@ class AgentAnalyticsEnvelopeMapperTest {
 
     @Suppress("LongParameterList")
     private fun createTurnData(
+        ucpId: String? = "test-ucp-id",
         block: String? = "test-block",
         appSource: String? = "ucf",
         platform: String? = "ios",
@@ -82,7 +85,7 @@ class AgentAnalyticsEnvelopeMapperTest {
             meta = DaSessionMeta(
                 sessionId = "test-session-id",
                 userId = "test-user-id",
-                ucpId = "test-ucp-id",
+                ucpId = ucpId,
                 ufsHost = "test-host"
             ),
             common = DaSessionCommon(

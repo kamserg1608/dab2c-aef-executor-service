@@ -66,7 +66,7 @@ object DialogEnvelopeMapper {
             dateCreated = data.timestamp,
             text = data.inputText,
             userId = meta.userId.takeIfNotBlank(),
-            ucpId = meta.ucpId.takeIfNotBlank(),
+            ucpId = meta.ucpId?.takeIfNotBlank(),
             sessionId = meta.sessionId.takeIfNotBlank(),
             surface = common.surface?.takeIfNotBlank(),
             channel = common.channel.takeIfNotBlank(),

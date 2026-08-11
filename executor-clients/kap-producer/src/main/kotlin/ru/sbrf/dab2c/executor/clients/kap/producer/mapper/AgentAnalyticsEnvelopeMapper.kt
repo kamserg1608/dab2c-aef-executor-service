@@ -36,7 +36,7 @@ object AgentAnalyticsEnvelopeMapper {
             conversationId = turnData.conversationId,
             requestId = turnData.requestId ?: "",
             messageId = turnData.messageId,
-            ucpId = turnData.daSessionInfo.meta.ucpId,
+            ucpId = turnData.daSessionInfo.meta.ucpId ?: "",
             block = turnData.daSessionInfo.common.block ?: "",
             channel = turnData.daSessionInfo.common.channel,
             appSource = turnData.daSessionInfo.common.appSource ?: "",

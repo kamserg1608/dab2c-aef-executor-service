@@ -1,6 +1,5 @@
 package ru.sbrf.dab2c.executor.clients.efs.adapter.model
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
@@ -24,17 +23,12 @@ data class SdsSessionMeta(
     @JsonProperty("user_id")
     val userId: String,
     @JsonProperty("ucp_id")
-    private val sourceUcpId: String?,
+    val ucpId: String?,
     @JsonProperty("ufs_host")
     val ufsHost: String,
     @JsonProperty("is_valid")
     val isValid: Boolean = true
-) {
-    /** UCP ID from SDS, or user ID when the session has no UCP ID. */
-    @get:JsonIgnore
-    val ucpId: String
-        get() = sourceUcpId ?: userId
-}
+)
 
 /**
  * SDS model for common session data.
@@ -75,5 +69,5 @@ data class SdsSessionUserInfo(
     @JsonProperty("segment_code_type")
     val segmentCodeType: String,
     @JsonProperty("ucp_id")
-    val ucpId: String
+    val ucpId: String?
 )

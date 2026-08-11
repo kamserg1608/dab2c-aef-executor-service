@@ -80,12 +80,12 @@ class DialogEnvelopeMapperTest {
     }
 
     @Test
-    fun `should handle blank session fields as null`() {
+    fun `should handle blank and absent session fields as null`() {
         val sessionInfo = DaSessionInfo(
             meta = DaSessionMeta(
                 sessionId = "",
                 userId = "  ",
-                ucpId = "test-ucp",
+                ucpId = null,
                 ufsHost = "test-host"
             ),
             common = DaSessionCommon(
@@ -116,7 +116,7 @@ class DialogEnvelopeMapperTest {
         val userMessage = envelope.data.userMessage
         assertNull(userMessage.sessionId)
         assertNull(userMessage.userId)
-        assertEquals("test-ucp", userMessage.ucpId)
+        assertNull(userMessage.ucpId)
         assertNull(userMessage.surface)
         assertEquals("sbol", userMessage.channel)
         assertEquals("ios", userMessage.platform)
