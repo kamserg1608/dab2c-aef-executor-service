@@ -15,7 +15,7 @@ data class DaSessionInfo(
 data class DaSessionMeta(
     val sessionId: String,
     val userId: String,
-    val ucpId: String,
+    val ucpId: String?,
     val ufsHost: String,
     val isValid: Boolean = true
 )

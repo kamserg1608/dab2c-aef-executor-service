@@ -3,6 +3,7 @@
 
 # Gradle
 .gradle
+.local/
 build
 lib
 

@@ -468,6 +468,24 @@ object WireMockResponses {
     """.trimIndent()
 
     /**
+     * SDS session read data response for a session without a UCP ID.
+     */
+    @Suppress("MaxLineLength")
+    val SDS_DA_SESSION_NO_UCP_ID = """
+        {
+            "success": true,
+            "body": [
+                {
+                    "sectionName": "DA_SESSION",
+                    "attributeName": "SESSION_INFO_MOB_BANK",
+                    "data": "{\"session_id\":\"test-session-id\",\"user_id\":\"test-user-id\",\"ucp_id\":null,\"ufs_host\":\"test-ufs-host\",\"is_valid\":true}"
+                }
+            ],
+            "errors": null
+        }
+    """.trimIndent()
+
+    /**
      * SDS session read data response from SESSION section.
      */
     @Suppress("MaxLineLength")

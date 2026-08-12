@@ -74,14 +74,14 @@ object WireMockSetup {
         )
     }
 
-    fun WireMockServer.stubSdsSessionReadData() {
+    fun WireMockServer.stubSdsSessionReadData(body: String = WireMockResponses.SDS_DA_SESSION) {
         stubFor(
             post(urlEqualTo("/session/readData"))
                 .willReturn(
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody(WireMockResponses.SDS_DA_SESSION)
+                        .withBody(body)
                 )
         )
     }
@@ -272,10 +272,11 @@ object WireMockSetup {
         efsAdapter: WireMockServer,
         gigaAgent: WireMockServer,
         withFunctions: Boolean = false,
+        sdsSessionBody: String = WireMockResponses.SDS_DA_SESSION,
     ) {
         with(efsAdapter) {
             stubEfsRestAgent()
-            stubSdsSessionReadData()
+            stubSdsSessionReadData(sdsSessionBody)
             stubConfiguratorSession()
             stubEfsAuditEvent()
             stubPersonInfo()
