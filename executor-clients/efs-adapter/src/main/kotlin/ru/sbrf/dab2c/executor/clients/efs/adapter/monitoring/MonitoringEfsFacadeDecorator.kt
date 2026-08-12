@@ -1,7 +1,6 @@
 package ru.sbrf.dab2c.executor.clients.efs.adapter.monitoring
 
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.context.annotation.Primary
 import org.springframework.stereotype.Service
 import ru.sbrf.dab2c.executor.clients.common.model.ClientMetric
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.EfsFacade
@@ -27,8 +26,7 @@ import ru.sbrf.dab2c.executor.library.monitoring.service.api.monitorHttpCall
 /**
  * Monitoring decorator that records HTTP integration metrics for all EFS Adapter calls.
  */
-@Service
-@Primary
+@Service("monitoringEfsFacadeDecorator")
 class MonitoringEfsFacadeDecorator(
     @Qualifier("efsFacadeImpl") private val delegate: EfsFacade,
     private val metricFactory: MetricFactory
