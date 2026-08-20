@@ -5,7 +5,9 @@
     "compress": false,
     "removeComments": false,
     "removeEmptyLines": false,
-    "showLineNumbers": true
+    "showLineNumbers": true,
+    "directoryStructure": true,
+    "includeFullDirectoryStructure": true
   },
   "include": [
     "repomix.config.json",

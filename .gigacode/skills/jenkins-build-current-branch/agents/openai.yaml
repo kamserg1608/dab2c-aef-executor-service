@@ -1,0 +1,14 @@
+interface:
+  display_name: 'Jenkins: текущая ветка'
+  short_description: Запуск Jenkins для текущей Git-ветки
+  default_prompt: Используй $jenkins-build-current-branch, чтобы запустить Jenkins-сборку
+    текущей ветки проекта.
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true
