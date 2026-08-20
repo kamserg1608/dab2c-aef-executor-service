@@ -1,5 +1,7 @@
 package ru.sbrf.dab2c.executor.library.tracing.facade
 
+import com.fasterxml.jackson.core.json.JsonWriteFeature
+import com.fasterxml.jackson.databind.util.RawValue
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.context.Context
@@ -12,6 +14,9 @@ import ru.sbrf.dab2c.executor.library.tracing.TracingParentElement
 
 /** Production implementation of [AefTracingFacade] backed by AEF SDK voice tracing API. */
 class AefTracingFacadeImpl(private val tracer: Tracer) : AefTracingFacade {
+
+    private val unicodeJsonWriter = ObjectMappers.MAPPER.writer()
+        .without(JsonWriteFeature.ESCAPE_NON_ASCII)
 
     override suspend fun startDownstreamGrpcOutputRequest(spanName: String, path: String, settings: Any): Span =
         VoiceTracing.startOutputRequest(
@@ -40,7 +45,7 @@ class AefTracingFacadeImpl(private val tracer: Tracer) : AefTracingFacade {
         span.setAttribute(AefAttributeKeys.INPUT, output.inputJson)
         if (!output.warning.isNullOrEmpty()) span.setAttribute(AefAttributeKeys.WARNING, output.warning)
         if (!output.error.isNullOrEmpty()) span.setAttribute(AefAttributeKeys.ERROR, output.error)
-        VoiceTracing.endVoiceTurn(span, parseJsonOrWrap(output.outputJson))
+        VoiceTracing.endVoiceTurn(span, rawJsonOrWrap(output.outputJson))
     }
 
     override suspend fun startVoiceLlmTurn(spanName: String, parent: Span?): Span {
@@ -53,7 +58,7 @@ class AefTracingFacadeImpl(private val tracer: Tracer) : AefTracingFacade {
         VoiceTracing.endVoiceLlmTurn(
             span,
             VoiceLlmTurnOutputAttributes.builder()
-                .output(parseJsonOrWrap(output.outputJson))
+                .output(rawJsonOrWrap(output.outputJson))
                 .totalTokens(output.totalTokens?.toInt())
                 .warning(output.warning)
                 .error(output.error)
@@ -68,7 +73,7 @@ class AefTracingFacadeImpl(private val tracer: Tracer) : AefTracingFacade {
     }
 
     override fun endTool(span: Span, outputJson: String) {
-        VoiceTracing.endTool(span, parseJsonOrWrap(outputJson))
+        VoiceTracing.endTool(span, rawJsonOrWrap(outputJson))
     }
 
     override suspend fun startHttpOutputRequest(
@@ -111,6 +116,15 @@ class AefTracingFacadeImpl(private val tracer: Tracer) : AefTracingFacade {
     private fun parseJsonOrWrap(json: String): Any =
         try {
             ObjectMappers.MAPPER.readValue(json, Map::class.java)
+        } catch (_: Exception) {
+            json
+        }
+
+    private fun rawJsonOrWrap(json: String): Any =
+        try {
+            ObjectMappers.MAPPER.readTree(json)?.let { parsedJson ->
+                RawValue(unicodeJsonWriter.writeValueAsString(parsedJson))
+            } ?: json
         } catch (_: Exception) {
             json
         }
