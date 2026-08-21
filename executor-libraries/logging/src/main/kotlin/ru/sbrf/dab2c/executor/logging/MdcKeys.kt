@@ -26,7 +26,6 @@ object MdcKeys {
     const val STATUS_CODE = "statusCode"
     const val ERROR_CODE = "errorCode"
     const val CLASS_NAME = "className"
-    const val SERVER_EVENT_DATETIME = "serverEventDatetime"
     const val SPAN_ID = "spanId"
     const val PARENT_SPAN_ID = "parentSpanId"
 }

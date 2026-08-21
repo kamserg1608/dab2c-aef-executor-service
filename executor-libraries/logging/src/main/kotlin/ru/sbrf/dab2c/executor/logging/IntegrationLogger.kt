@@ -5,7 +5,6 @@ package ru.sbrf.dab2c.executor.logging
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CancellationException
 import org.slf4j.MDC
-import java.time.Instant
 
 private const val INTEGRATION_TYPE = "INTEGRATION"
 private const val ERROR_CODE_SUCCESS = "0"
@@ -34,7 +33,6 @@ object IntegrationLogger {
     ): T {
         val savedMdc = MDC.getCopyOfContextMap() ?: emptyMap()
         val startTime = System.currentTimeMillis()
-        val serverEventDatetime = Instant.now().toString()
 
         return try {
             val result = block()
@@ -45,7 +43,7 @@ object IntegrationLogger {
             // then add integration fields on top
             MDC.setContextMap(savedMdc)
             setIntegrationSuccessMdc(
-                serverEventDatetime, destinationSystem, destinationService,
+                destinationSystem, destinationService,
                 rqMessage, rsMessage, executionTime, statusCode, className
             )
             logger.info { "HTTP $destinationService completed" }
@@ -59,7 +57,7 @@ object IntegrationLogger {
             // Restore saved MDC first, then add integration fields
             MDC.setContextMap(savedMdc)
             setIntegrationErrorMdc(
-                serverEventDatetime, destinationSystem, destinationService,
+                destinationSystem, destinationService,
                 rqMessage, executionTime, className, statusCode
             )
             logger.error(e) { "HTTP $destinationService failed: ${e.message}" }
@@ -83,7 +81,6 @@ object IntegrationLogger {
         val savedMdc = MDC.getCopyOfContextMap() ?: emptyMap()
         try {
             MDC.put(MdcKeys.TYPE, INTEGRATION_TYPE)
-            MDC.put(MdcKeys.SERVER_EVENT_DATETIME, Instant.now().toString())
             MDC.put(MdcKeys.ERROR_CODE, if (error != null) ERROR_CODE_GRPC else ERROR_CODE_SUCCESS)
             rqMessage?.let { MDC.put(MdcKeys.RQ_MESSAGE, it) }
             rsMessage?.let { MDC.put(MdcKeys.RS_MESSAGE, it) }
@@ -101,7 +98,6 @@ object IntegrationLogger {
 
     @Suppress("LongParameterList")
     private fun setIntegrationSuccessMdc(
-        serverEventDatetime: String,
         destinationSystem: String,
         destinationService: String,
         rqMessage: String,
@@ -111,7 +107,6 @@ object IntegrationLogger {
         className: String
     ) {
         MDC.put(MdcKeys.TYPE, INTEGRATION_TYPE)
-        MDC.put(MdcKeys.SERVER_EVENT_DATETIME, serverEventDatetime)
         MDC.put(MdcKeys.DESTINATION_SYSTEM, destinationSystem)
         MDC.put(MdcKeys.DESTINATION_SERVICE, destinationService)
         MDC.put(MdcKeys.RQ_MESSAGE, rqMessage)
@@ -124,7 +119,6 @@ object IntegrationLogger {
 
     @Suppress("LongParameterList")
     private fun setIntegrationErrorMdc(
-        serverEventDatetime: String,
         destinationSystem: String,
         destinationService: String,
         rqMessage: String,
@@ -133,7 +127,6 @@ object IntegrationLogger {
         statusCode: Int? = null
     ) {
         MDC.put(MdcKeys.TYPE, INTEGRATION_TYPE)
-        MDC.put(MdcKeys.SERVER_EVENT_DATETIME, serverEventDatetime)
         MDC.put(MdcKeys.DESTINATION_SYSTEM, destinationSystem)
         MDC.put(MdcKeys.DESTINATION_SERVICE, destinationService)
         MDC.put(MdcKeys.RQ_MESSAGE, rqMessage)

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceServiceGrpcKt
+import ru.sbrf.dab2c.executor.voice.logging.CompletionOutcome
+import ru.sbrf.dab2c.executor.voice.logging.completionOutcome
 
 /** gRPC client for bidirectional streaming communication with the downstream GigaVoice service. */
 @Component
@@ -28,8 +30,11 @@ class GigaVoiceClient {
         logger.debug { "Starting bidirectional session with GigaVoice" }
         return stub.gigaVoice(requests)
             .onCompletion { cause ->
-                if (cause != null) {
-                    logger.warn {
+                when {
+                    cause == null -> Unit
+                    completionOutcome(cause) == CompletionOutcome.CANCELLED ->
+                        logger.debug { "GigaVoice downstream session cancelled: target=${channel.authority()}" }
+                    else -> logger.warn {
                         "GigaVoice downstream session failed: target=${channel.authority()}, " +
                             "error=${cause::class.simpleName}: ${cause.message}"
                     }

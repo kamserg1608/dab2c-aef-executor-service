@@ -114,6 +114,7 @@ logging:
   level:
     root: ${LOG_LEVEL_ROOT:INFO}
     ru.sbrf.dab2c: ${LOG_LEVEL_DAB2C:INFO}
+    org.springframework: ${LOG_LEVEL_SPRING:INFO}
     net.devh.boot.grpc: ${LOG_LEVEL_GRPC:WARN}
     io.ktor: ${LOG_LEVEL_KTOR:WARN}
 
