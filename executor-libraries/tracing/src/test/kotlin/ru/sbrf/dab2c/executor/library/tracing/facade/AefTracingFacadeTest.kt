@@ -55,6 +55,25 @@ class AefTracingFacadeTest {
     }
 
     @Test
+    fun `endVoiceTurn converts unicode escapes to characters in aef_output`() = runTest {
+        val span = facade.startVoiceTurn("voice turn")
+        facade.endVoiceTurn(
+            span,
+            VoiceTurnOutput(
+                inputJson = "{}",
+                outputJson = """{"text":"\u041F\u0440\u0438\u0432\u0435\u0442"}""",
+                warning = null,
+                error = null,
+            )
+        )
+
+        val output = exporter.finishedSpanItems.single()
+            .attributes
+            .get(AttributeKey.stringKey("aef.output"))
+        assertEquals("""{"text":"Привет"}""", output)
+    }
+
+    @Test
     fun `startVoiceTurn without session element leaves session_id empty`() = runTest {
         val span = facade.startVoiceTurn("voice turn")
         facade.endVoiceTurn(span, VoiceTurnOutput("{}", "{}", null, null))
