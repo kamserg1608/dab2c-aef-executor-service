@@ -96,7 +96,10 @@ class AefTracingFacadeTest {
 
     @Test
     fun `tool span writes aef_input at start and aef_output at end`() = runTest {
-        val span = facade.startTool("find_office", """{"city":"Moscow"}""")
+        val span = facade.startTool(
+            "find_office",
+            """{"city":"\u041C\u043E\u0441\u043A\u0432\u0430"}"""
+        )
         facade.endTool(span, """{"status":"success","result_available":true}""")
 
         val data = exporter.finishedSpanItems.single()
@@ -105,6 +108,7 @@ class AefTracingFacadeTest {
         assertNotNull(input)
         assertEquals(true, input!!.contains("\"name\":\"find_office\""))
         assertEquals(true, input.contains("\"arguments\""))
+        assertEquals(true, input.contains("\"city\":\"Москва\""))
         assertEquals(
             """{"status":"success","result_available":true}""",
             data.attributes.get(AttributeKey.stringKey("aef.output"))

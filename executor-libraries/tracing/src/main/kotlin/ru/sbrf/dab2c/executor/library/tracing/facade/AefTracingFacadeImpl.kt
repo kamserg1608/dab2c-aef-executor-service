@@ -68,7 +68,7 @@ class AefTracingFacadeImpl(private val tracer: Tracer) : AefTracingFacade {
 
     override suspend fun startTool(functionName: String, arguments: String, parent: Span?): Span {
         val parentContext = parent?.let { Context.current().with(it) } ?: Context.current()
-        val parsedArgs = parseJsonOrWrap(arguments)
+        val parsedArgs = rawJsonOrWrap(arguments)
         return VoiceTracing.startTool(tracer, functionName, parsedArgs, parentContext)
     }
 
@@ -112,13 +112,6 @@ class AefTracingFacadeImpl(private val tracer: Tracer) : AefTracingFacade {
         val base = element?.root() ?: Context.current()
         return element?.get()?.let { base.with(it) } ?: base
     }
-
-    private fun parseJsonOrWrap(json: String): Any =
-        try {
-            ObjectMappers.MAPPER.readValue(json, Map::class.java)
-        } catch (_: Exception) {
-            json
-        }
 
     private fun rawJsonOrWrap(json: String): Any =
         try {
