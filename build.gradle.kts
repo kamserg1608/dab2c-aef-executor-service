@@ -44,6 +44,12 @@ subprojects {
     dependencies {
         // Spring Boot BOM for dependency management
         implementation(platform(rootProject.libs.spring.boot.dependencies))
+        implementation(platform(rootProject.libs.jackson.bom))
+        implementation(platform(rootProject.libs.netty.bom))
+
+        constraints {
+            implementation(rootProject.libs.lz4.java)
+        }
 
         implementation(rootProject.libs.spring.boot.starter.webflux)
         implementation(rootProject.libs.jackson.module.kotlin)
