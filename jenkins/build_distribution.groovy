@@ -65,6 +65,7 @@ String getSonarOptions(String appBranch, String token) {
             "-Dsonar.projectName=executor-java",
             "-Dsonar.projectKey=executor-java",
             "-Dsonar.scm.revision=${baseCommit}",
+            "-Dsonar.coverage.jacoco.xmlReportPaths=${pwd()}/build/reports/jacoco/aggregate/jacoco.xml",
     ].join(" ")
 }
 
