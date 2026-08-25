@@ -11,6 +11,7 @@
   },
   "include": [
     "repomix.config.json",
+    "runtime-dependencies-*.md",
     ".lsp.json",
     ".gigacode/**",
     ".serena/project.yml",
