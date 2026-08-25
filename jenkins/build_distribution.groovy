@@ -19,7 +19,30 @@ void sonar(app) {
             credentialsId: 'sonar_token_executor-java:master_447002',
             variable: 'sonarToken'
     )]) {
-        gradlew("sonar", getSonarOptions(app.branch, sonarToken))
+        gradlew(
+                ":executor-e2e-tests:test testCodeCoverageReport",
+                "--info"
+        )
+
+        sh '''
+            REPORT="build/reports/jacoco/aggregate/jacoco.xml"
+
+            echo "=== JaCoCo aggregate report ==="
+            ls -lh "$REPORT"
+            test -s "$REPORT"
+
+            echo "=== JaCoCo counters ==="
+            grep -o '<counter type="LINE"[^>]*/>' "$REPORT" | tail -1
+
+            echo "=== E2E-covered production classes ==="
+            grep -o '<class name="[^"]*IntegrationLogger[^"]*"' "$REPORT" | head
+            grep -o '<class name="[^"]*SessionInitServiceImpl[^"]*"' "$REPORT" | head
+        '''
+
+        gradlew(
+                "sonar",
+                "${getSonarOptions(app.branch, sonarToken)} --info"
+        )
     }
 }
 
