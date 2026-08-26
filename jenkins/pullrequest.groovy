@@ -104,7 +104,7 @@ String getSonarOptions() {
             "-Dsonar.projectName=executor-java",
             "-Dsonar.projectKey=executor-java",
             '-Dsonar.scm.revision="$SONAR_SCM_REVISION"',
-            "-Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/aggregate/jacoco.xml",
+            "-Dsonar.coverage.jacoco.xmlReportPaths=${pwd()}/build/reports/jacoco/aggregate/jacoco.xml",
     ].join(" ")
 }
 
