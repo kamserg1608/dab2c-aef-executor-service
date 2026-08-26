@@ -4,6 +4,8 @@ import org.gradle.testing.jacoco.tasks.JacocoReport
 
 plugins {
     java
+    jacoco
+
     id("org.jetbrains.kotlin.plugin.spring") apply false
     id("org.springframework.boot") apply false
     id("io.spring.dependency-management") apply false
