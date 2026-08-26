@@ -15,35 +15,47 @@ void build(distr) {
 }
 
 void sonar(app) {
-    withCredentials([string(
-            credentialsId: 'sonar_token_executor-java:master_447002',
-            variable: 'sonarToken'
-    )]) {
-        gradlew(
-                ":executor-e2e-tests:test testCodeCoverageReport",
-                "--info"
-        )
-
-        sh '''
-            REPORT="build/reports/jacoco/aggregate/jacoco.xml"
-
-            echo "=== JaCoCo aggregate report ==="
-            ls -lh "$REPORT"
-            test -s "$REPORT"
-
-            echo "=== JaCoCo counters ==="
-            grep -o '<counter type="LINE"[^>]*/>' "$REPORT" | tail -1
-
-            echo "=== E2E-covered production classes ==="
-            grep -o '<class name="[^"]*IntegrationLogger[^"]*"' "$REPORT" | head
-            grep -o '<class name="[^"]*SessionInitServiceImpl[^"]*"' "$REPORT" | head
-        '''
-
-        gradlew(
-                "sonar",
-                "${getSonarOptions(app.branch, sonarToken)} --info"
-        )
+    def appBranch = app.branch
+    if (!appBranch?.trim()) {
+        error("app.branch is not set for Sonar analysis")
     }
+
+    gradlew("jacocoAggregateReport", "--info")
+    verifyJacocoReport()
+
+    def baseCommit = sh(
+            script: 'git rev-parse HEAD',
+            returnStdout: true
+    ).trim()
+
+    withEnv([
+            "SONAR_BRANCH_NAME=${appBranch}",
+            "SONAR_SCM_REVISION=${baseCommit}",
+    ]) {
+        withCredentials([string(
+                credentialsId: 'sonar_token_executor-java:master_447002',
+                variable: 'sonarToken'
+        )]) {
+            gradlew("sonar", "${getSonarOptions()} --info")
+        }
+    }
+}
+
+void verifyJacocoReport() {
+    sh '''
+        REPORT="build/reports/jacoco/aggregate/jacoco.xml"
+
+        echo "=== JaCoCo aggregate report ==="
+        ls -lh "$REPORT"
+        test -s "$REPORT"
+
+        echo "=== JaCoCo counters ==="
+        grep -o '<counter type="LINE"[^>]*/>' "$REPORT" | tail -1
+
+        echo "=== E2E-covered production classes ==="
+        grep -o '<class name="[^"]*IntegrationLogger[^"]*"' "$REPORT" | head
+        grep -o '<class name="[^"]*SessionInitServiceImpl[^"]*"' "$REPORT" | head
+    '''
 }
 
 void gradlew(String task, String options) {
@@ -75,20 +87,14 @@ String getWrapperOptions(String wrappedUser, String wrappedPassword) {
     ].join(" ")
 }
 
-
-String getSonarOptions(String appBranch, String token) {
-    def baseCommit = sh(
-            script: "git rev-parse ${appBranch}",
-            returnStdout: true
-    ).trim()
-
+String getSonarOptions() {
     return [
-            "-Dsonar.login=${token}",
-            "-Dsonar.branch.name=${appBranch}",
+            '-Dsonar.login="$sonarToken"',
+            '-Dsonar.branch.name="$SONAR_BRANCH_NAME"',
             "-Dsonar.projectName=executor-java",
             "-Dsonar.projectKey=executor-java",
-            "-Dsonar.scm.revision=${baseCommit}",
-            "-Dsonar.coverage.jacoco.xmlReportPaths=${pwd()}/build/reports/jacoco/aggregate/jacoco.xml",
+            '-Dsonar.scm.revision="$SONAR_SCM_REVISION"',
+            "-Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/aggregate/jacoco.xml",
     ].join(" ")
 }
 
