@@ -21,6 +21,7 @@ import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.setupStubsWithAn
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubConfiguratorSession
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubEfsRestAgent
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubGigaAgentFunctionsWithAnalytics
+import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubGigaAgentSettings
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubGigaAgentSettingsWithAnalytics
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubSdsSessionReadData
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
@@ -85,7 +86,7 @@ class AnalyticsPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
             stubSdsSessionReadData()
             stubConfiguratorSession()
         }
-        gigaVoiceAgentMock.stubGigaAgentSettingsWithAnalytics("1.0.0", """{"init":"data"}""", withFunctions = true)
+        gigaVoiceAgentMock.stubGigaAgentSettings(withFunctions = true)
         gigaVoiceAgentMock.stubGigaAgentFunctionsWithAnalytics(
             functionName = "get_account_balance",
             resultContent = """{"balance": 1000}""",
@@ -113,6 +114,7 @@ class AnalyticsPublishingIntegrationTest : BaseGigaVoiceIntegrationTest() {
                     mock.sendResponse(functionCallingResponse("get_account_balance", """{"account_id": "12345"}"""))
 
                     wireMock.awaitPostCall("/functions")
+                    mock.awaitRequest { it.hasFunctionResult() }
                 }
             }
         }
