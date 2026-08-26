@@ -22,7 +22,6 @@ import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubConfigurator
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubEfsRestAgent
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubGigaAgentFunctionsWithAnalytics
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubGigaAgentSettings
-import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubGigaAgentSettingsWithAnalytics
 import ru.sbrf.dab2c.executor.it.support.wiremock.WireMockSetup.stubSdsSessionReadData
 import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
