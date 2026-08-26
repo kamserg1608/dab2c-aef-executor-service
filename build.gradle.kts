@@ -1,7 +1,11 @@
+import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.api.tasks.testing.Test
 import org.gradle.testing.jacoco.tasks.JacocoReport
 
 plugins {
     java
+    jacoco
+
     id("org.jetbrains.kotlin.plugin.spring") apply false
     id("org.springframework.boot") apply false
     id("io.spring.dependency-management") apply false
@@ -124,7 +128,51 @@ sonar {
 }
 
 // Sonar is opt-in: regular `build` does not run analysis.
-// When `sonar` is called explicitly, prepare JaCoCo XML reports from existing test execution data.
+// Build one report from every Test task (including executor-e2e-tests:test)
+// and map its execution data to production classes from every subproject.
+val testTasksByProject = subprojects.map { it.tasks.withType<Test>() }
+val mainSourceSets = subprojects.map {
+    it.extensions.getByType<SourceSetContainer>()["main"]
+}
+
+val aggregateJacocoReport = tasks.register<JacocoReport>("jacocoAggregateReport") {
+    group = "verification"
+    description = "Aggregates unit and E2E JaCoCo coverage for Sonar"
+
+    testTasksByProject.forEach { tests ->
+        dependsOn(tests)
+        executionData(tests)
+    }
+
+    sourceDirectories.setFrom(mainSourceSets.flatMap { it.allSource.srcDirs })
+    classDirectories.setFrom(
+        mainSourceSets.map { sourceSet ->
+            sourceSet.output.asFileTree.matching {
+                exclude(
+                    "**/dto/**",
+                    "**/model/**",
+                    "**/factory/**",
+                    "**/pojo/**",
+                    "**/config/**",
+                    "**/*AutoConfiguration.*",
+                    "**/*Configuration.*",
+                    "**/*Application.*",
+                    "**/*ApplicationEntryPoint.*",
+                    "**/*Constants.*",
+                    "**/*Exception.*"
+                )
+            }
+        }
+    )
+
+    reports {
+        xml.required.set(true)
+        xml.outputLocation.set(layout.buildDirectory.file("reports/jacoco/aggregate/jacoco.xml"))
+        html.required.set(true)
+        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco/aggregate/html"))
+    }
+}
+
 tasks.named("sonar") {
-    dependsOn(subprojects.map { "${it.path}:jacocoTestReport" })
+    dependsOn(aggregateJacocoReport)
 }
