@@ -13,6 +13,11 @@ pipeline {
                 check()
             }
         }
+        stage("Sonar") {
+            steps {
+                sonar()
+            }
+        }
     }
 
     post {
@@ -24,14 +29,9 @@ pipeline {
 
 void check() {
     gradlew("clean build", "")
-    sonar(env.CHANGE_BRANCH)
 }
 
-void sonar(String appBranch) {
-    if (!appBranch?.trim()) {
-        error("env.CHANGE_BRANCH is not set for pull request analysis")
-    }
-
+void sonar() {
     gradlew("jacocoAggregateReport", "")
     verifyJacocoReport()
 
@@ -41,7 +41,7 @@ void sonar(String appBranch) {
     ).trim()
 
     withEnv([
-            "SONAR_BRANCH_NAME=${appBranch}",
+            "SONAR_BRANCH_NAME=${env.CHANGE_BRANCH}",
             "SONAR_SCM_REVISION=${baseCommit}",
     ]) {
         withCredentials([string(
