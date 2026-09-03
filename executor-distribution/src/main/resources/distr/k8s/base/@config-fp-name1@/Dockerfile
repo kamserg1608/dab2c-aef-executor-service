@@ -1,4 +1,4 @@
-﻿FROM docker-dev.registry-ci.delta.sbrf.ru/ci04675739/ci04675739/sberjdk-21:java-21.0.11_001-sberlinux-ubi-10.1.2-se
+﻿FROM docker-dev.registry-ci.delta.sbrf.ru/ci04675739/ci04675739/sberjdk-21:java-21.0.12_001-sberlinux-ubi-10.2.1-se
 
 USER root
 
