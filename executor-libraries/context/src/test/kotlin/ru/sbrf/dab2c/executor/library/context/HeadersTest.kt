@@ -1,5 +1,7 @@
 package ru.sbrf.dab2c.executor.library.context
 
+import java.util.UUID
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -19,7 +21,8 @@ class HeadersTest {
     fun `factory should generate x-trace-id when not present`() {
         val headers = Headers(emptyMap())
 
-        assertNotNull(headers.getHeader(RequestHeader.X_TRACE_ID))
+        val traceId = headers.getHeader(RequestHeader.X_TRACE_ID)
+        assertDoesNotThrow { UUID.fromString(traceId) }
     }
 
     @Test
@@ -31,9 +34,28 @@ class HeadersTest {
 
     @Test
     fun `factory should preserve existing x-trace-id`() {
-        val headers = Headers(mapOf("x-trace-id" to "my-trace"))
+        val traceId = "550e8400-e29b-41d4-a716-446655440000"
+        val headers = Headers(mapOf("x-trace-id" to traceId))
 
-        assertEquals("my-trace", headers.getHeader(RequestHeader.X_TRACE_ID))
+        assertEquals(traceId, headers.getHeader(RequestHeader.X_TRACE_ID))
+    }
+
+    @Test
+    fun `factory should convert telemetry trace id to uuid format`() {
+        val headers = Headers(mapOf("x-trace-id" to "7fba8f6f5a5bbec643deb609acc4deda"))
+
+        assertEquals(
+            "7fba8f6f-5a5b-bec6-43de-b609acc4deda",
+            headers.getHeader(RequestHeader.X_TRACE_ID)
+        )
+    }
+
+    @Test
+    fun `factory should replace invalid x-trace-id with uuid`() {
+        val headers = Headers(mapOf("x-trace-id" to "invalid-trace-id"))
+
+        val traceId = headers.getHeader(RequestHeader.X_TRACE_ID)
+        assertDoesNotThrow { UUID.fromString(traceId) }
     }
 
     @Test

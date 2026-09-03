@@ -26,9 +26,8 @@ class Headers private constructor(
             if (!result.containsKey(RequestHeader.X_REQUEST_ID.headerName)) {
                 result = result + (RequestHeader.X_REQUEST_ID.headerName to UUID.randomUUID().toString())
             }
-            if (!result.containsKey(RequestHeader.X_TRACE_ID.headerName)) {
-                result = result + (RequestHeader.X_TRACE_ID.headerName to UUID.randomUUID().toString())
-            }
+            val traceIdHeader = RequestHeader.X_TRACE_ID.headerName
+            result = result + (traceIdHeader to HeaderUtils.normalizeTraceId(result[traceIdHeader]))
             return Headers(result)
         }
     }
