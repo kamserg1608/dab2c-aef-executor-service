@@ -15,18 +15,15 @@ internal object HeaderUtils {
     /** Returns trace ID in UUID format, generating a new UUID for missing or invalid values. */
     fun normalizeTraceId(traceId: String?): String {
         val value = traceId?.trim()
-        if (value.isNullOrEmpty()) {
-            return UUID.randomUUID().toString()
-        }
 
-        if (uuidPattern.matches(value)) {
-            return UUID.fromString(value).toString()
+        return when {
+            value.isNullOrEmpty() -> UUID.randomUUID().toString()
+            uuidPattern.matches(value) -> UUID.fromString(value).toString()
+            else -> telemetryTraceIdPattern.matchEntire(value)
+                ?.let { match ->
+                    UUID.fromString(match.groupValues.drop(1).joinToString("-")).toString()
+                }
+                ?: UUID.randomUUID().toString()
         }
-
-        telemetryTraceIdPattern.matchEntire(value)?.let { match ->
-            return UUID.fromString(match.groupValues.drop(1).joinToString("-")).toString()
-        }
-
-        return UUID.randomUUID().toString()
     }
 }

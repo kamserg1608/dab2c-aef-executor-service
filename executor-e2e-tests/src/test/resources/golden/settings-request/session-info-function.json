@@ -167,7 +167,7 @@
     },
     "headers": {
       "UFS-SESSION": "test-session",
-      "X-Trace-Id": "test-trace-id",
+      "X-Trace-Id": "550e8400-e29b-41d4-a716-446655440000",
       "Da-Request-Id": "<MASKED>",
       "Da-Session-Id": "test-session-id",
       "Da-Channel": "test-channel",

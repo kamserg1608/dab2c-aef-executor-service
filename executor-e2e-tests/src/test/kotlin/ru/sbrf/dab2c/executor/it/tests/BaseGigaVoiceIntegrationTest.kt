@@ -146,7 +146,7 @@ abstract class BaseGigaVoiceIntegrationTest {
         eduId: String = "test-edu-id",
         channel: String = "test-channel",
         platform: String = "test-platform",
-        traceId: String = "test-trace-id"
+        traceId: String = "550e8400-e29b-41d4-a716-446655440000"
     ): GigaVoiceServiceCoroutineStub = clientStub.withInterceptors(
         MetadataInterceptor(
             buildMap {
