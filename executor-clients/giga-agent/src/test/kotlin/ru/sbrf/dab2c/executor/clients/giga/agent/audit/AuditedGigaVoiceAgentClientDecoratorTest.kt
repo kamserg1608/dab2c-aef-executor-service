@@ -3,18 +3,21 @@ package ru.sbrf.dab2c.executor.clients.giga.agent.audit
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.confirmVerified
 import io.mockk.mockk
 import io.mockk.slot
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCallResult
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.PostProcessResult
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.SettingsResult
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.audioSettings
-import ru.sbrf.dab2c.executor.clients.gigavoice.proto.context
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionCall
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionCalling
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionResult
@@ -24,6 +27,7 @@ import ru.sbrf.dab2c.executor.domain.session.DaSessionCommon
 import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
 import ru.sbrf.dab2c.executor.domain.session.DaSessionMeta
 import ru.sbrf.dab2c.executor.domain.session.DaSessionUserInfo
+import ru.sbrf.dab2c.executor.domain.voice.DialogContext
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
 import ru.sbrf.dab2c.executor.library.audit.model.InteractionAuditRequest
 import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
@@ -33,8 +37,9 @@ import ru.sbrf.dab2c.executor.library.context.SessionInfoElement
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 
 /**
- * Verifies that [AuditedGigaVoiceAgentClientDecorator] correctly audits
- * success and failure for both getSettings and executeFunctionCall operations.
+ * Verifies that [AuditedGigaVoiceAgentClientDecorator] correctly audits success and failure
+ * for getSettings, executeFunctionCall and postProcess, and that a cancelled call is
+ * not audited at all.
  */
 class AuditedGigaVoiceAgentClientDecoratorTest {
 
@@ -90,7 +95,7 @@ class AuditedGigaVoiceAgentClientDecoratorTest {
         audio = audioSettings { }
     }
 
-    private val contextData = context { content = "{}" }
+    private val contextData = DialogContext(ObjectMappers.MAPPER.createObjectNode())
 
     private val functionCalling = functionCalling {
         functionCall = functionCall {
@@ -175,6 +180,21 @@ class AuditedGigaVoiceAgentClientDecoratorTest {
             assertThat(captured.rqMessage).isNotBlank()
             assertThat(captured.rsMessage).isNull()
         }
+
+        @Test
+        fun `should not audit a cancelled getSettings`() = runTest {
+            coEvery {
+                delegate.getSettings(conversationId, agentConfiguration, voiceSettings, contextData)
+            } throws CancellationException("session is gone")
+
+            assertThrows<CancellationException> {
+                withContext(headersElement + sessionInfoElement) {
+                    decorator.getSettings(conversationId, agentConfiguration, voiceSettings, contextData)
+                }
+            }
+
+            confirmVerified(auditor)
+        }
     }
 
     @Nested
@@ -249,6 +269,97 @@ class AuditedGigaVoiceAgentClientDecoratorTest {
             assertThat(captured.errorTitle).isEqualTo("function error")
             assertThat(captured.rqMessage).isNotBlank()
             assertThat(captured.rsMessage).isNull()
+        }
+
+        @Test
+        fun `should not audit a cancelled executeFunctionCall`() = runTest {
+            coEvery {
+                delegate.executeFunctionCall(conversationId, agentConfiguration, functionCalling, contextData)
+            } throws CancellationException("session is gone")
+
+            assertThrows<CancellationException> {
+                withContext(headersElement + sessionInfoElement) {
+                    decorator.executeFunctionCall(conversationId, agentConfiguration, functionCalling, contextData)
+                }
+            }
+
+            confirmVerified(auditor)
+        }
+    }
+
+    @Nested
+    inner class PostProcessTest {
+
+        @Test
+        fun `should audit success with structured rqMessage on postProcess`() = runTest {
+            val expected = PostProcessResult(analytics = emptyList())
+            coEvery { delegate.postProcess(conversationId, agentConfiguration, contextData) } returns expected
+
+            val auditSlot = slot<InteractionAuditRequest>()
+
+            val result = withContext(headersElement + sessionInfoElement) {
+                decorator.postProcess(conversationId, agentConfiguration, contextData)
+            }
+
+            assertThat(result).isSameAs(expected)
+
+            coVerify(exactly = 1) { auditor.success(capture(auditSlot)) }
+
+            val captured = auditSlot.captured
+            assertThat(captured.answerCode).isEqualTo("200")
+            assertThat(captured.rsMessage).isNotBlank()
+
+            val rqMap = objectMapper.readValue<Map<String, Any?>>(captured.rqMessage!!)
+            assertThat(rqMap["endpoint"]).isEqualTo("/postprocess")
+            assertThat(rqMap["receiver"]).isEqualTo(receiver)
+            assertThat(rqMap["conversationId"]).isEqualTo(conversationId)
+            assertThat(rqMap["eduId"]).isEqualTo("test-edu-id")
+            assertThat(rqMap["ufsSession"]).isEqualTo("test-session")
+            assertThat(rqMap["channel"]).isEqualTo("test-channel")
+            assertThat(rqMap).containsKey("agentConfiguration")
+            assertThat(rqMap).containsKey("contextData")
+            assertThat(rqMap).doesNotContainKeys("voiceSettings", "functionCalling")
+        }
+
+        @Test
+        fun `should audit failure and re-throw on postProcess error`() = runTest {
+            coEvery {
+                delegate.postProcess(conversationId, agentConfiguration, contextData)
+            } throws RuntimeException("postprocess error")
+
+            val auditSlot = slot<InteractionAuditRequest>()
+
+            val thrown = assertThrows<RuntimeException> {
+                withContext(headersElement + sessionInfoElement) {
+                    decorator.postProcess(conversationId, agentConfiguration, contextData)
+                }
+            }
+
+            assertThat(thrown.message).isEqualTo("postprocess error")
+
+            coVerify(exactly = 1) { auditor.failed(capture(auditSlot)) }
+
+            val captured = auditSlot.captured
+            assertThat(captured.answerCode).isEqualTo("500")
+            assertThat(captured.errorCode).isEqualTo("GIGAVOICE_POSTPROCESS_ERROR")
+            assertThat(captured.errorTitle).isEqualTo("postprocess error")
+            assertThat(captured.rqMessage).isNotBlank()
+            assertThat(captured.rsMessage).isNull()
+        }
+
+        @Test
+        fun `should not audit a cancelled postProcess`() = runTest {
+            coEvery {
+                delegate.postProcess(conversationId, agentConfiguration, contextData)
+            } throws CancellationException("session is gone")
+
+            assertThrows<CancellationException> {
+                withContext(headersElement + sessionInfoElement) {
+                    decorator.postProcess(conversationId, agentConfiguration, contextData)
+                }
+            }
+
+            confirmVerified(auditor)
         }
     }
 }

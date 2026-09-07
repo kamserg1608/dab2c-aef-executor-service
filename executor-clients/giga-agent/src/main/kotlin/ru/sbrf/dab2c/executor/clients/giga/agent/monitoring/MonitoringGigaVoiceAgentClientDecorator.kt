@@ -3,13 +3,15 @@ package ru.sbrf.dab2c.executor.clients.giga.agent.monitoring
 import ru.sbrf.dab2c.executor.clients.common.model.ClientMetric
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient.Companion.FUNCTIONS_ENDPOINT
+import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient.Companion.POSTPROCESS_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient.Companion.SETTINGS_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCallResult
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.PostProcessResult
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.SettingsResult
-import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Settings
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
+import ru.sbrf.dab2c.executor.domain.voice.DialogContext
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.HttpCallDescriptor
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricFactory
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.monitorHttpCall
@@ -26,7 +28,7 @@ class MonitoringGigaVoiceAgentClientDecorator(
         conversationId: String,
         agentConfiguration: AgentConfiguration,
         voiceSettings: Settings,
-        contextData: Context,
+        contextData: DialogContext,
     ): SettingsResult = metricFactory.monitorHttpCall(
         timerMetric = ClientMetric.HTTP_INTEGRATION_REQUEST_DURATION_SECONDS,
         counterMetric = ClientMetric.HTTP_INTEGRATION_REQUEST_TOTAL,
@@ -42,7 +44,7 @@ class MonitoringGigaVoiceAgentClientDecorator(
         conversationId: String,
         agentConfiguration: AgentConfiguration,
         functionCalling: FunctionCalling,
-        contextData: Context
+        contextData: DialogContext
     ): FunctionCallResult = metricFactory.monitorHttpCall(
         timerMetric = ClientMetric.HTTP_INTEGRATION_REQUEST_DURATION_SECONDS,
         counterMetric = ClientMetric.HTTP_INTEGRATION_REQUEST_TOTAL,
@@ -52,6 +54,21 @@ class MonitoringGigaVoiceAgentClientDecorator(
         )
     ) {
         delegate.executeFunctionCall(conversationId, agentConfiguration, functionCalling, contextData)
+    }
+
+    override suspend fun postProcess(
+        conversationId: String,
+        agentConfiguration: AgentConfiguration,
+        contextData: DialogContext
+    ): PostProcessResult = metricFactory.monitorHttpCall(
+        timerMetric = ClientMetric.HTTP_INTEGRATION_REQUEST_DURATION_SECONDS,
+        counterMetric = ClientMetric.HTTP_INTEGRATION_REQUEST_TOTAL,
+        descriptor = HttpCallDescriptor(
+            destinationService = GIGA_VOICE_AGENT,
+            endpoint = POSTPROCESS_ENDPOINT
+        )
+    ) {
+        delegate.postProcess(conversationId, agentConfiguration, contextData)
     }
 
     /** Destination service identifiers. */

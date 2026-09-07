@@ -16,6 +16,8 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceSettingsResponse
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.Input
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.OutputOutput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.Performers
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.PostProcessContextRequestSchema
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.PostProcessContextResponseSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.SettingsInput
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.SettingsOutput
 import java.util.concurrent.atomic.AtomicLong
@@ -32,6 +34,7 @@ class GigaVoiceAgentStubController {
 
     private val settingsCallCounter = AtomicLong(0)
     private val functionsCallCounter = AtomicLong(0)
+    private val postProcessCallCounter = AtomicLong(0)
 
     /**
      * Returns stub settings response mirroring input settings.
@@ -71,6 +74,22 @@ class GigaVoiceAgentStubController {
             ),
             agentAnalytics = emptyList()
         )
+    }
+
+    /**
+     * Returns stub post-processing result with no analytics.
+     */
+    @PostMapping("/postprocess")
+    fun postProcess(
+        @RequestBody request: PostProcessContextRequestSchema,
+        @RequestHeader("UFS-SESSION", required = false) ufsSession: String?
+    ): PostProcessContextResponseSchema {
+        val callNumber = postProcessCallCounter.incrementAndGet()
+        logger.info {
+            "STUB /postprocess called #$callNumber for session: $ufsSession, conversation: ${request.conversationId}"
+        }
+
+        return PostProcessContextResponseSchema(agentAnalytics = emptyList())
     }
 
     private fun buildSettingsOutput(input: SettingsInput): SettingsOutput {

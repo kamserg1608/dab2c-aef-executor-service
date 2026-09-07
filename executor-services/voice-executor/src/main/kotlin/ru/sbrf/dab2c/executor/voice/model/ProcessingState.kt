@@ -1,7 +1,7 @@
 package ru.sbrf.dab2c.executor.voice.model
 
-import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
+import ru.sbrf.dab2c.executor.domain.voice.DialogContext
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
 
 /**
@@ -19,14 +19,14 @@ sealed class ProcessingState {
      * Received context, awaiting settings from IVR.
      */
     data class AwaitingSettings(
-        val contextData: Context
+        val contextData: DialogContext
     ) : ProcessingState()
 
     /**
      * Fully initialized and serving requests.
      */
     data class Serving(
-        val contextData: Context,
+        val contextData: DialogContext,
         val agentConfiguration: AgentConfiguration,
         val conversationId: String,
         val functionRegistry: FunctionPerformers

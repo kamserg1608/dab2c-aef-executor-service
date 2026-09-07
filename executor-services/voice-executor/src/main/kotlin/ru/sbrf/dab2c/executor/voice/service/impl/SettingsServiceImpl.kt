@@ -3,15 +3,16 @@ package ru.sbrf.dab2c.executor.voice.service.impl
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.ClosedSendChannelException
+import kotlinx.coroutines.flow.update
 import ru.sbrf.dab2c.executor.clients.configurator.api.DirectConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
-import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Settings
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceRequest
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceResponse
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.voice.AgentAnalytics
+import ru.sbrf.dab2c.executor.domain.voice.DialogContext
 import ru.sbrf.dab2c.executor.domain.voice.FunctionPerformers
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
@@ -52,7 +53,7 @@ class SettingsServiceImpl(
 
     private suspend fun calculateSettingsAsync(
         settings: Settings,
-        contextData: Context
+        contextData: DialogContext
     ) {
         logger.debug { "Calculating settings for session" }
 
@@ -84,7 +85,7 @@ class SettingsServiceImpl(
     @Suppress("LongMethod")
     private suspend fun fetchSettingsData(
         settings: Settings,
-        contextData: Context
+        contextData: DialogContext
     ): SettingsData {
         val headers = currentHeaders()
         val agentConfiguration = configuratorClient.getRestAgentConfig(configProperties.agentName)
@@ -134,24 +135,33 @@ class SettingsServiceImpl(
             conversationId = conversationId,
             functionRegistry = settingsResult.performers,
             analytics = settingsResult.analytics,
-            requestId = headers.getHeaderOrNull(RequestHeader.X_REQUEST_ID)
+            requestId = headers.getHeaderOrNull(RequestHeader.X_REQUEST_ID),
+            context = settingsResult.context
         )
     }
 
-    private suspend fun updateStateAndPublish(settingsData: SettingsData, contextData: Context) {
-        session.state.value = ProcessingState.Serving(
-            contextData = contextData,
-            agentConfiguration = settingsData.agentConfiguration,
-            conversationId = settingsData.conversationId,
-            functionRegistry = settingsData.functionRegistry
-        )
+    private suspend fun updateStateAndPublish(settingsData: SettingsData, contextData: DialogContext) {
+        session.state.update {
+            ProcessingState.Serving(
+                contextData = settingsData.context ?: contextData,
+                agentConfiguration = settingsData.agentConfiguration,
+                conversationId = settingsData.conversationId,
+                functionRegistry = settingsData.functionRegistry
+            )
+        }
 
         logger.info {
             "Session state -> Serving (conversationId=${settingsData.conversationId}, " +
                 "functions=${settingsData.functionRegistry.functions.size})"
         }
 
-        analyticsPublisher.publishAnalytics(settingsData.analytics, settingsData.requestId)
+        analyticsPublisher.publishAnalytics(
+            analytics = settingsData.analytics,
+            requestId = settingsData.requestId,
+            conversationId = settingsData.conversationId,
+            agentConfiguration = settingsData.agentConfiguration,
+            assistantMessageId = session.turnIds.assistantMessageId
+        )
     }
 
     private data class SettingsData(
@@ -160,6 +170,7 @@ class SettingsServiceImpl(
         val conversationId: String,
         val functionRegistry: FunctionPerformers,
         val analytics: List<AgentAnalytics>,
-        val requestId: String?
+        val requestId: String?,
+        val context: DialogContext?
     )
 }

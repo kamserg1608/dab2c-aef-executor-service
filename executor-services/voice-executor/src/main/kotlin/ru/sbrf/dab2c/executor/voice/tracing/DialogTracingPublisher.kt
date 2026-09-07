@@ -28,12 +28,22 @@ class DialogTracingPublisher(
     private val facade: AefTracingFacade,
 ) : VoiceSessionObserver {
 
+    @Volatile
     private var outputRequestSpan: Span? = null
+
+    @Volatile
     private var voiceSessionSpan: Span? = null
+
+    @Volatile
     private var voiceTurnSpan: Span? = null
+
+    @Volatile
     private var voiceLlmTurnSpan: Span? = null
+
+    @Volatile
     private var toolSpan: Span? = null
 
+    @Volatile
     private var settingsPayload: Map<String, Any?> = emptyMap()
     private var lastSessionError: ErrorEmitted? = null
 

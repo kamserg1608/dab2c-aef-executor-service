@@ -1,15 +1,15 @@
 package ru.sbrf.dab2c.executor.clients.giga.agent.mapper
 
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.module.kotlin.convertValue
 import org.springframework.stereotype.Component
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.ACLConfig
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaAgentRequestContext
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaVoiceFunctionsRequestSchema
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.SessionConfig
-import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
+import ru.sbrf.dab2c.executor.domain.voice.DialogContext
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 
 /**
@@ -25,7 +25,7 @@ class GigaVoiceFunctionCallRequestBuilder {
         agentConfiguration: AgentConfiguration,
         functionCalling: FunctionCalling,
         daSessionInfo: DaSessionInfo,
-        contextData: Context
+        contextData: DialogContext
     ): GigaVoiceFunctionsRequestSchema {
         val agentConfig = GigaVoiceAgentConfigMapper.toApiAgentConfig(agentConfiguration)
         val sessionConfig = SessionConfig(channel = context.channel)
@@ -41,10 +41,7 @@ class GigaVoiceFunctionCallRequestBuilder {
             functionCalling = apiFunctionCalling,
             sessionInfo = DaSessionInfoApiMapper.toApiSessionInfo(daSessionInfo, context),
             userInfo = DaSessionInfoApiMapper.toApiUserInfo(daSessionInfo),
-            context = parseContextJson(contextData.content)
+            context = ObjectMappers.MAPPER.convertValue(contextData.data)
         )
     }
-
-    private fun parseContextJson(json: String): Map<String, Any> =
-        if (json.isEmpty()) emptyMap() else ObjectMappers.MAPPER.readValue(json)
 }

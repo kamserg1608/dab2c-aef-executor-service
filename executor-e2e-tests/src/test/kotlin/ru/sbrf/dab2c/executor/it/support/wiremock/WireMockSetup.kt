@@ -9,6 +9,8 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 
 object WireMockSetup {
 
+    private const val DEFAULT_STUB_CALL_ID = "test-call-123"
+
     fun WireMockServer.stubEfsRestAgent() {
         stubFor(
             post(urlEqualTo("/configurator/rest-agent"))
@@ -167,6 +169,27 @@ object WireMockSetup {
         )
     }
 
+    fun WireMockServer.stubGigaAgentSettingsWithCallId(voiceCallId: String, withFunctions: Boolean = false) {
+        val responseBody = if (withFunctions) {
+            WireMockResponses.GIGA_VOICE_SETTINGS_WITH_FUNCTIONS_RESPONSE
+        } else {
+            WireMockResponses.GIGA_VOICE_SETTINGS_RESPONSE
+        }
+        require(responseBody.contains(DEFAULT_STUB_CALL_ID)) {
+            "Settings stub no longer carries $DEFAULT_STUB_CALL_ID — cannot pin the call id"
+        }
+
+        stubFor(
+            post(urlEqualTo("/settings"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(responseBody.replace(DEFAULT_STUB_CALL_ID, voiceCallId))
+                )
+        )
+    }
+
     fun WireMockServer.stubGigaAgentSettingsWithProfanityCheck() {
         stubFor(
             post(urlEqualTo("/settings"))
@@ -230,6 +253,39 @@ object WireMockSetup {
         )
     }
 
+    fun WireMockServer.stubGigaAgentSettingsWithContext(contextJson: String? = null) {
+        stubFor(
+            post(urlEqualTo("/settings"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.gigaVoiceSettingsWithFunctionsResponse(contextJson))
+                )
+        )
+    }
+
+    fun WireMockServer.stubGigaAgentFunctionsForName(
+        functionName: String,
+        resultContent: String,
+        contextJson: String? = null
+    ) {
+        stubFor(
+            post(urlEqualTo("/functions"))
+                .withRequestBody(
+                    matchingJsonPath("$.function_calling.function_call.name", equalTo(functionName))
+                )
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(
+                            WireMockResponses.gigaVoiceFunctionsResponse(functionName, resultContent, contextJson)
+                        )
+                )
+        )
+    }
+
     fun WireMockServer.stubGigaAgentFunctionsWithDelay(
         functionName: String,
         resultContent: String,
@@ -268,6 +324,57 @@ object WireMockSetup {
         )
     }
 
+    fun WireMockServer.stubGigaAgentSettingsError() {
+        stubFor(
+            post(urlEqualTo("/settings"))
+                .willReturn(aResponse().withStatus(500).withBody("Internal Server Error"))
+        )
+    }
+
+    fun WireMockServer.stubGigaAgentPostProcess() {
+        stubFor(
+            post(urlEqualTo("/postprocess"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.GIGA_VOICE_POSTPROCESS_RESPONSE)
+                )
+        )
+    }
+
+    fun WireMockServer.stubGigaAgentPostProcessWithAnalytics(analyticsData: String) {
+        stubFor(
+            post(urlEqualTo("/postprocess"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(WireMockResponses.gigaVoicePostProcessWithAnalyticsResponse(analyticsData))
+                )
+        )
+    }
+
+    fun WireMockServer.stubGigaAgentPostProcessWithDelay(delayMs: Int) {
+        stubFor(
+            post(urlEqualTo("/postprocess"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withFixedDelay(delayMs)
+                        .withBody(WireMockResponses.GIGA_VOICE_POSTPROCESS_RESPONSE)
+                )
+        )
+    }
+
+    fun WireMockServer.stubGigaAgentPostProcessError() {
+        stubFor(
+            post(urlEqualTo("/postprocess"))
+                .willReturn(aResponse().withStatus(500))
+        )
+    }
+
     fun setupStubs(
         efsAdapter: WireMockServer,
         gigaAgent: WireMockServer,
@@ -283,6 +390,26 @@ object WireMockSetup {
             stubRetrieveParams()
         }
         gigaAgent.stubGigaAgentSettings(withFunctions)
+    }
+
+    fun setupStubsWithPostProcessing(
+        efsAdapter: WireMockServer,
+        gigaAgent: WireMockServer,
+        postProcessingEnabled: Boolean = true,
+        withFunctions: Boolean = true,
+    ) {
+        with(efsAdapter) {
+            stubEfsRestAgent()
+            stubSdsSessionReadData()
+            stubConfiguratorSession()
+            stubEfsAuditEvent()
+            stubPersonInfo()
+            stubRetrieveParams(
+                "aef.executor.toggles.postprocessing.enabled" to postProcessingEnabled.toString()
+            )
+        }
+        gigaAgent.stubGigaAgentSettings(withFunctions)
+        gigaAgent.stubGigaAgentPostProcess()
     }
 
     fun setupStubsWithKapExtra(

@@ -1,5 +1,6 @@
 package ru.sbrf.dab2c.executor.library.monitoring.service.api
 
+import kotlinx.coroutines.CancellationException
 import java.io.IOException
 import java.util.concurrent.TimeoutException
 
@@ -27,6 +28,9 @@ suspend fun <T> MetricFactory.monitorHttpCall(
     var statusCode = STATUS_OK
     try {
         return block()
+    } catch (e: CancellationException) {
+        statusCode = STATUS_CANCELLED
+        throw e
     } catch (e: Exception) {
         statusCode = classifyException(e)
         throw e
@@ -52,3 +56,4 @@ private const val STATUS_OK = "200"
 private const val STATUS_TIMEOUT = "timeout"
 private const val STATUS_NETWORK_ERROR = "network_error"
 private const val STATUS_EXCEPTION = "exception"
+private const val STATUS_CANCELLED = "cancelled"

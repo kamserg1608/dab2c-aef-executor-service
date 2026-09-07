@@ -1,11 +1,13 @@
 package ru.sbrf.dab2c.executor.library.monitoring.service.impl
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import ru.sbrf.dab2c.executor.library.context.Headers
 import ru.sbrf.dab2c.executor.library.context.HeadersElement
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.HttpCallDescriptor
@@ -139,6 +141,29 @@ class HttpCallMonitorTest {
         val counter = meterRegistry.find("http_total").counter()
         assertThat(counter).isNotNull
         assertThat(counter!!.id.getTag(MetricTags.STATUS_CODE)).isEqualTo("exception")
+    }
+
+    @Test
+    fun `monitorHttpCall should record cancelled status and rethrow on CancellationException`() = runTest {
+        val descriptor = HttpCallDescriptor(destinationService = "svc", endpoint = "/ep")
+
+        assertThrows<CancellationException> {
+            withTestContext {
+                metricFactory.monitorHttpCall(timerMetric, counterMetric, descriptor) {
+                    throw CancellationException("session is gone")
+                }
+            }
+        }
+
+        val timer = meterRegistry.find("http_duration").timer()
+        assertThat(timer).isNotNull
+        assertThat(timer!!.count()).isEqualTo(1)
+        assertThat(timer.id.getTag(MetricTags.STATUS_CODE)).isEqualTo("cancelled")
+
+        val counter = meterRegistry.find("http_total").counter()
+        assertThat(counter).isNotNull
+        assertThat(counter!!.count()).isEqualTo(1.0)
+        assertThat(counter.id.getTag(MetricTags.STATUS_CODE)).isEqualTo("cancelled")
     }
 
     @Test

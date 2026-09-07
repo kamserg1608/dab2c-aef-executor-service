@@ -18,11 +18,13 @@ import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
 import ru.sbrf.dab2c.executor.voice.model.VoiceSession
 import ru.sbrf.dab2c.executor.voice.monitoring.MonitoringChunksProcessingDecorator
 import ru.sbrf.dab2c.executor.voice.monitoring.MonitoringConnectionChunksProcessingDecorator
+import ru.sbrf.dab2c.executor.voice.postprocess.PostProcessRunner
+import ru.sbrf.dab2c.executor.voice.postprocess.SessionPostProcessor
+import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.service.impl.ChunkProcessingServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.ContextServiceImpl
 import ru.sbrf.dab2c.executor.voice.service.impl.FunctionCallServiceImpl
-import ru.sbrf.dab2c.executor.voice.service.impl.KapAnalyticsPublisher
 import ru.sbrf.dab2c.executor.voice.service.impl.KapDialogTurnPublisher
 import ru.sbrf.dab2c.executor.voice.service.impl.LoggingChunkProcessingServiceDelegate
 import ru.sbrf.dab2c.executor.voice.service.impl.SettingsServiceImpl
@@ -44,7 +46,9 @@ class ChunkProcessingServiceFactoryImpl(
     private val iagFunctionClient: IagFunctionClient,
     private val externalInteractionAuditor: InteractionAuditor,
     private val timeProvider: TimeProvider,
-    private val tracingFacade: AefTracingFacade
+    private val tracingFacade: AefTracingFacade,
+    private val postProcessRunner: PostProcessRunner,
+    private val analyticsPublisher: AnalyticsPublisher
 ) : ChunkProcessingServiceFactory {
 
     private val connectionMetrics = ConnectionMetrics(
@@ -69,15 +73,19 @@ class ChunkProcessingServiceFactoryImpl(
         )
     }
 
+    /**
+     * Order is load-bearing: the only suspending observer goes last, because a `CancellationException`
+     * from it aborts the composite's dispatch to everyone after it.
+     */
     private fun buildSessionObservers(session: VoiceSession): List<VoiceSessionObserver> = listOf(
+        SessionPostProcessor(session, postProcessRunner),
+        DialogTracingPublisher(tracingFacade),
         KapDialogTurnPublisher(kapProducerClient, session),
         DialogTurnAuditor(externalInteractionAuditor),
-        DialogTracingPublisher(tracingFacade),
     )
 
-    private fun createCoreService(session: VoiceSession): ChunkProcessingService {
-        val analyticsPublisher = KapAnalyticsPublisher(kapProducerClient, session)
-        return ChunkProcessingServiceImpl(
+    private fun createCoreService(session: VoiceSession): ChunkProcessingService =
+        ChunkProcessingServiceImpl(
             session,
             contextService = ContextServiceImpl(session),
             settingsService = SettingsServiceImpl(
@@ -96,5 +104,4 @@ class ChunkProcessingServiceFactoryImpl(
                 analyticsPublisher
             )
         )
-    }
 }

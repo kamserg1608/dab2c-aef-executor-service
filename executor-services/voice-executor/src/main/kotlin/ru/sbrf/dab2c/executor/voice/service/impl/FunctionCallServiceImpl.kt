@@ -3,6 +3,7 @@ package ru.sbrf.dab2c.executor.voice.service.impl
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.ClosedSendChannelException
+import kotlinx.coroutines.flow.update
 import ru.sbrf.dab2c.executor.clients.efs.adapter.api.ConfiguratorClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCallResult
@@ -12,6 +13,7 @@ import ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaVoiceRequest
 import ru.sbrf.dab2c.executor.clients.iag.api.IagFunctionClient
 import ru.sbrf.dab2c.executor.domain.configuration.FunctionConfig
 import ru.sbrf.dab2c.executor.library.common.runCatchingCancellable
+import ru.sbrf.dab2c.executor.library.context.Headers
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.voice.model.ProcessingState
@@ -107,6 +109,7 @@ class FunctionCallServiceImpl(
         logger.debug { "Executing backend function '$functionName' by configurator (async)" }
 
         executeFunctionAsync(
+            state = state,
             functionCalling = functionCalling,
             functionName = functionName,
             executorType = EXECUTOR_BACKEND,
@@ -115,7 +118,7 @@ class FunctionCallServiceImpl(
                     conversationId = state.conversationId,
                     agentConfiguration = state.agentConfiguration,
                     functionCalling = functionCalling,
-                    contextData = state.contextData
+                    contextData = getServingState().contextData
                 )
             }
         )
@@ -130,6 +133,7 @@ class FunctionCallServiceImpl(
         logger.debug { "Executing IAG function '$functionName' by configurator (async)" }
 
         executeFunctionAsync(
+            state = state,
             functionCalling = functionCalling,
             functionName = functionName,
             executorType = EXECUTOR_IAG,
@@ -138,7 +142,7 @@ class FunctionCallServiceImpl(
                     conversationId = state.conversationId,
                     agentConfiguration = state.agentConfiguration,
                     functionCalling = functionCalling,
-                    contextData = state.contextData,
+                    contextData = getServingState().contextData,
                     endpoint = functionConfig.path
                 )
             }
@@ -160,6 +164,7 @@ class FunctionCallServiceImpl(
         logger.debug { "Executing backend function '$functionName' via agent (async)" }
 
         executeFunctionAsync(
+            state = state,
             functionCalling = functionCalling,
             functionName = functionName,
             executorType = EXECUTOR_BACKEND,
@@ -168,7 +173,7 @@ class FunctionCallServiceImpl(
                     conversationId = state.conversationId,
                     agentConfiguration = state.agentConfiguration,
                     functionCalling = functionCalling,
-                    contextData = state.contextData
+                    contextData = getServingState().contextData
                 )
             }
         )
@@ -193,6 +198,7 @@ class FunctionCallServiceImpl(
         }
 
     private suspend fun executeFunctionAsync(
+        state: ProcessingState.Serving,
         functionCalling: FunctionCalling,
         functionName: String,
         executorType: String,
@@ -205,15 +211,14 @@ class FunctionCallServiceImpl(
             try {
                 val functionCallResult = executor()
 
+                updateContext(functionCallResult)
+
                 val elapsed = System.currentTimeMillis() - startTime
                 logger.info {
                     "$executorType function '$functionName' completed in ${elapsed}ms"
                 }
 
-                analyticsPublisher.publishAnalytics(
-                    functionCallResult.analytics,
-                    headers.getHeaderOrNull(RequestHeader.X_REQUEST_ID)
-                )
+                publishAnalytics(state, functionCallResult, headers)
 
                 session.callbackChannels.downstream.send(
                     gigaVoiceRequest { functionResult = functionCallResult.result }
@@ -225,6 +230,28 @@ class FunctionCallServiceImpl(
             } catch (e: Exception) {
                 sendFunctionError(functionCalling, functionName, startTime, e)
             }
+        }
+    }
+
+    private suspend fun publishAnalytics(
+        state: ProcessingState.Serving,
+        functionCallResult: FunctionCallResult,
+        headers: Headers
+    ) {
+        analyticsPublisher.publishAnalytics(
+            analytics = functionCallResult.analytics,
+            requestId = headers.getHeaderOrNull(RequestHeader.X_REQUEST_ID),
+            conversationId = state.conversationId,
+            agentConfiguration = state.agentConfiguration,
+            assistantMessageId = session.turnIds.assistantMessageId
+        )
+    }
+
+    private fun updateContext(functionCallResult: FunctionCallResult) {
+        val updated = functionCallResult.context ?: return
+
+        session.state.update { current ->
+            if (current is ProcessingState.Serving) current.copy(contextData = updated) else current
         }
     }
 

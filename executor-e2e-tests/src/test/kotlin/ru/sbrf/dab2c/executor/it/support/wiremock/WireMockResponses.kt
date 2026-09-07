@@ -433,21 +433,15 @@ object WireMockResponses {
      * GigaVoice Agent settings response with function registry.
      * Contains both backend and IVR functions.
      */
-    val GIGA_VOICE_SETTINGS_WITH_FUNCTIONS_RESPONSE = """
-        {
-            "settings": {
-                "voice_call_id": "test-call-123",
-                "audio": {}
-            },
-            "performers": {
-                "functions": [
-                    {"name": "get_account_balance", "is_backend_function": true},
-                    {"name": "transfer_to_operator", "is_backend_function": false},
-                    {"name": "check_transaction_status", "is_backend_function": true}
-                ]
-            }
-        }
-    """.trimIndent()
+    val GIGA_VOICE_SETTINGS_WITH_FUNCTIONS_RESPONSE = gigaVoiceSettingsWithFunctionsResponse()
+
+    /**
+     * GigaVoice Agent /postprocess endpoint response.
+     */
+    const val GIGA_VOICE_POSTPROCESS_RESPONSE = """{"agent_analytics":[]}"""
+
+    const val POSTPROCESS_DATA_VERSION_FIRST = "4.0.0"
+    const val POSTPROCESS_DATA_VERSION_SECOND = "5.0.0"
 
     /**
      * SDS session read data response from DA-SESSION section.
@@ -635,6 +629,17 @@ object WireMockResponses {
         return """{"success":true,"body":{"parameters":[$paramEntries]}}"""
     }
 
+    /** Two analytics entries differing only by data version, so per-entry publishing is observable. */
+    fun gigaVoicePostProcessWithAnalyticsResponse(analyticsData: String): String =
+        """
+            {
+                "agent_analytics": [
+                    {"data_version": "$POSTPROCESS_DATA_VERSION_FIRST", "data": $analyticsData},
+                    {"data_version": "$POSTPROCESS_DATA_VERSION_SECOND", "data": $analyticsData}
+                ]
+            }
+        """.trimIndent()
+
     /**
      * GigaVoice Agent settings response with agent analytics.
      */
@@ -674,14 +679,41 @@ object WireMockResponses {
     /**
      * GigaVoice Agent /functions endpoint response.
      */
-    fun gigaVoiceFunctionsResponse(functionName: String, resultContent: String): String {
+    fun gigaVoiceFunctionsResponse(
+        functionName: String,
+        resultContent: String,
+        contextJson: String? = null
+    ): String {
         val escapedContent = resultContent.replace("\"", "\\\"")
+        val context = contextJson?.let { ""","context": $it""" }.orEmpty()
         return """
             {
                 "function_result": {
                     "content": "$escapedContent",
                     "function_name": "$functionName"
-                }
+                }$context
+            }
+        """.trimIndent()
+    }
+
+    /**
+     * GigaVoice Agent /settings endpoint response carrying backend functions and an optional context.
+     */
+    fun gigaVoiceSettingsWithFunctionsResponse(contextJson: String? = null): String {
+        val context = contextJson?.let { ""","context": $it""" }.orEmpty()
+        return """
+            {
+                "settings": {
+                    "voice_call_id": "test-call-123",
+                    "audio": {}
+                },
+                "performers": {
+                    "functions": [
+                        {"name": "get_account_balance", "is_backend_function": true},
+                        {"name": "transfer_to_operator", "is_backend_function": false},
+                        {"name": "check_transaction_status", "is_backend_function": true}
+                    ]
+                }$context
             }
         """.trimIndent()
     }

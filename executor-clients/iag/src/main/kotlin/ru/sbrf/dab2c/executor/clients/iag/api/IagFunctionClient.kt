@@ -1,9 +1,9 @@
 package ru.sbrf.dab2c.executor.clients.iag.api
 
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCallResult
-import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
+import ru.sbrf.dab2c.executor.domain.voice.DialogContext
 
 /**
  * Client for IAG function call API.
@@ -17,7 +17,7 @@ interface IagFunctionClient {
         conversationId: String,
         agentConfiguration: AgentConfiguration,
         functionCalling: FunctionCalling,
-        contextData: Context,
+        contextData: DialogContext,
         endpoint: String? = null
     ): FunctionCallResult
 

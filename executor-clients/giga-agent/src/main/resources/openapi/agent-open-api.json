@@ -3,7 +3,7 @@
   "info": {
     "title": "GigaVoice Agent HTTP API",
     "description": "API для взаимодействия с агентом для GigaVoice через HTTP.",
-    "version": "0.1.2"
+    "version": "0.1.3"
   },
   "paths": {
     "/settings": {
@@ -82,6 +82,45 @@
             }
           }
         }
+      }
+    },
+    "/postprocess": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostProcessContextRequestSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostProcessContextResponseSchema"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "operationId": "_post_postprocess_postprocess_post",
+        "summary": "Вызов функции пост-обработки",
+        "description": "Принимает запрос об отправке данных для пост-обработки."
       }
     },
     "/actuator/health": {
@@ -1901,6 +1940,81 @@
         ],
         "title": "Performers",
         "description": "Схема для фиксирования списка функций GigaVoice и соответствующих систем-исполнителей"
+      },
+      "PostProcessContextRequestSchema": {
+        "description": "Схема запроса к эндпоинту /postprocess.",
+        "required": [
+          "conversation_id",
+          "edu_id",
+          "config"
+        ],
+        "type": "object",
+        "properties": {
+          "conversation_id": {
+            "title": "Conversation Id",
+            "description": "Уникальный ID диалога.",
+            "type": "string"
+          },
+          "edu_id": {
+            "title": "Edu Id",
+            "description": "Идентификатор звонка EDU ID.",
+            "type": "string"
+          },
+          "config": {
+            "$ref": "#/components/schemas/ACLConfig",
+            "description": "Конфигурация агента, содержащая его настройки и параметры поведения"
+          },
+          "session_info": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SessionInfo"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Информация о сессии клиента"
+          },
+          "user_info": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserInfo"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Информация о клиенте."
+          },
+          "context": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context",
+            "description": "Дополнительные данные передаваемые в запросе, необходимые для работы агента."
+          }
+        }
+      },
+      "PostProcessContextResponseSchema": {
+        "title": "PostProcessContext",
+        "description": "Схема ответа от эндпоинта /postprocess.",
+        "type": "object",
+        "properties": {
+          "agent_analytics": {
+            "title": "Agent Analytics",
+            "description": "Список данных агента для отправки событий в КАП.Каждый объект отправляется как отдельное событие.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ACLAgentAnalytics"
+            }
+          }
+        }
       },
       "RequestContentSettings": {
         "properties": {

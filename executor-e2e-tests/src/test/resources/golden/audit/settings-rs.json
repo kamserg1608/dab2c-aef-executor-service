@@ -17,5 +17,6 @@
   "performers" : {
     "functions" : { }
   },
-  "analytics" : [ ]
+  "analytics" : [ ],
+  "context" : null
 }

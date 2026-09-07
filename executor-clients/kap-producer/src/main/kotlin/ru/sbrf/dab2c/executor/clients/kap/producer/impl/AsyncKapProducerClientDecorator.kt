@@ -1,6 +1,7 @@
 package ru.sbrf.dab2c.executor.clients.kap.producer.impl
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,6 +24,8 @@ class AsyncKapProducerClientDecorator(
         scope.launch(Dispatchers.IO) {
             try {
                 delegate.publishDialog(dialog)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 logger.error(e) { "Failed to publish dialog id=${dialog.id}" }
             }
@@ -33,6 +36,8 @@ class AsyncKapProducerClientDecorator(
         scope.launch(Dispatchers.IO) {
             try {
                 delegate.publishAgentAnalytics(analytics)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 logger.error(e) { "Failed to publish agent analytics id=${analytics.id}" }
             }

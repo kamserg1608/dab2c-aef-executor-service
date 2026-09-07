@@ -1,11 +1,11 @@
 package ru.sbrf.dab2c.executor.clients.iag.tracing
 
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCallResult
-import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
 import ru.sbrf.dab2c.executor.clients.iag.api.IagFunctionClient
 import ru.sbrf.dab2c.executor.clients.iag.api.IagFunctionClient.Companion.FUNCTION_CALL_ENDPOINT
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
+import ru.sbrf.dab2c.executor.domain.voice.DialogContext
 import ru.sbrf.dab2c.executor.library.tracing.facade.AefHttpOutgoingRequestTracing
 
 /** Wraps [IagFunctionClient] HTTP calls in `output_request` spans with real bodies. */
@@ -17,7 +17,7 @@ class TracingIagFunctionClientDecorator(
         conversationId: String,
         agentConfiguration: AgentConfiguration,
         functionCalling: FunctionCalling,
-        contextData: Context,
+        contextData: DialogContext,
         endpoint: String?
     ): FunctionCallResult = aefTracing.trace(
         spanName = "iag $FUNCTION_CALL_ENDPOINT",
