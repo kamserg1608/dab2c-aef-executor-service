@@ -28,7 +28,10 @@ class GigaVoiceSettingsRequestBuilder {
         contextData: DialogContext
     ): GigaVoiceSettingsRequestSchema {
         val agentConfig = GigaVoiceAgentConfigMapper.toApiAgentConfig(agentConfiguration)
-        val sessionConfig = SessionConfig(channel = context.channel)
+        val sessionConfig = SessionConfig(
+            channel = context.channel,
+            platform = context.daPlatform
+        )
         val settingsInput = GigaVoiceProtoToApiMapper.toApiSettingsInput(voiceSettings)
 
         return GigaVoiceSettingsRequestSchema(
