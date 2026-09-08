@@ -22,6 +22,10 @@ data class VoiceSessionFeatureToggles(private val parameters: Map<String, Parame
             .getValue(CONFIGURATOR_FUNCTION_MATCH)
             .getBool { CONFIGURATOR_FUNCTION_MATCH_DEFAULT }
 
+    /** Whether post-processing of a finished conversation is enabled. */
+    val postProcessingEnabled: Boolean
+        get() = parameters.getValue(POSTPROCESSING_ENABLED).getBool { POSTPROCESSING_ENABLED_DEFAULT }
+
     /** Toggle parameter name constants and defaults. */
     companion object {
         const val KAP_SEND_EXTRA = "aef.executor.toggles.kap.send.extra"
@@ -32,10 +36,14 @@ data class VoiceSessionFeatureToggles(private val parameters: Map<String, Parame
 
         private const val CONFIGURATOR_FUNCTION_MATCH_DEFAULT = false
 
+        const val POSTPROCESSING_ENABLED = "aef.executor.toggles.postprocessing.enabled"
+        private const val POSTPROCESSING_ENABLED_DEFAULT = false
+
         /** All parameter names to query from EFS. */
         val PARAMETER_NAMES: List<String> = listOf(
             KAP_SEND_EXTRA,
-            CONFIGURATOR_FUNCTION_MATCH
+            CONFIGURATOR_FUNCTION_MATCH,
+            POSTPROCESSING_ENABLED
         )
     }
 }

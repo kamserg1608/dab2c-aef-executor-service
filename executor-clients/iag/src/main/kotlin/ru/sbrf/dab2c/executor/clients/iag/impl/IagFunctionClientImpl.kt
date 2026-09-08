@@ -12,7 +12,6 @@ import io.ktor.http.contentType
 import ru.sbrf.dab2c.executor.clients.common.util.buildFullUrl
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCallResult
 import ru.sbrf.dab2c.executor.clients.giga.agent.util.GigaAgentContextBuilder
-import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.functionResult
 import ru.sbrf.dab2c.executor.clients.iag.api.IagFunctionClient
@@ -22,6 +21,7 @@ import ru.sbrf.dab2c.executor.clients.iag.model.IagAgentAnalytics
 import ru.sbrf.dab2c.executor.clients.iag.model.IagFunctionResponse
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.voice.AgentAnalytics
+import ru.sbrf.dab2c.executor.domain.voice.DialogContext
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
 import ru.sbrf.dab2c.executor.library.context.currentSessionInfo
 import ru.sbrf.dab2c.executor.logging.IntegrationLogger
@@ -46,7 +46,7 @@ class IagFunctionClientImpl(
         conversationId: String,
         agentConfiguration: AgentConfiguration,
         functionCalling: FunctionCalling,
-        contextData: Context,
+        contextData: DialogContext,
         endpoint: String?
     ): FunctionCallResult {
         val functionCallEndpoint = endpoint ?: FUNCTION_CALL_ENDPOINT

@@ -2,7 +2,6 @@ package ru.sbrf.dab2c.executor.clients.kap.producer.configuration
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Qualifier
@@ -19,9 +18,9 @@ import ru.sbrf.dab2c.executor.clients.kap.producer.configuration.properties.KapP
 import ru.sbrf.dab2c.executor.clients.kap.producer.impl.AsyncKapProducerClientDecorator
 import ru.sbrf.dab2c.executor.clients.kap.producer.impl.KapProducerClientImpl
 import ru.sbrf.dab2c.executor.clients.kap.producer.monitoring.MonitoringKapProducerClientDecorator
+import ru.sbrf.dab2c.executor.library.common.CloseableCoroutineScope
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricFactory
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Spring configuration for KAP Kafka producer client.
@@ -82,9 +81,4 @@ class KapProducerConfiguration {
         internal const val KAP_KAFKA_TEMPLATE_BEAN_NAME = "kapKafkaTemplate"
         internal const val KAP_PRODUCER_SCOPE_BEAN_NAME = "kapProducerScope"
     }
-}
-
-internal class CloseableCoroutineScope(context: CoroutineContext) : CoroutineScope {
-    override val coroutineContext: CoroutineContext = context
-    fun cancel() = coroutineContext.cancel()
 }

@@ -7,7 +7,6 @@ import ru.sbrf.dab2c.executor.clients.giga.agent.mapper.GigaVoiceAgentConfigMapp
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.ACLConfig
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaAgentRequestContext
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.SessionConfig
-import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
 import ru.sbrf.dab2c.executor.clients.iag.generated.model.IagContent
 import ru.sbrf.dab2c.executor.clients.iag.generated.model.IagFunctionCall
@@ -17,6 +16,7 @@ import ru.sbrf.dab2c.executor.clients.iag.generated.model.IagMessageContent
 import ru.sbrf.dab2c.executor.clients.iag.generated.model.IagXMeta
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
 import ru.sbrf.dab2c.executor.domain.session.DaSessionInfo
+import ru.sbrf.dab2c.executor.domain.voice.DialogContext
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 
 /**
@@ -35,7 +35,7 @@ class IagFunctionRequestBuilder {
         agentConfiguration: AgentConfiguration,
         functionCalling: FunctionCalling,
         daSessionInfo: DaSessionInfo,
-        contextData: Context
+        contextData: DialogContext
     ): IagFunctionRequest {
         val agentConfig = GigaVoiceAgentConfigMapper.toApiAgentConfig(agentConfiguration)
         val sessionConfig = SessionConfig(channel = context.channel)
@@ -65,18 +65,13 @@ class IagFunctionRequestBuilder {
         )
     }
 
-    private fun buildMessage(contextData: Context): List<IagMessageContent> =
-        contextData.content
-            .takeIf { it.isNotBlank() }
-            ?.let { content ->
-                listOf(
-                    IagMessageContent(
-                        type = CONTEXT_MESSAGE_TYPE,
-                        value = content
-                    )
-                )
-            }
-            .orEmpty()
+    private fun buildMessage(contextData: DialogContext): List<IagMessageContent> =
+        listOf(
+            IagMessageContent(
+                type = CONTEXT_MESSAGE_TYPE,
+                value = ObjectMappers.MAPPER.writeValueAsString(contextData.data)
+            )
+        )
 
     private fun parseContextJson(json: String): Map<String, Any> =
         if (json.isEmpty()) emptyMap() else ObjectMappers.MAPPER.readValue(json)

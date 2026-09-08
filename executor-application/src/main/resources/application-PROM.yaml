@@ -97,6 +97,11 @@ http:
         multiplier: ${IAG_RETRY_MULTIPLIER:2.0}
         statusCodes: ${IAG_RETRY_STATUS_CODES:502,503,504}
 
+# GigaVoice Agent
+giga-agent:
+  postprocess:
+    timeout: ${GIGA_AGENT_POSTPROCESS_TIMEOUT_MS:60000}
+
 # KAP Producer
 kafka:
   kap:

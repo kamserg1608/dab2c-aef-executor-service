@@ -5,7 +5,12 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeoutOrNull
 import org.assertj.core.api.Assertions.assertThat
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Before/after metrics snapshot for integration test assertions.
@@ -159,5 +164,36 @@ internal suspend fun captureMetrics(
     val before = MetricsCapture.fetchAndParse(httpClient)
     block()
     val after = MetricsCapture.fetchAndParse(httpClient)
+    return MetricsCapture(before, after, baseTags)
+}
+
+/**
+ * Like [captureMetrics], but keeps re-reading the after-snapshot until the named counter grows past
+ * its pre-block value. For effects that land after [block] returns, such as a cancelled call.
+ */
+@Suppress("LongParameterList")
+internal suspend fun captureMetricsAwaitingCounter(
+    httpClient: HttpClient,
+    baseTags: Map<String, String>,
+    metricName: String,
+    counterTags: Map<String, String>,
+    timeout: Duration = 10.seconds,
+    pollInterval: Duration = 200.milliseconds,
+    block: suspend () -> Unit
+): MetricsCapture {
+    val before = MetricsCapture.fetchAndParse(httpClient)
+    block()
+
+    val allTags = baseTags + counterTags
+    val beforeValue = before.findMetric(metricName, allTags)?.value ?: 0.0
+    var after = MetricsCapture.fetchAndParse(httpClient)
+    fun currentValue(): Double = after.findMetric(metricName, allTags)?.value ?: 0.0
+
+    withTimeoutOrNull(timeout) {
+        while (currentValue() <= beforeValue) {
+            delay(pollInterval)
+            after = MetricsCapture.fetchAndParse(httpClient)
+        }
+    }
     return MetricsCapture(before, after, baseTags)
 }

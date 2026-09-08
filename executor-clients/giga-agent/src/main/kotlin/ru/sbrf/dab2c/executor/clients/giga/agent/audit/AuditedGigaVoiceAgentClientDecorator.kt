@@ -2,17 +2,20 @@ package ru.sbrf.dab2c.executor.clients.giga.agent.audit
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CancellationException
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient.Companion.FUNCTIONS_ENDPOINT
+import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient.Companion.POSTPROCESS_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.giga.agent.api.GigaVoiceAgentClient.Companion.SETTINGS_ENDPOINT
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.FunctionCallResult
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.GigaAgentRequestContext
+import ru.sbrf.dab2c.executor.clients.giga.agent.model.PostProcessResult
 import ru.sbrf.dab2c.executor.clients.giga.agent.model.SettingsResult
 import ru.sbrf.dab2c.executor.clients.giga.agent.util.GigaAgentContextBuilder
-import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Context
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Settings
 import ru.sbrf.dab2c.executor.domain.configuration.AgentConfiguration
+import ru.sbrf.dab2c.executor.domain.voice.DialogContext
 import ru.sbrf.dab2c.executor.library.audit.model.AuditMessageSchema
 import ru.sbrf.dab2c.executor.library.audit.model.InteractionAuditRequest
 import ru.sbrf.dab2c.executor.library.audit.port.InteractionAuditor
@@ -35,7 +38,7 @@ class AuditedGigaVoiceAgentClientDecorator(
         conversationId: String,
         agentConfiguration: AgentConfiguration,
         voiceSettings: Settings,
-        contextData: Context
+        contextData: DialogContext
     ): SettingsResult {
         val context = GigaAgentContextBuilder.buildRequestContext(
             conversationId, currentSessionInfo(), currentHeaders()
@@ -54,7 +57,9 @@ class AuditedGigaVoiceAgentClientDecorator(
 
             auditSuccess(rqMessage, rs)
             return rs
-        } catch (e: Throwable) {
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
             auditFailure(
                 rqMessage = rqMessage,
                 e = e,
@@ -68,7 +73,7 @@ class AuditedGigaVoiceAgentClientDecorator(
         conversationId: String,
         agentConfiguration: AgentConfiguration,
         functionCalling: FunctionCalling,
-        contextData: Context
+        contextData: DialogContext
     ): FunctionCallResult {
         val context = GigaAgentContextBuilder.buildRequestContext(
             conversationId, currentSessionInfo(), currentHeaders()
@@ -87,7 +92,9 @@ class AuditedGigaVoiceAgentClientDecorator(
 
             auditSuccess(rqMessage, rs)
             return rs
-        } catch (e: Throwable) {
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
             auditFailure(
                 rqMessage = rqMessage,
                 e = e,
@@ -97,11 +104,44 @@ class AuditedGigaVoiceAgentClientDecorator(
         }
     }
 
+    override suspend fun postProcess(
+        conversationId: String,
+        agentConfiguration: AgentConfiguration,
+        contextData: DialogContext
+    ): PostProcessResult {
+        val context = GigaAgentContextBuilder.buildRequestContext(
+            conversationId, currentSessionInfo(), currentHeaders()
+        )
+        logger.debug { "GigaVoice postProcess -> receiver=$receiver, conversationId=${context.conversationId}" }
+
+        val rqMessage = buildPostProcessRqMessage(context, agentConfiguration, contextData)
+
+        try {
+            val rs = delegate.postProcess(
+                conversationId = conversationId,
+                agentConfiguration = agentConfiguration,
+                contextData = contextData
+            )
+
+            auditSuccess(rqMessage, rs)
+            return rs
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            auditFailure(
+                rqMessage = rqMessage,
+                e = e,
+                errorCode = ERROR_CODE_POSTPROCESS
+            )
+            throw e
+        }
+    }
+
     private fun buildSettingsRqMessage(
         context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
         voiceSettings: Settings,
-        contextData: Context
+        contextData: DialogContext
     ): String =
         toJson(
             baseRqMap(
@@ -118,7 +158,7 @@ class AuditedGigaVoiceAgentClientDecorator(
         context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
         functionCalling: FunctionCalling,
-        contextData: Context
+        contextData: DialogContext
     ): String =
         toJson(
             baseRqMap(
@@ -131,11 +171,25 @@ class AuditedGigaVoiceAgentClientDecorator(
             )
         )
 
+    private fun buildPostProcessRqMessage(
+        context: GigaAgentRequestContext,
+        agentConfiguration: AgentConfiguration,
+        contextData: DialogContext
+    ): String =
+        toJson(
+            baseRqMap(
+                endpoint = POSTPROCESS_ENDPOINT,
+                context = context,
+                agentConfiguration = agentConfiguration,
+                contextData = contextData
+            )
+        )
+
     private fun baseRqMap(
         endpoint: String,
         context: GigaAgentRequestContext,
         agentConfiguration: AgentConfiguration,
-        contextData: Context
+        contextData: DialogContext
     ): Map<String, Any?> =
         mapOf(
             "endpoint" to endpoint,
@@ -181,5 +235,6 @@ class AuditedGigaVoiceAgentClientDecorator(
     companion object {
         const val ERROR_CODE_SETTINGS: String = "GIGAVOICE_SETTINGS_ERROR"
         const val ERROR_CODE_FUNCTION: String = "GIGAVOICE_FUNCTION_ERROR"
+        const val ERROR_CODE_POSTPROCESS: String = "GIGAVOICE_POSTPROCESS_ERROR"
     }
 }

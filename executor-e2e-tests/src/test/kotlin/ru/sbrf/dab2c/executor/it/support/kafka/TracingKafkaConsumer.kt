@@ -45,6 +45,29 @@ object TracingKafkaConsumer {
         voiceCallId: String? = null,
         action: suspend () -> Unit
     ): List<ParsedSpan> {
+        val target = voiceCallId?.let { id -> { spans: List<ParsedSpan> -> spans.any { it.hasCallId(id) } } }
+        return resolveTrace(accumulate(delayMs, timeout, target, action), voiceCallId)
+    }
+
+    /**
+     * Collect every span in the topic without grouping them into a single trace, waiting until one
+     * matching [awaitSpan] shows up. Needed when the span of interest may belong to a trace of its
+     * own; the result carries spans of neighbouring tests, so callers must filter.
+     */
+    suspend fun EmbeddedKafkaBroker.collectAllSpans(
+        awaitSpan: (ParsedSpan) -> Boolean,
+        delayMs: Long = 500,
+        timeout: Duration = Duration.ofSeconds(15),
+        action: suspend () -> Unit
+    ): List<ParsedSpan> =
+        accumulate(delayMs, timeout, { spans -> spans.any(awaitSpan) }, action)
+
+    private suspend fun EmbeddedKafkaBroker.accumulate(
+        delayMs: Long,
+        timeout: Duration,
+        target: ((List<ParsedSpan>) -> Boolean)?,
+        action: suspend () -> Unit
+    ): List<ParsedSpan> {
         val consumer = createTracingConsumer()
         action()
         delay(delayMs)
@@ -52,22 +75,25 @@ object TracingKafkaConsumer {
         val accumulated = mutableListOf<ParsedSpan>()
         val deadline = System.currentTimeMillis() + timeout.toMillis()
         while (System.currentTimeMillis() < deadline) {
-            val batch: ConsumerRecords<String, ByteArray> =
-                KafkaTestUtils.getRecords(consumer, Duration.ofSeconds(2))
-            accumulated += TracingTestSupport.parseAll(batch.records(TRACING_TOPIC).map { it.value() })
-            val targetFound = voiceCallId != null && accumulated.any { it.hasCallId(voiceCallId) }
-            if (voiceCallId == null || targetFound) {
+            accumulated += poll(consumer)
+            val targetFound = target != null && target(accumulated)
+            if (target == null || targetFound) {
                 if (targetFound) {
                     delay(delayMs)
-                    val tail = KafkaTestUtils.getRecords(consumer, Duration.ofSeconds(2))
-                    accumulated += TracingTestSupport.parseAll(tail.records(TRACING_TOPIC).map { it.value() })
+                    accumulated += poll(consumer)
                 }
                 break
             }
             delay(POLL_INTERVAL_MS)
         }
         consumer.close()
-        return resolveTrace(accumulated, voiceCallId)
+        return accumulated
+    }
+
+    private fun poll(consumer: Consumer<String, ByteArray>): List<ParsedSpan> {
+        val batch: ConsumerRecords<String, ByteArray> =
+            KafkaTestUtils.getRecords(consumer, Duration.ofSeconds(2))
+        return TracingTestSupport.parseAll(batch.records(TRACING_TOPIC).map { it.value() })
     }
 
     private fun resolveTrace(accumulated: List<ParsedSpan>, voiceCallId: String?): List<ParsedSpan> {

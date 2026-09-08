@@ -291,6 +291,21 @@ class VoiceSessionObserverDelegateTest {
             coVerify(exactly = 1) { observer.onSessionCompleted(capture(slot)) }
             assertThat(slot.captured).isInstanceOf(CancellationException::class.java)
         }
+
+        @Test
+        fun `emits onSessionCompleted when pending turn flush throws CancellationException`() = runTest {
+            val flushFailure = CancellationException("observer cancelled")
+            coEvery { observer.onTurnCompleted(any()) } throws flushFailure
+            val responses = flowOf(
+                createInputTranscription("Hello"),
+                createOutputTranscription("World"),
+            )
+
+            val thrown = runCatching { accumulator.processResponseChunks(responses).toList() }.exceptionOrNull()
+
+            assertThat(thrown).isSameAs(flushFailure)
+            coVerify(exactly = 1) { observer.onSessionCompleted(null) }
+        }
     }
 
     private fun createInputTranscription(text: String): GigaVoiceResponse = gigaVoiceResponse {

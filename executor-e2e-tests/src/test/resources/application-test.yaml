@@ -25,6 +25,10 @@ grpc:
     downstream:
       address: static://localhost:29091
 
+giga-agent:
+  postprocess:
+    timeout: 4000
+
 # KAP Producer configuration
 kafka:
   kap:

@@ -99,6 +99,11 @@ http:
         multiplier: 2.0
         statusCodes: 502,503,504
 
+# GigaVoice Agent
+giga-agent:
+  postprocess:
+    timeout: 60000
+
 # KAP Producer (disabled in STUB mode)
 kafka:
   kap:

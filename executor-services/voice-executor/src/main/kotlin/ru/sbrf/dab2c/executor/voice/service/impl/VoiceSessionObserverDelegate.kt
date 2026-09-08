@@ -86,8 +86,11 @@ class VoiceSessionObserverDelegate(
                 }
             }
             .onCompletion { cause ->
-                flushPendingDialogTurn()
-                observer.onSessionCompleted(cause)
+                try {
+                    flushPendingDialogTurn()
+                } finally {
+                    observer.onSessionCompleted(cause)
+                }
             }
 
         return delegate.processResponseChunks(accumulatedChunks)

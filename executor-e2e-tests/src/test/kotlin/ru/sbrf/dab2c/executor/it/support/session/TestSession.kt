@@ -2,6 +2,7 @@ package ru.sbrf.dab2c.executor.it.support.session
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
@@ -70,16 +71,23 @@ class TestSession(
     }
 
     /**
+     * Waits for the response collection to finish naturally, failing if it is still running after
+     * [timeout] — the server never closed the response stream.
+     */
+    suspend fun awaitCompletionOrFail(timeout: Duration = 2.seconds) {
+        withTimeout(timeout) {
+            collectJob?.join()
+        }
+    }
+
+    /**
      * Waits for the response collection to finish naturally before forced cancellation.
      */
     suspend fun awaitCompletion(timeout: Duration = 2.seconds) {
-        @Suppress("TooGenericExceptionCaught")
+        @Suppress("SwallowedException")
         try {
-            withTimeout(timeout) {
-                collectJob?.join()
-            }
-        } catch (_: Exception) {
-            // Timeout expired - caller will force cancel
+            awaitCompletionOrFail(timeout)
+        } catch (_: TimeoutCancellationException) {
         }
     }
 
