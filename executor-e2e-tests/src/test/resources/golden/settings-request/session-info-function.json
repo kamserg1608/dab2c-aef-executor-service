@@ -18,7 +18,7 @@
       "channel": "test-channel",
       "block": null,
       "surface": null,
-      "platform": null,
+      "platform": "test-platform",
       "app_source": null,
       "sdk_version": null,
       "entry_point": null,

@@ -38,7 +38,10 @@ class IagFunctionRequestBuilder {
         contextData: DialogContext
     ): IagFunctionRequest {
         val agentConfig = GigaVoiceAgentConfigMapper.toApiAgentConfig(agentConfiguration)
-        val sessionConfig = SessionConfig(channel = context.channel)
+        val sessionConfig = SessionConfig(
+            channel = context.channel,
+            platform = context.daPlatform
+        )
 
         return IagFunctionRequest(
             message = IagMessage(

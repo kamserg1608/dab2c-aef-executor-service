@@ -28,7 +28,10 @@ class GigaVoiceFunctionCallRequestBuilder {
         contextData: DialogContext
     ): GigaVoiceFunctionsRequestSchema {
         val agentConfig = GigaVoiceAgentConfigMapper.toApiAgentConfig(agentConfiguration)
-        val sessionConfig = SessionConfig(channel = context.channel)
+        val sessionConfig = SessionConfig(
+            channel = context.channel,
+            platform = context.daPlatform
+        )
         val apiFunctionCalling = GigaVoiceProtoToApiMapper.toApiFunctionCalling(functionCalling)
 
         return GigaVoiceFunctionsRequestSchema(
