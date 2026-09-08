@@ -9,9 +9,11 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.DEFAULT
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.isSuccess
@@ -26,7 +28,10 @@ import kotlin.math.pow
 /**
  * Builds preconfigured Ktor HTTP clients from named entries of `http.clients`.
  */
-class HttpClientFactory(private val properties: HttpClientsProperties) {
+class HttpClientFactory(
+    private val properties: HttpClientsProperties,
+    private val agentId: String? = null
+) {
 
     /**
      * Creates an HTTP client configured by the named entry, failing fast if the entry is absent.
@@ -39,6 +44,9 @@ class HttpClientFactory(private val properties: HttpClientsProperties) {
                 maxConnectionsCount = clientProperties.pool.maxConnections
             }
             installPlugins(clientProperties)
+            if (!agentId.isNullOrBlank()) {
+                defaultRequest { header("X-Agent-Id", agentId) }
+            }
         }
     }
 
