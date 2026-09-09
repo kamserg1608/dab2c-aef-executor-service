@@ -13,11 +13,11 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.DEFAULT
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.isSuccess
 import io.ktor.serialization.jackson.JacksonConverter
+import io.ktor.util.appendIfNameAbsent
 import io.opentelemetry.context.Context
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.library.tracing.propagation.W3CTraceContextInjector
@@ -28,10 +28,7 @@ import kotlin.math.pow
 /**
  * Builds preconfigured Ktor HTTP clients from named entries of `http.clients`.
  */
-class HttpClientFactory(
-    private val properties: HttpClientsProperties,
-    private val agentId: String? = null
-) {
+class HttpClientFactory(private val properties: HttpClientsProperties) {
 
     /**
      * Creates an HTTP client configured by the named entry, failing fast if the entry is absent.
@@ -44,8 +41,12 @@ class HttpClientFactory(
                 maxConnectionsCount = clientProperties.pool.maxConnections
             }
             installPlugins(clientProperties)
-            if (!agentId.isNullOrBlank()) {
-                defaultRequest { header("X-Agent-Id", agentId) }
+            defaultRequest {
+                properties.defaultHeaders.forEach { (name, value) ->
+                    if (value.isNotBlank()) {
+                        headers.appendIfNameAbsent(name, value)
+                    }
+                }
             }
         }
     }
