@@ -28,13 +28,16 @@ import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 class SettingsInitializationTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
-    fun `should call EFS and GigaAgent when processing settings`() = runItTest {
+    fun `should call EFS and GigaAgent with headers when processing settings`() = runItTest {
         setupStubs(efsAdapterMock, gigaVoiceAgentMock)
 
         withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
             session.sendRequest(settingsRequest("test-call-123"))
-            wireMock.awaitPostCall("/settings")
+            val settingsCall = wireMock.awaitPostCall("/settings")
+
+            assertThat(settingsCall.getHeader("X-Agent-Id")).isEqualTo("prototype-agent")
+            assertThat(settingsCall.getHeader("X-Trace-Id")).isEqualTo("test-trace-id")
 
             efsAdapterMock.verify(1, postRequestedFor(urlEqualTo("/configurator/rest-agent")))
             gigaVoiceAgentMock.verify(1, postRequestedFor(urlEqualTo("/settings")))
