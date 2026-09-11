@@ -26,7 +26,6 @@ import ru.sbrf.dab2c.executor.voice.service.api.SettingsService
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.error as protoError
 
 private const val SETTINGS_CALCULATION_ERROR_STATUS = 1501
-private const val FUNCTION_CALL_AGENT_NAME = "ivr900humanagent"
 private const val FUNCTION_CALL_MODALITY = "voice"
 
 /** Implementation of [SettingsService] that resolves voice settings via EFS and GigaAgent. */
@@ -99,7 +98,7 @@ class SettingsServiceImpl(
 
         val resolvedSettings = if (configuratorFunctionMatch) {
             val functionCallSettings = directConfiguratorClient.fetchFunctionRegistry(
-                agentName = FUNCTION_CALL_AGENT_NAME,
+                agentName = configProperties.agentName,
                 modality = FUNCTION_CALL_MODALITY
             )
 
