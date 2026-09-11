@@ -37,8 +37,7 @@ class IagFunctionRequestBuilder {
         daSessionInfo: DaSessionInfo,
         contextData: DialogContext
     ): IagFunctionRequest {
-        val agentConfig = GigaVoiceAgentConfigMapper.toApiAgentConfig(agentConfiguration)
-        val sessionConfig = SessionConfig(channel = context.channel)
+        val config = buildConfig(context, agentConfiguration)
 
         return IagFunctionRequest(
             message = IagMessage(
@@ -58,12 +57,20 @@ class IagFunctionRequestBuilder {
                     sessionInfo = DaSessionInfoApiMapper.toApiSessionInfo(daSessionInfo, context)
                 )
             ),
-            config = ACLConfig(
-                agentConfig = agentConfig,
-                sessionConfig = sessionConfig
-            )
+            config = config
         )
     }
+
+    private fun buildConfig(
+        context: GigaAgentRequestContext,
+        agentConfiguration: AgentConfiguration
+    ): ACLConfig = ACLConfig(
+        agentConfig = GigaVoiceAgentConfigMapper.toApiAgentConfig(agentConfiguration),
+        sessionConfig = SessionConfig(
+            channel = context.channel,
+            platform = context.daPlatform
+        )
+    )
 
     private fun buildMessage(contextData: DialogContext): List<IagMessageContent> =
         listOf(

@@ -7,5 +7,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  */
 @ConfigurationProperties(prefix = "http")
 data class HttpClientsProperties(
-    val clients: Map<String, HttpClientProperties> = emptyMap()
+    val clients: Map<String, HttpClientProperties> = emptyMap(),
+    val defaultHeaders: Map<String, String> = emptyMap()
 )
