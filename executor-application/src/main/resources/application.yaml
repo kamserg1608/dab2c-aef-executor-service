@@ -1,4 +1,4 @@
-
+debug: ${SPRING_debug:false}
 
 spring:
   webflux:
@@ -31,6 +31,9 @@ management:
     health:
       probes:
         enabled: true
+      group:
+        warmup:
+          include: ping
   endpoints:
     web:
       exposure:
@@ -41,4 +44,3 @@ management:
     metrics:
       export:
         enabled: true
-debug: true

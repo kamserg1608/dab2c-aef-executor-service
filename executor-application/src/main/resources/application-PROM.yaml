@@ -36,6 +36,8 @@ executor:
       - '(?<=\\"patr_name\\":\\")[^\\"]*'
       - '(?<=\\"firstName\\":\\")[^\\"]*'
       - '(?<=\\"patrName\\":\\")[^\\"]*'
+  warmup:
+    enabled: ${EXECUTOR_WARMUP_ENABLED:true}
 
 # Outbound HTTP Clients
 http:
