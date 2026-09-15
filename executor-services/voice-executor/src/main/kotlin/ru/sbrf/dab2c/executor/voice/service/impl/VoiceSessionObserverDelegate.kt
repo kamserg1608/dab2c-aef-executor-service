@@ -52,13 +52,13 @@ class VoiceSessionObserverDelegate(
         Collections.synchronizedList(mutableListOf())
 
     override fun processRequestChunks(requestsChunks: Flow<GigaVoiceRequest>): Flow<GigaVoiceRequest> {
-        requestsChunks
+        val observedChunks = requestsChunks
             .onEach { request ->
                 if (request.requestCase == GigaVoiceRequest.RequestCase.SETTINGS) {
                     handleOriginalSettingsRequest(request.settings)
                 }
             }
-        return delegate.processRequestChunks(requestsChunks)
+        return delegate.processRequestChunks(observedChunks)
             .onEach { request ->
                 when (request.requestCase) {
                     GigaVoiceRequest.RequestCase.SETTINGS ->
