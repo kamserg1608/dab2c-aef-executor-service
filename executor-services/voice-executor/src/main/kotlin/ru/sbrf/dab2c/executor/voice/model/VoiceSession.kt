@@ -22,6 +22,8 @@ class VoiceSession(
         upstream = Channel(capacity = Channel.BUFFERED)
     )
 ) {
+    @Volatile
+    var originalSettingsReceivedTimestamp: Long? = null
     private val scope = CoroutineScope(SupervisorJob())
 
     /**

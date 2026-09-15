@@ -32,7 +32,7 @@ import ru.sbrf.dab2c.executor.voice.service.api.SessionInitResult
 import ru.sbrf.dab2c.executor.voice.service.api.SessionInitService
 
 /** Initializes voice session by loading session metadata from SDS and EFS. */
-@Service
+@Service("sessionInitServiceImpl")
 class SessionInitServiceImpl(
     private val sdsClient: SdsClient,
     private val configuratorClient: ConfiguratorClient,

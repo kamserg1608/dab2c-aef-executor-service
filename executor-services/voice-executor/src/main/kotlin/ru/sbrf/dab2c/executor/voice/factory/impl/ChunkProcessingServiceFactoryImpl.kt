@@ -18,6 +18,7 @@ import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
 import ru.sbrf.dab2c.executor.voice.model.VoiceSession
 import ru.sbrf.dab2c.executor.voice.monitoring.MonitoringChunksProcessingDecorator
 import ru.sbrf.dab2c.executor.voice.monitoring.MonitoringConnectionChunksProcessingDecorator
+import ru.sbrf.dab2c.executor.voice.monitoring.MonitoringSettingsReceived
 import ru.sbrf.dab2c.executor.voice.postprocess.PostProcessRunner
 import ru.sbrf.dab2c.executor.voice.postprocess.SessionPostProcessor
 import ru.sbrf.dab2c.executor.voice.service.api.AnalyticsPublisher
@@ -79,6 +80,7 @@ class ChunkProcessingServiceFactoryImpl(
      */
     private fun buildSessionObservers(session: VoiceSession): List<VoiceSessionObserver> = listOf(
         SessionPostProcessor(session, postProcessRunner),
+        MonitoringSettingsReceived(metricFactory, session),
         DialogTracingPublisher(tracingFacade),
         KapDialogTurnPublisher(kapProducerClient, session),
         DialogTurnAuditor(externalInteractionAuditor),
