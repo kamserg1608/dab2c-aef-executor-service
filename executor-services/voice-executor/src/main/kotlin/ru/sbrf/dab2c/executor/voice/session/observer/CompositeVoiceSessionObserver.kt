@@ -15,9 +15,6 @@ class CompositeVoiceSessionObserver(
     override suspend fun onSessionStarted() =
         forEach("onSessionStarted") { it.onSessionStarted() }
 
-    override suspend fun onOriginalSettingsReceived(settings: VoiceSettings) =
-        forEach("onOriginalSettingsReceived") { it.onOriginalSettingsReceived(settings) }
-
     override suspend fun onSettingsReceived(settings: VoiceSettings) =
         forEach("onSettingsReceived") { it.onSettingsReceived(settings) }
 

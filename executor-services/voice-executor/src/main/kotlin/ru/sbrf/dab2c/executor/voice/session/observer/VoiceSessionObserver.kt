@@ -8,9 +8,6 @@ interface VoiceSessionObserver {
     suspend fun onSessionStarted() {}
 
     /** Fires at most once per session. */
-    suspend fun onOriginalSettingsReceived(settings: VoiceSettings) {}
-
-    /** Fires at most once per session. */
     suspend fun onSettingsReceived(settings: VoiceSettings) {}
 
     /** Terminal hook. `cause == null` means normal completion. */

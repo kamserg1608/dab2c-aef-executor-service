@@ -51,14 +51,8 @@ class VoiceSessionObserverDelegate(
     private val turnEvents: MutableList<TurnEvent> =
         Collections.synchronizedList(mutableListOf())
 
-    override fun processRequestChunks(requestsChunks: Flow<GigaVoiceRequest>): Flow<GigaVoiceRequest> {
-        val observedChunks = requestsChunks
-            .onEach { request ->
-                if (request.requestCase == GigaVoiceRequest.RequestCase.SETTINGS) {
-                    handleOriginalSettingsRequest(request.settings)
-                }
-            }
-        return delegate.processRequestChunks(observedChunks)
+    override fun processRequestChunks(requestsChunks: Flow<GigaVoiceRequest>): Flow<GigaVoiceRequest> =
+        delegate.processRequestChunks(requestsChunks)
             .onEach { request ->
                 when (request.requestCase) {
                     GigaVoiceRequest.RequestCase.SETTINGS ->
@@ -70,7 +64,6 @@ class VoiceSessionObserverDelegate(
                     else -> Unit
                 }
             }
-    }
 
     override fun processResponseChunks(responsesChunks: Flow<GigaVoiceResponse>): Flow<GigaVoiceResponse> {
         val accumulatedChunks = responsesChunks
@@ -103,17 +96,10 @@ class VoiceSessionObserverDelegate(
         return delegate.processResponseChunks(accumulatedChunks)
     }
 
-    private suspend fun handleOriginalSettingsRequest(settings: Settings) {
-        observer.onOriginalSettingsReceived(VoiceSettings(settingsData = mapSettings(settings)))
-    }
-
     private suspend fun handleSettingsRequest(settings: Settings) {
-        observer.onSettingsReceived(VoiceSettings(settingsData = mapSettings(settings)))
-    }
-
-    private fun mapSettings(settings: Settings): Map<String, Any?> {
         val json = ObjectMappers.MAPPER.writeValueAsString(settings)
-        return ObjectMappers.MAPPER.readValue(json, SETTINGS_MAP_TYPE)
+        val settingsMap: Map<String, Any?> = ObjectMappers.MAPPER.readValue(json, SETTINGS_MAP_TYPE)
+        observer.onSettingsReceived(VoiceSettings(settingsData = settingsMap))
     }
 
     private suspend fun handleAudioRequest() {

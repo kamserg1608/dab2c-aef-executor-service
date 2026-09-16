@@ -21,29 +21,34 @@ import ru.sbrf.dab2c.executor.library.context.HeadersElement
 import ru.sbrf.dab2c.executor.library.context.RequestHeader
 import ru.sbrf.dab2c.executor.library.context.SessionInfoElement
 import ru.sbrf.dab2c.executor.library.context.currentHeaders
+import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricFactory
 import ru.sbrf.dab2c.executor.library.tracing.TracingParentElement
 import ru.sbrf.dab2c.executor.library.tracing.aef.AefRequestContextElement
 import ru.sbrf.dab2c.executor.library.tracing.grpc.OtelGrpcBridge
 import ru.sbrf.dab2c.executor.logging.MaskingCollector
 import ru.sbrf.dab2c.executor.voice.logging.VoiceMdcInitializer
+import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
 import ru.sbrf.dab2c.executor.voice.model.VoiceSessionFeatureToggles
 import ru.sbrf.dab2c.executor.voice.model.VoiceSessionFeatureTogglesElement
 import ru.sbrf.dab2c.executor.voice.service.api.SessionInitResult
 import ru.sbrf.dab2c.executor.voice.service.api.SessionInitService
 
 /** Initializes voice session by loading session metadata from SDS and EFS. */
-@Service("sessionInitServiceImpl")
+@Service
 class SessionInitServiceImpl(
     private val sdsClient: SdsClient,
     private val configuratorClient: ConfiguratorClient,
     private val profileClient: ProfileClient,
     private val parametersClient: ParametersClient,
+    private val metricFactory: MetricFactory,
 ) : SessionInitService {
 
     private val logger = KotlinLogging.logger {}
 
     @Suppress("LongMethod")
-    override suspend fun initialize(): SessionInitResult {
+    override suspend fun initialize() = metricFactory.recordTimer(
+        metric = ExecutorVoiceMetric.GRPC_SESSION_INITIALIZATION_DURATION_SECONDS,
+    ) {
         val headers = currentHeaders()
         val channel = headers.getHeader(RequestHeader.CHANNEL)
         logger.info { "Session initialization started for channel=$channel" }
@@ -76,7 +81,7 @@ class SessionInitServiceImpl(
         )
         logger.info { "Session initialization completed, MDC updated: sessionId=${daSessionInfo.meta.sessionId}" }
 
-        return SessionInitResult(daSessionInfo, featureToggles)
+        SessionInitResult(daSessionInfo, featureToggles)
     }
 
     @Suppress("LabeledExpression")

@@ -19,7 +19,8 @@ private const val UNKNOWN_CHUNK_TYPE = "Unknown"
 
 /**
  * Decorator that records chunk counting metrics, TTFB timing,
- * and response token tracking for voice processing flows.
+ * response token tracking, and settings initialization duration
+ * for voice processing flows.
  */
 class MonitoringChunksProcessingDecorator(
     private val delegate: ChunkProcessingService,
@@ -31,8 +32,15 @@ class MonitoringChunksProcessingDecorator(
     override fun processRequestChunks(
         requestsChunks: Flow<GigaVoiceRequest>
     ): Flow<GigaVoiceRequest> {
+        var settingsInitSample: TimerSampleMetric.TimerSample? = null
+
         val monitoredChunks = requestsChunks
             .onEach { request ->
+                if (request.requestCase == GigaVoiceRequest.RequestCase.SETTINGS && settingsInitSample == null) {
+                    settingsInitSample = metricFactory
+                        .createTimerSample(ExecutorVoiceMetric.GRPC_SETTINGS_INITIALIZATION_DURATION_SECONDS)
+                        .start()
+                }
                 metricFactory.incrementCounter(
                     ExecutorVoiceMetric.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL,
                     chunkTags(request.chunkTypeName()) + request.incomingTags()
@@ -45,6 +53,12 @@ class MonitoringChunksProcessingDecorator(
                     ExecutorVoiceMetric.GRPC_OUTGOING_TO_GIGAVOICE_CHUNKS_TOTAL,
                     chunkTags(request.chunkTypeName()) + request.outgoingToGigaVoiceTags()
                 )
+            }
+            .onEach { request ->
+                if (request.requestCase == GigaVoiceRequest.RequestCase.SETTINGS && settingsInitSample != null) {
+                    settingsInitSample?.stop()
+                    settingsInitSample = null
+                }
             }
     }
 
