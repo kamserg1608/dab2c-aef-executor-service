@@ -26,21 +26,16 @@ class MonitoringChunksProcessingDecorator(
     private val delegate: ChunkProcessingService,
     private val metricFactory: MetricFactory
 ) : ChunkProcessingService {
-
+    private var settingsInitSample: TimerSampleMetric.TimerSample? = null
     private val logger = KotlinLogging.logger { }
 
     override fun processRequestChunks(
         requestsChunks: Flow<GigaVoiceRequest>
     ): Flow<GigaVoiceRequest> {
-        var settingsInitSample: TimerSampleMetric.TimerSample? = null
 
         val monitoredChunks = requestsChunks
             .onEach { request ->
-                if (request.requestCase == GigaVoiceRequest.RequestCase.SETTINGS && settingsInitSample == null) {
-                    settingsInitSample = metricFactory
-                        .createTimerSample(ExecutorVoiceMetric.GRPC_SETTINGS_INITIALIZATION_DURATION_SECONDS)
-                        .start()
-                }
+                trackSettingsStart(request)
                 metricFactory.incrementCounter(
                     ExecutorVoiceMetric.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL,
                     chunkTags(request.chunkTypeName()) + request.incomingTags()
@@ -49,18 +44,31 @@ class MonitoringChunksProcessingDecorator(
 
         return delegate.processRequestChunks(monitoredChunks)
             .onEach { request ->
+                trackSettingsEnd(request)
                 metricFactory.incrementCounter(
                     ExecutorVoiceMetric.GRPC_OUTGOING_TO_GIGAVOICE_CHUNKS_TOTAL,
                     chunkTags(request.chunkTypeName()) + request.outgoingToGigaVoiceTags()
                 )
             }
-            .onEach { request ->
-                if (request.requestCase == GigaVoiceRequest.RequestCase.SETTINGS && settingsInitSample != null) {
-                    settingsInitSample?.stop()
-                    settingsInitSample = null
-                }
-            }
     }
+
+    private suspend fun trackSettingsStart(request: GigaVoiceRequest) {
+        if (isSettingsRequest(request)) {
+            settingsInitSample = metricFactory
+                .createTimerSample(ExecutorVoiceMetric.GRPC_SETTINGS_INITIALIZATION_DURATION_SECONDS)
+                .start()
+        }
+    }
+
+    private fun trackSettingsEnd(request: GigaVoiceRequest) {
+        if (isSettingsRequest(request) && settingsInitSample != null) {
+            settingsInitSample?.stop()
+            settingsInitSample = null
+        }
+    }
+
+    private fun isSettingsRequest(request: GigaVoiceRequest) =
+        request.requestCase == GigaVoiceRequest.RequestCase.SETTINGS
 
     override fun processResponseChunks(
         responsesChunks: Flow<GigaVoiceResponse>
