@@ -41,7 +41,6 @@ class DirectConfiguratorClientImpl(
 
     private val baseUrl = httpClientFactory.propertiesFor(CONFIGURATOR_CLIENT_NAME).baseUrl
     private val objectMapper = ObjectMappers.MAPPER
-    private val functionListResponseMapper = FunctionListResponseMapper.INSTANCE
 
     override suspend fun fetchFunctionRegistry(
         agentName: String,
@@ -56,7 +55,10 @@ class DirectConfiguratorClientImpl(
 
         checkSuccess(response.success, "getFunctionCall")
 
-        val mappedResponse = functionListResponseMapper.toDomain(response.body!!)
+        val body = response.body
+            ?: error("Configurator getFunctionCall returned no body")
+
+        val mappedResponse = FunctionListResponseMapper.toDomain(body)
 
         logger.debug {
             "Function call response mapped successfully: $mappedResponse"

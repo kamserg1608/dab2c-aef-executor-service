@@ -1,0 +1,29 @@
+{
+  "settings" : {
+    "gigachat" : {
+      "functions" : [ {
+        "name" : "end_dialog",
+        "description" : "",
+        "parameters" : "",
+        "fewShotExamples" : [ ],
+        "returnParameters" : ""
+      } ],
+      "functionRanker" : {
+        "ignoredFunctions" : [ ]
+      }
+    },
+    "audio" : {
+      "output" : {
+        "stubSounds" : {
+          "triggerFunction" : {
+            "functionNames" : [ ],
+            "rules" : [ ]
+          }
+        }
+      }
+    },
+    "disableInterruption" : {
+      "functions" : [ ]
+    }
+  }
+}

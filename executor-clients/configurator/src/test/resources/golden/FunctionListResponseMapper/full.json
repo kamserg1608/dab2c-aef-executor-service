@@ -1,0 +1,44 @@
+{
+  "settings" : {
+    "gigachat" : {
+      "functions" : [ {
+        "name" : "ask_ai_expert",
+        "description" : "Консультация с экспертом",
+        "parameters" : "{\"type\":\"object\"}",
+        "fewShotExamples" : [ {
+          "request" : "Где офис?",
+          "params" : {
+            "pairs" : [ {
+              "first" : "city",
+              "second" : "Москва"
+            } ]
+          }
+        } ],
+        "returnParameters" : "{\"type\":\"object\",\"properties\":{}}"
+      } ],
+      "functionRanker" : {
+        "ignoredFunctions" : [ "call_operator" ]
+      }
+    },
+    "audio" : {
+      "output" : {
+        "stubSounds" : {
+          "triggerFunction" : {
+            "functionNames" : [ "ask_ai_expert" ],
+            "rules" : [ {
+              "functionNames" : [ "ask_ai_expert" ],
+              "sounds" : [ "Подождите" ]
+            } ]
+          }
+        }
+      }
+    },
+    "disableInterruption" : {
+      "functions" : [ {
+        "name" : "ask_ai_expert",
+        "onExecution" : true,
+        "afterResult" : true
+      } ]
+    }
+  }
+}

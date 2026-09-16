@@ -1,0 +1,34 @@
+{
+  "settings" : {
+    "gigachat" : {
+      "functions" : [ {
+        "name" : "",
+        "description" : "",
+        "parameters" : "",
+        "fewShotExamples" : [ {
+          "request" : "",
+          "params" : {
+            "pairs" : [ ]
+          }
+        } ],
+        "returnParameters" : ""
+      } ],
+      "functionRanker" : {
+        "ignoredFunctions" : [ ]
+      }
+    },
+    "audio" : {
+      "output" : {
+        "stubSounds" : {
+          "triggerFunction" : {
+            "functionNames" : [ ],
+            "rules" : [ ]
+          }
+        }
+      }
+    },
+    "disableInterruption" : {
+      "functions" : [ ]
+    }
+  }
+}
