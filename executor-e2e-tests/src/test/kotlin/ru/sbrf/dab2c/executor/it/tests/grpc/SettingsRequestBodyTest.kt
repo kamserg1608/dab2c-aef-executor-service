@@ -2,6 +2,10 @@ package ru.sbrf.dab2c.executor.it.tests.grpc
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.junit.jupiter.api.Test
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Function
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionRanker
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaChatSettings
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.contextRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.settingsRequest
 import ru.sbrf.dab2c.executor.it.support.runItTest
@@ -61,7 +65,7 @@ class SettingsRequestBodyTest : BaseGigaVoiceIntegrationTest() {
 
         withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
-            session.sendRequest(settingsRequest("headers-test-call"))
+            session.sendRequest(settingsRequestWithGigachat("headers-test-call"))
 
             val settingsCall = wireMock.awaitPostCall("/settings")
             val body: Map<String, Any?> =
@@ -85,7 +89,7 @@ class SettingsRequestBodyTest : BaseGigaVoiceIntegrationTest() {
 
         withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
             session.sendRequest(contextRequest())
-            session.sendRequest(settingsRequest("minimal-configurator-call"))
+            session.sendRequest(settingsRequestWithGigachat("minimal-configurator-call"))
 
             val settingsCall = wireMock.awaitPostCall("/settings")
             val body: Map<String, Any?> = ObjectMappers.MAPPER.readValue(settingsCall.bodyAsString)
@@ -96,6 +100,26 @@ class SettingsRequestBodyTest : BaseGigaVoiceIntegrationTest() {
             )
         }
     }
+
+    private fun settingsRequestWithGigachat(voiceCallId: String): GigaVoiceRequest =
+        settingsRequest(voiceCallId) {
+            setGigachat(
+                GigaChatSettings.newBuilder()
+                    .setModel("GigaChat-3-Ultra-preview")
+                    .setTemperature(0.7f)
+                    .setCurrentTime(1789395661)
+                    .addFilterStubPhrases("Секундочку")
+                    .addFunctions(Function.newBuilder().setName("ivr_client_function").build())
+                    .setFunctionRanker(
+                        FunctionRanker.newBuilder()
+                            .setEnabled(true)
+                            .setTopN(5)
+                            .setEmbedderModel("ivr-embedder")
+                            .build()
+                    )
+                    .build()
+            )
+        }
 
     private companion object {
         /** Non-deterministic fields in the /settings request body: the per-call request id. */

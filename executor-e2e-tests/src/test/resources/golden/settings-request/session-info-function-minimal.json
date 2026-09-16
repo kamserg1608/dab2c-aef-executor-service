@@ -48,8 +48,8 @@
     },
     "voice_call_id" : "minimal-configurator-call",
     "gigachat" : {
-      "model" : null,
-      "temperature" : null,
+      "model" : "GigaChat-3-Ultra-preview",
+      "temperature" : 0.699999988079071,
       "top_p" : null,
       "repetition_penalty" : null,
       "update_interval" : null,
@@ -69,12 +69,12 @@
         "return_parameters" : "{\"type\":\"object\",\"properties\":{}}"
       } ],
       "function_registry" : null,
-      "filter_stub_phrases" : null,
-      "current_time" : null,
+      "filter_stub_phrases" : [ "Секундочку" ],
+      "current_time" : 1789395661,
       "function_ranker" : {
-        "enabled" : null,
-        "top_n" : null,
-        "embedder_model" : null,
+        "enabled" : true,
+        "top_n" : 5,
+        "embedder_model" : "ivr-embedder",
         "ignored_functions" : [ ]
       },
       "preset" : null
