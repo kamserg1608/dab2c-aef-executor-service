@@ -131,6 +131,46 @@ object WireMockResponses {
     """.trimIndent()
 
     /**
+     * Configurator function list response in its minimal shape: interruption locks carry only
+     * a name, the function ranker and the audio section are absent.
+     */
+    val CONFIGURATOR_FUNCTION_LIST_MINIMAL_RESPONSE = """
+    {
+        "success": true,
+        "body": {
+            "settings": {
+                "gigachat": {
+                    "functions": [
+                        {
+                            "name": "end_dialogue",
+                            "description": "Функция для завершения диалога.",
+                            "parameters": "{\"type\":\"object\",\"properties\":{}}",
+                            "return_parameters": "{\"type\":\"object\",\"properties\":{}}"
+                        },
+                        {
+                            "name": "call_operator",
+                            "description": "Функция инициирует соединение клиента со специалистом-оператором.",
+                            "parameters": "{\"type\":\"object\",\"properties\":{}}",
+                            "return_parameters": "{\"type\":\"object\",\"properties\":{}}"
+                        }
+                    ]
+                },
+                "disable_interruption": {
+                    "functions": [
+                        {
+                            "name": "end_dialogue"
+                        },
+                        {
+                            "name": "call_operator"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+    """.trimIndent()
+
+    /**
      * Successful find_bank_office function call response with analytics and context.
      */
     val FIND_BANK_OFFICE_FUNCTION_CALL_RESPONSE = """

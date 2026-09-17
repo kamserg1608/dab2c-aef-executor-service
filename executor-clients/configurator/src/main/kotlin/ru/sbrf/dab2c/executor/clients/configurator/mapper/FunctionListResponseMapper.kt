@@ -1,6 +1,5 @@
 package ru.sbrf.dab2c.executor.clients.configurator.mapper
 
-import io.mcarle.konvert.api.Konverter
 import ru.sbrf.dab2c.executor.clients.configurator.model.AnyExample
 import ru.sbrf.dab2c.executor.clients.configurator.model.AudioOutputSettings
 import ru.sbrf.dab2c.executor.clients.configurator.model.AudioSettings
@@ -20,7 +19,7 @@ import ru.sbrf.dab2c.executor.domain.configuration.AudioOutputSettings as Domain
 import ru.sbrf.dab2c.executor.domain.configuration.AudioSettings as DomainAudioSettings
 import ru.sbrf.dab2c.executor.domain.configuration.DisableInterruptionSettings as DomainDisableInterruptionSettings
 import ru.sbrf.dab2c.executor.domain.configuration.Function as DomainFunction
-import ru.sbrf.dab2c.executor.domain.configuration.FunctionList as DomainFunctionListResponse
+import ru.sbrf.dab2c.executor.domain.configuration.FunctionList as DomainFunctionList
 import ru.sbrf.dab2c.executor.domain.configuration.FunctionRanker as DomainFunctionRanker
 import ru.sbrf.dab2c.executor.domain.configuration.FunctionSoundRule as DomainFunctionSoundRule
 import ru.sbrf.dab2c.executor.domain.configuration.GigachatSettings as DomainGigachatSettings
@@ -31,15 +30,39 @@ import ru.sbrf.dab2c.executor.domain.configuration.StubSounds as DomainStubSound
 import ru.sbrf.dab2c.executor.domain.configuration.TriggerFunction as DomainTriggerFunction
 
 /**
- * Mapper for converting EFS adapter function settings models to domain models.
+ * Maps Configurator function list responses to domain models.
+ *
+ * Every field of the Configurator contract is optional, so an absent field
+ * falls back to its domain default instead of failing the mapping.
  */
-@Konverter
-interface FunctionListResponseMapper :
-    FunctionListResponseCoreMapper,
-    FunctionListResponseAudioMapper,
-    FunctionListResponseInterruptionMapper {
+object FunctionListResponseMapper {
 
-    override fun toDomain(source: Function): DomainFunction =
+    /** Converts a function list response to its domain representation. */
+    fun toDomain(source: FunctionListResponse): DomainFunctionList =
+        DomainFunctionList(
+            settings = source.settings?.let(::toDomain) ?: DomainSettings()
+        )
+
+    private fun toDomain(source: Settings): DomainSettings =
+        DomainSettings(
+            gigachat = source.gigachat?.let(::toDomain) ?: DomainGigachatSettings(),
+            audio = source.audio?.let(::toDomain) ?: DomainAudioSettings(),
+            disableInterruption = source.disableInterruption?.let(::toDomain)
+                ?: DomainDisableInterruptionSettings()
+        )
+
+    private fun toDomain(source: GigachatSettings): DomainGigachatSettings =
+        DomainGigachatSettings(
+            functions = source.functions?.map(::toDomain).orEmpty(),
+            functionRanker = source.functionRanker?.let(::toDomain) ?: DomainFunctionRanker()
+        )
+
+    private fun toDomain(source: FunctionRanker): DomainFunctionRanker =
+        DomainFunctionRanker(
+            ignoredFunctions = source.ignoredFunctions.orEmpty()
+        )
+
+    private fun toDomain(source: Function): DomainFunction =
         DomainFunction(
             name = source.name.orEmpty(),
             description = source.description.orEmpty(),
@@ -48,75 +71,53 @@ interface FunctionListResponseMapper :
             returnParameters = source.returnParameters.orEmpty()
         )
 
-    override fun toDomain(source: Params): DomainParams =
-        DomainParams(
-            pairs = source.pairs.orEmpty().map {
-                it.key.orEmpty() to it.value
-            }
+    private fun toDomain(source: AnyExample): DomainAnyExample =
+        DomainAnyExample(
+            request = source.request.orEmpty(),
+            params = source.params?.let(::toDomain) ?: DomainParams()
         )
 
-    /** Provides singleton instance of the mapper. */
-    companion object {
-        val INSTANCE: FunctionListResponseMapper get() = FunctionListResponseMapperImpl
-    }
-}
+    private fun toDomain(source: Params): DomainParams =
+        DomainParams(
+            pairs = source.pairs.orEmpty().map { it.key.orEmpty() to it.value }
+        )
 
-/**
- * Core mapper methods for function list response.
- */
-interface FunctionListResponseCoreMapper {
+    private fun toDomain(source: AudioSettings): DomainAudioSettings =
+        DomainAudioSettings(
+            output = source.output?.let(::toDomain) ?: DomainAudioOutputSettings()
+        )
 
-    /** Converts FunctionListResponse to domain FunctionListResponse. */
-    fun toDomain(source: FunctionListResponse): DomainFunctionListResponse
+    private fun toDomain(source: AudioOutputSettings): DomainAudioOutputSettings =
+        DomainAudioOutputSettings(
+            stubSounds = source.stubSounds?.let(::toDomain) ?: DomainStubSounds()
+        )
 
-    /** Converts Settings to domain Settings. */
-    fun toDomain(source: Settings): DomainSettings
+    private fun toDomain(source: StubSounds): DomainStubSounds =
+        DomainStubSounds(
+            triggerFunction = source.triggerFunction?.let(::toDomain) ?: DomainTriggerFunction()
+        )
 
-    /** Converts GigachatSettings to domain GigachatSettings. */
-    fun toDomain(source: GigachatSettings): DomainGigachatSettings
+    private fun toDomain(source: TriggerFunction): DomainTriggerFunction =
+        DomainTriggerFunction(
+            functionNames = source.functionNames.orEmpty(),
+            rules = source.rules?.map(::toDomain).orEmpty()
+        )
 
-    /** Converts FunctionRanker to domain FunctionRanker. */
-    fun toDomain(source: FunctionRanker): DomainFunctionRanker
+    private fun toDomain(source: FunctionSoundRule): DomainFunctionSoundRule =
+        DomainFunctionSoundRule(
+            functionNames = source.functionNames.orEmpty(),
+            sounds = source.sounds.orEmpty()
+        )
 
-    /** Converts Function to domain Function. */
-    fun toDomain(source: Function): DomainFunction
+    private fun toDomain(source: DisableInterruptionSettings): DomainDisableInterruptionSettings =
+        DomainDisableInterruptionSettings(
+            functions = source.functions?.map(::toDomain).orEmpty()
+        )
 
-    /** Converts AnyExample to domain AnyExample. */
-    fun toDomain(source: AnyExample): DomainAnyExample
-
-    /** Converts Params to domain Params. */
-    fun toDomain(source: Params): DomainParams
-}
-
-/**
- * Mapper methods for audio-related function settings.
- */
-interface FunctionListResponseAudioMapper {
-
-    /** Converts AudioSettings to domain AudioSettings. */
-    fun toDomain(source: AudioSettings): DomainAudioSettings
-
-    /** Converts AudioOutputSettings to domain AudioOutputSettings. */
-    fun toDomain(source: AudioOutputSettings): DomainAudioOutputSettings
-
-    /** Converts StubSounds to domain StubSounds. */
-    fun toDomain(source: StubSounds): DomainStubSounds
-
-    /** Converts TriggerFunction to domain TriggerFunction. */
-    fun toDomain(source: TriggerFunction): DomainTriggerFunction
-
-    /** Converts FunctionSoundRule to domain FunctionSoundRule. */
-    fun toDomain(source: FunctionSoundRule): DomainFunctionSoundRule
-}
-
-/**
- * Mapper methods for interruption locking settings.
- */
-interface FunctionListResponseInterruptionMapper {
-
-    /** Converts DisableInterruptionSettings to domain DisableInterruptionSettings. */
-    fun toDomain(source: DisableInterruptionSettings): DomainDisableInterruptionSettings
-
-    /** Converts LockFunctionExecution to domain LockFunctionExecution. */
-    fun toDomain(source: LockFunctionExecution): DomainLockFunctionExecution
+    private fun toDomain(source: LockFunctionExecution): DomainLockFunctionExecution =
+        DomainLockFunctionExecution(
+            name = source.name.orEmpty(),
+            onExecution = source.onExecution ?: false,
+            afterResult = source.afterResult ?: false
+        )
 }

@@ -1,0 +1,131 @@
+{
+  "conversation_id" : "minimal-configurator-call",
+  "edu_id" : "test-edu-id",
+  "config" : {
+    "agent_config" : {
+      "name" : "test-agent",
+      "type" : "voice",
+      "functional_subsystem_ci" : "test-ci",
+      "description" : "Test agent",
+      "ufs_service_available" : true,
+      "tools_meta" : [ ],
+      "neighbours_agent_meta" : [ ],
+      "toggles" : { },
+      "can_access_user_info" : true,
+      "can_access_dialog_history" : true
+    },
+    "session_config" : {
+      "channel" : "test-channel",
+      "block" : null,
+      "surface" : null,
+      "platform" : "test-platform",
+      "app_source" : null,
+      "sdk_version" : null,
+      "entry_point" : null,
+      "app_version" : null,
+      "channel_version" : null,
+      "time_zone" : null
+    }
+  },
+  "settings" : {
+    "audio" : {
+      "input" : null,
+      "output" : {
+        "voice" : null,
+        "audio_encoding" : 0,
+        "stub_sounds" : {
+          "sounds" : [ ],
+          "trigger_generation" : null,
+          "trigger_function" : {
+            "enable" : false,
+            "mode" : 0,
+            "function_names" : [ ],
+            "rules" : [ ]
+          }
+        },
+        "speed" : 0
+      }
+    },
+    "voice_call_id" : "minimal-configurator-call",
+    "gigachat" : {
+      "model" : "GigaChat-3-Ultra-preview",
+      "temperature" : 0.699999988079071,
+      "top_p" : null,
+      "repetition_penalty" : null,
+      "update_interval" : null,
+      "profanity_check" : null,
+      "filters_settings" : null,
+      "functions" : [ {
+        "name" : "end_dialogue",
+        "description" : "Функция для завершения диалога.",
+        "parameters" : "{\"type\":\"object\",\"properties\":{}}",
+        "few_shot_examples" : [ ],
+        "return_parameters" : "{\"type\":\"object\",\"properties\":{}}"
+      }, {
+        "name" : "call_operator",
+        "description" : "Функция инициирует соединение клиента со специалистом-оператором.",
+        "parameters" : "{\"type\":\"object\",\"properties\":{}}",
+        "few_shot_examples" : [ ],
+        "return_parameters" : "{\"type\":\"object\",\"properties\":{}}"
+      } ],
+      "function_registry" : null,
+      "filter_stub_phrases" : [ "Секундочку" ],
+      "current_time" : 1789395661,
+      "function_ranker" : {
+        "enabled" : true,
+        "top_n" : 5,
+        "embedder_model" : "ivr-embedder",
+        "ignored_functions" : [ ]
+      },
+      "preset" : null
+    },
+    "context" : null,
+    "disable_vad" : false,
+    "enable_transcribe_input" : false,
+    "flags" : null,
+    "output_modalities" : 0,
+    "mode" : 0,
+    "first_speaker" : null,
+    "enable_denoiser" : false,
+    "enable_prefetch" : false,
+    "enable_person_identity" : false,
+    "enable_whisper" : false,
+    "enable_emotion" : false,
+    "enable_transcribe_silence_phrases" : false,
+    "disable_interruption" : {
+      "functions" : [ {
+        "name" : "end_dialogue",
+        "on_execution" : false,
+        "after_result" : false
+      }, {
+        "name" : "call_operator",
+        "on_execution" : false,
+        "after_result" : false
+      } ]
+    }
+  },
+  "session_info" : {
+    "ufs_host" : "test-ufs-host",
+    "cookies" : {
+      "UFS-SESSION" : "test-session",
+      "UFS-TOKEN" : "test-token"
+    },
+    "headers" : {
+      "UFS-SESSION" : "test-session",
+      "X-Trace-Id" : "test-trace-id",
+      "Da-Request-Id" : "<MASKED>",
+      "Da-Session-Id" : "test-session-id",
+      "Da-Channel" : "test-channel",
+      "Da-Platform" : "test-platform",
+      "Da-Ucp-Id" : "test-ucp-id"
+    }
+  },
+  "user_info" : {
+    "first_name" : "Всеслав",
+    "patr_name" : "Владиславович",
+    "birth_day" : "1998-01-20T14:50:00.000+0300",
+    "segment_code_type" : "1",
+    "ucp_id" : "2064943548742642674"
+  },
+  "context" : { }
+}

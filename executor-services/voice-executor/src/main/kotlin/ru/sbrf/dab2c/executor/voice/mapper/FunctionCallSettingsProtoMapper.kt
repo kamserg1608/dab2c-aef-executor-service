@@ -2,7 +2,6 @@ package ru.sbrf.dab2c.executor.voice.mapper
 
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.AudioSettings
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.DisableInterruption
-import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionRanker
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionSoundRule
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaChatSettings
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.LockFunctionExecution
@@ -27,7 +26,7 @@ object FunctionCallSettingsProtoMapper {
         val builder = protoSettings.toBuilder()
 
         builder.setGigachat(
-            mapGigachat(restSettings)
+            mapGigachat(protoSettings.gigachat, restSettings)
         )
 
         builder.mergeAudio(
@@ -46,10 +45,12 @@ object FunctionCallSettingsProtoMapper {
     }
 
     private fun mapGigachat(
+        protoGigachat: GigaChatSettings,
         restSettings: RestSettings
     ): GigaChatSettings {
-        val builder = GigaChatSettings.newBuilder()
+        val builder = protoGigachat.toBuilder()
 
+        builder.clearFunctions()
         builder.addAllFunctions(
             restSettings.gigachat.functions.map { function ->
                 ProtoFunction.newBuilder()
@@ -62,7 +63,8 @@ object FunctionCallSettingsProtoMapper {
         )
 
         builder.setFunctionRanker(
-            FunctionRanker.newBuilder()
+            protoGigachat.functionRanker.toBuilder()
+                .clearIgnoredFunctions()
                 .addAllIgnoredFunctions(restSettings.gigachat.functionRanker.ignoredFunctions)
                 .build()
         )
