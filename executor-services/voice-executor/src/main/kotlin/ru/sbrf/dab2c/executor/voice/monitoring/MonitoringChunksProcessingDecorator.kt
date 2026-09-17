@@ -13,8 +13,6 @@ import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricTags
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.TimerSampleMetric
 import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
-import java.time.Duration
-import java.time.Instant
 
 private const val UNKNOWN = "unknown"
 private const val UNKNOWN_CHUNK_TYPE = "Unknown"
@@ -29,7 +27,8 @@ class MonitoringChunksProcessingDecorator(
 ) : ChunkProcessingService {
 
     private val logger = KotlinLogging.logger { }
-    private var speechEndTimestamp: Instant? = null
+    @Volatile
+    private var speechEndSample: TimerSampleMetric.TimerSample? = null
 
     override fun processRequestChunks(
         requestsChunks: Flow<GigaVoiceRequest>
@@ -105,26 +104,28 @@ class MonitoringChunksProcessingDecorator(
         }
     }
 
-    private fun checkSpeechEndAndSaveTimestamp(
+    private suspend fun checkSpeechEndAndSaveTimestamp(
         request: GigaVoiceRequest
     ) {
         if (request.requestCase == GigaVoiceRequest.RequestCase.INPUT && request.input.audioContent.speechEnd) {
-            speechEndTimestamp = Instant.now()
+            speechEndSample = metricFactory.createTimerSample(
+                ExecutorVoiceMetric.GRPC_ASSISTANT_RESPONSE_SILENCE_TIME_SECONDS
+            ).start()
         }
     }
 
-    private suspend fun checkResponseStartedAndMeasureResponseSilenceTime(
+    private fun checkResponseStartedAndMeasureResponseSilenceTime(
         response: GigaVoiceResponse
     ) {
-        if (response.responseCase == GigaVoiceResponse.ResponseCase.OUTPUT && speechEndTimestamp != null) {
-            val responseSilenceTime = Duration.between(speechEndTimestamp, Instant.now())
-            metricFactory.recordDuration(
-                ExecutorVoiceMetric.GRPC_ASSISTANT_RESPONSE_SILENCE_TIME_SECONDS,
-                responseSilenceTime.toNanos(),
-            )
-            speechEndTimestamp = null
+        if (isFirstAudioOutput(response) && speechEndSample != null) {
+            speechEndSample?.stop()
+            speechEndSample = null
         }
     }
+
+    private fun isFirstAudioOutput(response: GigaVoiceResponse): Boolean =
+        response.responseCase == GigaVoiceResponse.ResponseCase.OUTPUT &&
+            response.output.responseCase == ContentFromModel.ResponseCase.AUDIO
 }
 
 private fun chunkTags(chunkTypeName: String): Map<String, String> =

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.audioRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.contextRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.settingsRequest
-import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.additionalDataResponse
+import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.audioResponse
 import ru.sbrf.dab2c.executor.it.support.metrics.captureMetrics
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
@@ -30,7 +30,7 @@ class GrpcSilenceMetricsTest : BaseGigaVoiceIntegrationTest() {
                 session.sendRequest(audioRequest(speechEnd = true))
                 mock.awaitRequest { it.hasInput() }
 
-                mock.sendResponse(additionalDataResponse())
+                mock.sendResponse(audioResponse(chunkId = 1))
                 session.awaitResponse()
             }
         }
