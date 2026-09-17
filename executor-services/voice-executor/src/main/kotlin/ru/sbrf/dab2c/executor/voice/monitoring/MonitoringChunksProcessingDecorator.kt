@@ -13,6 +13,8 @@ import ru.sbrf.dab2c.executor.library.monitoring.service.api.MetricTags
 import ru.sbrf.dab2c.executor.library.monitoring.service.api.TimerSampleMetric
 import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
+import java.time.Duration
+import java.time.Instant
 
 private const val UNKNOWN = "unknown"
 private const val UNKNOWN_CHUNK_TYPE = "Unknown"
@@ -27,6 +29,7 @@ class MonitoringChunksProcessingDecorator(
 ) : ChunkProcessingService {
 
     private val logger = KotlinLogging.logger { }
+    private var speechEndTimestamp: Instant? = null
 
     override fun processRequestChunks(
         requestsChunks: Flow<GigaVoiceRequest>
@@ -37,6 +40,7 @@ class MonitoringChunksProcessingDecorator(
                     ExecutorVoiceMetric.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL,
                     chunkTags(request.chunkTypeName()) + request.incomingTags()
                 )
+                checkSpeechEndAndSaveTimestamp(request)
             }
 
         return delegate.processRequestChunks(monitoredChunks)
@@ -64,6 +68,7 @@ class MonitoringChunksProcessingDecorator(
                     ExecutorVoiceMetric.GRPC_INCOMING_FROM_GIGAVOICE_CHUNKS_TOTAL,
                     chunkTags(response.chunkTypeName()) + response.incomingFromGigaVoiceTags()
                 )
+                checkResponseStartedAndMeasureResponseSilenceTime(response)
             }
 
         return delegate.processResponseChunks(monitoredChunks)
@@ -97,6 +102,27 @@ class MonitoringChunksProcessingDecorator(
             ttfbSample.stop()
             clearSample()
             logger.debug { "First InputTranscription received, TTFB measured." }
+        }
+    }
+
+    private fun checkSpeechEndAndSaveTimestamp(
+        request: GigaVoiceRequest
+    ) {
+        if (request.requestCase == GigaVoiceRequest.RequestCase.INPUT && request.input.audioContent.speechEnd) {
+            speechEndTimestamp = Instant.now()
+        }
+    }
+
+    private suspend fun checkResponseStartedAndMeasureResponseSilenceTime(
+        response: GigaVoiceResponse
+    ) {
+        if (response.responseCase == GigaVoiceResponse.ResponseCase.OUTPUT && speechEndTimestamp != null) {
+            val responseSilenceTime = Duration.between(speechEndTimestamp, Instant.now())
+            metricFactory.recordDuration(
+                ExecutorVoiceMetric.GRPC_ASSISTANT_RESPONSE_SILENCE_TIME_SECONDS,
+                responseSilenceTime.toNanos(),
+            )
+            speechEndTimestamp = null
         }
     }
 }
