@@ -9,6 +9,7 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.DEFAULT
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
@@ -16,6 +17,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.isSuccess
 import io.ktor.serialization.jackson.JacksonConverter
+import io.ktor.util.appendIfNameAbsent
 import io.opentelemetry.context.Context
 import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
 import ru.sbrf.dab2c.executor.library.tracing.propagation.W3CTraceContextInjector
@@ -39,6 +41,13 @@ class HttpClientFactory(private val properties: HttpClientsProperties) {
                 maxConnectionsCount = clientProperties.pool.maxConnections
             }
             installPlugins(clientProperties)
+            defaultRequest {
+                properties.defaultHeaders.forEach { (name, value) ->
+                    if (value.isNotBlank()) {
+                        headers.appendIfNameAbsent(name, value)
+                    }
+                }
+            }
         }
     }
 

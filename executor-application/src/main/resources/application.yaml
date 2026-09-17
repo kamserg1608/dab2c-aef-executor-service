@@ -15,6 +15,11 @@ spring:
 #      - org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryTracingAutoConfiguration
 #      - org.springframework.boot.actuate.autoconfigure.logging.OpenTelemetryLoggingAutoConfiguration
 
+# Common defaults for outbound HTTP clients; explicit request headers take precedence.
+http:
+  default-headers:
+    "[X-Agent-Id]": "${aef.agent.agentId:}"
+
 aef:
   tracing:
     session-id-headers:
