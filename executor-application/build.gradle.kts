@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":executor-distribution"))
     implementation(project(":executor-services:voice-executor"))
     implementation(project(":executor-libraries:jackson"))
+    implementation(project(":executor-clients:http-client-factory"))
 
     implementation(libs.springdoc.openapi.starter.webflux.ui)
     implementation(libs.aef.sdk.spring.boot.starter)
