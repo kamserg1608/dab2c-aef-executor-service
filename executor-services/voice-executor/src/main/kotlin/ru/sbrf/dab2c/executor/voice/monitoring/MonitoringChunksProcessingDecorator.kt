@@ -19,20 +19,23 @@ private const val UNKNOWN_CHUNK_TYPE = "Unknown"
 
 /**
  * Decorator that records chunk counting metrics, TTFB timing,
- * and response token tracking for voice processing flows.
+ * response token tracking, and settings initialization duration
+ * for voice processing flows.
  */
 class MonitoringChunksProcessingDecorator(
     private val delegate: ChunkProcessingService,
     private val metricFactory: MetricFactory
 ) : ChunkProcessingService {
-
+    private var settingsInitSample: TimerSampleMetric.TimerSample? = null
     private val logger = KotlinLogging.logger { }
 
     override fun processRequestChunks(
         requestsChunks: Flow<GigaVoiceRequest>
     ): Flow<GigaVoiceRequest> {
+
         val monitoredChunks = requestsChunks
             .onEach { request ->
+                trackSettingsStart(request)
                 metricFactory.incrementCounter(
                     ExecutorVoiceMetric.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL,
                     chunkTags(request.chunkTypeName()) + request.incomingTags()
@@ -41,12 +44,31 @@ class MonitoringChunksProcessingDecorator(
 
         return delegate.processRequestChunks(monitoredChunks)
             .onEach { request ->
+                trackSettingsEnd(request)
                 metricFactory.incrementCounter(
                     ExecutorVoiceMetric.GRPC_OUTGOING_TO_GIGAVOICE_CHUNKS_TOTAL,
                     chunkTags(request.chunkTypeName()) + request.outgoingToGigaVoiceTags()
                 )
             }
     }
+
+    private suspend fun trackSettingsStart(request: GigaVoiceRequest) {
+        if (isSettingsRequest(request)) {
+            settingsInitSample = metricFactory
+                .createTimerSample(ExecutorVoiceMetric.GRPC_SETTINGS_INITIALIZATION_DURATION_SECONDS)
+                .start()
+        }
+    }
+
+    private fun trackSettingsEnd(request: GigaVoiceRequest) {
+        if (isSettingsRequest(request) && settingsInitSample != null) {
+            settingsInitSample?.stop()
+            settingsInitSample = null
+        }
+    }
+
+    private fun isSettingsRequest(request: GigaVoiceRequest) =
+        request.requestCase == GigaVoiceRequest.RequestCase.SETTINGS
 
     override fun processResponseChunks(
         responsesChunks: Flow<GigaVoiceResponse>
