@@ -16,5 +16,7 @@ enum class ExecutorVoiceMetric(
     GRPC_CONNECTIONS_TOTAL("grpc_connections_total"),
     GRPC_CONNECTIONS_ACTIVE("grpc_connections_active"),
     GRPC_CONNECTIONS_DURATION_SECONDS("grpc_connections_duration_seconds"),
-    GRPC_CONNECTIONS_TTFB_SECONDS("grpc_connections_ttfb_seconds")
+    GRPC_CONNECTIONS_TTFB_SECONDS("grpc_connections_ttfb_seconds"),
+    GRPC_SESSION_INITIALIZATION_DURATION_SECONDS("grpc_session_initialization_duration_seconds"),
+    GRPC_SETTINGS_INITIALIZATION_DURATION_SECONDS("grpc_settings_initialization_duration_seconds"),
 }
