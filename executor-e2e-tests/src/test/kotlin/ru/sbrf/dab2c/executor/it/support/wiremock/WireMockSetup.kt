@@ -52,14 +52,16 @@ object WireMockSetup {
         )
     }
 
-    fun WireMockServer.stubConfiguratorFunctionList() {
+    fun WireMockServer.stubConfiguratorFunctionList(
+        body: String = WireMockResponses.CONFIGURATOR_FUNCTION_LIST_RESPONSE
+    ) {
         stubFor(
             post(urlEqualTo("/function/list/v1"))
                 .willReturn(
                     aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody(WireMockResponses.CONFIGURATOR_FUNCTION_LIST_RESPONSE)
+                        .withBody(body)
                 )
         )
     }
@@ -428,12 +430,14 @@ object WireMockSetup {
         gigaAgent.stubGigaAgentSettings(withFunctions)
     }
 
+    @Suppress("LongParameterList")
     fun setupStubsWithFunctionMatch(
         efsAdapter: WireMockServer,
         configurator: WireMockServer,
         gigaAgent: WireMockServer,
         configuratorEnabled: Boolean = true,
         withFunctions: Boolean = true,
+        functionListBody: String = WireMockResponses.CONFIGURATOR_FUNCTION_LIST_RESPONSE,
     ) {
         with(efsAdapter) {
             stubEfsRestAgent()
@@ -453,7 +457,7 @@ object WireMockSetup {
         }
 
         if (configuratorEnabled) {
-            configurator.stubConfiguratorFunctionList()
+            configurator.stubConfiguratorFunctionList(functionListBody)
         }
 
         gigaAgent.stubGigaAgentSettings(withFunctions, configuratorEnabled)

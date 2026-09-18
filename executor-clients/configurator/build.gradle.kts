@@ -1,6 +1,5 @@
 plugins {
     id("ru.sbrf.ufs.dab2c.core.openapi-conventions")
-    id("ru.sbrf.ufs.dab2c.core.konvert-conventions")
 }
 
 dependencies {
@@ -12,6 +11,8 @@ dependencies {
     implementation(project(":executor-libraries:logging"))
     implementation(libs.bundles.ktor.client)
     implementation(libs.kotlin.logging.jvm)
+
+    testImplementation(project(":executor-libraries:test-support"))
 }
 
 val generateConfiguratorApi = tasks
@@ -23,9 +24,5 @@ val generateConfiguratorApi = tasks
     }
 
 tasks.named("compileKotlin") {
-    dependsOn(generateConfiguratorApi)
-}
-
-tasks.matching { it.name.startsWith("ksp") }.configureEach {
     dependsOn(generateConfiguratorApi)
 }

@@ -68,7 +68,7 @@ class SettingsServiceImpl(
             } catch (e: ClosedSendChannelException) {
                 logger.debug(e) { "Channel closed, session ended before settings completed" }
             } catch (e: Exception) {
-                logger.error { "Failed to calculate settings: ${e.message}" }
+                logger.error(e) { "Failed to calculate settings: ${e.message}" }
                 session.callbackChannels.upstream.send(
                     gigaVoiceResponse {
                         error = protoError {

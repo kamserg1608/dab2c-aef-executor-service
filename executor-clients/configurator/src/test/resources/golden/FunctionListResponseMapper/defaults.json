@@ -1,0 +1,23 @@
+{
+  "settings" : {
+    "gigachat" : {
+      "functions" : [ ],
+      "functionRanker" : {
+        "ignoredFunctions" : [ ]
+      }
+    },
+    "audio" : {
+      "output" : {
+        "stubSounds" : {
+          "triggerFunction" : {
+            "functionNames" : [ ],
+            "rules" : [ ]
+          }
+        }
+      }
+    },
+    "disableInterruption" : {
+      "functions" : [ ]
+    }
+  }
+}

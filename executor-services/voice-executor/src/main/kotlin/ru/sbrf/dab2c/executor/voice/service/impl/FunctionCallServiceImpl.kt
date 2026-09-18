@@ -262,7 +262,7 @@ class FunctionCallServiceImpl(
         e: Exception
     ) {
         val elapsed = System.currentTimeMillis() - startTime
-        logger.error { "Failed to execute backend function '$functionName' after ${elapsed}ms: ${e.message}" }
+        logger.error(e) { "Failed to execute backend function '$functionName' after ${elapsed}ms: ${e.message}" }
 
         val escapedMessage = e.message?.replace("\"", "\\\"") ?: "Function execution failed"
         val errorContent = """{"error":{"code":500,"message":"$escapedMessage"}}"""

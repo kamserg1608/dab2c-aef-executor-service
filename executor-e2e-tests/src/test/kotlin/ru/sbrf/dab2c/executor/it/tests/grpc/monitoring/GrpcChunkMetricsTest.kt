@@ -334,6 +334,25 @@ class GrpcChunkMetricsTest : BaseGigaVoiceIntegrationTest() {
             )
     }
 
+    @Test
+    fun `should record settings initialization duration timer`() = runItTest {
+        setupStubs(efsAdapterMock, gigaVoiceAgentMock)
+
+        val capture = captureMetrics(httpClient, BASE_TAGS) {
+            withSession(testStub(), mockGigaVoiceService, gigaVoiceAgentMock) {
+                session.sendRequest(contextRequest())
+                session.sendRequest(settingsRequest())
+                mock.awaitRequest { it.hasSettings() }
+                mock.sendResponse(outputTranscriptionResponse())
+                session.awaitResponse()
+            }
+        }
+
+        capture
+            .assertTimerRecorded(ExecutorVoiceMetric.GRPC_SETTINGS_INITIALIZATION_DURATION_SECONDS.metricName)
+            .assertTimerRecorded(ExecutorVoiceMetric.GRPC_SESSION_INITIALIZATION_DURATION_SECONDS.metricName)
+    }
+
     companion object {
         private val BASE_TAGS = mapOf("channel" to "test-channel", "platform" to "test-platform")
     }
