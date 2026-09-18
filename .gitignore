@@ -24,7 +24,7 @@ target
 **/bin
 
 tmp
-го
+
 # GigaIDE
 .gigaide/**
 .kotlin
