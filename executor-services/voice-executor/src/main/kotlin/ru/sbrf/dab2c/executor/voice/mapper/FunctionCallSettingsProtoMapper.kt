@@ -9,7 +9,12 @@ import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Output
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Settings
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.StubSounds
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.TriggerFunction
+import ru.sbrf.dab2c.executor.library.jackson.ObjectMappers
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.AnyExample as ProtoAnyExample
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Function as ProtoFunction
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Pair as ProtoPair
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Params as ProtoParams
+import ru.sbrf.dab2c.executor.domain.configuration.AnyExample as RestAnyExample
 import ru.sbrf.dab2c.executor.domain.configuration.Settings as RestSettings
 
 /**
@@ -57,6 +62,7 @@ object FunctionCallSettingsProtoMapper {
                     .setName(function.name)
                     .setDescription(function.description)
                     .setParameters(function.parameters)
+                    .addAllFewShotExamples(function.fewShotExamples.map(::mapFewShotExample))
                     .setReturnParameters(function.returnParameters)
                     .build()
             }
@@ -70,6 +76,31 @@ object FunctionCallSettingsProtoMapper {
         )
 
         return builder.build()
+    }
+
+    private fun mapFewShotExample(example: RestAnyExample): ProtoAnyExample =
+        ProtoAnyExample.newBuilder()
+            .setRequest(example.request)
+            .setParams(
+                ProtoParams.newBuilder()
+                    .addAllPairs(
+                        example.params.pairs.map { (name, value) -> mapExampleParam(name, value) }
+                    )
+                    .build()
+            )
+            .build()
+
+    private fun mapExampleParam(name: String, value: Any?): ProtoPair =
+        ProtoPair.newBuilder()
+            .setKey(name)
+            .setValue(asText(value))
+            .build()
+
+    /** GigaVoice accepts example parameters as text, so structured values are serialized to JSON. */
+    private fun asText(value: Any?): String = when (value) {
+        null -> ""
+        is String -> value
+        else -> ObjectMappers.MAPPER.writeValueAsString(value)
     }
 
     private fun mapOutput(
