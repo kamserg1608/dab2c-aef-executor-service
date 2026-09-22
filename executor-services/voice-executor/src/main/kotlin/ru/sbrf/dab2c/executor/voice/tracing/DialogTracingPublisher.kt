@@ -126,6 +126,7 @@ class DialogTracingPublisher(
     private fun closeLlmTurn(event: TurnCompleted, warning: String?, error: String?) {
         val functionCall = event.turnEvents.filterIsInstance<FunctionCallReceived>().firstOrNull()
         val functionResult = event.turnEvents.filterIsInstance<FunctionResultSent>().firstOrNull()
+        val usage = event.llmUsage
         voiceLlmTurnSpan?.let {
             facade.endVoiceLlmTurn(
                 it,
@@ -139,6 +140,11 @@ class DialogTracingPublisher(
                     totalTokens = event.totalTokens?.toLong(),
                     warning = warning,
                     error = error,
+                    promptTokens = usage?.promptTokens?.toLong(),
+                    completionTokens = usage?.completionTokens?.toLong(),
+                    precachedPromptTokens = usage?.precachedPromptTokens?.toLong(),
+                    model = usage?.model,
+                    finishReason = usage?.finishReason,
                 )
             )
         }

@@ -19,6 +19,7 @@ import ru.sbrf.dab2c.executor.library.tracing.facade.AefTracingFacadeImpl
 import ru.sbrf.dab2c.executor.voice.session.observer.ErrorEmitted
 import ru.sbrf.dab2c.executor.voice.session.observer.FunctionCallReceived
 import ru.sbrf.dab2c.executor.voice.session.observer.FunctionResultSent
+import ru.sbrf.dab2c.executor.voice.session.observer.LlmUsage
 import ru.sbrf.dab2c.executor.voice.session.observer.Replica
 import ru.sbrf.dab2c.executor.voice.session.observer.TurnCompleted
 import ru.sbrf.dab2c.executor.voice.session.observer.TurnEvent
@@ -110,6 +111,30 @@ class DialogTracingPublisherTest {
         assertEquals("{}", llm.attributes.get(AttributeKey.stringKey("aef.input")))
         assertEquals("{}", llm.attributes.get(AttributeKey.stringKey("aef.output")))
         assertEquals(42L, llm.attributes.get(AttributeKey.longKey("aef.llm.total_tokens")))
+    }
+
+    @Test
+    fun `voice_llm_turn carries llm usage, model and finish reason from the turn`() = runTest {
+        val publisher = DialogTracingPublisher(facade)
+        publisher.onSessionStarted()
+        publisher.onAssistantReplicaStarted(3L)
+        publisher.onTurnCompleted(
+            turn(
+                user = "hello bot",
+                assistant = "hi user",
+                totalTokens = 88,
+                llmUsage = LlmUsage(64, 24, 88, 1, "GigaChat:1.0.26.20", "stop"),
+            )
+        )
+        publisher.onSessionCompleted(null)
+
+        val llm = exporter.finishedSpanItems.single { it.name == "voice llm turn" }
+        assertEquals(64L, llm.attributes.get(AttributeKey.longKey("aef.llm.prompt_tokens")))
+        assertEquals(24L, llm.attributes.get(AttributeKey.longKey("aef.llm.completion_tokens")))
+        assertEquals(88L, llm.attributes.get(AttributeKey.longKey("aef.llm.total_tokens")))
+        assertEquals(1L, llm.attributes.get(AttributeKey.longKey("aef.llm.precached_prompt_tokens")))
+        assertEquals("GigaChat:1.0.26.20", llm.attributes.get(AttributeKey.stringKey("aef.llm.model")))
+        assertEquals("stop", llm.attributes.get(AttributeKey.stringKey("aef.finish_reason")))
     }
 
     @Test
@@ -370,11 +395,13 @@ class DialogTracingPublisherTest {
         assistant: String? = null,
         events: List<TurnEvent> = emptyList(),
         totalTokens: Int? = null,
+        llmUsage: LlmUsage? = null,
     ) = TurnCompleted(
         userReplica = user?.let { Replica(it, 1L, 2L) },
         assistantReplica = assistant?.let { Replica(it, 3L, 4L) },
         turnEvents = events,
         totalTokens = totalTokens,
+        llmUsage = llmUsage,
     )
 
     private fun testVoiceSettings(voiceCallId: String) = VoiceSettings(

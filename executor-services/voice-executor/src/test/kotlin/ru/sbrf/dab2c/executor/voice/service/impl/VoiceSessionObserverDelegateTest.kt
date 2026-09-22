@@ -31,6 +31,7 @@ import ru.sbrf.dab2c.executor.clients.gigavoice.proto.warning
 import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.session.observer.ErrorEmitted
 import ru.sbrf.dab2c.executor.voice.session.observer.FunctionCallReceived
+import ru.sbrf.dab2c.executor.voice.session.observer.LlmUsage
 import ru.sbrf.dab2c.executor.voice.session.observer.TurnCompleted
 import ru.sbrf.dab2c.executor.voice.session.observer.VoiceSessionObserver
 import ru.sbrf.dab2c.executor.voice.session.observer.WarningEmitted
@@ -225,6 +226,54 @@ class VoiceSessionObserverDelegateTest {
 
         assertEquals(42, captured[0].totalTokens)
     }
+
+    @Test
+    fun `accumulates llm usage, model and finish reason within a turn`() = runTest {
+        val captured = mutableListOf<TurnCompleted>()
+        coEvery { observer.onTurnCompleted(capture(captured)) } just Runs
+
+        val responses = flowOf(
+            createInputTranscription("Hello"),
+            createUsage(prompt = 40, completion = 10, total = 50, precached = 1, reason = "function_call"),
+            createOutputTranscription("Hi"),
+            createUsage(prompt = 24, completion = 14, total = 38, precached = 0, reason = "stop"),
+            createInputTranscription("Next"),
+        )
+
+        accumulator.processResponseChunks(responses).toList()
+
+        assertEquals(
+            LlmUsage(
+                promptTokens = 64,
+                completionTokens = 24,
+                totalTokens = 88,
+                precachedPromptTokens = 1,
+                model = "GigaChat:1.0.26.20",
+                finishReason = "stop",
+            ),
+            captured[0].llmUsage
+        )
+        assertEquals(88, captured[0].totalTokens)
+    }
+
+    private fun createUsage(prompt: Int, completion: Int, total: Int, precached: Int, reason: String) =
+        gigaVoiceResponse {
+            output = contentFromModel {
+                additionalData = ru.sbrf.dab2c.executor.clients.gigavoice.proto.additionalData {
+                    usage = ru.sbrf.dab2c.executor.clients.gigavoice.proto.usage {
+                        promptTokens = prompt
+                        completionTokens = completion
+                        totalTokens = total
+                        precachedPromptTokens = precached
+                    }
+                    gigachatModelInfo = ru.sbrf.dab2c.executor.clients.gigavoice.proto.gigaChatModelInfo {
+                        name = "GigaChat"
+                        version = "1.0.26.20"
+                    }
+                    finishReason = reason
+                }
+            }
+        }
 
     @Test
     fun `resets per-turn state between turns`() = runTest {

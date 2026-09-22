@@ -38,7 +38,7 @@ class AefTracingFacadeImpl(private val tracer: Tracer) : AefTracingFacade {
 
     override suspend fun startVoiceTurn(spanName: String, parent: Span?): Span {
         val parentContext = parent?.let { Context.current().with(it) } ?: Context.current()
-        return VoiceTracing.startVoiceTurn(tracer, spanName, EMPTY_INPUT, parentContext)
+        return VoiceTracing.startVoiceTurn(tracer, spanName, EMPTY_INPUT, parentContext).startedNow()
     }
 
     override fun endVoiceTurn(span: Span, output: VoiceTurnOutput) {
@@ -50,7 +50,7 @@ class AefTracingFacadeImpl(private val tracer: Tracer) : AefTracingFacade {
 
     override suspend fun startVoiceLlmTurn(spanName: String, parent: Span?): Span {
         val parentContext = parent?.let { Context.current().with(it) } ?: Context.current()
-        return VoiceTracing.startVoiceLlmTurn(tracer, spanName, EMPTY_INPUT, parentContext)
+        return VoiceTracing.startVoiceLlmTurn(tracer, spanName, EMPTY_INPUT, parentContext).startedNow()
     }
 
     override fun endVoiceLlmTurn(span: Span, output: VoiceLlmTurnOutput) {
@@ -59,7 +59,12 @@ class AefTracingFacadeImpl(private val tracer: Tracer) : AefTracingFacade {
             span,
             VoiceLlmTurnOutputAttributes.builder()
                 .output(rawJsonOrWrap(output.outputJson))
+                .promptTokens(output.promptTokens?.toInt())
+                .completionTokens(output.completionTokens?.toInt())
                 .totalTokens(output.totalTokens?.toInt())
+                .precachedPromptTokens(output.precachedPromptTokens?.toInt())
+                .model(output.model)
+                .finishReason(output.finishReason)
                 .warning(output.warning)
                 .error(output.error)
                 .build()
@@ -112,6 +117,13 @@ class AefTracingFacadeImpl(private val tracer: Tracer) : AefTracingFacade {
         val base = element?.root() ?: Context.current()
         return element?.get()?.let { base.with(it) } ?: base
     }
+
+    /**
+     * SDK postpones the start of a voice span opened with empty input until its first attribute,
+     * which is written only on close. Requesting the span context starts it now, so the span
+     * duration covers the whole turn instead of being zero.
+     */
+    private fun Span.startedNow(): Span = also { it.spanContext }
 
     private fun rawJsonOrWrap(json: String): Any =
         try {

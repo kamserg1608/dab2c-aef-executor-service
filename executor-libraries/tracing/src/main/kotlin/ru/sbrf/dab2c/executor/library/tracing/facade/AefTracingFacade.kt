@@ -17,6 +17,11 @@ data class VoiceLlmTurnOutput(
     val totalTokens: Long?,
     val warning: String?,
     val error: String?,
+    val promptTokens: Long? = null,
+    val completionTokens: Long? = null,
+    val precachedPromptTokens: Long? = null,
+    val model: String? = null,
+    val finishReason: String? = null,
 )
 
 /**
@@ -38,16 +43,19 @@ interface AefTracingFacade {
     /** Closes a `voice_session` span. */
     fun endVoiceSession(span: Span, settings: Any)
 
-    /** Opens a `voice_turn` span. */
+    /** Opens a `voice_turn` span; its duration covers the dialog turn up to [endVoiceTurn]. */
     suspend fun startVoiceTurn(spanName: String, parent: Span? = null): Span
 
     /** Closes a `voice_turn` span; writes `aef.input`, `aef.output`, plus optional warning/error. */
     fun endVoiceTurn(span: Span, output: VoiceTurnOutput)
 
-    /** Opens a `voice_llm_turn` span. */
+    /** Opens a `voice_llm_turn` span; its duration covers LLM processing up to [endVoiceLlmTurn]. */
     suspend fun startVoiceLlmTurn(spanName: String, parent: Span? = null): Span
 
-    /** Closes a `voice_llm_turn` span; writes `aef.input`, `aef.output`, plus optional `aef.llm.total_tokens`. */
+    /**
+     * Closes a `voice_llm_turn` span; writes `aef.input`, `aef.output`, plus optional `aef.llm.*` usage,
+     * `aef.finish_reason`, warning and error.
+     */
     fun endVoiceLlmTurn(span: Span, output: VoiceLlmTurnOutput)
 
     /** Opens a `tool` span — [functionName] becomes the span name; SDK formats `aef.input`. */
