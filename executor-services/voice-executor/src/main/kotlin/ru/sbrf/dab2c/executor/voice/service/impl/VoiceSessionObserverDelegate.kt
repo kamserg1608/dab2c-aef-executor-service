@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.AdditionalData
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.ContentFromModel
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Error
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionCalling
@@ -22,6 +23,7 @@ import ru.sbrf.dab2c.executor.voice.service.api.ChunkProcessingService
 import ru.sbrf.dab2c.executor.voice.session.observer.ErrorEmitted
 import ru.sbrf.dab2c.executor.voice.session.observer.FunctionCallReceived
 import ru.sbrf.dab2c.executor.voice.session.observer.FunctionResultSent
+import ru.sbrf.dab2c.executor.voice.session.observer.LlmUsage
 import ru.sbrf.dab2c.executor.voice.session.observer.TurnCompleted
 import ru.sbrf.dab2c.executor.voice.session.observer.TurnEvent
 import ru.sbrf.dab2c.executor.voice.session.observer.VoiceSessionObserver
@@ -48,6 +50,7 @@ class VoiceSessionObserverDelegate(
 
     private var phase = Phase.AWAITING_INPUT
     private var totalTokens: Int = 0
+    private var llmUsage: LlmUsage? = null
     private val turnEvents: MutableList<TurnEvent> =
         Collections.synchronizedList(mutableListOf())
 
@@ -138,6 +141,7 @@ class VoiceSessionObserverDelegate(
                 }
             }
             ContentFromModel.ResponseCase.ADDITIONAL_DATA -> {
+                accumulateLlmUsage(content.additionalData)
                 if (content.additionalData.hasUsage()) {
                     totalTokens += content.additionalData.usage.totalTokens
                     observer.onUsageUpdated(totalTokens)
@@ -149,6 +153,25 @@ class VoiceSessionObserverDelegate(
             observer.onAssistantInterrupted(ts)
             closeAssistantSegment()
         }
+    }
+
+    private fun accumulateLlmUsage(data: AdditionalData) {
+        val usage = data.usage
+        val previous = llmUsage
+        val modelInfo = data.gigachatModelInfo
+        val model = if (data.hasGigachatModelInfo() && modelInfo.name.isNotBlank()) {
+            listOf(modelInfo.name, modelInfo.version).filter { it.isNotBlank() }.joinToString(":")
+        } else {
+            null
+        }
+        llmUsage = LlmUsage(
+            promptTokens = (previous?.promptTokens ?: 0) + usage.promptTokens,
+            completionTokens = (previous?.completionTokens ?: 0) + usage.completionTokens,
+            totalTokens = (previous?.totalTokens ?: 0) + usage.totalTokens,
+            precachedPromptTokens = (previous?.precachedPromptTokens ?: 0) + usage.precachedPromptTokens,
+            model = model ?: previous?.model,
+            finishReason = data.finishReason.takeIf { it.isNotBlank() } ?: previous?.finishReason,
+        )
     }
 
     private suspend fun handleInputTranscription(transcription: InputTranscription) {
@@ -218,6 +241,7 @@ class VoiceSessionObserverDelegate(
             assistantReplica = assistantReplica.takeUnless { it.isEmpty }?.toReplica(),
             turnEvents = ArrayList(turnEvents),
             totalTokens = totalTokens.takeIf { it > 0 },
+            llmUsage = llmUsage,
         )
         logger.info {
             "Dialog turn completed: input='${event.userReplica?.text.orEmpty()}', " +
@@ -236,6 +260,7 @@ class VoiceSessionObserverDelegate(
         currentSegment = null
         phase = Phase.AWAITING_INPUT
         totalTokens = 0
+        llmUsage = null
         turnEvents.clear()
     }
 

@@ -48,6 +48,17 @@ data class TurnCompleted(
     val assistantReplica: Replica?,
     val turnEvents: List<TurnEvent>,
     val totalTokens: Int?,
+    val llmUsage: LlmUsage? = null,
+)
+
+/** LLM usage reported by the downstream voice service within one dialog turn. */
+data class LlmUsage(
+    val promptTokens: Int,
+    val completionTokens: Int,
+    val totalTokens: Int,
+    val precachedPromptTokens: Int,
+    val model: String?,
+    val finishReason: String?,
 )
 
 /** Voice settings observed at session bootstrap. */

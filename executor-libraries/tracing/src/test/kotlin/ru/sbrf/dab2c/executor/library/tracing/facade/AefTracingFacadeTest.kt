@@ -12,6 +12,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import ru.sbrf.aef.observability.aiservice.AefRequestContext
 import ru.sbrf.dab2c.executor.library.context.Headers
@@ -92,6 +93,49 @@ class AefTracingFacadeTest {
         assertEquals("{}", data.attributes.get(AttributeKey.stringKey("aef.input")))
         assertEquals("{}", data.attributes.get(AttributeKey.stringKey("aef.output")))
         assertEquals(42L, data.attributes.get(AttributeKey.longKey("aef.llm.total_tokens")))
+    }
+
+    @Test
+    fun `endVoiceLlmTurn writes full llm usage, model and finish reason`() = runTest {
+        val span = facade.startVoiceLlmTurn("voice llm turn")
+        facade.endVoiceLlmTurn(
+            span,
+            VoiceLlmTurnOutput(
+                inputJson = "{}",
+                outputJson = "{}",
+                totalTokens = 88L,
+                warning = null,
+                error = null,
+                promptTokens = 64L,
+                completionTokens = 24L,
+                precachedPromptTokens = 1L,
+                model = "GigaChat:1.0.26.20",
+                finishReason = "stop",
+            )
+        )
+
+        val data = exporter.finishedSpanItems.single()
+        assertEquals(64L, data.attributes.get(AttributeKey.longKey("aef.llm.prompt_tokens")))
+        assertEquals(24L, data.attributes.get(AttributeKey.longKey("aef.llm.completion_tokens")))
+        assertEquals(88L, data.attributes.get(AttributeKey.longKey("aef.llm.total_tokens")))
+        assertEquals(1L, data.attributes.get(AttributeKey.longKey("aef.llm.precached_prompt_tokens")))
+        assertEquals("GigaChat:1.0.26.20", data.attributes.get(AttributeKey.stringKey("aef.llm.model")))
+        assertEquals("stop", data.attributes.get(AttributeKey.stringKey("aef.finish_reason")))
+    }
+
+    @Test
+    fun `voice turn spans start when opened, not when closed`() = runTest {
+        val turn = facade.startVoiceTurn("voice turn")
+        val llmTurn = facade.startVoiceLlmTurn("voice llm turn", turn)
+        Thread.sleep(TURN_DURATION_MS)
+        facade.endVoiceLlmTurn(llmTurn, VoiceLlmTurnOutput("{}", "{}", totalTokens = 42L, null, null))
+        facade.endVoiceTurn(turn, VoiceTurnOutput("""{"text":"hi"}""", """{"text":"hello"}""", null, null))
+
+        val spans = exporter.finishedSpanItems
+        assertEquals(2, spans.size)
+        spans.forEach {
+            assertTrue(it.endEpochNanos - it.startEpochNanos >= TURN_DURATION_MS * NANOS_IN_MILLI, it.name)
+        }
     }
 
     @Test
@@ -213,4 +257,9 @@ class AefTracingFacadeTest {
 
     private fun sessionContext(sessionId: String) =
         HeadersElement(Headers(mapOf("x-session-id" to sessionId))) + AefRequestContextElement()
+
+    private companion object {
+        const val TURN_DURATION_MS = 20L
+        const val NANOS_IN_MILLI = 1_000_000L
+    }
 }
