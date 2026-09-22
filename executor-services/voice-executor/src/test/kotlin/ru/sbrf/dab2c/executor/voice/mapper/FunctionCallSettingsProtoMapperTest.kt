@@ -2,15 +2,18 @@ package ru.sbrf.dab2c.executor.voice.mapper
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
+import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.Test
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FilterSettings
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionRegistry
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaChatSettings
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.RequestContentSettings
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Settings
+import ru.sbrf.dab2c.executor.domain.configuration.AnyExample
 import ru.sbrf.dab2c.executor.domain.configuration.Function
 import ru.sbrf.dab2c.executor.domain.configuration.FunctionRanker
 import ru.sbrf.dab2c.executor.domain.configuration.GigachatSettings
+import ru.sbrf.dab2c.executor.domain.configuration.Params
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.Function as ProtoFunction
 import ru.sbrf.dab2c.executor.clients.gigavoice.proto.FunctionRanker as ProtoFunctionRanker
 import ru.sbrf.dab2c.executor.domain.configuration.Settings as RestSettings
@@ -65,6 +68,23 @@ class FunctionCallSettingsProtoMapperTest {
             .containsExactly("configuratorOne", "configuratorTwo")
     }
 
+    @Test
+    fun `should pass configurator few-shot examples to gigavoice`() {
+        val result = FunctionCallSettingsProtoMapper.enrich(ivrSettings(), restSettings(CONFIGURATOR_FUNCTIONS))
+
+        val functions = result.gigachat.functionsList.associateBy { it.name }
+        val example = functions.getValue("configuratorOne").fewShotExamplesList.single()
+
+        assertThat(example.request).isEqualTo(EXAMPLE_REQUEST)
+        assertThat(example.params.pairsList)
+            .extracting("key", "value")
+            .containsExactly(
+                tuple("city", "Москва"),
+                tuple("filters", """{"open":true}""")
+            )
+        assertThat(functions.getValue("configuratorTwo").fewShotExamplesList).isEmpty()
+    }
+
     private fun ivrSettings(): Settings = Settings.newBuilder()
         .setVoiceCallId(VOICE_CALL_ID)
         .setGigachat(
@@ -117,9 +137,23 @@ class FunctionCallSettingsProtoMapperTest {
         const val IGNORED_FUNCTION = "ignoredFunction"
         const val RANKER_TOP_N = 5
         const val EMBEDDER_MODEL = "embedder-model"
+        const val EXAMPLE_REQUEST = "Где ближайший офис?"
 
         val CONFIGURATOR_FUNCTIONS = listOf(
-            Function(name = "configuratorOne", description = "first", parameters = "{}", returnParameters = "{}"),
+            Function(
+                name = "configuratorOne",
+                description = "first",
+                parameters = "{}",
+                fewShotExamples = listOf(
+                    AnyExample(
+                        request = EXAMPLE_REQUEST,
+                        params = Params(
+                            pairs = listOf("city" to "Москва", "filters" to mapOf("open" to true))
+                        )
+                    )
+                ),
+                returnParameters = "{}"
+            ),
             Function(name = "configuratorTwo", description = "second", parameters = "{}", returnParameters = "{}")
         )
     }

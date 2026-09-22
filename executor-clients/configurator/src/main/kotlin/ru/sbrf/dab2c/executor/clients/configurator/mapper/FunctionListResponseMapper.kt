@@ -10,7 +10,6 @@ import ru.sbrf.dab2c.executor.clients.configurator.model.FunctionRanker
 import ru.sbrf.dab2c.executor.clients.configurator.model.FunctionSoundRule
 import ru.sbrf.dab2c.executor.clients.configurator.model.GigachatSettings
 import ru.sbrf.dab2c.executor.clients.configurator.model.LockFunctionExecution
-import ru.sbrf.dab2c.executor.clients.configurator.model.Params
 import ru.sbrf.dab2c.executor.clients.configurator.model.Settings
 import ru.sbrf.dab2c.executor.clients.configurator.model.StubSounds
 import ru.sbrf.dab2c.executor.clients.configurator.model.TriggerFunction
@@ -74,12 +73,9 @@ object FunctionListResponseMapper {
     private fun toDomain(source: AnyExample): DomainAnyExample =
         DomainAnyExample(
             request = source.request.orEmpty(),
-            params = source.params?.let(::toDomain) ?: DomainParams()
-        )
-
-    private fun toDomain(source: Params): DomainParams =
-        DomainParams(
-            pairs = source.pairs.orEmpty().map { it.key.orEmpty() to it.value }
+            params = DomainParams(
+                pairs = source.params.orEmpty().map { (name, value) -> name to value }
+            )
         )
 
     private fun toDomain(source: AudioSettings): DomainAudioSettings =

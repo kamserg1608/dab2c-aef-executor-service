@@ -211,24 +211,11 @@ components:
         request:
           type: string
         params:
-          $ref: '#/components/schemas/Params'
-
-    Params:
-      type: object
-      properties:
-        pairs:
-          type: array
-          items:
-            $ref: '#/components/schemas/Pair'
-
-    Pair:
-      type: object
-      properties:
-        key:
-          type: string
-        value:
           type: object
-          nullable: true
+          description: Значения параметров вызова функции по именам параметров
+          additionalProperties:
+            type: object
+            nullable: true
 
     AudioSettings:
       type: object
