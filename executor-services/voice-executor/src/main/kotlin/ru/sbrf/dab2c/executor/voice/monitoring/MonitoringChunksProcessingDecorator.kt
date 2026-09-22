@@ -28,6 +28,8 @@ class MonitoringChunksProcessingDecorator(
 ) : ChunkProcessingService {
     private var settingsInitSample: TimerSampleMetric.TimerSample? = null
     private val logger = KotlinLogging.logger { }
+    @Volatile
+    private var speechEndSample: TimerSampleMetric.TimerSample? = null
 
     override fun processRequestChunks(
         requestsChunks: Flow<GigaVoiceRequest>
@@ -40,6 +42,7 @@ class MonitoringChunksProcessingDecorator(
                     ExecutorVoiceMetric.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL,
                     chunkTags(request.chunkTypeName()) + request.incomingTags()
                 )
+                checkSpeechEndAndSaveTimestamp(request)
             }
 
         return delegate.processRequestChunks(monitoredChunks)
@@ -86,6 +89,7 @@ class MonitoringChunksProcessingDecorator(
                     ExecutorVoiceMetric.GRPC_INCOMING_FROM_GIGAVOICE_CHUNKS_TOTAL,
                     chunkTags(response.chunkTypeName()) + response.incomingFromGigaVoiceTags()
                 )
+                checkResponseStartedAndMeasureResponseSilenceTime(response)
             }
 
         return delegate.processResponseChunks(monitoredChunks)
@@ -121,6 +125,29 @@ class MonitoringChunksProcessingDecorator(
             logger.debug { "First InputTranscription received, TTFB measured." }
         }
     }
+
+    private suspend fun checkSpeechEndAndSaveTimestamp(
+        request: GigaVoiceRequest
+    ) {
+        if (request.requestCase == GigaVoiceRequest.RequestCase.INPUT && request.input.audioContent.speechEnd) {
+            speechEndSample = metricFactory.createTimerSample(
+                ExecutorVoiceMetric.GRPC_ASSISTANT_RESPONSE_SILENCE_TIME_SECONDS
+            ).start()
+        }
+    }
+
+    private fun checkResponseStartedAndMeasureResponseSilenceTime(
+        response: GigaVoiceResponse
+    ) {
+        if (isFirstAudioOutput(response) && speechEndSample != null) {
+            speechEndSample?.stop()
+            speechEndSample = null
+        }
+    }
+
+    private fun isFirstAudioOutput(response: GigaVoiceResponse): Boolean =
+        response.responseCase == GigaVoiceResponse.ResponseCase.OUTPUT &&
+            response.output.responseCase == ContentFromModel.ResponseCase.AUDIO
 }
 
 private fun chunkTags(chunkTypeName: String): Map<String, String> =
