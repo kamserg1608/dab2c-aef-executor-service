@@ -67,6 +67,16 @@ object WireMockResponses {
                             "name": "ask_ai_expert",
                             "description": "Вспомогательная функция для консультации со специалистом-экспертом.",
                             "parameters": "{\"type\":\"object\",\"properties\":{\"question\":{\"type\":\"string\",\"description\":\"Запрос к эксперту\"},\"clientAdditionalAnswer\":{\"type\":\"string\",\"description\":\"Дополнительная информация от клиента\"},\"dialogSummary\":{\"type\":\"string\",\"description\":\"Краткая сводка диалога\"},\"mainUserQuestion\":{\"type\":\"string\",\"description\":\"Основной вопрос клиента\"}},\"required\":[\"question\",\"dialogSummary\",\"mainUserQuestion\"]}",
+                            "few_shot_examples": [
+                                {
+                                    "request": "Почему вы мне отказываете в кредите?",
+                                    "params": {
+                                        "question": "Клиент не согласен с отказом по кредиту, нужно объяснить причину",
+                                        "dialogSummary": "Клиенту отказано в кредите, он недоволен",
+                                        "mainUserQuestion": "Объяснение отказа по кредиту"
+                                    }
+                                }
+                            ],
                             "return_parameters": "{\"type\":\"object\",\"properties\":{\"aiExpertAnswer\":{\"type\":\"string\",\"description\":\"Ответ специалиста-эксперта\"},\"status\":{\"type\":\"string\",\"enum\":[\"success\",\"fail\"],\"description\":\"Статус выполнения функции\"},\"errorMessage\":{\"type\":\"string\",\"description\":\"Описание ошибки\"}}}"
                         },
                         {
