@@ -132,7 +132,8 @@ class MonitoringChunksProcessingDecorator(
         if (request.requestCase == GigaVoiceRequest.RequestCase.INPUT) {
             val audioContent = request.input.audioContent
             logger.trace {
-                "Inbound INPUT chunk: speechStart=${audioContent.speechStart}, " +
+                "Inbound INPUT chunk: contentCase=${request.input.contentCase}, " +
+                    "speechStart=${audioContent.speechStart}, " +
                     "speechEnd=${audioContent.speechEnd}, hasAudioChunk=${audioContent.hasAudioChunk()}"
             }
             if (audioContent.speechEnd) {
@@ -147,7 +148,10 @@ class MonitoringChunksProcessingDecorator(
     private fun checkResponseStartedAndMeasureResponseSilenceTime(
         response: GigaVoiceResponse
     ) {
-        logger.trace { "checkResponseStartedAndMeasureResponseSilenceTime: responseCase=${response.responseCase}, speechEndSample=$speechEndSample" }
+        logger.trace {
+            "checkResponseStartedAndMeasureResponseSilenceTime: " +
+                "responseCase=${response.responseCase}, speechEndSample=$speechEndSample"
+        }
         if (isFirstAudioOutput(response) && speechEndSample != null) {
             speechEndSample?.stop()
             speechEndSample = null
