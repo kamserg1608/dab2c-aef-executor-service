@@ -29,7 +29,7 @@ class MonitoringChunksProcessingDecorator(
     private var settingsInitSample: TimerSampleMetric.TimerSample? = null
     private val logger = KotlinLogging.logger { }
     @Volatile
-    private var speechEndSample: TimerSampleMetric.TimerSample? = null
+    private var silenceTimeSample: TimerSampleMetric.TimerSample? = null
 
     override fun processRequestChunks(
         requestsChunks: Flow<GigaVoiceRequest>
@@ -42,7 +42,6 @@ class MonitoringChunksProcessingDecorator(
                     ExecutorVoiceMetric.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL,
                     chunkTags(request.chunkTypeName()) + request.incomingTags()
                 )
-                checkSpeechEndAndSaveTimestamp(request)
             }
 
         return delegate.processRequestChunks(monitoredChunks)
@@ -89,6 +88,7 @@ class MonitoringChunksProcessingDecorator(
                     ExecutorVoiceMetric.GRPC_INCOMING_FROM_GIGAVOICE_CHUNKS_TOTAL,
                     chunkTags(response.chunkTypeName()) + response.incomingFromGigaVoiceTags()
                 )
+                checkSilenceTimeStart(response)
                 checkResponseStartedAndMeasureResponseSilenceTime(response)
             }
 
@@ -126,22 +126,14 @@ class MonitoringChunksProcessingDecorator(
         }
     }
 
-    private suspend fun checkSpeechEndAndSaveTimestamp(
-        request: GigaVoiceRequest
+    private suspend fun checkSilenceTimeStart(
+        response: GigaVoiceResponse
     ) {
-        if (request.requestCase == GigaVoiceRequest.RequestCase.INPUT) {
-            val audioContent = request.input.audioContent
-            logger.trace {
-                "Inbound INPUT chunk: contentCase=${request.input.contentCase}, " +
-                    "speechStart=${audioContent.speechStart}, " +
-                    "speechEnd=${audioContent.speechEnd}, hasAudioChunk=${audioContent.hasAudioChunk()}"
-            }
-            if (audioContent.speechEnd) {
-                speechEndSample = metricFactory.createTimerSample(
-                    ExecutorVoiceMetric.GRPC_ASSISTANT_RESPONSE_SILENCE_TIME_SECONDS
-                ).start()
-                logger.trace { "Silence time timer started on speechEnd." }
-            }
+        if (response.responseCase == GigaVoiceResponse.ResponseCase.INPUT_TRANSCRIPTION) {
+            silenceTimeSample = metricFactory.createTimerSample(
+                ExecutorVoiceMetric.GRPC_ASSISTANT_RESPONSE_SILENCE_TIME_SECONDS
+            ).start()
+            logger.trace { "Silence time timer started on INPUT_TRANSCRIPTION." }
         }
     }
 
@@ -150,11 +142,12 @@ class MonitoringChunksProcessingDecorator(
     ) {
         logger.trace {
             "checkResponseStartedAndMeasureResponseSilenceTime: " +
-                "responseCase=${response.responseCase}, speechEndSample=$speechEndSample"
+                "responseCase=${response.responseCase}, silenceTimeSample=$silenceTimeSample"
         }
-        if (isFirstAudioOutput(response) && speechEndSample != null) {
-            speechEndSample?.stop()
-            speechEndSample = null
+        if (isFirstAudioOutput(response) && silenceTimeSample != null) {
+            silenceTimeSample?.stop()
+            silenceTimeSample = null
+            logger.trace { "Silence time timer stopped on first Audio output." }
         }
     }
 
