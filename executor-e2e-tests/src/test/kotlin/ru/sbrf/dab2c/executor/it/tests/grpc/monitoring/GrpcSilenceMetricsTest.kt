@@ -6,7 +6,6 @@ import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.audio
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.contextRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.settingsRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.audioResponse
-import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceResponseFixtures.inputTranscriptionResponse
 import ru.sbrf.dab2c.executor.it.support.metrics.captureMetrics
 import ru.sbrf.dab2c.executor.it.support.runItTest
 import ru.sbrf.dab2c.executor.it.support.session.withSession
@@ -15,13 +14,13 @@ import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
 
 /**
- * Silence time metric: time between the recognised user utterance (InputTranscription
- * from GigaVoice) and the first Audio Output response.
+ * Silence time metric: time between the last client audio chunk and the first
+ * Audio Output response from GigaVoice.
  */
 class GrpcSilenceMetricsTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
-    fun `should record silence time between InputTranscription and Output response`() = runItTest {
+    fun `should record silence time between last audio chunk and Output response`() = runItTest {
         setupStubs(efsAdapterMock, gigaVoiceAgentMock)
 
         val capture = captureMetrics(httpClient, BASE_TAGS) {
@@ -33,7 +32,6 @@ class GrpcSilenceMetricsTest : BaseGigaVoiceIntegrationTest() {
                 session.sendRequest(audioRequest())
                 mock.awaitRequest { it.hasInput() }
 
-                mock.sendResponse(inputTranscriptionResponse())
                 mock.sendResponse(audioResponse(chunkId = 1))
                 session.awaitResponse { it.responseCase == GigaVoiceResponse.ResponseCase.OUTPUT }
             }

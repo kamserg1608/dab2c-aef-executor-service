@@ -42,6 +42,7 @@ class MonitoringChunksProcessingDecorator(
                     ExecutorVoiceMetric.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL,
                     chunkTags(request.chunkTypeName()) + request.incomingTags()
                 )
+                restartSilenceTimeTimer(request)
             }
 
         return delegate.processRequestChunks(monitoredChunks)
@@ -88,7 +89,6 @@ class MonitoringChunksProcessingDecorator(
                     ExecutorVoiceMetric.GRPC_INCOMING_FROM_GIGAVOICE_CHUNKS_TOTAL,
                     chunkTags(response.chunkTypeName()) + response.incomingFromGigaVoiceTags()
                 )
-                checkSilenceTimeStart(response)
                 checkResponseStartedAndMeasureResponseSilenceTime(response)
             }
 
@@ -126,14 +126,14 @@ class MonitoringChunksProcessingDecorator(
         }
     }
 
-    private suspend fun checkSilenceTimeStart(
-        response: GigaVoiceResponse
+    private suspend fun restartSilenceTimeTimer(
+        request: GigaVoiceRequest
     ) {
-        if (response.responseCase == GigaVoiceResponse.ResponseCase.INPUT_TRANSCRIPTION) {
+        if (request.requestCase == GigaVoiceRequest.RequestCase.INPUT && request.input.hasAudioContent()) {
             silenceTimeSample = metricFactory.createTimerSample(
                 ExecutorVoiceMetric.GRPC_ASSISTANT_RESPONSE_SILENCE_TIME_SECONDS
             ).start()
-            logger.trace { "Silence time timer started on INPUT_TRANSCRIPTION." }
+            logger.trace { "Silence time timer restarted on audio chunk." }
         }
     }
 
