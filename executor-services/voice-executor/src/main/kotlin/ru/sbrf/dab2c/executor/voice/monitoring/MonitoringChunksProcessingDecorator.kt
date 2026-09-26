@@ -29,7 +29,7 @@ class MonitoringChunksProcessingDecorator(
     private var settingsInitSample: TimerSampleMetric.TimerSample? = null
     private val logger = KotlinLogging.logger { }
     @Volatile
-    private var speechEndSample: TimerSampleMetric.TimerSample? = null
+    private var silenceTimeSample: TimerSampleMetric.TimerSample? = null
 
     override fun processRequestChunks(
         requestsChunks: Flow<GigaVoiceRequest>
@@ -42,7 +42,7 @@ class MonitoringChunksProcessingDecorator(
                     ExecutorVoiceMetric.GRPC_INCOMING_FROM_INITIATOR_CHUNKS_TOTAL,
                     chunkTags(request.chunkTypeName()) + request.incomingTags()
                 )
-                checkSpeechEndAndSaveTimestamp(request)
+                restartSilenceTimeTimer(request)
             }
 
         return delegate.processRequestChunks(monitoredChunks)
@@ -126,22 +126,28 @@ class MonitoringChunksProcessingDecorator(
         }
     }
 
-    private suspend fun checkSpeechEndAndSaveTimestamp(
+    private suspend fun restartSilenceTimeTimer(
         request: GigaVoiceRequest
     ) {
-        if (request.requestCase == GigaVoiceRequest.RequestCase.INPUT && request.input.audioContent.speechEnd) {
-            speechEndSample = metricFactory.createTimerSample(
+        if (request.requestCase == GigaVoiceRequest.RequestCase.INPUT && request.input.hasAudioContent()) {
+            silenceTimeSample = metricFactory.createTimerSample(
                 ExecutorVoiceMetric.GRPC_ASSISTANT_RESPONSE_SILENCE_TIME_SECONDS
             ).start()
+            logger.trace { "Silence time timer restarted on audio chunk." }
         }
     }
 
     private fun checkResponseStartedAndMeasureResponseSilenceTime(
         response: GigaVoiceResponse
     ) {
-        if (isFirstAudioOutput(response) && speechEndSample != null) {
-            speechEndSample?.stop()
-            speechEndSample = null
+        logger.trace {
+            "checkResponseStartedAndMeasureResponseSilenceTime: " +
+                "responseCase=${response.responseCase}, silenceTimeSample=$silenceTimeSample"
+        }
+        if (isFirstAudioOutput(response) && silenceTimeSample != null) {
+            silenceTimeSample?.stop()
+            silenceTimeSample = null
+            logger.trace { "Silence time timer stopped on first Audio output." }
         }
     }
 

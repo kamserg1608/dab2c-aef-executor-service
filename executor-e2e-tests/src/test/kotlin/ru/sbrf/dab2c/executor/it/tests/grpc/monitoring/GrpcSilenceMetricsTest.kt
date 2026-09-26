@@ -1,6 +1,7 @@
 package ru.sbrf.dab2c.executor.it.tests.grpc.monitoring
 
 import org.junit.jupiter.api.Test
+import ru.sbrf.dab2c.executor.clients.gigavoice.proto.GigaVoiceResponse
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.audioRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.contextRequest
 import ru.sbrf.dab2c.executor.it.support.fixtures.GigaVoiceRequestFixtures.settingsRequest
@@ -13,12 +14,13 @@ import ru.sbrf.dab2c.executor.it.tests.BaseGigaVoiceIntegrationTest
 import ru.sbrf.dab2c.executor.voice.model.ExecutorVoiceMetric
 
 /**
- * Silence time metric: time between client speech_end and the first Output response.
+ * Silence time metric: time between the last client audio chunk and the first
+ * Audio Output response from GigaVoice.
  */
 class GrpcSilenceMetricsTest : BaseGigaVoiceIntegrationTest() {
 
     @Test
-    fun `should record silence time between speech_end and Output response`() = runItTest {
+    fun `should record silence time between last audio chunk and Output response`() = runItTest {
         setupStubs(efsAdapterMock, gigaVoiceAgentMock)
 
         val capture = captureMetrics(httpClient, BASE_TAGS) {
@@ -27,11 +29,11 @@ class GrpcSilenceMetricsTest : BaseGigaVoiceIntegrationTest() {
                 session.sendRequest(settingsRequest())
                 mock.awaitRequest { it.hasSettings() }
 
-                session.sendRequest(audioRequest(speechEnd = true))
+                session.sendRequest(audioRequest())
                 mock.awaitRequest { it.hasInput() }
 
                 mock.sendResponse(audioResponse(chunkId = 1))
-                session.awaitResponse()
+                session.awaitResponse { it.responseCase == GigaVoiceResponse.ResponseCase.OUTPUT }
             }
         }
 
